@@ -1,0 +1,72 @@
+package lexek.wschat.db;
+
+import lexek.wschat.db.jdbc.JdbcDataBase;
+import lexek.wschat.db.jooq.tables.pojos.Emoticon;
+import lexek.wschat.db.jooq.tables.pojos.Journal;
+import org.jooq.DSLContext;
+import org.jooq.Record;
+import org.jooq.exception.DataAccessException;
+import org.jooq.impl.DSL;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.sql.Connection;
+import java.sql.SQLException;
+
+import static lexek.wschat.db.jooq.tables.Emoticon.EMOTICON;
+
+public class EmoticonHelper {
+    private final JdbcDataBase dataBase;
+    private final Logger logger = LoggerFactory.getLogger(EmoticonHelper.class);
+
+    public EmoticonHelper(JdbcDataBase dataBase) {
+        this.dataBase = dataBase;
+    }
+
+    public String getAllAsJson() {
+        String result = null;
+        try (Connection connection = dataBase.getConnection()) {
+            result = DSL.using(connection)
+                    .select()
+                    .from(EMOTICON)
+                    .orderBy(EMOTICON.CODE.desc())
+                    .fetch().formatJSON();
+        } catch (SQLException | DataAccessException e) {
+            logger.error("sql exception", e);
+        }
+        return result;
+    }
+
+    public void addEmoticon(Emoticon emoticon, Journal journalMessage) {
+        try (Connection connection = dataBase.getConnection()) {
+            DSLContext ctx = DSL.using(connection);
+            ctx
+                    .insertInto(EMOTICON, EMOTICON.CODE, EMOTICON.FILENAME, EMOTICON.WIDTH, EMOTICON.HEIGHT)
+                    .values(emoticon.getCode(), emoticon.getFilename(), emoticon.getWidth(), emoticon.getHeight())
+                    .execute();
+            JournalHelper.insert(ctx, journalMessage);
+        } catch (SQLException | DataAccessException e) {
+            logger.error("sql exception", e);
+        }
+    }
+
+    public void delete(long id, String user) {
+        try (Connection connection = dataBase.getConnection()) {
+            DSLContext ctx = DSL.using(connection);
+            Record result = ctx
+                    .select(EMOTICON.CODE)
+                    .from(EMOTICON)
+                    .where(EMOTICON.ID.equal(id))
+                    .fetchOne();
+            ctx
+                    .delete(EMOTICON)
+                    .where(EMOTICON.ID.equal(id))
+                    .execute();
+            Journal journalMessage = new Journal(null, System.currentTimeMillis(),
+                    "Deleted emoticon \"" + result.getValue(EMOTICON.CODE) + "\".", user, "admin");
+            JournalHelper.insert(ctx, journalMessage);
+        } catch (SQLException | DataAccessException e) {
+            logger.error("sql exception", e);
+        }
+    }
+}

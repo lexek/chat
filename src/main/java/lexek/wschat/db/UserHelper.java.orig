@@ -1,0 +1,451 @@
+package lexek.wschat.db;
+
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import lexek.wschat.chat.Chatter;
+import lexek.wschat.chat.GlobalRole;
+import lexek.wschat.chat.LocalRole;
+import lexek.wschat.chat.User;
+import lexek.wschat.db.jdbc.JdbcDataBase;
+import lexek.wschat.db.jooq.tables.pojos.Journal;
+import lexek.wschat.db.jooq.tables.records.UserRecord;
+import org.jooq.*;
+import org.jooq.exception.DataAccessException;
+import org.jooq.impl.DSL;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.Map;
+
+import static lexek.wschat.db.jooq.tables.Chatter.CHATTER;
+import static lexek.wschat.db.jooq.tables.User.USER;
+import static lexek.wschat.db.jooq.tables.Userauth.USERAUTH;
+
+public class UserHelper {
+    private final Cache<String, User> userCache = CacheBuilder.newBuilder().weakValues().build();
+    private final JdbcDataBase dataBase;
+    private final Gson gson = new Gson();
+    private final Logger logger = LoggerFactory.getLogger(UserHelper.class);
+
+    public UserHelper(JdbcDataBase dataBase) {
+        this.dataBase = dataBase;
+    }
+
+    public void setBanned(long id, boolean value, Journal journalMessage) {
+        try (Connection connection = dataBase.getConnection()) {
+            DSLContext ctx = DSL.using(connection);
+            ctx
+                    .update(USER)
+                    .set(USER.BANNED, value)
+                    .where(USER.ID.equal(id))
+                    .execute();
+            JournalHelper.insert(ctx, journalMessage);
+        } catch (SQLException | DataAccessException e) {
+            logger.error("sql exception", e);
+        }
+    }
+
+    public void tryChangeName(long id, String newName, boolean ignoreCheck, Journal journalMessage) {
+        try (Connection connection = dataBase.getConnection()) {
+            Condition condition = USER.ID.equal(id);
+            if (!ignoreCheck) {
+                condition.and(USER.RENAMEAVAILABLE.equal(true));
+            }
+            DSLContext ctx = DSL.using(connection);
+            ctx
+                    .update(USER)
+                    .set(USER.NAME, newName)
+                    .set(USER.RENAMEAVAILABLE, false)
+                    .where(condition)
+                    .execute();
+            JournalHelper.insert(ctx, journalMessage);
+        } catch (SQLException | DataAccessException e) {
+            logger.error("sql exception", e);
+        }
+    }
+
+    public void setRole(long id, GlobalRole level, Journal journalMessage) {
+        try (Connection connection = dataBase.getConnection()) {
+            DSLContext ctx = DSL.using(connection);
+            ctx
+                    .update(USER)
+                    .set(USER.ROLE, level.toString())
+                    .where(USER.ID.equal(id))
+                    .execute();
+            JournalHelper.insert(ctx, journalMessage);
+        } catch (SQLException | DataAccessException e) {
+            logger.error("sql exception", e);
+        }
+    }
+
+    public UserDto getByName(String name) {
+        UserDto userDto = null;
+        try (Connection connection = dataBase.getConnection()) {
+            Record record = DSL.using(connection)
+                    .select()
+                    .from(USER)
+                    .where(USER.NAME.equal(name))
+                    .fetchOne();
+            userDto = UserDto.fromRecord(record);
+        } catch (SQLException | DataAccessException e) {
+            logger.error("sql exception", e);
+        }
+        return userDto;
+    }
+
+    public UserDto getByNameWithCache(String name) {
+        UserDto userDto = null;
+        {
+            User u = userCache.getIfPresent(name);
+            if (u != null) {
+                userDto = u.getWrappedObject();
+            }
+        }
+        if (userDto == null) {
+            userDto = getByName(name);
+        }
+        return userDto;
+    }
+
+    public UserDto getById(long id) {
+        UserDto userDto = null;
+        try (Connection connection = dataBase.getConnection()) {
+            Record record = DSL.using(connection)
+                    .select()
+                    .from(USER)
+                    .where(USER.ID.equal(id))
+                    .fetchOne();
+            userDto = UserDto.fromRecord(record);
+        } catch (SQLException | DataAccessException e) {
+            logger.error("sql exception", e);
+        }
+        return userDto;
+    }
+
+    public boolean setFields(Map<TableField<UserRecord, ?>, Object> values, long id, Journal journalMessage) {
+        boolean success = false;
+        try (Connection connection = dataBase.getConnection()) {
+            DSLContext ctx = DSL.using(connection);
+            ctx
+                    .update(USER)
+                    .set(values)
+                    .where(USER.ID.equal(id))
+                    .execute();
+            JournalHelper.insert(ctx, journalMessage);
+            success = true;
+        } catch (SQLException | DataAccessException e) {
+            logger.error("sql exception", e);
+        }
+        return success;
+    }
+
+    public void setColor(long id, String color) {
+        try (Connection connection = dataBase.getConnection()) {
+            DSL.using(connection)
+                    .update(USER)
+                    .set(USER.COLOR, color)
+                    .where(USER.ID.equal(id))
+                    .execute();
+        } catch (SQLException | DataAccessException e) {
+            logger.error("sql exception", e);
+        }
+    }
+
+    public String getAllPagedAsJson(int page, int pageLength, SortField<?> sortField) {
+        String result = null;
+        try (Connection connection = dataBase.getConnection()) {
+            DSLContext ctx = DSL.using(connection);
+            Result<? extends Record> data = ctx
+                    .select(USER.ID, USER.NAME, USER.ROLE, USER.COLOR, USER.BANNED, USER.RENAMEAVAILABLE, USER.EMAIL,
+                            DSL.groupConcat(USERAUTH.SERVICE).as("authServices"),
+                            DSL.groupConcat(DSL.coalesce(USERAUTH.AUTHNAME, "")).as("authNames"))
+                    .from(USER.join(USERAUTH).on(USER.ID.equal(USERAUTH.USER_ID)))
+                    .groupBy(USER.ID)
+                    .orderBy(sortField)
+                    .limit(page * pageLength, pageLength)
+                    .fetch();
+            result = formatPageJson(data, totalPages(ctx, null, pageLength));
+        } catch (SQLException | DataAccessException e) {
+            logger.error("sql exception", e);
+        }
+        return result;
+    }
+
+    public String searchPagedAsJson(Integer page, int pageLength, SortField<?> sortField, String nameParam) {
+        String result = null;
+        try (Connection connection = dataBase.getConnection()) {
+            DSLContext ctx = DSL.using(connection);
+            Result<? extends Record> data = ctx
+                    .select(USER.ID, USER.NAME, USER.ROLE, USER.COLOR, USER.BANNED,
+                            USER.RENAMEAVAILABLE, USER.EMAIL,
+                            DSL.groupConcat(USERAUTH.SERVICE).as("authServices"),
+                            DSL.groupConcat(DSL.coalesce(USERAUTH.AUTHNAME, "")).as("authNames"))
+                    .from(USER.join(USERAUTH).on(USER.ID.equal(USERAUTH.USER_ID)))
+                    .where(USER.NAME.like(nameParam, '!'))
+                    .orderBy(sortField)
+                    .limit(page * pageLength, pageLength)
+                    .fetch();
+            result = formatPageJson(data, totalPages(ctx, USER.NAME.like(nameParam, '!'), pageLength));
+        } catch (SQLException | DataAccessException e) {
+            logger.error("sql exception", e);
+        }
+        return result;
+    }
+
+    public String getByIdAsJson(long id) {
+        String result = null;
+        try (Connection connection = dataBase.getConnection()) {
+            DSLContext ctx = DSL.using(connection);
+            Record data = ctx
+                    .select(USER.ID, USER.NAME, USER.ROLE, USER.COLOR, USER.BANNED, USER.RENAMEAVAILABLE, USER.EMAIL,
+                            DSL.groupConcat(USERAUTH.SERVICE).as("authServices"),
+                            DSL.groupConcat(DSL.coalesce(USERAUTH.AUTHNAME, "")).as("authNames"))
+                    .from(USER.join(USERAUTH).on(USER.ID.equal(USERAUTH.USER_ID)))
+                    .where(USER.ID.equal(id))
+                    .groupBy(USER.ID)
+                    .fetchOne();
+            result = formatAsJson(data);
+        } catch (SQLException | DataAccessException e) {
+            logger.error("sql exception", e);
+        }
+        return result;
+    }
+
+    private int totalPages(DSLContext ctx, Condition condition, int pageLength) {
+        if (condition != null) {
+            return ctx.fetchCount(ctx.select().from(USER).where(condition)) / pageLength;
+        } else {
+            return ctx.fetchCount(ctx.select().from(USER)) / pageLength;
+        }
+    }
+
+    private String formatPageJson(Result<? extends Record> data, int totalPages) {
+        JsonObject rootObject = new JsonObject();
+        JsonArray dataArray = new JsonArray();
+        for (Record record : data) {
+            org.jooq.Field<?>[] fields = data.fields();
+            JsonObject object = new JsonObject();
+            for (int index = 0; index < fields.length; index++) {
+                object.add(fields[index].getName(), gson.toJsonTree(record.getValue(index)));
+            }
+            dataArray.add(object);
+        }
+
+        rootObject.add("data", dataArray);
+        rootObject.addProperty("totalPages", totalPages);
+
+        return gson.toJson(rootObject);
+    }
+
+    private String formatAsJson(Record record) {
+        if (record == null) {
+            return gson.toJson(new JsonObject());
+        }
+        org.jooq.Field<?>[] fields = record.fields();
+        JsonObject object = new JsonObject();
+        for (int index = 0; index < fields.length; index++) {
+            object.add(fields[index].getName(), gson.toJsonTree(record.getValue(index)));
+        }
+        return gson.toJson(object);
+    }
+
+    public void delete(long id, Journal journal) {
+        try (Connection connection = dataBase.getConnection()) {
+            DSLContext ctx = DSL.using(connection);
+            ctx
+                    .delete(USER)
+                    .where(USER.ID.equal(id))
+                    .execute();
+            JournalHelper.insert(ctx, journal);
+        } catch (SQLException | DataAccessException e) {
+            logger.error("sql exception", e);
+        }
+
+    }
+
+    public boolean checkName(String username) {
+        boolean result = false;
+        try (Connection connection = dataBase.getConnection()) {
+            result = DSL.using(connection)
+                    .selectOne()
+                    .from(USER)
+                    .where(USER.NAME.equal(username))
+                    .fetchOne() == null;
+        } catch (SQLException | DataAccessException e) {
+            logger.error("sql exception", e);
+        }
+        return result;
+    }
+
+    public void invalidate(String name) {
+        userCache.invalidate(name);
+    }
+
+    public User addOrUpdateCached(UserDto user) {
+        User instance = userCache.getIfPresent(user.getName());
+        if (instance != null) {
+            instance.wrap(user);
+        } else {
+            instance = new User(user);
+            userCache.put(user.getName(), instance);
+        }
+        return instance;
+    }
+
+    public User getCached(String name) {
+        return userCache.getIfPresent(name);
+    }
+
+    public Chatter getChatter(User user, long roomId) {
+        Chatter chatter = null;
+        try (Connection connection = dataBase.getConnection()) {
+            Record record = DSL.using(connection)
+                    .select()
+                    .from(CHATTER)
+                    .where(CHATTER.USER_ID.equal(user.getId()).and(CHATTER.ROOM_ID.equal(roomId)))
+                    .fetchOne();
+            chatter = Chatter.fromRecord(record, user);
+            if (chatter == null) {
+                long id = DSL.using(connection)
+                        .insertInto(CHATTER, CHATTER.USER_ID, CHATTER.ROOM_ID, CHATTER.ROLE, CHATTER.TIMEOUT, CHATTER.BANNED)
+                        .values(user.getId(), roomId, LocalRole.USER.toString(), null, false)
+                        .returning(CHATTER.ID)
+                        .fetchOne().getId();
+                chatter = new Chatter(id, LocalRole.USER, false, null, user);
+            }
+        } catch (SQLException | DataAccessException e) {
+            logger.error("sql exception", e);
+        }
+        if (chatter == null) {
+            chatter = new Chatter(null, LocalRole.USER, false, null, user);
+        }
+        return chatter;
+    }
+
+    public Chatter getChatter(String name, long roomId) {
+        Chatter chatter = null;
+        try (Connection connection = dataBase.getConnection()) {
+            Record record = DSL.using(connection)
+                    .select()
+                    .from(CHATTER.join(USER).on(CHATTER.USER_ID.equal(USER.ID)))
+                    .where(USER.NAME.equal(name).and(CHATTER.ROOM_ID.equal(roomId)))
+                    .fetchOne();
+            if (record != null) {
+                chatter = Chatter.fromRecord(record, new User(UserDto.fromRecord(record)));
+            }
+        } catch (SQLException | DataAccessException e) {
+            logger.error("sql exception", e);
+        }
+        return chatter;
+    }
+
+    public boolean banChatter(long chatterId) {
+        boolean result = false;
+        try (Connection connection = dataBase.getConnection()) {
+            DSLContext ctx = DSL.using(connection);
+            result = ctx
+                    .update(CHATTER)
+                    .set(CHATTER.BANNED, true)
+                    .where(CHATTER.ID.equal(chatterId))
+                    .execute() != 0;
+        } catch (SQLException | DataAccessException e) {
+            logger.error("sql exception", e);
+        }
+        return result;
+    }
+
+    public boolean unbanChatter(long chatterId) {
+        boolean result = false;
+        try (Connection connection = dataBase.getConnection()) {
+            DSLContext ctx = DSL.using(connection);
+            result = ctx
+                    .update(CHATTER)
+                    .set(CHATTER.BANNED, false)
+                    .set(CHATTER.TIMEOUT, (Long) null)
+                    .where(CHATTER.ID.equal(chatterId))
+                    .execute() != 0;
+        } catch (SQLException | DataAccessException e) {
+            logger.error("sql exception", e);
+        }
+        return result;
+    }
+
+    public boolean timeoutChatter(long chatterId, long until) {
+        boolean result = false;
+        try (Connection connection = dataBase.getConnection()) {
+            DSLContext ctx = DSL.using(connection);
+            result = ctx
+                    .update(CHATTER)
+                    .set(CHATTER.TIMEOUT, until)
+                    .where(CHATTER.ID.equal(chatterId))
+                    .execute() != 0;
+        } catch (SQLException | DataAccessException e) {
+            logger.error("sql exception", e);
+        }
+        return result;
+    }
+
+    public boolean setRole(long chatterId, LocalRole newRole) {
+        boolean result = false;
+        try (Connection connection = dataBase.getConnection()) {
+            DSLContext ctx = DSL.using(connection);
+            result = ctx
+                    .update(CHATTER)
+                    .set(CHATTER.ROLE, newRole.toString())
+                    .where(CHATTER.ID.equal(chatterId))
+                    .execute() != 0;
+        } catch (SQLException | DataAccessException e) {
+            logger.error("sql exception", e);
+        }
+        return result;
+    }
+
+    public String getAllChatterPagedAsJson(long room, int page, int pageLength) {
+        String result = null;
+        try (Connection connection = dataBase.getConnection()) {
+            DSLContext ctx = DSL.using(connection);
+            Result<? extends Record> data = ctx
+                    .select(CHATTER.ID, CHATTER.USER_ID, CHATTER.ROOM_ID, CHATTER.ROLE, CHATTER.TIMEOUT, CHATTER.BANNED, USER.NAME)
+                    .from(CHATTER.join(USER).on(CHATTER.USER_ID.equal(USER.ID)))
+                    .where(CHATTER.ROOM_ID.equal(room))
+                    .orderBy(CHATTER.ID)
+                    .limit(page * pageLength, pageLength)
+                    .fetch();
+            result = formatPageJson(data, totalChatterPages(ctx, room, null, pageLength));
+        } catch (SQLException | DataAccessException e) {
+            logger.error("sql exception", e);
+        }
+        return result;
+    }
+
+    public String searchChatterPagedAsJson(long room, int page, int pageLength, String nameParam) {
+        String result = null;
+        try (Connection connection = dataBase.getConnection()) {
+            DSLContext ctx = DSL.using(connection);
+            Result<? extends Record> data = ctx
+                    .select(CHATTER.ID, CHATTER.USER_ID, CHATTER.ROOM_ID, CHATTER.ROLE, CHATTER.TIMEOUT, CHATTER.BANNED, USER.NAME)
+                    .from(CHATTER.join(USER).on(CHATTER.USER_ID.equal(USER.ID)))
+                    .where(CHATTER.ROOM_ID.equal(room).and(USER.NAME.like(nameParam, '!')))
+                    .orderBy(CHATTER.ID)
+                    .limit(page * pageLength, pageLength)
+                    .fetch();
+            result = formatPageJson(data, totalChatterPages(ctx, room, USER.NAME.like(nameParam, '!'), pageLength));
+        } catch (SQLException | DataAccessException e) {
+            logger.error("sql exception", e);
+        }
+        return result;
+    }
+
+    private int totalChatterPages(DSLContext ctx, long room, Condition condition, int pageLength) {
+        if (condition != null) {
+            return ctx.select(DSL.count()).from(CHATTER.join(USER).on(CHATTER.USER_ID.equal(USER.ID))).where(CHATTER.ROOM_ID.eq(room).and(condition)).fetchOne().value1() / pageLength;
+        } else {
+            return ctx.select(DSL.count()).from(CHATTER.join(USER).on(CHATTER.USER_ID.equal(USER.ID))).where(CHATTER.ROOM_ID.eq(room)).fetchOne().value1() / pageLength;
+        }
+    }
+}

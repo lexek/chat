@@ -1,0 +1,209 @@
+var MessageController = function($scope, chat, settings, $element) {
+    $scope.showTimestamps = function() {
+        return $scope.message.showTS || settings.getS("showTS");
+    };
+
+    $scope.like = function(id_) {
+        chat.sendMessage({"type":"LIKE", "args":[id_.toString()]});
+    };
+
+    $scope.isSupporter = function() {
+        return $scope.message.user.role == levels.SUPPORTER;
+    };
+
+    $scope.isMod = function() {
+        return $scope.message.user.role == levels.MOD;
+    };
+
+    $scope.isAdmin = function() {
+        return $scope.message.user.role == levels.ADMIN;
+    };
+
+    $scope.message.messageUpdatedCallbacks.push(function() {$scope.$apply();});
+
+    $scope.showModButtons = function() {
+        return $scope.message.showModButtons && !settings.getS("hideMB");
+    };
+
+    $scope.addToInput = function() {
+        chat.addToInputCallback($scope.message.user.username);
+    };
+
+    $scope.isMult = function() {
+        return $scope.message.mult;
+    };
+
+    $scope.extUrl = function() {
+        if ($scope.message.ext) {
+            if ($scope.message.extOrigin === "twitch.tv") {
+                return "http://www.twitch.tv/" + $scope.message.user.username + "/profile";
+            }
+        }
+    };
+
+    $($element).addClass('animated fadeIn');
+};
+
+var MessagesController = function($scope, chat, settings) {
+    $scope.messages = chat.messages;
+
+    $scope.compact = function() {
+        return settings.getS("compact");
+    };
+
+    $scope.$on('$viewContentLoaded', function() {
+        $('.messagesContainer').TrackpadScrollEmulator({ wrapContent: false });
+        $scope.$watchCollection("messages", function() {
+            $('.messagesContainer').TrackpadScrollEmulator('recalculate');
+        });
+    });
+
+    chat.messagesUpdatedCallbacks.push(function() {$scope.$apply();});
+    chat.init();
+};
+
+var UserInputController = function($scope, $modal, chat, settings, $cookieStore) {
+    $scope.message = "";
+<<<<<<< local
+    $scope.mention = null;
+    $scope.selectedMention = null;
+    $scope.selectingMention = false;
+    $scope.pos = 0;
+
+    $scope.changed = function() {
+        console.log($scope.mention);
+        $scope.mention = $scope.getMentionedName($scope.message);
+        $scope.selectingMention = $scope.mention != null;
+    };
+
+    $scope.getNames = function() {
+        var names = [];
+        angular.forEach(chat.onlineUsers, function(e) {
+            if (($scope.mention === "") || e.username.indexOf($scope.mention) == 0) {
+                names.push(e.username);
+            }
+        });
+        return names;
+    };
+
+    chat.addToInputCallback = function(string) {
+        $scope.message = $scope.message + string;
+    };
+=======
+>>>>>>> other
+
+    $scope.onKeyEvent = function(evt) {
+        evt.preventDefault();
+        console.log(evt.keyCode);
+        if (evt.keyCode === 13) {
+            if ($scope.selectingMention) {
+
+            } else {
+                $scope.sendMessage(evt);
+            }
+        }
+    };
+
+    $scope.getMentionedName = function() {
+        var beforeCaret = $scope.message.substr(0, $scope.pos);
+        var matched = /.*@([a-z]*)$/.exec(beforeCaret);
+        if (matched) {
+            return matched[1];
+        } else {
+            return null;
+        }
+    };
+
+    $scope.cursorPosition = function() {
+        var el = document.getElementById("userInput");
+        var pos = 0;
+        // IE Support
+        if (document.selection) {
+            el.focus();
+            var Sel = document.selection.createRange();
+            var SelLength = document.selection.createRange().text.length;
+            Sel.moveStart ('character', -el.value.length);
+            pos = Sel.text.length - SelLength;
+        }
+        // Firefox support
+        else if (el.selectionStart || el.selectionStart == '0') {
+            pos = el.selectionStart;
+        }
+        return pos;
+    };
+
+    $scope.sendMessage = function(e) {
+        if (e) {
+            e.preventDefault();
+        }
+
+        var msg = $scope.message;
+        var send = true;
+        var message = {};
+        if (msg[0] == '/') {
+            msg = msg.slice(1);
+            var tmp = msg.split(' ');
+            message["type"] = tmp[0].toUpperCase();
+
+            if (tmp[1]) {
+                message["args"] = tmp.slice(1);
+            } else {
+                message["args"] = [];
+            }
+
+            if (tmp[0].toUpperCase() == "LOGOUT") {
+                $cookieStore.remove("sid");
+                window.location.reload();
+                send = false;
+            } else if (tmp[0].toUpperCase() == "ANNOUNCE") {
+                message["args"] = [tmp[1], msg.substr(tmp[1].length + tmp[0].length + 2)];
+            } else if (tmp[0].toUpperCase() == 'LOGIN') {
+                send = false;
+            } else if (tmp[0].toUpperCase() == 'ME' || tmp[0].toUpperCase() == "NAME") {
+                message['args'] = [msg.substr(msg.indexOf(" ") + 1)];
+            } else if (tmp[0].toUpperCase() == 'IGNORE') {
+                if (tmp[1]) {
+                    settings.addIgnored(tmp[1].toLowerCase());
+                }
+                send = false;
+            } else if (tmp[0].toUpperCase() == "UNIGNORE") {
+                if (tmp[1]) {
+                    settings.deleteIgnored(tmp[1].toLowerCase());
+                }
+                send = false;
+            }
+        } else {
+            if (msg.length > 0) {
+                message['type'] = 'MSG';
+                message['args'] = [msg];
+            } else {
+                send = false;
+            }
+        }
+
+        if (send) {
+            chat.lastSent = msg;
+            chat.sendMessage(message);
+            console.log('OUT: ' + message);
+        }
+        $scope.message = "";
+<<<<<<< local
+        $scope.mention = null;
+    };
+
+    $scope.$watch("cursorPosition()", function(value) {
+        $scope.pos = value;
+        console.log($scope.pos);
+    });
+=======
+    }
+>>>>>>> other
+};
+
+var StyleController = function($scope, settings) {
+    $scope.isDark = function() {
+        return settings.getS("dark");
+    }
+};
+
+//MessagesController.$inject = ["$scope", "chatService"];

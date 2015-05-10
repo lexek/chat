@@ -1,0 +1,880 @@
+<!DOCTYPE HTML>
+<html ng-app="AdminApplication">
+<head>
+    <title ng-controller="TitleController" ng-bind="'Admin panel: ' + title()"></title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+
+    <link rel="stylesheet" type="text/css" href='//fonts.googleapis.com/css?family=Roboto:400,400italic,700,700italic&subset=latin,cyrillic'>
+    <link rel="stylesheet" type="text/css" href="/css/bootstrap.css"/>
+    <link rel="stylesheet" type="text/css" href="/css/font-awesome.css">
+
+    <base href="/admin/" />
+
+    <script type="application/javascript">
+        document.SELF_ROLE = "${user.role}";
+    </script>
+
+    <script src="//code.jquery.com/jquery-2.1.0.min.js"></script>
+    <script src="/js/angular.js"></script>
+    <script src="/js/angular-route.js"></script>
+    <script src="/js/angular-ui-utils.js"></script>
+    <script src="/js/angular-ui-bootstrap.js"></script>
+    <script src="/js/angular-relative-date.js"></script>
+    <script src="/js/highcharts.js"></script>
+    <script src="/js/admin/main.js"></script>
+
+    <style>
+        body {
+            font-family: "Roboto", sans-serif;
+            min-width: 600px;
+        }
+
+        .btn, .form-control {
+            border-radius: 0;
+        }
+
+        .sidebar {
+            display: none;
+        }
+        @media (min-width: 768px) {
+            .sidebar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                bottom: 0;
+                z-index: 1000;
+                display: block;
+                padding: 20px 20px 20px;
+                background-color: #f5f5f5;
+                border-right: 1px solid #e7e7e7;
+                width: 200px
+            }
+
+            .main {
+                margin-left: 200px;
+            }
+        }
+
+        .main {
+            padding-right: 15px;
+            padding-left: 15px;
+        }
+
+        .nav-sidebar {
+            margin-left: -20px;
+            margin-right: -21px; /* 20px padding + 1px border */
+            margin-bottom: 20px;
+        }
+        .nav-sidebar > li:first-child > a {
+            border-top: 1px solid #e1e1e1;
+        }
+        .nav-sidebar > li > a {
+            padding-left: 20px;
+            padding-right: 20px;
+            outline: 0;
+            color: #5b5b5b;
+            border-bottom: 1px solid #e1e1e1;
+        }
+        .nav-sidebar > .active > a,
+        .nav-sidebar > .active > a:hover,
+        .nav-sidebar > .active > a:focus {
+            color: #fff;
+            background-color: #5b5b5b;
+        }
+
+        .pager li > a, .pager li > span {
+            border-radius: 0;
+        }
+
+        .main .page-header {
+            margin-top: 0;
+        }
+
+        .sortableTitle {
+            cursor: pointer;
+        }
+
+        .sortableTitle:hover {
+            background-color: #efefef;
+        }
+
+        .sortableTitle .fa {
+            padding-top: 3px;
+        }
+
+        .btn-link-success {
+            color: #5cb85c;
+        }
+        .btn-link-success:hover,
+        .btn-link-success:focus,
+        .btn-link-success:active,
+        .btn-link-success.active {
+            color: #449d44;
+        }
+        .btn-link-success:active,
+        .btn-link-success.active {
+            background-image: none;
+        }
+        .btn-link-success.disabled,
+        .btn-link-success[disabled],
+        fieldset[disabled] .btn-link-success,
+        .btn-link-success.disabled:hover,
+        .btn-link-success[disabled]:hover,
+        fieldset[disabled] .btn-link-success:hover,
+        .btn-link-success.disabled:focus,
+        .btn-link-success[disabled]:focus,
+        fieldset[disabled] .btn-link-success:focus,
+        .btn-link-success.disabled:active,
+        .btn-link-success[disabled]:active,
+        fieldset[disabled] .btn-link-success:active,
+        .btn-link-success.disabled.active,
+        .btn-link-success[disabled].active,
+        fieldset[disabled] .btn-link-success.active {
+            color: #5cb85c;
+        }
+
+
+        .btn-link-danger {
+            color: #d9534f;
+        }
+        .btn-link-danger:hover,
+        .btn-link-danger:focus,
+        .btn-link-danger:active,
+        .btn-link-danger.active {
+            color: #c9302c;
+        }
+        .btn-link-danger:active,
+        .btn-link-danger.active {
+            background-image: none;
+        }
+        .btn-link-danger.disabled,
+        .btn-link-danger[disabled],
+        fieldset[disabled] .btn-link-danger,
+        .btn-link-danger.disabled:hover,
+        .btn-link-danger[disabled]:hover,
+        fieldset[disabled] .btn-link-danger:hover,
+        .btn-link-danger.disabled:focus,
+        .btn-link-danger[disabled]:focus,
+        fieldset[disabled] .btn-link-danger:focus,
+        .btn-link-danger.disabled:active,
+        .btn-link-danger[disabled]:active,
+        fieldset[disabled] .btn-link-danger:active,
+        .btn-link-danger.disabled.active,
+        .btn-link-danger[disabled].active,
+        fieldset[disabled] .btn-link-danger.active {
+            color: #d9534f;
+        }
+
+        .btn.btn-xs {
+            padding: 0;
+			font-size: 14px;
+        }
+
+        .alertOverlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            z-index: 2000;
+        }
+
+        .announcementContainer img {
+            width: 100%;
+            height: auto;
+        }
+
+        .active .badge {
+            color: #5b5b5b;
+            background-color: #fff;
+        }
+
+        .auth {
+            color: #cdcdcd;
+        }
+
+        .auth.fa-twitch.active {
+            color: #6441A5;
+        }
+
+        .auth.default.active {
+            color: #5b5b5b;
+        }
+    </style>
+</head>
+<body>
+<script type="text/ng-template" id="dashboard.html">
+    <div class="pull-right" style="margin-top: -75px" ng-controller="AnnouncementsWidgetController">
+        <div class="btn-group" ng-if="announcements.length > 0">
+            <button type="button" class="btn btn-success dropdown-toggle" ng-click="show = !show" style="width: 200px;">
+                Announcements <span class="badge">{{announcements.length}}</span> <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu" role="menu" style="width: 200px;">
+                <li ng-repeat="announcement in announcements">
+                    <a href="#">
+                        <div class="announcementContainer" ng-bind-html="announcement.text"></div>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="panel panel-default">
+        <div class="panel-heading"><i class="fa fa-area-chart"></i> online</div>
+        <div id="onlineConnectionsChart" style="height: 300px;"></div>
+    </div>
+
+    <div class="panel panel-default">
+        <div class="panel-heading"><i class="fa fa-area-chart"></i> chat activity</div>
+        <div id="activityChart" style="height: 300px;"></div>
+    </div>
+</script>
+
+<script type="text/ng-template" id="emoticons.html">
+    <div class="panel panel-default">
+        <div class="panel-heading">Add emoticon</div>
+        <div class="panel-body">
+            <form action="/admin/api/emoticons" method="post" enctype="multipart/form-data" role="form" acceptcharset="UTF-8">
+                <div class="form-group">
+                    <label>Emoticon code</label>
+                    <input type="text" name="code" placeholder="enter emoticon code" class="form-control"/>
+                </div>
+                <div class="form-group">
+                    <label>Emoticon file</label>
+                    <input type="file" name="file">
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-default">Submit</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="panel panel-default">
+        <table class="table table-hover">
+            <thead>
+            <tr>
+                <th class="col-xs-1">Icon</th>
+                <th class="col-xs-10 sortableTitle" ng-click="orderBy('code')">
+                    Code <span class="fa fa-fw pull-right" ng-class="getSortIconClass('code')"></span>
+                </th>
+                <th class="col-xs-1" style="text-align: center;">Delete</th>
+            </tr>
+            </thead>
+            <tr ng-repeat="emoticon in emoticons | orderBy:order:orderDesc">
+                <td><img ng-src="/emoticons/{{emoticon.fileName}}"/></td>
+                <td ng-bind="emoticon.code"></td>
+                <td style="text-align: center;">
+                    <div class="btn btn-link btn-link-danger btn-xs" ng-click="requestDelete(emoticon.id)">
+                        <span class="fa fa-trash fa-fw"></span>
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+</script>
+
+<script type="text/ng-template" id="journal.html">
+    <ul class="pager">
+        <li class="previous" ng-if="page !== 0" ng-click="previousPage()"><a href="">&larr; Previous page</a></li>
+        <li class="next" ng-if="hasNextPage()" ng-click="nextPage()"><a href="">Next page &rarr;</a></li>
+    </ul>
+    <div class="panel panel-default">
+        <table class="table table-hover">
+            <thead>
+            <tr>
+                <th style="width: 120px">
+                    date
+                </th>
+                <th style="width: 50px">
+                    tag
+                </th>
+                <th>
+                    message
+                </th>
+                <th style="width: 100px">
+                    user
+                </th>
+            </tr>
+            </thead>
+            <tr ng-repeat="entry in entries">
+                <td>
+                    <abbr title="{{entry.timestamp | date:'dd.MM.yyyy HH:mm'}}">{{entry.timestamp | relativeDate}}</abbr>
+                </td>
+                <td>
+                    <span class="label" ng-class="getTagLabelClass(entry.tag)">
+                        {{entry.tag}}
+                    </span>
+                </td>
+                <td>
+                    {{entry.message}}
+                </td>
+                <td>
+                    {{entry.user}}
+                </td>
+            </tr>
+        </table>
+    </div>
+    <ul class="pager">
+        <li class="previous" ng-if="page !== 0" ng-click="previousPage()"><a href="">&larr; Previous page</a></li>
+        <li class="next" ng-if="hasNextPage()" ng-click="nextPage()"><a href="">Next page &rarr;</a></li>
+    </ul>
+</script>
+
+<script type="text/ng-template" id="tickets.html">
+    <ul class="pager">
+        <li class="previous" ng-if="page !== 0" ng-click="previousPage()"><a href="">&larr; Previous page</a></li>
+        <li class="next" ng-if="hasNextPage()" ng-click="nextPage()"><a href="">Next page &rarr;</a></li>
+    </ul>
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <span class="btn btn-xs btn-link btn-link-success" ng-class="{disabled: opened}" ng-click="setOpened(true)"><span class="fa fa-exclamation-circle"></span> opened</span>
+            <span class="btn btn-xs btn-link btn-link-danger" ng-class="{disabled: !opened}" ng-click="setOpened(false)"><span class="fa fa-check-circle"></span> closed</span>
+        </div>
+        <table class="table table-hover">
+            <thead>
+            <tr>
+                <th style="width: 120px">
+                    date
+                </th>
+                <th style="width: 100px">
+                    user
+                </th>
+                <th style="width: 50px">
+                    category
+                </th>
+                <th style="width: 100px" ng-if="!opened">
+                    closed by
+                </th>
+                <th>
+                    message
+                </th>
+                <th ng-if="!opened">
+                    admin comment
+                </th>
+                <th style="width: 20px" ng-if="opened">
+                </th>
+            </tr>
+            </thead>
+            <tr ng-repeat="entry in entries">
+                <td>
+                    <abbr title="{{entry.ticket.timestamp | date:'dd.MM.yyyy HH:mm'}}">{{entry.ticket.timestamp | relativeDate}}</abbr>
+                </td>
+                <td>
+                    <a ng-href="/admin/users?search={{entry.user.name}}">{{entry.user.name}}</a>
+                </td>
+                <td>
+                    <span class="label" ng-class="getLabelClass(entry.ticket.category)">{{entry.ticket.category}}</span>
+                </td>
+                <td ng-if="!opened">
+                    {{entry.closedBy}}
+                </td>
+                <td>
+                    {{entry.ticket.text}}
+                </td>
+                <td ng-if="!opened">
+                    {{entry.ticket.admin_reply}}
+                </td>
+                <td ng-if="opened">
+                    <span class="btn btn-xs btn-link btn-link-success" title="close" ng-click="tryClose(entry.ticket.id)">
+                        <span class="fa fa-check-circle"></span>
+                    </span>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <ul class="pager">
+        <li class="previous" ng-if="page !== 0" ng-click="previousPage()"><a href="">&larr; Previous page</a></li>
+        <li class="next" ng-if="hasNextPage()" ng-click="nextPage()"><a href="">Next page &rarr;</a></li>
+    </ul>
+</script>
+
+
+<script type="text/ng-template" id="history.html">
+    <ul class="pager">
+        <li class="previous" ng-if="page !== 0" ng-click="previousPage()"><a href="">&larr; Previous page</a></li>
+        <li class="next" ng-if="hasNextPage()" ng-click="nextPage()"><a href="">Next page &rarr;</a></li>
+    </ul>
+    <div class="panel panel-default">
+        <div class="panel-body">
+            <div class="well well-sm">
+                <div class="input-group" style="margin-bottom: 5px">
+                    <input ng-model="input.user" type="text" class="form-control" placeholder="User filter">
+                    <span class="input-group-btn">
+                        <button class="btn btn-default" type="button" ng-click="addUserFilter(input.user)">add</button>
+                    </span>
+                </div>
+
+                <div ng-if="users">
+                    <div ng-repeat="user in users" class="btn-group btn-group-xs" style="margin-right: 5px; margin-bottom: 5px">
+                        <div class="btn btn-default disabled">{{user}}</div>
+                        <div class="btn btn-default" ng-click="removeUserFilter(user)"><span class="fa fa-times"></span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <table class="table table-hover table-striped">
+            <thead>
+            <tr>
+                <th style="width: 120px">
+                    date
+                </th>
+                <th>
+                    message
+                </th>
+            </tr>
+            </thead>
+            <tr ng-repeat="entry in entries" ng-class="{'warning': entry.hidden, 'info': ((entry.type==='CLEAR') || (entry.type==='BAN') || (entry.type==='TIMEOUT'))}">
+                <td>
+                    <abbr title="{{entry.timestamp | date:'dd.MM.yyyy HH:mm'}}">{{entry.timestamp | relativeDate}}</abbr>
+                </td>
+                <td ng-if="(entry.type==='MSG') || (entry.type==='ME') || (entry.type==='MSG_EXT')">
+                    <span class="btn-link" ng-click="addUserFilter(entry.user)"><strong>&lt;{{entry.user}}&gt;</strong></span>
+                    {{entry.message}}
+                </td>
+                <td ng-if="(entry.type==='CLEAR') || (entry.type==='BAN') || (entry.type==='TIMEOUT')">
+                    {{entry.user}} cleared messages of {{entry.message}}
+                </td>
+            </tr>
+        </table>
+    </div>
+    <ul class="pager">
+        <li class="previous" ng-if="page !== 0" ng-click="previousPage()"><a href="">&larr; Previous page</a></li>
+        <li class="next" ng-if="hasNextPage()" ng-click="nextPage()"><a href="">Next page &rarr;</a></li>
+    </ul>
+</script>
+
+<script type="text/ng-template" id="services.html">
+    <div class="panel panel-default">
+        <table class="table table-hover table-striped">
+            <thead>
+            <tr>
+                <th style="width: 120px">
+                    name
+                </th>
+                <th style="width: 70px">
+                    state
+                </th>
+                <th>
+
+                </th>
+            </tr>
+            </thead>
+            <tr ng-repeat="entry in entries">
+                <td>
+                    {{entry.name}}
+                </td>
+                <td>
+                    <div class="label" ng-class="'label-' + getLabelClass(entry.state)">{{entry.state}}</div>
+                </td>
+                <td>
+                    <span ng-if="entry.name==='announcements'">
+                        Last delivery: <abbr title="{{entry.stateData | date:'dd.MM.yyyy HH:mm'}}">{{entry.stateData | relativeDate}}</abbr>
+                    </span>
+                    <span ng-if="entry.name==='twitch.tv'">
+                        <strong>Receiver</strong>: {{entry.stateData.receiverConnected ? "connected" : "not connected"}}.
+                        <strong>Outbound connections</strong>: {{entry.stateData.activeOutboundConnections}}
+                    </span>
+                    <span ng-if="(entry.name!=='twitch.tv') && (entry.name!=='announcements')">
+                        {{entry.stateData}}
+                    </span>
+                </td>
+            </tr>
+        </table>
+    </div>
+</script>
+
+<script type="text/ng-template" id="users.html">
+    <div class="pull-right" style="max-width: 400px; margin-top: -75px">
+        <form ng-submit="doSearch()">
+            <div class="input-group">
+                <input type="text" class="form-control" placeholder="Search" ng-model="searchInput">
+            <span class="input-group-btn">
+                <button type="button" class="btn btn-danger" ng-if="search" ng-click="resetSearch()">
+                    <span class="fa fa-times fa-fw"></span>
+                </button>
+                <button type="submit" class="btn btn-default">
+                    <i class="fa fa-fw fa-search"></i>
+                </button>
+            </span>
+            </div>
+        </form>
+    </div>
+
+    <ul class="pager">
+        <li class="previous" ng-if="page !== 0" ng-click="previousPage()"><a href="">&larr; Previous page</a></li>
+        <li class="next" ng-if="hasNextPage()" ng-click="nextPage()"><a href="">Next page &rarr;</a></li>
+    </ul>
+    <div class="panel panel-default">
+        <table class="table table-hover" ng-if="users.length > 0">
+            <thead>
+            <tr>
+                <th ng-click="orderBy('id')" class="sortableTitle" style="width:100px">
+                    Id <span class="fa fa-fw pull-right" ng-class="getSortIconClass('id')"></span>
+                </th>
+                <th ng-click="orderBy('name')" class="sortableTitle">
+                    Name <span class="fa fa-fw pull-right" ng-class="getSortIconClass('name')"></span>
+                </th>
+                <th ng-click="orderBy('role')" class="sortableTitle">
+                    Role <span class="fa fa-fw pull-right" ng-class="getSortIconClass('role')"></span>
+                </th>
+                <th ng-click="orderBy('banned')" class="sortableTitle" style="width:70px">
+                    Ban <span class="fa fa-fw pull-right" ng-class="getSortIconClass('banned')"></span>
+                </th>
+                <th style="width:70px">Rename</th>
+                <th style="width:86px"></th>
+                <th style="width:70px">Color</th>
+            <#if user.role == "SUPERADMIN">
+                <th style="width:70px">Delete</th>
+            </#if>
+            </tr>
+            </thead>
+            <tr ng-repeat="user in users" ng-controller="UserController">
+                <td>{{user.id}}</td>
+
+                <td ng-if="!editing('name')">
+                    {{user.name}}
+                    <span class="btn btn-link btn-xs pull-right" ng-click="edit('name')" ng-if="canEdit('name')">
+                        <span class="fa fa-fw fa-pencil"></span>
+                    </span>
+                </td>
+                <td ng-if="editing('name')">
+                    <div class="input-group input-group-sm">
+                        <input type="text" class="form-control" ng-model="input.name">
+                        <span class="input-group-btn">
+                            <button class="btn btn-danger" type="button" ng-click="edit('')"><span class="fa fa-times fa-fw"></span></button>
+                            <button class="btn btn-success" type="button" ng-click="saveName()"><span class="fa fa-check fa-fw"></span></button>
+                        </span>
+                    </div>
+                </td>
+
+                <td ng-if="!editing('role')">
+                    {{user.role}}
+                    <span class="btn btn-link btn-xs pull-right" ng-click="edit('role')" ng-if="canEdit('role')">
+                        <span class="fa fa-fw fa-pencil"></span>
+                    </span>
+                </td>
+                <td ng-if="editing('role')">
+                    <div class="input-group input-group-sm">
+                        <select class="form-control" ng-options="role for role in availableRoles" ng-model="input.role"></select>
+                        <span class="input-group-btn">
+                            <button class="btn btn-danger" type="button" ng-click="edit('')"><span class="fa fa-times fa-fw"></span></button>
+                            <button class="btn btn-success" type="button" ng-click="saveRole()"><span class="fa fa-check fa-fw"></span></button>
+                        </span>
+                    </div>
+                </td>
+
+                <td style="text-align: center;">
+                    <div ng-if="!isUser()" class="btn btn-xs btn-link disabled">
+                        <span class="fa fa-fw" ng-class="{'fa-check-square': user.banned, 'fa-square': !user.banned}"></span>
+                    </div>
+                    <div ng-if="isUser()" class="btn btn-link btn-xs" ng-class="{'btn-link-danger' : user.banned, 'btn-link-success': !user.banned}" ng-click="toggleBan()">
+                        <span>
+                            <span class="fa fa-fw" ng-class="{'fa-check-square': user.banned, 'fa-square': !user.banned}"></span>
+                        </span>
+                    </div>
+                </td>
+                <td style="text-align: center;">
+                    <div class="btn btn-link btn-xs" ng-class="{'btn-link-danger' : !user.renameAvailable, 'btn-link-success': user.renameAvailable}" ng-click="toggleRename()">
+                        <span>
+                            <span class="fa fa-fw" ng-class="{'fa-check-square': user.renameAvailable, 'fa-square': !user.renameAvailable}"></span>
+                        </span>
+                    </div>
+                </td>
+                <td>
+                    <span class="auth default fa fa-fw fa-envelope" ng-class="{'active': user.email}" title="{{user.email}}"></span>
+                    <span class="auth default fa fa-fw fa-key" ng-class="{'active': hasAuth('password')}"></span>
+                    <span class="auth fa fa-fw fa-twitch" ng-class="{'active': hasAuth('twitch.tv')}"></span>
+                </td>
+                <td ng-style="{'color': user.color}">{{user.color}}</td>
+            <#if user.role == "SUPERADMIN">
+                <td style="text-align: center;">
+                    <div ng-if="canEdit('name')" class="btn btn-link btn-link-danger btn-xs" ng-click="requestDelete()">
+                        <span class="fa fa-trash fa-fw"></span>
+                    </div>
+                </td>
+            </#if>
+            </tr>
+        </table>
+        <div class="panel-body" ng-if="users.length === 0">
+            <div class="alert alert-warning" role="alert">Nothing to show.</div>
+        </div>
+    </div>
+    <ul class="pager">
+        <li class="previous" ng-if="page !== 0" ng-click="previousPage()"><a href="">&larr; Previous page</a></li>
+        <li class="next" ng-if="hasNextPage()" ng-click="nextPage()"><a href="">Next page &rarr;</a></li>
+    </ul>
+</script>
+
+<script type="text/ng-template" id="online.html">
+    <div class="panel panel-default">
+        <div class="panel-heading">Block IP address</div>
+        <div class="panel-body">
+            <div class="input-group">
+                <input type="text" class="form-control" ng-model="ipInput">
+                <span class="input-group-btn">
+                    <button class="btn btn-default" type="button" ng-click="blockIp(ipInput)">add</button>
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel panel-default" ng-if="blockedIps.length > 0">
+        <div class="panel-heading">Blocked IP addresses</div>
+        <table class="table table-hover">
+            <thead>
+            <tr>
+                <th>Ip</th>
+            </tr>
+            </thead>
+            <tr ng-repeat="ip in blockedIps">
+                <td>
+                    {{ip}}
+                <span class="btn btn-link btn-xs pull-right" ng-click="unblockIp(ip)">
+                    <span class="fa fa-times fa-fw"></span>
+                </span>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="panel panel-default">
+        <table class="table table-hover">
+            <thead>
+            <tr>
+                <th ng-click="orderBy('user.name')" class="sortableTitle">
+                    Name <span class="fa fa-fw pull-right" ng-class="getSortIconClass('user.name')"></span>
+                </th>
+                <th ng-click="orderBy('user.role')" class="sortableTitle">
+                    Role <span class="fa fa-fw pull-right" ng-class="getSortIconClass('user.role')"></span>
+                </th>
+                <th>Ip</th>
+                <th>Banned</th>
+                <th>Can rename</th>
+                <th>Color</th>
+            </tr>
+            </thead>
+            <tr ng-repeat="connection in connections | orderBy:orderVar:orderDesc" ng-controller="UserController">
+                <td>{{user.name}}</td>
+                <td>{{user.role}}</td>
+                <td>
+                    {{connection.ip}}
+                    <span class="btn btn-link btn-link-danger btn-xs pull-right" ng-if="!isBlocked(connection.ip)" ng-click="blockIp(connection.ip)">
+                        <span class="fa fa-ban fa-fw"></span>
+                    </span>
+                    <span class="btn btn-link btn-link-success btn-xs pull-right" ng-if="isBlocked(connection.ip)" ng-click="unblockIp(connection.ip)">
+                        <span class="fa fa-check fa-fw"></span>
+                    </span>
+                </td>
+                <td>
+                    {{user.banned ? "YES" : "NO"}}
+                </td>
+                <td>
+                    {{user.renameAvailable ? "YES" : "NO"}}
+                </td>
+                <td ng-style="{'color': user.color}">{{user.color}}</td>
+            </tr>
+        </table>
+    </div>
+</script>
+
+<script type="text/ng-template" id="rooms.html">
+    <div class="panel panel-default">
+        <div class="panel-heading">Create room</div>
+        <div class="panel-body">
+            <div class="form-group">
+                <label>
+                    room name
+                </label>
+                <input type="text" class="form-control" ng-model="input.name">
+            </div>
+            <div class="form-group">
+                <label>
+                    room topic
+                </label>
+                <input type="text" class="form-control" ng-model="input.topic">
+            </div>
+            <div class="form-group">
+                <button class="btn btn-default" type="button" ng-click="add()">create</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel panel-default">
+        <table class="table table-hover">
+            <thead>
+            <tr>
+                <th style="width: 100px">
+                    name
+                </th>
+                <th>
+                    topic
+                </th>
+                <th>
+                    history
+                </th>
+                <th>delete</th>
+            </tr>
+            </thead>
+            <tr ng-repeat="room in entries | orderBy:name">
+                <td>{{room.name}}</td>
+                <td>{{room.topic}}</td>
+                <td><a ng-href="/admin/history?&page=0&room={{room.id}}">history</a></td>
+                <td>
+                    <div class="btn btn-link btn-link-danger btn-xs" ng-click="remove(room.name)">
+                        <span class="fa fa-trash fa-fw"></span>
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+</script>
+
+<script type="text/ng-template" id="announcements.html">
+    <div class="panel panel-default">
+        <div class="panel-heading">Compose announcement.</div>
+        <div class="panel-body">
+            <form ng-submit="submitForm()">
+                <div class="form-group">
+                    <label class="control-label">show until</label>
+                    <div class="row">
+                        <div style="width:110px; padding-right: 15px" class="pull-right">
+                            <timepicker ng-required="true" ng-model="input.time" hour-step="1" minute-step="5" show-meridian="false"></timepicker>
+                        </div>
+                        <div style="width: auto; padding-left:15px; margin-right: 125px">
+                            <p class="input-group">
+                                <input
+                                        type="text"
+                                        class="form-control"
+                                        datepicker-format="'dd.MM.yyyy'"
+                                        datepicker-popup="dd.MM.yyyy"
+                                        ng-model="input.date"
+                                        is-open="opened"
+                                        ng-required="true"
+                                        show-weeks="false"
+                                        close-text="Close"
+                                        starting-day="1"
+                                        show-button-bar="false"
+                                        />
+                            <span class="input-group-btn">
+                                <button type="button" class="btn btn-default" ng-click="open($event)"><i class="fa fa-calendar"></i></button>
+                            </span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label">Announcement</label>
+                    <textarea
+                           style="resize:vertical;"
+                           class="form-control"
+                           ng-model="input.text"
+                           required
+                            />
+                </div>
+                <div class="form-group">
+                    <input type="submit" class="btn btn-primary" value="submit"/>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="panel panel-default">
+        <table class="table table-hover">
+            <thead>
+            <tr>
+                <th style="width: 140px">
+                    Until
+                </th>
+                <th>
+                    Announcement
+                </th>
+                <th style="width: 50px">
+                    Delete
+                </th>
+            </tr>
+            </thead>
+            <tr ng-repeat="announcement in announcements | orderBy:id">
+                <td>
+                    {{announcement.until | date:'dd.MM.yyyy HH:mm'}}
+                </td>
+                <td>
+                    <div class="announcementContainer" ng-bind-html="announcement.text">
+                    </div>
+                </td>
+                <td style="text-align: center;">
+                    <div class="btn btn-link btn-link-danger btn-xs" ng-click="requestDelete(announcement.id)">
+                        <span class="fa fa-trash fa-fw"></span>
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+</script>
+
+<div id="body">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="sidebar">
+                <ul class="nav nav-sidebar">
+                    <li ng-class="{'active': menuId === 'dashboard'}">
+                        <a href="/admin/"><i class="fa fa-fw fa-dashboard"></i> dashboard</a>
+                    </li>
+                    <li ng-class="{'active': menuId === 'announcements'}">
+                        <a href="/admin/announcements"><i class="fa fa-fw fa-bullhorn"></i> announcements</a>
+                    </li>
+                <#if user.role == "SUPERADMIN">
+                    <li ng-class="{'active': menuId === 'rooms'}">
+                        <a href="/admin/rooms"><i class="fa fa-fw fa-comments"></i> rooms</a>
+                    </li>
+                    <li ng-class="{'active': menuId === 'online'}">
+                        <a href="/admin/online"><i class="fa fa-fw fa-list"></i> online users</a>
+                    </li>
+                    <li ng-class="{'active': menuId === 'journal'}">
+                        <a href="/admin/journal"><i class="fa fa-fw fa-book"></i> journal</a>
+                    </li>
+                </#if>
+                </ul>
+                <ul class="nav nav-sidebar">
+                    <li ng-class="{'active': menuId === 'emoticons'}">
+                        <a href="/admin/emoticons"><i class="fa fa-fw fa-smile-o"></i> emoticons</a>
+                    </li>
+                    <li ng-class="{'active': menuId === 'users'}">
+                        <a href="/admin/users"><i class="fa fa-fw fa-users"></i> users</a>
+                    </li>
+                <#if user.role == "SUPERADMIN">
+                    <li ng-class="{'active': menuId === 'tickets'}">
+                        <a href="/admin/tickets">
+                            <i class="fa fa-fw fa-ticket"></i> tickets<span class="badge pull-right">{{getOpenTicketCount()}}</span>
+                        </a>
+                    </li>
+                    <li ng-class="{'active': menuId === 'services'}">
+                        <a href="/admin/services">
+                            <i class="fa fa-fw fa-cogs"></i> services
+                        </a>
+                    </li>
+                </#if>
+                </ul>
+            </div>
+            <div class="main">
+                <div class="page-header">
+                    <h1 ng-controller="TitleController">
+                        {{title() | inflector:'capital'}}
+                        <span class="small" ng-if="secondary()">{{secondary()}}</span><!--
+                    --><div class="btn btn-link" ng-click="reloadCurrentRoute()">
+                        <i class="fa fa-fw fa-refresh"></i>
+                    </div>
+                    </h1>
+                </div>
+                <div data-ng-view></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="alertOverlay" style="width: 200px; padding-left: 15px; padding-right:15px" ng-controller="AlertController">
+        <div ng-repeat="alert in list() | limitTo:2" class="alert" ng-class="'alert-' + alert.type">
+            {{alert.message}}
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,76 @@
+package lexek.wschat.security.social;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.net.HttpHeaders;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import io.netty.util.CharsetUtil;
+import lexek.wschat.util.JsonResponseHandler;
+import org.apache.http.HttpEntity;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.config.SocketConfig;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.http.message.BasicNameValuePair;
+
+import java.io.IOException;
+
+public class TwitchTvSocialAuthService implements SocialAuthService {
+    private static final int TIMEOUT = 3000;
+    private final String clientId;
+    private final String secret;
+    private final String url;
+    private final CloseableHttpClient httpClient;
+
+    public TwitchTvSocialAuthService(String clientId, String secret, String url) {
+        this.clientId = clientId;
+        this.secret = secret;
+        this.url = url;
+
+        PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
+        connectionManager.setMaxTotal(2);
+        connectionManager.setDefaultSocketConfig(SocketConfig.custom().setSoKeepAlive(true).setSoTimeout(TIMEOUT).build());
+        httpClient = HttpClients.custom().setConnectionManager(connectionManager).build();
+    }
+
+
+    @Override
+    public String getRedirectUrl() {
+        return "https://api.twitch.tv/kraken/oauth2/authorize?response_type=code&client_id=" +
+                clientId + "&redirect_uri=" + url + "&scope=user_read chat_login";
+    }
+
+    @Override
+    public String authenticate(String code) throws IOException {
+        HttpPost request = new HttpPost("https://api.twitch.tv/kraken/oauth2/token");
+        HttpEntity entity = new UrlEncodedFormEntity(ImmutableList.of(
+                new BasicNameValuePair("client_secret", secret),
+                new BasicNameValuePair("client_id", clientId),
+                new BasicNameValuePair("grant_type", "authorization_code"),
+                new BasicNameValuePair("redirect_uri", url),
+                new BasicNameValuePair("code", code)
+        ), CharsetUtil.UTF_8);
+        request.setEntity(entity);
+        request.setHeader(HttpHeaders.ACCEPT, "application/json");
+        JsonObject response = httpClient.execute(request, JsonResponseHandler.INSTANCE).getAsJsonObject();
+        return response.get("access_token").getAsString();
+    }
+
+    @Override
+    public SocialAuthProfile getProfile(String token) throws IOException {
+        HttpGet request = new HttpGet("https://api.twitch.tv/kraken/user?oauth_token=" + token);
+        request.setHeader(HttpHeaders.ACCEPT, "application/json");
+        JsonObject userData = httpClient.execute(request, JsonResponseHandler.INSTANCE).getAsJsonObject();
+        JsonElement emailElem = userData.get("email");
+        String email = null;
+        if (!emailElem.isJsonNull()) {
+            email = emailElem.getAsString();
+        }
+        String name = userData.get("name").getAsString().toLowerCase();
+        long id = userData.get("_id").getAsLong();
+        return new SocialAuthProfile(id, "twitch.tv", name, token, email);
+    }
+}

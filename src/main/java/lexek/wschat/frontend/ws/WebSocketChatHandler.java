@@ -1,0 +1,126 @@
+package lexek.wschat.frontend.ws;
+
+import io.netty.channel.*;
+import io.netty.handler.codec.http.websocketx.CloseWebSocketFrame;
+import io.netty.handler.codec.http.websocketx.PingWebSocketFrame;
+import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
+import io.netty.handler.codec.http.websocketx.WebSocketFrame;
+import io.netty.handler.timeout.IdleState;
+import io.netty.handler.timeout.IdleStateEvent;
+import io.netty.util.AttributeKey;
+import lexek.wschat.chat.*;
+import lexek.wschat.security.AuthenticationCallback;
+import lexek.wschat.security.AuthenticationService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.List;
+
+@ChannelHandler.Sharable
+public class WebSocketChatHandler extends SimpleChannelInboundHandler<WebSocketFrame>
+        implements AuthenticationCallback<WebSocketConnectionAdapter> {
+    private static final AttributeKey<WebSocketConnectionAdapter> WRAPPER_ATTR_KEY =
+            AttributeKey.valueOf("WEBSOCKET_CONNECTION_WRAPPER");
+    private static final AttributeKey<String> SID_ATTR_KEY = AttributeKey.valueOf("WEBSOCKET_SID");
+
+    private final Logger logger = LoggerFactory.getLogger(WebSocketChatHandler.class);
+    private final AuthenticationService authenticationService;
+    private final MessageReactor messageReactor;
+    private final WebSocketProtocol protocol;
+    private final WebSocketConnectionGroup connectionGroup;
+    private final RoomManager roomManager;
+
+    public WebSocketChatHandler(AuthenticationService authenticationService, MessageReactor messageReactor,
+                                WebSocketProtocol protocol, WebSocketConnectionGroup connectionGroup,
+                                RoomManager roomManager) {
+        this.authenticationService = authenticationService;
+        this.messageReactor = messageReactor;
+        this.protocol = protocol;
+        this.connectionGroup = connectionGroup;
+        this.roomManager = roomManager;
+    }
+
+    @Override
+    public void channelActive(ChannelHandlerContext ctx) throws Exception {
+        Channel channel = ctx.channel();
+        WebSocketConnectionAdapter wrapper = new WebSocketConnectionAdapter(channel, protocol);
+        channel.attr(WRAPPER_ATTR_KEY).set(wrapper);
+    }
+
+    @Override
+    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+        WebSocketConnectionAdapter c = ctx.channel().attr(WRAPPER_ATTR_KEY).get();
+        if (c != null && c.getState() == ConnectionState.AUTHENTICATED) {
+            roomManager.partAll(c, true);
+            connectionGroup.deregisterConnection(c);
+        }
+    }
+
+    @Override
+    protected void channelRead0(ChannelHandlerContext ctx, WebSocketFrame frame) throws Exception {
+        if (frame instanceof TextWebSocketFrame) {
+            handleTextMessage(ctx.channel(), ((TextWebSocketFrame) frame).text());
+        }
+    }
+
+    @Override
+    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+        if (evt instanceof IdleStateEvent) {
+            IdleStateEvent e = (IdleStateEvent) evt;
+            if (e.state() == IdleState.READER_IDLE) {
+                logger.debug("reader_idle {} ", ctx.channel().toString());
+                ctx.writeAndFlush(new PingWebSocketFrame());
+            } else if (e.state() == IdleState.ALL_IDLE) {
+                logger.debug("all_idle {} ", ctx.channel().toString());
+                ctx.writeAndFlush(new CloseWebSocketFrame()).addListener(ChannelFutureListener.CLOSE);
+            }
+        }
+    }
+
+    private void handleTextMessage(Channel channel, String text) {
+        WebSocketConnectionAdapter wrapper = channel.attr(WRAPPER_ATTR_KEY).get();
+        InboundMessage decodedMessage = protocol.getCodec().decode(text);
+        if (wrapper.getState() == ConnectionState.AUTHENTICATED) {
+            if (decodedMessage.getType() == MessageType.PING) {
+                wrapper.send(Message.emptyMessage(MessageType.PONG));
+            } else if (decodedMessage.getType() == MessageType.LOGOUT) {
+                String sid = channel.attr(SID_ATTR_KEY).get();
+                if (sid != null) {
+                    authenticationService.invalidate(sid);
+                }
+            } else {
+                messageReactor.processMessage(wrapper, decodedMessage);
+            }
+        } else if (wrapper.getState() == ConnectionState.CONNECTED) {
+            if (decodedMessage.getType() == MessageType.SESSION) {
+                List<String> args = decodedMessage.getArgs();
+                if (args.size() == 1) {
+                    String sid = args.get(0);
+                    authenticationService.authenticateWithSid(wrapper, sid, this);
+                    if (sid != null) {
+                        channel.attr(SID_ATTR_KEY).set(sid);
+                    }
+                    return;
+                }
+            }
+            channel.writeAndFlush(new TextWebSocketFrame(protocol.getCodec().encode(
+                    Message.errorMessage("Not authenticated, try refreshing page."), null)));
+        }
+    }
+
+    @Override
+    public void authenticationComplete(WebSocketConnectionAdapter connection) {
+        User user = connection.getUser();
+        logger.debug("{}[{}] joined; ip: {}", user.getName(), user.getRole(), connection.getIp());
+        connectionGroup.registerConnection(connection);
+        messageReactor.processMessage(connection, new InboundMessage(MessageType.JOIN, "#main"));
+        if (!user.hasRole(GlobalRole.USER)) {
+            connection.getChannel().attr(SID_ATTR_KEY).remove();
+        }
+    }
+
+    @Override
+    public void captchaRequired(WebSocketConnectionAdapter connection, String name, long captchaId) {
+        //not needed
+    }
+}

@@ -1,0 +1,171 @@
+package lexek.wschat.db;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Sets;
+import lexek.wschat.db.jooq.tables.records.PollOptionRecord;
+import lexek.wschat.db.jooq.tables.records.PollRecord;
+import lexek.wschat.services.Poll;
+import lexek.wschat.services.PollOption;
+import lexek.wschat.services.PollState;
+import org.jooq.Record;
+import org.jooq.Result;
+import org.jooq.exception.DataAccessException;
+import org.jooq.impl.DSL;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import static lexek.wschat.db.jooq.tables.Poll.POLL;
+import static lexek.wschat.db.jooq.tables.PollAnswer.POLL_ANSWER;
+import static lexek.wschat.db.jooq.tables.PollOption.POLL_OPTION;
+
+public class PollDao {
+    private final DataSource dataSource;
+    private final Logger logger = LoggerFactory.getLogger(RoomDao.class);
+
+    public PollDao(DataSource dataSource) {
+        this.dataSource = dataSource;
+    }
+
+    public Poll add(final String question, final ImmutableList<PollOption> options, final long roomId) {
+        Poll result = null;
+        try (Connection connection = dataSource.getConnection()) {
+            Long id = DSL.using(connection).transactionResult(txConf -> {
+                Long id1 = DSL.using(txConf)
+                        .insertInto(POLL, POLL.QUESTION, POLL.ROOM_ID, POLL.OPEN)
+                        .values(question, roomId, true)
+                        .returning(POLL.ID)
+                        .fetchOne().getId();
+                if (id1 != null) {
+                    DSL.using(txConf)
+                            .batchInsert(options
+                                    .stream()
+                                    .map(option -> new PollOptionRecord(id1, option.getOptionId(), option.getText()))
+                                    .collect(Collectors.toList()))
+                            .execute();
+                }
+                return id1;
+            });
+            if (id != null) {
+                result = new Poll(id, question, options);
+            }
+        } catch (DataAccessException | SQLException e) {
+            logger.error("sql exception", e);
+        }
+        return result;
+    }
+
+    public boolean vote(long pollId, long userId, int optionId) {
+        boolean result = false;
+        try (Connection connection = dataSource.getConnection()) {
+            result = DSL.using(connection)
+                    .insertInto(POLL_ANSWER, POLL_ANSWER.POLL_ID, POLL_ANSWER.USER_ID, POLL_ANSWER.SELECTED_OPTION)
+                    .values(pollId, userId, optionId)
+                    .execute() == 1;
+        } catch (DataAccessException | SQLException e) {
+            logger.error("sql exception", e);
+        }
+        return result;
+    }
+
+    public boolean closePoll(long pollId) {
+        boolean result = false;
+        try (Connection connection = dataSource.getConnection()) {
+            result = DSL.using(connection)
+                    .update(POLL)
+                    .set(POLL.OPEN, false)
+                    .where(POLL.ID.equal(pollId))
+                    .execute() > 1;
+        } catch (DataAccessException | SQLException e) {
+            logger.error("sql exception", e);
+        }
+        return result;
+    }
+
+    public Map<Long, PollState> getAllPolls() {
+        Map<Long, PollState> polls = new HashMap<>();
+        try (Connection connection = dataSource.getConnection()) {
+            Result<PollRecord> r = DSL.using(connection)
+                    .select(POLL.ID, POLL.OPEN, POLL.QUESTION, POLL.ROOM_ID)
+                    .from(POLL)
+                    .where(POLL.OPEN.isTrue())
+                    .fetchInto(POLL);
+            if (r != null) {
+                for (PollRecord record : r) {
+                    Result<? extends Record> options = DSL.using(connection)
+                            .select(POLL_OPTION.OPTION, POLL_OPTION.TEXT, DSL.count(POLL_ANSWER.SELECTED_OPTION).as("votes"))
+                            .from(POLL_OPTION.leftOuterJoin(POLL_ANSWER).on(POLL_OPTION.POLL_ID.equal(POLL_ANSWER.POLL_ID)).and(POLL_OPTION.OPTION.equal(POLL_ANSWER.SELECTED_OPTION)))
+                            .where(POLL_OPTION.POLL_ID.equal(record.getId()))
+                            .groupBy(POLL_OPTION.OPTION)
+                            .orderBy(POLL_OPTION.OPTION.asc())
+                            .fetch();
+                    List<Long> voted = DSL.using(connection)
+                            .selectDistinct(POLL_ANSWER.USER_ID)
+                            .from(POLL_ANSWER)
+                            .where(POLL_ANSWER.POLL_ID.equal(record.getId()))
+                            .fetch(POLL_ANSWER.USER_ID, Long.class);
+                    if (options != null) {
+                        ImmutableList.Builder<PollOption> pollOptions = ImmutableList.builder();
+                        long[] votes = new long[options.size()];
+                        for (Record optionRecord : options) {
+                            int i = optionRecord.getValue(POLL_OPTION.OPTION);
+                            pollOptions.add(new PollOption(i, optionRecord.getValue(POLL_OPTION.TEXT)));
+                            votes[i] = (int) optionRecord.getValue("votes");
+                        }
+                        Poll poll = new Poll(record.getId(), record.getQuestion(), pollOptions.build());
+                        PollState pollState = new PollState(poll, votes, Sets.newHashSet(voted));
+                        polls.put(record.getRoomId(), pollState);
+                    }
+                }
+            }
+        } catch (DataAccessException | SQLException e) {
+            logger.error("sql exception", e);
+        }
+        return polls;
+    }
+
+    public List<PollState> getOldPolls(long roomId) {
+        List<PollState> polls = new ArrayList<>();
+        try (Connection connection = dataSource.getConnection()) {
+            Result<PollRecord> r = DSL.using(connection)
+                    .select(POLL.ID, POLL.OPEN, POLL.QUESTION)
+                    .from(POLL)
+                    .where(POLL.OPEN.isFalse().and(POLL.ROOM_ID.equal(roomId)))
+                    .fetchInto(POLL);
+            if (r != null) {
+                for (PollRecord record : r) {
+                    Result<? extends Record> options = DSL.using(connection)
+                            .select(POLL_OPTION.OPTION, POLL_OPTION.TEXT, DSL.count(POLL_ANSWER.SELECTED_OPTION).as("votes"))
+                            .from(POLL_OPTION.leftOuterJoin(POLL_ANSWER).on(POLL_OPTION.POLL_ID.equal(POLL_ANSWER.POLL_ID)).and(POLL_OPTION.OPTION.equal(POLL_ANSWER.SELECTED_OPTION)))
+                            .where(POLL_OPTION.POLL_ID.equal(record.getId()))
+                            .groupBy(POLL_OPTION.OPTION)
+                            .orderBy(POLL_OPTION.OPTION.asc())
+                            .fetch();
+                    if (options != null) {
+                        ImmutableList.Builder<PollOption> pollOptions = ImmutableList.builder();
+                        long[] votes = new long[options.size()];
+                        for (Record optionRecord : options) {
+                            int i = optionRecord.getValue(POLL_OPTION.OPTION);
+                            pollOptions.add(new PollOption(i, optionRecord.getValue(POLL_OPTION.TEXT)));
+                            votes[i] = (int) optionRecord.getValue("votes");
+                        }
+                        Poll poll = new Poll(record.getId(), record.getQuestion(), pollOptions.build());
+                        PollState pollState = new PollState(poll, votes, null);
+                        polls.add(pollState);
+                    }
+                }
+            }
+        } catch (DataAccessException | SQLException e) {
+            logger.error("sql exception", e);
+        }
+        return polls;
+    }
+}

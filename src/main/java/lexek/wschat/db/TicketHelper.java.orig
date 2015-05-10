@@ -1,0 +1,202 @@
+package lexek.wschat.db;
+
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import lexek.wschat.db.jdbc.JdbcDataBase;
+import lexek.wschat.db.jooq.tables.pojos.Ticket;
+import org.jooq.DSLContext;
+import org.jooq.Record;
+import org.jooq.Result;
+import org.jooq.exception.DataAccessException;
+import org.jooq.impl.DSL;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.List;
+
+import static lexek.wschat.db.jooq.tables.Ticket.TICKET;
+import static lexek.wschat.db.jooq.tables.User.USER;
+
+public class TicketHelper {
+    private final JdbcDataBase dataBase;
+    private final Gson gson = new Gson();
+    private final Logger logger = LoggerFactory.getLogger(TicketHelper.class);
+
+    public TicketHelper(JdbcDataBase dataBase) {
+        this.dataBase = dataBase;
+    }
+
+    public boolean add(final Ticket pojo) {
+        boolean success = false;
+        try (Connection connection = dataBase.getConnection()) {
+            DSLContext ctx = DSL.using(connection);
+            int count = ctx
+                    .select()
+                    .from(TICKET)
+                    .where(TICKET.USER.equal(pojo.getUser()).and(TICKET.IS_OPEN.isTrue()))
+                    .fetchCount();
+            if (count < 5) {
+                ctx
+                        .insertInto(TICKET, TICKET.TIMESTAMP, TICKET.USER, TICKET.CATEGORY, TICKET.IS_OPEN, TICKET.TEXT)
+                        .values(pojo.getTimestamp(), pojo.getUser(), pojo.getCategory(), true, pojo.getText())
+                        .execute();
+                success = true;
+            }
+        } catch (SQLException | DataAccessException e) {
+            logger.error("sql exception", e);
+        }
+        return success;
+    }
+
+    public String getAllPagedAsJson(boolean isOpen, int page, int pageLength) {
+        String result = null;
+        try (Connection connection = dataBase.getConnection()) {
+            DSLContext ctx = DSL.using(connection);
+            Result<Record> data = ctx
+                    .select()
+                    .from(TICKET)
+                    .join(USER.as("user")).on(TICKET.USER.equal(USER.as("user").ID))
+                    .leftOuterJoin(USER.as("closedBy")).on(TICKET.CLOSED_BY.equal(USER.as("closedBy").ID))
+                    .where(TICKET.IS_OPEN.equal(isOpen))
+                    .orderBy(TICKET.TIMESTAMP.desc())
+                    .limit(page * pageLength, pageLength)
+                    .fetch();
+            int total = ctx.fetchCount(ctx.select().from(TICKET).where(TICKET.IS_OPEN.equal(isOpen))) / pageLength;
+            result = formatPageJson(data, total);
+        } catch (SQLException | DataAccessException e) {
+            logger.error("sql exception", e);
+        }
+        return result;
+    }
+
+    public String getTicketsForUser(long userId) {
+        String result = null;
+        try (Connection connection = dataBase.getConnection()) {
+            DSLContext ctx = DSL.using(connection);
+            result = ctx
+                    .select()
+                    .from(TICKET)
+                    .where(TICKET.USER.equal(userId))
+                    .orderBy(TICKET.TIMESTAMP.desc())
+                    .limit(10)
+                    .fetch()
+                    .formatJSON();
+        } catch (SQLException | DataAccessException e) {
+            logger.error("sql exception", e);
+        }
+        return result;
+    }
+
+    public List<Ticket> getNotDeliveredTicketsForUser(long userId) {
+        List<Ticket> result = null;
+        try (Connection connection = dataBase.getConnection()) {
+            DSLContext ctx = DSL.using(connection);
+            result = ctx
+                    .select()
+                    .from(TICKET)
+                    .where(TICKET.USER.equal(userId)
+                            .and(TICKET.REPLY_DELIVERED.isFalse().or(TICKET.REPLY_DELIVERED.isNull()))
+                            .and(TICKET.IS_OPEN.isFalse()))
+                    .fetch()
+                    .into(Ticket.class);
+            ctx
+                    .update(TICKET)
+                    .set(TICKET.REPLY_DELIVERED, true)
+                    .where(TICKET.USER.equal(userId)
+                            .and(TICKET.REPLY_DELIVERED.isFalse().or(TICKET.REPLY_DELIVERED.isNull()))
+                            .and(TICKET.IS_OPEN.isFalse()))
+                    .execute();
+        } catch (SQLException | DataAccessException e) {
+            logger.error("sql exception", e);
+        }
+        return result;
+    }
+
+    private String formatPageJson(Result<Record> data, int totalPages) {
+        JsonObject rootObject = new JsonObject();
+        JsonArray dataArray = new JsonArray();
+        for (Record record : data) {
+            JsonObject object = new JsonObject();
+            object.add("ticket", gson.toJsonTree(record.into(TICKET).intoMap()));
+            object.add("user", gson.toJsonTree(record.into(USER.as("user")).intoMap()));
+            object.add("closedBy", gson.toJsonTree(record.getValue(USER.as("closedBy").NAME)));
+            dataArray.add(object);
+        }
+
+        rootObject.add("data", dataArray);
+        rootObject.addProperty("totalPages", totalPages);
+
+        return gson.toJson(rootObject);
+    }
+
+    public Ticket close(long id, long closedBy, String comment) {
+        Ticket ticket = null;
+        try (Connection connection = dataBase.getConnection()) {
+            DSLContext ctx = DSL.using(connection);
+            ctx
+                    .update(TICKET)
+                    .set(TICKET.ADMIN_REPLY, comment)
+                    .set(TICKET.IS_OPEN, false)
+                    .set(TICKET.CLOSED_BY, closedBy)
+                    .where(TICKET.ID.equal(id).and(TICKET.IS_OPEN.isTrue()))
+                    .execute();
+            ticket = ctx
+                    .select()
+                    .from(TICKET)
+                    .where(TICKET.ID.equal(id))
+                    .fetchOne().into(Ticket.class);
+        } catch (SQLException | DataAccessException e) {
+            logger.error("sql exception", e);
+        }
+        return ticket;
+    }
+
+    public void setDelivered(long id) {
+        try (Connection connection = dataBase.getConnection()) {
+            DSLContext ctx = DSL.using(connection);
+            ctx
+                    .update(TICKET)
+                    .set(TICKET.REPLY_DELIVERED, true)
+                    .where(TICKET.ID.equal(id))
+                    .execute();
+        } catch (SQLException | DataAccessException e) {
+            logger.error("sql exception", e);
+        }
+    }
+
+    public int getCount() {
+        int count = 0;
+        try (Connection connection = dataBase.getConnection()) {
+            DSLContext ctx = DSL.using(connection);
+            count = ctx
+                    .select()
+                    .from(TICKET)
+                    .where(TICKET.IS_OPEN.isTrue())
+                    .fetchCount();
+        } catch (SQLException | DataAccessException e) {
+            logger.error("sql exception", e);
+        }
+        return count;
+    }
+
+    public static class TicketData {
+        private final UserDto userDto;
+        private final Ticket ticket;
+
+        public TicketData(UserDto userDto, Ticket ticket) {
+            this.userDto = userDto;
+            this.ticket = ticket;
+        }
+
+        public UserDto getUserDto() {
+            return userDto;
+        }
+
+        public Ticket getTicket() {
+            return ticket;
+        }
+    }
+}

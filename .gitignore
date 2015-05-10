@@ -1,0 +1,8 @@
+.idea/
+target/
+*.pem
+*.pk8
+*.iml
+logback.xml
+settings.json
+steam_lib.json
