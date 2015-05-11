@@ -4,7 +4,7 @@ import com.lmax.disruptor.ExceptionHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class LoggingExceptionHandler implements ExceptionHandler {
+public class LoggingExceptionHandler implements ExceptionHandler<Object> {
     private final Logger logger = LoggerFactory.getLogger(LoggingExceptionHandler.class);
 
     @Override
