@@ -34,7 +34,7 @@ public class UserDto implements Serializable {
                     GlobalRole.valueOf(record.getValue(USER.ROLE)),
                     record.getValue(USER.COLOR),
                     record.getValue(USER.BANNED),
-                    record.getValue(USER.RENAMEAVAILABLE),
+                    record.getValue(USER.RENAME_AVAILABLE),
                     record.getValue(USER.EMAIL)
             );
         } else {

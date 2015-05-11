@@ -41,8 +41,8 @@ public class EmoticonDao {
         try (Connection connection = dataSource.getConnection()) {
             DSLContext ctx = DSL.using(connection);
             ctx
-                    .insertInto(EMOTICON, EMOTICON.CODE, EMOTICON.FILENAME, EMOTICON.WIDTH, EMOTICON.HEIGHT)
-                    .values(emoticon.getCode(), emoticon.getFilename(), emoticon.getWidth(), emoticon.getHeight())
+                    .insertInto(EMOTICON, EMOTICON.CODE, EMOTICON.FILE_NAME, EMOTICON.WIDTH, EMOTICON.HEIGHT)
+                    .values(emoticon.getCode(), emoticon.getFileName(), emoticon.getWidth(), emoticon.getHeight())
                     .execute();
             JournalDao.insert(ctx, journalMessage);
         } catch (DataAccessException | SQLException e) {

@@ -33,12 +33,12 @@ public class UserDao {
         try (Connection connection = dataSource.getConnection()) {
             Condition condition = USER.ID.equal(id);
             if (!ignoreCheck) {
-                condition.and(USER.RENAMEAVAILABLE.equal(true));
+                condition.and(USER.RENAME_AVAILABLE.equal(true));
             }
             result = DSL.using(connection)
                     .update(USER)
                     .set(USER.NAME, newName)
-                    .set(USER.RENAMEAVAILABLE, false)
+                    .set(USER.RENAME_AVAILABLE, false)
                     .where(condition)
                     .execute() == 1;
         } catch (DataAccessException | SQLException e) {
@@ -107,9 +107,9 @@ public class UserDao {
         DataPage<UserData> result = null;
         try (Connection connection = dataSource.getConnection()) {
             List<UserData> data = DSL.using(connection)
-                    .select(USER.ID, USER.NAME, USER.ROLE, USER.COLOR, USER.BANNED, USER.RENAMEAVAILABLE, USER.EMAIL,
+                    .select(USER.ID, USER.NAME, USER.ROLE, USER.COLOR, USER.BANNED, USER.RENAME_AVAILABLE, USER.EMAIL,
                             DSL.groupConcat(USERAUTH.SERVICE).as("authServices"),
-                            DSL.groupConcat(DSL.coalesce(USERAUTH.AUTHNAME, "")).as("authNames"))
+                            DSL.groupConcat(DSL.coalesce(USERAUTH.AUTH_NAME, "")).as("authNames"))
                     .from(USER.join(USERAUTH).on(USER.ID.equal(USERAUTH.USER_ID)))
                     .groupBy(USER.ID)
                     .orderBy(sortField)
@@ -134,9 +134,9 @@ public class UserDao {
         try (Connection connection = dataSource.getConnection()) {
             List<UserData> data = DSL.using(connection)
                     .select(USER.ID, USER.NAME, USER.ROLE, USER.COLOR, USER.BANNED,
-                            USER.RENAMEAVAILABLE, USER.EMAIL,
+                            USER.RENAME_AVAILABLE, USER.EMAIL,
                             DSL.groupConcat(USERAUTH.SERVICE).as("authServices"),
-                            DSL.groupConcat(DSL.coalesce(USERAUTH.AUTHNAME, "")).as("authNames"))
+                            DSL.groupConcat(DSL.coalesce(USERAUTH.AUTH_NAME, "")).as("authNames"))
                     .from(USER.join(USERAUTH).on(USER.ID.equal(USERAUTH.USER_ID)))
                     .where(USER.NAME.like(nameParam, '!'))
                     .orderBy(sortField)
@@ -195,9 +195,9 @@ public class UserDao {
         UserData result = null;
         try (Connection connection = dataSource.getConnection()) {
             Record record = DSL.using(connection)
-                    .select(USER.ID, USER.NAME, USER.ROLE, USER.COLOR, USER.BANNED, USER.RENAMEAVAILABLE, USER.EMAIL,
+                    .select(USER.ID, USER.NAME, USER.ROLE, USER.COLOR, USER.BANNED, USER.RENAME_AVAILABLE, USER.EMAIL,
                             DSL.groupConcat(USERAUTH.SERVICE).as("authServices"),
-                            DSL.groupConcat(DSL.coalesce(USERAUTH.AUTHNAME, "")).as("authNames"))
+                            DSL.groupConcat(DSL.coalesce(USERAUTH.AUTH_NAME, "")).as("authNames"))
                     .from(USER.join(USERAUTH).on(USER.ID.equal(USERAUTH.USER_ID)))
                     .where(USER.ID.equal(id))
                     .groupBy(USER.ID)

@@ -34,9 +34,9 @@ public class UserAuthDto {
                     record.getValue(USERAUTH.ID),
                     userDto,
                     record.getValue(USERAUTH.SERVICE),
-                    record.getValue(USERAUTH.AUTHID),
-                    record.getValue(USERAUTH.AUTHKEY),
-                    record.getValue(USERAUTH.AUTHNAME)
+                    record.getValue(USERAUTH.AUTH_ID),
+                    record.getValue(USERAUTH.AUTH_KEY),
+                    record.getValue(USERAUTH.AUTH_NAME)
             );
         } else {
             return null;

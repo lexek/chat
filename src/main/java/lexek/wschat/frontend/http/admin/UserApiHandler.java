@@ -70,7 +70,7 @@ public class UserApiHandler extends SimpleHttpHandler {
         ImmutableMap.Builder<TableField<UserRecord, ?>, Object> mapBuilder = ImmutableMap.builder();
         String renameParam = request.postParam("rename");
         if (renameParam != null) {
-            mapBuilder.put(USER.RENAMEAVAILABLE, Boolean.parseBoolean(renameParam));
+            mapBuilder.put(USER.RENAME_AVAILABLE, Boolean.parseBoolean(renameParam));
         }
         String bannedParam = request.postParam("banned");
         if (bannedParam != null) {

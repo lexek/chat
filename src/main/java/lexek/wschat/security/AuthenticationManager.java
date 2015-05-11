@@ -130,21 +130,21 @@ public class AuthenticationManager {
                         .from(USERAUTH)
                         .leftOuterJoin(USER).on(USERAUTH.USER_ID.equal(USER.ID))
                         .where(USERAUTH.SERVICE.equal(profile.getService())
-                                .and(USERAUTH.AUTHID.equal(String.valueOf(profile.getId()))))
+                                .and(USERAUTH.AUTH_ID.equal(String.valueOf(profile.getId()))))
                         .fetchOne();
                 result = UserAuthDto.fromRecord(record);
                 if (result == null) {
                     record = DSL.using(conf)
-                            .insertInto(USERAUTH, USERAUTH.AUTHNAME, USERAUTH.AUTHID, USERAUTH.AUTHKEY, USERAUTH.SERVICE)
+                            .insertInto(USERAUTH, USERAUTH.AUTH_NAME, USERAUTH.AUTH_ID, USERAUTH.AUTH_KEY, USERAUTH.SERVICE)
                             .values(profile.getName(), String.valueOf(profile.getId()), profile.getToken(), profile.getService())
                             .returning().fetchOne();
                     result = UserAuthDto.fromRecord(record, null);
                 } else {
                     DSL.using(conf)
                             .update(USERAUTH)
-                            .set(USERAUTH.AUTHNAME, profile.getName())
-                            .set(USERAUTH.AUTHKEY, profile.getToken())
-                            .where(USERAUTH.SERVICE.equal(profile.getService()).and(USERAUTH.AUTHID.equal(String.valueOf(profile.getId()))))
+                            .set(USERAUTH.AUTH_NAME, profile.getName())
+                            .set(USERAUTH.AUTH_KEY, profile.getToken())
+                            .where(USERAUTH.SERVICE.equal(profile.getService()).and(USERAUTH.AUTH_ID.equal(String.valueOf(profile.getId()))))
                             .execute();
                 }
                 return result;
@@ -160,7 +160,7 @@ public class AuthenticationManager {
         try (Connection connection = dataSource.getConnection()) {
             DSL.using(connection).transaction(conf ->
                     DSL.using(conf)
-                            .insertInto(USERAUTH, USERAUTH.AUTHNAME, USERAUTH.AUTHID, USERAUTH.AUTHKEY, USERAUTH.SERVICE, USERAUTH.USER_ID)
+                            .insertInto(USERAUTH, USERAUTH.AUTH_NAME, USERAUTH.AUTH_ID, USERAUTH.AUTH_KEY, USERAUTH.SERVICE, USERAUTH.USER_ID)
                             .values(profile.getName(), String.valueOf(profile.getId()), profile.getToken(), profile.getService(), user.getId())
                             .onDuplicateKeyUpdate()
                             .set(USERAUTH.USER_ID, USERAUTH.USER_ID.nvl(user.getId()))
@@ -260,18 +260,18 @@ public class AuthenticationManager {
             String confirmationCode = dslContext.transactionResult(conf -> {
                 String code = null;
                 Long id = DSL.using(conf)
-                        .insertInto(USER, USER.NAME, USER.BANNED, USER.COLOR, USER.RENAMEAVAILABLE, USER.ROLE, USER.EMAIL)
+                        .insertInto(USER, USER.NAME, USER.BANNED, USER.COLOR, USER.RENAME_AVAILABLE, USER.ROLE, USER.EMAIL)
                         .values(name, false, color, false, GlobalRole.USER_UNCONFIRMED.toString(), email)
                         .returning(USER.ID)
                         .fetchOne().getValue(USER.ID);
                 if (id != null) {
                     DSL.using(conf)
-                            .insertInto(USERAUTH, USERAUTH.AUTHNAME, USERAUTH.AUTHID, USERAUTH.AUTHKEY, USERAUTH.SERVICE, USERAUTH.USER_ID)
+                            .insertInto(USERAUTH, USERAUTH.AUTH_NAME, USERAUTH.AUTH_ID, USERAUTH.AUTH_KEY, USERAUTH.SERVICE, USERAUTH.USER_ID)
                             .values(null, null, password, "password", id)
                             .execute();
                     code = generateConfirmationCode();
                     DSL.using(conf)
-                            .insertInto(PENDING_CONFIRMATION, PENDING_CONFIRMATION.CODE, PENDING_CONFIRMATION.USER)
+                            .insertInto(PENDING_CONFIRMATION, PENDING_CONFIRMATION.CODE, PENDING_CONFIRMATION.USER_ID)
                             .values(code, id)
                             .execute();
                 }
@@ -302,7 +302,7 @@ public class AuthenticationManager {
                     DSL.using(conf)
                             .update(USER)
                             .set(USER.ROLE, GlobalRole.USER.toString())
-                            .where(USER.ID.equal(pendingConfirmation.getUser()))
+                            .where(USER.ID.equal(pendingConfirmation.getUserId()))
                             .execute();
                     DSL.using(conf)
                             .delete(PENDING_CONFIRMATION)
@@ -320,10 +320,10 @@ public class AuthenticationManager {
     public void setPassword(long userId, String password) {
         try (Connection connection = dataSource.getConnection()) {
             DSL.using(connection)
-                    .insertInto(USERAUTH, USERAUTH.AUTHNAME, USERAUTH.AUTHID, USERAUTH.AUTHKEY, USERAUTH.SERVICE, USERAUTH.USER_ID)
+                    .insertInto(USERAUTH, USERAUTH.AUTH_NAME, USERAUTH.AUTH_ID, USERAUTH.AUTH_KEY, USERAUTH.SERVICE, USERAUTH.USER_ID)
                     .values(null, null, password, "password", userId)
                     .onDuplicateKeyUpdate()
-                    .set(USERAUTH.AUTHKEY, password)
+                    .set(USERAUTH.AUTH_KEY, password)
                     .execute();
         } catch (DataAccessException | SQLException e) {
             logger.error(e.getMessage());
@@ -336,7 +336,7 @@ public class AuthenticationManager {
         try (Connection connection = dataSource.getConnection()) {
             success = DSL.using(connection).transactionResult(conf -> {
                 Long id = DSL.using(conf)
-                        .insertInto(USER, USER.NAME, USER.BANNED, USER.COLOR, USER.RENAMEAVAILABLE, USER.ROLE)
+                        .insertInto(USER, USER.NAME, USER.BANNED, USER.COLOR, USER.RENAME_AVAILABLE, USER.ROLE)
                         .values(name, false, color, false, GlobalRole.USER.toString())
                         .returning()
                         .fetchOne()
@@ -361,13 +361,13 @@ public class AuthenticationManager {
         UserAuthDto auth = null;
         try (Connection connection = dataSource.getConnection()) {
             Record record = DSL.using(connection)
-                    .select(USERAUTH.AUTHKEY, USERAUTH.AUTHNAME)
+                    .select(USERAUTH.AUTH_KEY, USERAUTH.AUTH_NAME)
                     .from(USERAUTH)
                     .join(USER).on(USER.ID.equal(USERAUTH.USER_ID))
                     .where(USER.ID.equal(id).and(USERAUTH.SERVICE.equal(service)))
                     .fetchOne();
             if (record != null) {
-                auth = new UserAuthDto(0, null, null, null, record.getValue(USERAUTH.AUTHKEY), record.getValue(USERAUTH.AUTHNAME));
+                auth = new UserAuthDto(0, null, null, null, record.getValue(USERAUTH.AUTH_KEY), record.getValue(USERAUTH.AUTH_NAME));
             }
         } catch (DataAccessException | SQLException e) {
             logger.error("sql exception", e);
