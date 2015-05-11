@@ -1,9 +1,9 @@
 package lexek.wschat.frontend.http;
 
 import com.google.common.collect.ImmutableMap;
-import io.netty.handler.codec.http.Cookie;
-import io.netty.handler.codec.http.DefaultCookie;
 import io.netty.handler.codec.http.HttpMethod;
+import io.netty.handler.codec.http.cookie.Cookie;
+import io.netty.handler.codec.http.cookie.DefaultCookie;
 import lexek.httpserver.Request;
 import lexek.httpserver.Response;
 import lexek.httpserver.SimpleHttpHandler;

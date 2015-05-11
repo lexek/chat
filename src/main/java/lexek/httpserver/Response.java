@@ -2,7 +2,12 @@ package lexek.httpserver;
 
 import com.google.gson.JsonObject;
 import freemarker.template.TemplateException;
-import io.netty.handler.codec.http.*;
+import io.netty.handler.codec.http.FullHttpResponse;
+import io.netty.handler.codec.http.HttpHeaders;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.cookie.Cookie;
+import io.netty.handler.codec.http.cookie.DefaultCookie;
+import io.netty.handler.codec.http.cookie.ServerCookieEncoder;
 import io.netty.util.CharsetUtil;
 import lexek.wschat.db.SessionDto;
 
@@ -48,7 +53,7 @@ public class Response {
     }
 
     public void cookie(Cookie cookie) {
-        header(HttpHeaders.Names.SET_COOKIE, ServerCookieEncoder.encode(cookie));
+        header(HttpHeaders.Names.SET_COOKIE, ServerCookieEncoder.STRICT.encode(cookie));
     }
 
     public void notFound() {

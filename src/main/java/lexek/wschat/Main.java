@@ -13,6 +13,7 @@ import io.netty.channel.epoll.Epoll;
 import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.handler.ssl.SslContext;
+import io.netty.handler.ssl.SslContextBuilder;
 import lexek.httpserver.*;
 import lexek.wschat.chat.*;
 import lexek.wschat.chat.handlers.*;
@@ -128,7 +129,9 @@ public class Main {
             serviceManager.registerService(chatProxyFactory.newInstance(proxyConfiguration));
         }
 
-        SslContext sslContext = SslContext.newServerContext(new File("./cert.pem"), new File("./key.pk8"));
+        SslContext sslContext = SslContextBuilder
+                .forServer(new File("./cert.pem"), new File("./key.pk8"))
+                .build();
 
         EventLoopGroup bossGroup;
         EventLoopGroup childGroup;

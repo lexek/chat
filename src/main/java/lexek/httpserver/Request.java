@@ -1,7 +1,12 @@
 package lexek.httpserver;
 
 import com.google.common.collect.ImmutableMap;
-import io.netty.handler.codec.http.*;
+import io.netty.handler.codec.http.FullHttpRequest;
+import io.netty.handler.codec.http.HttpHeaders;
+import io.netty.handler.codec.http.HttpMethod;
+import io.netty.handler.codec.http.QueryStringDecoder;
+import io.netty.handler.codec.http.cookie.Cookie;
+import io.netty.handler.codec.http.cookie.ServerCookieDecoder;
 import io.netty.handler.codec.http.multipart.Attribute;
 import io.netty.handler.codec.http.multipart.FileUpload;
 import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder;
@@ -37,8 +42,8 @@ public class Request {
     private Map<String, String> getCookies() {
         if (this.cookies == null && hasHeader(HttpHeaders.Names.COOKIE)) {
             ImmutableMap.Builder<String, String> mapBuilder = new ImmutableMap.Builder<>();
-            for (Cookie cookie : CookieDecoder.decode(header(HttpHeaders.Names.COOKIE))) {
-                mapBuilder.put(cookie.getName(), cookie.getValue());
+            for (Cookie cookie : ServerCookieDecoder.STRICT.decode(header(HttpHeaders.Names.COOKIE))) {
+                mapBuilder.put(cookie.name(), cookie.value());
             }
             this.cookies = mapBuilder.build();
         }
