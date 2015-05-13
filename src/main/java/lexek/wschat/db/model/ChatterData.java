@@ -1,4 +1,4 @@
-package lexek.wschat.db;
+package lexek.wschat.db.model;
 
 import lexek.wschat.chat.LocalRole;
 

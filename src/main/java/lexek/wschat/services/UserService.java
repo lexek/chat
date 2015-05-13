@@ -6,12 +6,12 @@ import lexek.wschat.chat.Connection;
 import lexek.wschat.chat.ConnectionManager;
 import lexek.wschat.chat.GlobalRole;
 import lexek.wschat.chat.User;
-import lexek.wschat.db.DataPage;
-import lexek.wschat.db.UserDao;
-import lexek.wschat.db.UserData;
-import lexek.wschat.db.UserDto;
+import lexek.wschat.db.dao.UserDao;
 import lexek.wschat.db.jooq.tables.pojos.Journal;
 import lexek.wschat.db.jooq.tables.records.UserRecord;
+import lexek.wschat.db.model.DataPage;
+import lexek.wschat.db.model.UserData;
+import lexek.wschat.db.model.UserDto;
 import org.jooq.SortField;
 import org.jooq.TableField;
 

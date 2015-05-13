@@ -12,7 +12,7 @@ import lexek.wschat.chat.Connection;
 import lexek.wschat.chat.ConnectionState;
 import lexek.wschat.chat.Message;
 import lexek.wschat.chat.User;
-import lexek.wschat.db.UserAuthDto;
+import lexek.wschat.db.model.UserAuthDto;
 import lexek.wschat.services.AbstractService;
 import lexek.wschat.services.UserService;
 import lexek.wschat.util.LoggingExceptionHandler;

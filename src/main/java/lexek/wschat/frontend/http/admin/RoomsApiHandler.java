@@ -9,7 +9,7 @@ import lexek.httpserver.SimpleHttpHandler;
 import lexek.wschat.chat.GlobalRole;
 import lexek.wschat.chat.Room;
 import lexek.wschat.chat.RoomManager;
-import lexek.wschat.db.UserAuthDto;
+import lexek.wschat.db.model.UserAuthDto;
 import lexek.wschat.security.AuthenticationManager;
 import lexek.wschat.util.Names;
 

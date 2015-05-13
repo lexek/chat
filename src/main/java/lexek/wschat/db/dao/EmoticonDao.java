@@ -1,4 +1,4 @@
-package lexek.wschat.db;
+package lexek.wschat.db.dao;
 
 import lexek.wschat.db.jooq.tables.pojos.Emoticon;
 import lexek.wschat.db.jooq.tables.pojos.Journal;

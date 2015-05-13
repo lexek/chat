@@ -15,7 +15,7 @@ import io.netty.handler.codec.string.StringEncoder;
 import io.netty.util.AttributeKey;
 import io.netty.util.CharsetUtil;
 import lexek.wschat.chat.*;
-import lexek.wschat.db.UserAuthDto;
+import lexek.wschat.db.model.UserAuthDto;
 import lexek.wschat.security.AuthenticationManager;
 import lexek.wschat.services.MessageConsumerService;
 import org.slf4j.Logger;

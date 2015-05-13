@@ -3,7 +3,7 @@ package lexek.wschat.services;
 import com.google.common.collect.ImmutableList;
 import io.netty.util.internal.chmv8.ConcurrentHashMapV8;
 import lexek.wschat.chat.*;
-import lexek.wschat.db.PollDao;
+import lexek.wschat.db.dao.PollDao;
 
 import java.util.List;
 import java.util.Map;

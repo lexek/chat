@@ -6,7 +6,7 @@ import lexek.httpserver.Request;
 import lexek.httpserver.Response;
 import lexek.httpserver.SimpleHttpHandler;
 import lexek.wschat.chat.GlobalRole;
-import lexek.wschat.db.JournalDao;
+import lexek.wschat.db.dao.JournalDao;
 import lexek.wschat.security.AuthenticationManager;
 
 public class JournalHandler extends SimpleHttpHandler {

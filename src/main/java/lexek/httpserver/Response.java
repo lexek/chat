@@ -9,7 +9,7 @@ import io.netty.handler.codec.http.cookie.Cookie;
 import io.netty.handler.codec.http.cookie.DefaultCookie;
 import io.netty.handler.codec.http.cookie.ServerCookieEncoder;
 import io.netty.util.CharsetUtil;
-import lexek.wschat.db.SessionDto;
+import lexek.wschat.db.model.SessionDto;
 
 import java.io.IOException;
 import java.io.StringWriter;

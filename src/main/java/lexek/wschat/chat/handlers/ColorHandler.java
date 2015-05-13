@@ -1,7 +1,7 @@
 package lexek.wschat.chat.handlers;
 
 import lexek.wschat.chat.*;
-import lexek.wschat.db.UserDao;
+import lexek.wschat.db.dao.UserDao;
 import lexek.wschat.util.Colors;
 
 import java.util.List;

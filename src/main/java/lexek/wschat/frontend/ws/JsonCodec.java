@@ -6,7 +6,7 @@ import lexek.wschat.chat.InboundMessage;
 import lexek.wschat.chat.Message;
 import lexek.wschat.chat.MessageType;
 import lexek.wschat.chat.User;
-import lexek.wschat.db.UserDto;
+import lexek.wschat.db.model.UserDto;
 import lexek.wschat.frontend.Codec;
 import lexek.wschat.services.PollState;
 import org.slf4j.Logger;

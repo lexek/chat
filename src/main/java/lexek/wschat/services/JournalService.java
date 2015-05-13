@@ -1,6 +1,6 @@
 package lexek.wschat.services;
 
-import lexek.wschat.db.JournalDao;
+import lexek.wschat.db.dao.JournalDao;
 import lexek.wschat.db.jooq.tables.pojos.Journal;
 
 public class JournalService {

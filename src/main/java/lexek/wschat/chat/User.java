@@ -1,6 +1,6 @@
 package lexek.wschat.chat;
 
-import lexek.wschat.db.UserDto;
+import lexek.wschat.db.model.UserDto;
 import lexek.wschat.util.Colors;
 import org.jetbrains.annotations.NotNull;
 

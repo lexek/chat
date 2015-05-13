@@ -1,6 +1,9 @@
-package lexek.wschat.db;
+package lexek.wschat.db.dao;
 
 import lexek.wschat.db.jooq.tables.records.UserRecord;
+import lexek.wschat.db.model.DataPage;
+import lexek.wschat.db.model.UserData;
+import lexek.wschat.db.model.UserDto;
 import org.jooq.Condition;
 import org.jooq.Record;
 import org.jooq.SortField;

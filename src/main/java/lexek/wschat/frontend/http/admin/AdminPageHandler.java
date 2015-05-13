@@ -6,7 +6,7 @@ import lexek.httpserver.Request;
 import lexek.httpserver.Response;
 import lexek.httpserver.SimpleHttpHandler;
 import lexek.wschat.chat.GlobalRole;
-import lexek.wschat.db.UserAuthDto;
+import lexek.wschat.db.model.UserAuthDto;
 import lexek.wschat.security.AuthenticationManager;
 
 public class AdminPageHandler extends SimpleHttpHandler {

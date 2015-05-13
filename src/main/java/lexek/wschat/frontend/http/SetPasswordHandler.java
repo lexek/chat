@@ -5,7 +5,7 @@ import io.netty.handler.codec.http.HttpMethod;
 import lexek.httpserver.Request;
 import lexek.httpserver.Response;
 import lexek.httpserver.SimpleHttpHandler;
-import lexek.wschat.db.UserAuthDto;
+import lexek.wschat.db.model.UserAuthDto;
 import lexek.wschat.security.AuthenticationManager;
 import lexek.wschat.util.Names;
 import org.mindrot.jbcrypt.BCrypt;

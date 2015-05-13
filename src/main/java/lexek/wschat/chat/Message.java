@@ -1,7 +1,7 @@
 package lexek.wschat.chat;
 
 import com.google.common.collect.ImmutableMap;
-import lexek.wschat.db.UserDto;
+import lexek.wschat.db.model.UserDto;
 import lexek.wschat.services.PollState;
 
 import java.util.List;

@@ -1,4 +1,4 @@
-package lexek.wschat.db;
+package lexek.wschat.db.dao;
 
 import lexek.wschat.db.jooq.tables.pojos.Announcement;
 import org.jooq.DSLContext;

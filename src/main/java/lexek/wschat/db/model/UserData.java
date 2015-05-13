@@ -1,4 +1,4 @@
-package lexek.wschat.db;
+package lexek.wschat.db.model;
 
 public class UserData {
     private final UserDto user;

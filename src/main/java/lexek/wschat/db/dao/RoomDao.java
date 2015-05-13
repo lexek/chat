@@ -1,4 +1,4 @@
-package lexek.wschat.db;
+package lexek.wschat.db.dao;
 
 import com.google.common.collect.ImmutableList;
 import lexek.wschat.db.jooq.tables.pojos.Room;

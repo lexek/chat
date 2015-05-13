@@ -1,4 +1,4 @@
-package lexek.wschat.db;
+package lexek.wschat.db.dao;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;

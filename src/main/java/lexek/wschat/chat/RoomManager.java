@@ -1,8 +1,8 @@
 package lexek.wschat.chat;
 
 import io.netty.util.internal.chmv8.ConcurrentHashMapV8;
-import lexek.wschat.db.ChatterDao;
-import lexek.wschat.db.RoomDao;
+import lexek.wschat.db.dao.ChatterDao;
+import lexek.wschat.db.dao.RoomDao;
 import lexek.wschat.services.UserService;
 
 import java.util.Collection;

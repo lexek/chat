@@ -7,7 +7,7 @@ import lexek.httpserver.Request;
 import lexek.httpserver.Response;
 import lexek.httpserver.SimpleHttpHandler;
 import lexek.wschat.chat.GlobalRole;
-import lexek.wschat.db.ChatterDao;
+import lexek.wschat.db.dao.ChatterDao;
 import lexek.wschat.security.AuthenticationManager;
 
 public class ChattersAdminApiHandler extends SimpleHttpHandler {

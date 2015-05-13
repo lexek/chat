@@ -5,8 +5,8 @@ import io.netty.handler.codec.http.HttpMethod;
 import lexek.httpserver.Request;
 import lexek.httpserver.Response;
 import lexek.httpserver.SimpleHttpHandler;
-import lexek.wschat.db.UserAuthDto;
-import lexek.wschat.db.UserDto;
+import lexek.wschat.db.model.UserAuthDto;
+import lexek.wschat.db.model.UserDto;
 import lexek.wschat.security.AuthenticationManager;
 import lexek.wschat.services.TicketService;
 

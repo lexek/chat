@@ -1,11 +1,11 @@
 package lexek.wschat.services;
 
 import lexek.wschat.chat.*;
-import lexek.wschat.db.DataPage;
-import lexek.wschat.db.TicketDao;
-import lexek.wschat.db.TicketData;
-import lexek.wschat.db.UserDto;
+import lexek.wschat.db.dao.TicketDao;
 import lexek.wschat.db.jooq.tables.pojos.Ticket;
+import lexek.wschat.db.model.DataPage;
+import lexek.wschat.db.model.TicketData;
+import lexek.wschat.db.model.UserDto;
 
 public class TicketService {
     private final TicketDao dao;

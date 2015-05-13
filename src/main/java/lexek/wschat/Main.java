@@ -17,7 +17,7 @@ import io.netty.handler.ssl.SslContextBuilder;
 import lexek.httpserver.*;
 import lexek.wschat.chat.*;
 import lexek.wschat.chat.handlers.*;
-import lexek.wschat.db.*;
+import lexek.wschat.db.dao.*;
 import lexek.wschat.frontend.http.*;
 import lexek.wschat.frontend.http.admin.*;
 import lexek.wschat.frontend.irc.*;
