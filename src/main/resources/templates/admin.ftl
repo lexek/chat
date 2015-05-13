@@ -5,8 +5,8 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 
     <link rel="stylesheet" type="text/css" href='//fonts.googleapis.com/css?family=Roboto:400,400italic,700,700italic&subset=latin,cyrillic'>
-    <link rel="stylesheet" type="text/css" href="/css/animate.css"/>
-    <link rel="stylesheet" type="text/css" href="/css/bootstrap.css"/>
+    <link rel="stylesheet" type="text/css" href="/vendor/css/animate.css"/>
+    <link rel="stylesheet" type="text/css" href="/vendor/css/bootstrap.css"/>
     <link rel="stylesheet" type="text/css" href="/css/font-awesome.css">
 
     <base href="/admin/" />
@@ -16,14 +16,14 @@
     </script>
 
     <script src="//code.jquery.com/jquery-2.1.0.min.js"></script>
-    <script src="/js/angular.js"></script>
-    <script src="/js/angular-animate.2.js"></script>
-    <script src="/js/angular-route.js"></script>
-    <script src="/js/angular-ui-utils.js"></script>
-    <script src="/js/angular-ui-bootstrap.2.js"></script>
-    <script src="/js/angular-relative-date.js"></script>
-    <script src="/js/angular-datetimepicker.js"></script>
-    <script src="/js/highcharts.js"></script>
+    <script src="/vendor/js/angular.js"></script>
+    <script src="/vendor/js/angular-animate.2.js"></script>
+    <script src="/vendor/js/angular-route.js"></script>
+    <script src="/vendor/js/angular-ui-utils.js"></script>
+    <script src="/vendor/js/angular-ui-bootstrap.2.js"></script>
+    <script src="/vendor/js/angular-relative-date.js"></script>
+    <script src="/vendor/js/angular-datetimepicker.js"></script>
+    <script src="/vendor/js/highcharts.js"></script>
     <script src="/js/admin/main.js"></script>
 
     <style>

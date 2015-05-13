@@ -1,38 +1,38 @@
 <groups xmlns="http://www.isdc.ro/wro">
     <group name="app">
-        <js>/js/modernizr.js</js>
-        <js>/js/jquery-1.11.1.js</js>
-        <js>/js/twemoji.js</js>
-        <js>/js/url.js</js>
-        <js>/js/jquery.cookie.js</js>
-        <js>/js/tse.js</js>
-        <js>/js/swfobject.js</js>
-        <js>/js/web_socket.js</js>
-        <js>/js/angular.js</js>
-        <js>/js/bindonce.js</js>
-        <js>/js/angular-ui-utils.js</js>
-        <js>/js/angular-animate.2.js</js>
-        <js>/js/angular-ui-bootstrap.js</js>
-        <js>/js/angular-cookies.js</js>
-        <js>/js/angular-translate.js</js>
-        <js>/js/angular-textcomplete.js</js>
-        <js>/js/angular-relative-date.js</js>
-        <js>/js/angular-recaptcha.js</js>
+        <js>/vendor/js/modernizr.js</js>
+        <js>/vendor/js/jquery-1.11.1.js</js>
+        <js>/vendor/js/twemoji.js</js>
+        <js>/vendor/js/url.js</js>
+        <js>/vendor/js/jquery.cookie.js</js>
+        <js>/vendor/js/tse.js</js>
+        <js>/vendor/js/swfobject.js</js>
+        <js>/vendor/js/web_socket.js</js>
+        <js>/vendor/js/angular.js</js>
+        <js>/vendor/js/bindonce.js</js>
+        <js>/vendor/js/angular-ui-utils.js</js>
+        <js>/vendor/js/angular-animate.2.js</js>
+        <js>/vendor/js/angular-ui-bootstrap.js</js>
+        <js>/vendor/js/angular-cookies.js</js>
+        <js>/vendor/js/angular-translate.js</js>
+        <js>/vendor/js/angular-textcomplete.js</js>
+        <js>/vendor/js/angular-relative-date.js</js>
+        <js>/vendor/js/angular-recaptcha.js</js>
+        <js>/vendor/js/bootstrap-colorpicker.js</js>
         <js>/js/libs.js</js>
-        <js>/js//chat/sc2emotes.js</js>
+        <js>/js/chat/sc2emotes.js</js>
         <js>/js/chat/lang.js</js>
         <js>/js/chat/services.js</js>
         <js>/js/chat/messages.js</js>
         <js>/js/chat/users.js</js>
         <js>/js/chat/controls.js</js>
         <js>/js/chat/chat.js</js>
-        <js>/js/bootstrap-colorpicker.js</js>
 
-        <css>/css/animate.css</css>
-        <css>/css/bootstrap.css</css>
+        <css>/vendor/css/animate.css</css>
+        <css>/vendor/css/bootstrap.css</css>
         <css>/css/font-awesome.css</css>
-        <css>/css/colorpicker.css</css>
-        <css>/css/tse.css</css>
+        <css>/vendor/css/colorpicker.css</css>
+        <css>/vendor/css/tse.css</css>
         <css>/css/chat.css</css>
     </group>
 </groups>

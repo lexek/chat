@@ -3,7 +3,7 @@
 <html>
 <head>
     <title>${status.reasonPhrase()}</title>
-    <link rel="stylesheet" href="/css/bootstrap.css" />
+    <link rel="stylesheet" href="/vendor/css/bootstrap.css" />
     <style>
         html {
             position: relative;
