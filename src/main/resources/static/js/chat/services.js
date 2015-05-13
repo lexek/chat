@@ -385,9 +385,9 @@ services.service("chatService", ["$modal", "chatSettings", "$translate", "$http"
                             ext: ".png",
                             callback: function(icon, options, variant) {
                                 switch ( icon ) {
-                                    case 'a9':      // © copyright
-                                    case 'ae':      // ® registered trademark
-                                    case '2122':    // ™ trademark
+                                    case 'a9':      // ï¿½ copyright
+                                    case 'ae':      // ï¿½ registered trademark
+                                    case '2122':    // ï¿½ trademark
                                         return false;
                                 }
                                 return ''.concat(options.base, options.size, '/', icon, options.ext);
@@ -792,7 +792,7 @@ services.service("notificationService", ["chatSettings", "windowStateService", f
     };
 
     NotificationService.prototype.isAvailable = function() {
-        return Notification ? true : false;
+        return window.Notification ? true : false;
     };
 
     NotificationService.prototype.hasPermission = function() {
