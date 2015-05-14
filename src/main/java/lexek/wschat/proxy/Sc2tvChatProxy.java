@@ -83,14 +83,12 @@ public class Sc2tvChatProxy extends AbstractService<Void> {
         private long lastId;
         private boolean firstRun = true;
         private Date lastModified = null;
-        private String etag = null;
 
         @Override
         protected void channelRead0(final ChannelHandlerContext ctx, FullHttpResponse response) throws Exception {
-            logger.debug("received response with status {}", response.getStatus());
+            logger.trace("received response with status {}", response.getStatus());
             if (response.getStatus().equals(HttpResponseStatus.OK)) {
                 lastModified = HttpHeaders.getDateHeader(response, HttpHeaders.Names.LAST_MODIFIED);
-                etag = HttpHeaders.getHeader(response, HttpHeaders.Names.ETAG);
                 String data = response.content().toString(CharsetUtil.UTF_8);
                 JsonObject root = jsonParser.parse(data).getAsJsonObject();
                 List<JsonElement> messages = Lists.reverse(Lists.newArrayList(root.getAsJsonArray("messages")));
@@ -122,7 +120,7 @@ public class Sc2tvChatProxy extends AbstractService<Void> {
             }
             if (HttpHeaders.isKeepAlive(response)) {
                 ctx.channel().eventLoop().schedule(() -> {
-                    logger.debug("sending request for next update");
+                    logger.trace("sending request for next update");
                     ctx.writeAndFlush(composeRequest());
                 }, 10, TimeUnit.SECONDS);
             } else {
@@ -156,9 +154,6 @@ public class Sc2tvChatProxy extends AbstractService<Void> {
                     "http://chat.sc2tv.ru/memfs/channel-" + channel + ".json");
             if (lastModified != null) {
                 HttpHeaders.setDateHeader(request, HttpHeaders.Names.IF_MODIFIED_SINCE, lastModified);
-            }
-            if (etag != null) {
-                HttpHeaders.setHeader(request, HttpHeaders.Names.IF_NONE_MATCH, etag);
             }
             HttpHeaders.setKeepAlive(request, true);
             HttpHeaders.setHost(request, "chat.sc2tv.ru");
