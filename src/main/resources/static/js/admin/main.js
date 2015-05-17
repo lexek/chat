@@ -445,13 +445,13 @@ var UsersController = function($scope, $location, $http, alert, title) {
     };
 
     $scope.nextPage = function() {
-        if (page < $scope.totalPages) {
+        if ((page+1) < $scope.totalPages) {
             $location.search("page", ($scope.page+1).toString());
         }
     };
 
     $scope.hasNextPage = function() {
-        return page < $scope.totalPages
+        return (page+1) < $scope.totalPages
     };
 
     $scope.orderBy = function(orderVar) {
@@ -1095,7 +1095,7 @@ var HistoryController = function($scope, $http, title, room) {
         $http({method: "GET", url: url})
             .success(function (d, status, headers, config) {
                 $scope.entries = d["data"];
-                $scope.totalPages = d["totalPages"];
+                $scope.totalPages = d["pageCount"];
             })
             .error(function (data, status, headers, config) {
                 $scope.entries.length = 0;
@@ -1124,14 +1124,14 @@ var HistoryController = function($scope, $http, title, room) {
     };
 
     $scope.nextPage = function() {
-        if ($scope.page < $scope.totalPages) {
+        if (($scope.page+1) < $scope.totalPages) {
             $scope.page = $scope.page + 1;
             loadPage();
         }
     };
 
     $scope.hasNextPage = function() {
-        return $scope.page < $scope.totalPages
+        return ($scope.page+1) < $scope.totalPages
     };
 
     loadPage();

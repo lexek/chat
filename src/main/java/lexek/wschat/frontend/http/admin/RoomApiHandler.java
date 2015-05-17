@@ -72,7 +72,22 @@ public class RoomApiHandler extends SimpleHttpHandler {
             });
             rootObject.add("chatters", chatters);
         }
-        rootObject.add("history", historyService.getLast20(roomId));
+        {
+            JsonArray history = new JsonArray();
+            historyService.getLast20(roomId)
+                    .stream()
+                    .map(data -> {
+                        JsonObject object = new JsonObject();
+                        object.addProperty("message", data.getMessage());
+                        object.addProperty("type", data.getType().toString());
+                        object.addProperty("timestamp", data.getTimestamp());
+                        object.addProperty("userName", data.getUserName());
+                        object.addProperty("hidden", data.isHidden());
+                        return object;
+                    })
+                    .forEach(history::add);
+            rootObject.add("history", history);
+        }
         {
             JsonArray announcements = new JsonArray();
             for (Announcement announcement : announcementService.getAnnouncements(room)) {

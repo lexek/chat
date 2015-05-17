@@ -48,12 +48,12 @@ public class HistoryApiHandler extends SimpleHttpHandler {
         if (page != null && page >= 0) {
             if (users != null) {
                 if (users.size() < 20) {
-                    response.stringContent(historyService.getAllPagedAsJson(roomId, page, PAGE_LENGTH, users), "application/json; charset=utf-8");
+                    response.jsonContent(historyService.getAllPagedAsJson(roomId, page, PAGE_LENGTH, users));
                 } else {
                     response.badRequest();
                 }
             } else {
-                response.stringContent(historyService.getAllPagedAsJson(roomId, page, PAGE_LENGTH), "application/json; charset=utf-8");
+                response.jsonContent(historyService.getAllPagedAsJson(roomId, page, PAGE_LENGTH));
             }
         } else {
             response.badRequest();

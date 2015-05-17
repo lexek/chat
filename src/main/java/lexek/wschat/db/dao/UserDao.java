@@ -4,6 +4,7 @@ import lexek.wschat.db.jooq.tables.records.UserRecord;
 import lexek.wschat.db.model.DataPage;
 import lexek.wschat.db.model.UserData;
 import lexek.wschat.db.model.UserDto;
+import lexek.wschat.util.Pages;
 import org.jooq.Condition;
 import org.jooq.Record;
 import org.jooq.SortField;
@@ -161,9 +162,9 @@ public class UserDao {
 
     private int totalPages(Connection connection, Condition condition, int pageLength) {
         if (condition != null) {
-            return DSL.using(connection).fetchCount(DSL.select().from(USER).where(condition)) / pageLength;
+            return Pages.pageCount(pageLength, DSL.using(connection).fetchCount(DSL.select().from(USER).where(condition)));
         } else {
-            return DSL.using(connection).fetchCount(DSL.select().from(USER)) / pageLength;
+            return Pages.pageCount(pageLength, DSL.using(connection).fetchCount(DSL.select().from(USER)));
         }
     }
 

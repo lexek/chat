@@ -6,6 +6,7 @@ import lexek.wschat.chat.User;
 import lexek.wschat.db.model.ChatterData;
 import lexek.wschat.db.model.DataPage;
 import lexek.wschat.db.model.UserDto;
+import lexek.wschat.util.Pages;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.Record;
@@ -156,7 +157,7 @@ public class ChatterDao {
                             record.getValue(CHATTER.BANNED)
                     ))
                     .collect(Collectors.toList());
-            result = new DataPage<>(data, page, totalChatterPages(connection, room, null, pageLength));
+            result = new DataPage<>(data, page, Pages.pageCount(pageLength, count(connection, room, null)));
         } catch (DataAccessException | SQLException e) {
             logger.error("sql exception", e);
         }
@@ -184,22 +185,23 @@ public class ChatterDao {
                             record.getValue(CHATTER.BANNED)
                     ))
                     .collect(Collectors.toList());
-            result = new DataPage<>(data, page, totalChatterPages(connection, room, USER.NAME.like(nameParam, '!'), pageLength));
+            int count = count(connection, room, USER.NAME.like(nameParam, '!'));
+            result = new DataPage<>(data, page, Pages.pageCount(pageLength, count));
         } catch (DataAccessException | SQLException e) {
             logger.error("sql exception", e);
         }
         return result;
     }
 
-    private int totalChatterPages(Connection connection, long room, Condition condition, int pageLength) {
+    private int count(Connection connection, long room, Condition condition) {
         if (condition != null) {
             return DSL.using(connection)
                     .fetchCount(
                             CHATTER.join(USER).on(CHATTER.USER_ID.equal(USER.ID)),
                             CHATTER.ROOM_ID.eq(room).and(condition)
-                    ) / pageLength;
+                    );
         } else {
-            return DSL.using(connection).fetchCount(CHATTER, CHATTER.ROOM_ID.eq(room)) / pageLength;
+            return DSL.using(connection).fetchCount(CHATTER, CHATTER.ROOM_ID.eq(room));
         }
     }
 

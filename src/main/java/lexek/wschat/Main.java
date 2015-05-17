@@ -84,6 +84,7 @@ public class Main {
         JournalService journalService = new JournalService(journalDao);
         AuthenticationManager authenticationManager = new AuthenticationManager(ircHost, dataSource, settings.getEmail());
         CaptchaService captchaService = new CaptchaService();
+        HistoryDao historyDao = new HistoryDao(dataSource);
 
         ConnectionManager connectionManager = new ConnectionManager(metricRegistry);
         MessageReactor messageReactor = new DefaultMessageReactor(metricRegistry);
@@ -92,7 +93,7 @@ public class Main {
         ThreadFactory scheduledThreadFactory = new ThreadFactoryBuilder().setNameFormat("ANNOUNCEMENT_SCHEDULER_%d").build();
         ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(scheduledThreadFactory);
         AtomicLong messageId = new AtomicLong(0);
-        HistoryService historyService = new HistoryService(dataSource, 20);
+        HistoryService historyService = new HistoryService(20, historyDao);
         MessageBroadcaster messageBroadcaster = new MessageBroadcaster(historyService, connectionManager);
         RoomManager roomManager = new RoomManager(userService, messageBroadcaster, roomDao, chatterDao);
         AnnouncementService announcementService = new AnnouncementService(new AnnouncementDao(dataSource), roomManager, messageBroadcaster, scheduledExecutorService);

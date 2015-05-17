@@ -573,11 +573,11 @@
                         <abbr title="{{entry.timestamp | date:'dd.MM.yyyy HH:mm'}}">{{entry.timestamp | relativeDate}}</abbr>
                     </td>
                     <td ng-if="(entry.type==='MSG') || (entry.type==='ME') || (entry.type==='MSG_EXT')">
-                        <span class="btn-link" ng-click="addUserFilter(entry.name)"><strong>&lt;{{entry.name}}&gt;</strong></span>
+                        <span class="btn-link" ng-click="addUserFilter(entry.userName)"><strong>&lt;{{entry.userName}}&gt;</strong></span>
                         {{entry.message}}
                     </td>
                     <td ng-if="(entry.type==='CLEAR') || (entry.type==='BAN') || (entry.type==='TIMEOUT')">
-                        {{entry.name}} cleared messages of {{entry.message}}
+                        {{entry.userName}} cleared messages of {{entry.message}}
                     </td>
                 </tr>
             </table>
@@ -1141,11 +1141,11 @@
                             <abbr title="{{entry.timestamp | date:'dd.MM.yyyy HH:mm'}}">{{entry.timestamp | relativeDate}}</abbr>
                         </td>
                         <td style="word-break: break-all" ng-if="(entry.type==='MSG') || (entry.type==='ME') || (entry.type==='MSG_EXT')">
-                            <strong>&lt;{{entry.name}}&gt;</strong>
+                            <strong>&lt;{{entry.userName}}&gt;</strong>
                             {{entry.message}}
                         </td>
                         <td ng-if="(entry.type==='CLEAR') || (entry.type==='BAN') || (entry.type==='TIMEOUT')">
-                            {{entry.name}} cleared messages of {{entry.message}}
+                            {{entry.userName}} cleared messages of {{entry.message}}
                         </td>
                     </tr>
                 </table>
