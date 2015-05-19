@@ -148,7 +148,7 @@ var DashboardController = function($scope, $http, alert) {
 
                 angular.forEach(data, function (metric) {
                     var values = result[metric.name];
-                    values.push([metric.time, metric.value]);
+                    values.push([metric.time, metric.value?metric.value:null]);
                 });
 
                 var bands = [];
