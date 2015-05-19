@@ -783,9 +783,9 @@ var UserModalController = function($scope, $http, $modalInstance, id) {
                 $scope.input.role = $scope.user.role;
                 $scope.input.banned = $scope.user.banned;
                 $scope.input.renameAvailable = $scope.user.renameAvailable;
-                if ($scope.user.authServices) {
-                    var namesArray = $scope.user.authNames.split(",");
-                    angular.forEach($scope.user.authServices.split(","), function(e, i) {
+                if (d.authServices) {
+                    var namesArray = d.authNames.split(",");
+                    angular.forEach(d.authServices.split(","), function(e, i) {
                         $scope.auth[e] = namesArray[i];
                     });
                 }
