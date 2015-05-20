@@ -420,7 +420,7 @@ var UsersController = function($scope, $location, $http, alert, title) {
                     $scope.users.push(u);
                 });
                 $scope.totalPages = d["pageCount"];
-                title.secondary = "page " + ($scope.page+1) + "/" + ($scope.totalPages+1);
+                title.secondary = "page " + ($scope.page+1) + "/" + ($scope.totalPages);
                 $scope.user = null;
             })
             .error(function (data, status, headers, config) {
