@@ -7,7 +7,6 @@ import lexek.wschat.db.model.UserDto;
 import lexek.wschat.util.Pages;
 import org.jooq.Condition;
 import org.jooq.Record;
-import org.jooq.SortField;
 import org.jooq.TableField;
 import org.jooq.exception.DataAccessException;
 import org.jooq.impl.DSL;
@@ -107,7 +106,7 @@ public class UserDao {
         }
     }
 
-    public DataPage<UserData> getAllPaged(int page, int pageLength, SortField<?> sortField) {
+    public DataPage<UserData> getAllPaged(int page, int pageLength) {
         DataPage<UserData> result = null;
         try (Connection connection = dataSource.getConnection()) {
             List<UserData> data = DSL.using(connection)
@@ -116,7 +115,7 @@ public class UserDao {
                             DSL.groupConcat(DSL.coalesce(USERAUTH.AUTH_NAME, "")).as("authNames"))
                     .from(USER.join(USERAUTH).on(USER.ID.equal(USERAUTH.USER_ID)))
                     .groupBy(USER.ID)
-                    .orderBy(sortField)
+                    .orderBy(USER.ID)
                     .limit(page * pageLength, pageLength)
                     .fetch()
                     .stream()
@@ -126,14 +125,14 @@ public class UserDao {
                             record.getValue("authNames", String.class)
                     ))
                     .collect(Collectors.toList());
-            result = new DataPage<>(data, page, totalPages(connection, null, pageLength));
+            result = new DataPage<>(data, page, Pages.pageCount(pageLength, DSL.using(connection).fetchCount(USER)));
         } catch (DataAccessException | SQLException e) {
             logger.error("sql exception", e);
         }
         return result;
     }
 
-    public DataPage<UserData> searchPaged(Integer page, int pageLength, SortField<?> sortField, String nameParam) {
+    public DataPage<UserData> searchPaged(Integer page, int pageLength, String nameParam) {
         DataPage<UserData> result = null;
         try (Connection connection = dataSource.getConnection()) {
             List<UserData> data = DSL.using(connection)
@@ -143,7 +142,7 @@ public class UserDao {
                             DSL.groupConcat(DSL.coalesce(USERAUTH.AUTH_NAME, "")).as("authNames"))
                     .from(USER.join(USERAUTH).on(USER.ID.equal(USERAUTH.USER_ID)))
                     .where(USER.NAME.like(nameParam, '!'))
-                    .orderBy(sortField)
+                    .orderBy(USER.ID)
                     .limit(page * pageLength, pageLength)
                     .fetch()
                     .stream()
@@ -153,19 +152,13 @@ public class UserDao {
                             record.getValue("authNames", String.class)
                     ))
                     .collect(Collectors.toList());
-            result = new DataPage<>(data, page, totalPages(connection, USER.NAME.like(nameParam, '!'), pageLength));
+
+            result = new DataPage<>(data, page,
+                    Pages.pageCount(pageLength, DSL.using(connection).fetchCount(USER, USER.NAME.like(nameParam, '!'))));
         } catch (DataAccessException | SQLException e) {
             logger.error("sql exception", e);
         }
         return result;
-    }
-
-    private int totalPages(Connection connection, Condition condition, int pageLength) {
-        if (condition != null) {
-            return Pages.pageCount(pageLength, DSL.using(connection).fetchCount(DSL.select().from(USER).where(condition)));
-        } else {
-            return Pages.pageCount(pageLength, DSL.using(connection).fetchCount(DSL.select().from(USER)));
-        }
     }
 
     public boolean delete(UserDto user) {

@@ -111,13 +111,12 @@ public class UserService {
         return userDto;
     }
 
-    public DataPage<UserData> searchPaged(int page, int pageLength, SortField<?> sortField, String search) {
-        return userDao.searchPaged(page, pageLength, sortField, search);
+    public DataPage<UserData> searchPaged(int page, int pageLength, String search) {
+        return userDao.searchPaged(page, pageLength, search);
     }
 
-    public DataPage<UserData> getAllPaged(Integer page, int pageLength, SortField<?> sortField) {
-        return userDao.getAllPaged(page, pageLength, sortField);
-
+    public DataPage<UserData> getAllPaged(Integer page, int pageLength) {
+        return userDao.getAllPaged(page, pageLength);
     }
 
     public boolean checkIfAvailable(String username) {
