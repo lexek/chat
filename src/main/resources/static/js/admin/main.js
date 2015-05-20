@@ -1222,7 +1222,7 @@ var ChattersController = function($scope, $location, $http, $modal, room) {
         $http({method: "GET", url: url})
             .success(function (d, status, headers, config) {
                 $scope.users = d["data"];
-                $scope.totalPages = d["totalPages"];
+                $scope.totalPages = d["pageCount"];
             })
             .error(function (data, status, headers, config) {
 
