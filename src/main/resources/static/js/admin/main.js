@@ -914,7 +914,7 @@ var UserModalController = function($scope, $http, $modalInstance, id) {
     loadPage();
 };
 
-var JournalController = function($scope, $location, $http, alert, title) {
+var JournalController = function($scope, $location, $http, $modal, alert, title) {
     $scope.entries = [];
     $scope.totalPages = 0;
     $scope.secondaryTitle = $scope.page;
@@ -924,8 +924,8 @@ var JournalController = function($scope, $location, $http, alert, title) {
         $http({method: "GET", url: url})
             .success(function (d, status, headers, config) {
                 $scope.entries = d["data"];
-                $scope.totalPages = d["totalPages"];
-                title.secondary = "page " + ($scope.page+1) + "/" + ($scope.totalPages+1);
+                $scope.totalPages = d["pageCount"];
+                title.secondary = "page " + ($scope.page+1) + "/" + ($scope.totalPages);
             })
             .error(function (data, status, headers, config) {
                 alert.alert("danger", data);
@@ -939,25 +939,26 @@ var JournalController = function($scope, $location, $http, alert, title) {
     };
 
     $scope.nextPage = function() {
-        if (page < $scope.totalPages) {
+        if ((page+1) < $scope.totalPages) {
             $location.search("page", ($scope.page+1).toString());
         }
     };
 
     $scope.hasNextPage = function() {
-        return page < $scope.totalPages
+        return (page+1) < $scope.totalPages
     };
 
-    $scope.getTagLabelClass = function(tag) {
-        if (tag === "error") {
-            return "label-danger";
-        } else if (tag === "mod") {
-            return "label-primary";
-        } else if (tag === "admin") {
-            return "label-success";
-        } else if (tag === "user") {
-            return "label-info";
-        }
+    $scope.userModal = function(id) {
+        $modal.open({
+            templateUrl: "user.html",
+            controller: UserModalController,
+            size: "sm",
+            resolve: {
+                id: function () {
+                    return id;
+                }
+            }
+        });
     };
 
     {
@@ -970,6 +971,53 @@ var JournalController = function($scope, $location, $http, alert, title) {
             loadPage();
         }
     }
+};
+
+var RoomJournalModalController = function($scope, $http, $modal, room) {
+    $scope.journal = [];
+    $scope.totalPages = 0;
+    $scope.page = 0;
+
+    var loadPage = function() {
+        $http({method: "GET", url: "/admin/api/journal", params: {page: $scope.page, room: room.id}})
+            .success(function (d, status, headers, config) {
+                $scope.journal = d["data"];
+                $scope.totalPages = d["pageCount"];
+            });
+    };
+
+    $scope.previousPage = function() {
+        if ($scope.page !== 0) {
+            $scope.page--;
+            loadPage();
+        }
+    };
+
+    $scope.nextPage = function() {
+        if (($scope.page+1) < $scope.totalPages) {
+            $scope.page++;
+            loadPage();
+        }
+    };
+
+    $scope.hasNextPage = function() {
+        return ($scope.page+1) < $scope.totalPages
+    };
+
+    $scope.userModal = function(id) {
+        $modal.open({
+            templateUrl: "user.html",
+            controller: UserModalController,
+            size: "sm",
+            resolve: {
+                id: function () {
+                    return id;
+                }
+            }
+        });
+    };
+
+    loadPage();
 };
 
 var TicketsController = function($scope, $location, $http, $modal, alert, title) {
@@ -1237,14 +1285,14 @@ var ChattersController = function($scope, $location, $http, $modal, room) {
     };
 
     $scope.nextPage = function() {
-        if ($scope.page < $scope.totalPages) {
+        if (($scope.page+1) < $scope.totalPages) {
             $scope.page = $scope.page + 1;
             loadPage();
         }
     };
 
     $scope.hasNextPage = function() {
-        return $scope.page < $scope.totalPages
+        return ($scope.page+1) < $scope.totalPages
     };
 
     $scope.doSearch = function() {
@@ -1285,6 +1333,7 @@ var ChattersController = function($scope, $location, $http, $modal, room) {
 
 var RoomController = function($scope, $location, $http, $sce, $modal, alert, title) {
     $scope.messages = [];
+    $scope.journal = [];
     $scope.poll = null;
     $scope.maxPollVotes = 0;
 
@@ -1306,6 +1355,13 @@ var RoomController = function($scope, $location, $http, $sce, $modal, alert, tit
             .success(function (d, status, headers, config) {
                 $scope.poll = d;
                 $scope.maxPollVotes = Math.max.apply(null, $scope.poll.votes);
+            })
+            .error(function (data, status, headers, config) {
+                alert.alert("danger", data);
+            });
+        $http({method: "GET", url: "/admin/api/journal?page=0&room=" + $scope.roomId})
+            .success(function (d, status, headers, config) {
+                $scope.journal = d.data;
             })
             .error(function (data, status, headers, config) {
                 alert.alert("danger", data);
@@ -1343,6 +1399,19 @@ var RoomController = function($scope, $location, $http, $sce, $modal, alert, tit
             templateUrl: 'polls.html',
             controller: PollsController,
             size: "sm",
+            resolve: {
+                room: function () {
+                    return $scope.roomData;
+                }
+            }
+        });
+    };
+
+    $scope.showJournal = function() {
+        $modal.open({
+            templateUrl: 'journal_modal.html',
+            controller: RoomJournalModalController,
+            size: "lg",
             resolve: {
                 room: function () {
                     return $scope.roomData;

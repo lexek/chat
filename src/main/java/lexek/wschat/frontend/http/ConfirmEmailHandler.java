@@ -24,7 +24,7 @@ public class ConfirmEmailHandler extends SimpleHttpHandler {
             boolean success = this.authenticationManager.confirmEmail(code);
             response.renderTemplate("confirm_email", ImmutableMap.of("success", success));
             if (success) {
-                final UserAuthDto auth = authenticationManager.checkAuthentication(request);
+                final UserAuthDto auth = authenticationManager.checkFullAuthentication(request);
                 if (auth != null && auth.getUser() != null) {
                     connectionManager.forEach(connection -> {
                         Long id = connection.getUser().getId();

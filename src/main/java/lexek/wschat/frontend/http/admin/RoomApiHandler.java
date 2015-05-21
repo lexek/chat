@@ -22,10 +22,8 @@ public class RoomApiHandler extends SimpleHttpHandler {
     private final HistoryService historyService;
     private final AnnouncementService announcementService;
 
-    public RoomApiHandler(AuthenticationManager authenticationManager,
-                          RoomManager roomManager,
-                          HistoryService historyService,
-                          AnnouncementService announcementService) {
+    public RoomApiHandler(AuthenticationManager authenticationManager, RoomManager roomManager,
+                          HistoryService historyService, AnnouncementService announcementService) {
         this.authenticationManager = authenticationManager;
         this.roomManager = roomManager;
         this.historyService = historyService;

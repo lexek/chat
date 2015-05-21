@@ -33,7 +33,7 @@ public class SetupProfileHandler extends SimpleHttpHandler {
                     ImmutableMap.of("captchaRequired", captchaRequired));
             return;
         } else if (request.method() == HttpMethod.POST) {
-            UserAuthDto auth = authenticationManager.checkAuthentication(request);
+            UserAuthDto auth = authenticationManager.checkFullAuthentication(request);
             if (auth != null && auth.getUser() == null) {
                 String username = request.postParam("username");
                 String newAccountParam = request.queryParam("newAccount");

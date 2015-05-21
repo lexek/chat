@@ -48,9 +48,9 @@ public class UnbanHandlerTest {
         when(room.getChatter(0L)).thenReturn(chatter);
         when(room.fetchChatter("username")).thenReturn(otherChatter);
         when(room.getName()).thenReturn("#main");
-        when(room.unbanChatter(otherChatter)).thenReturn(true);
+        when(room.unbanChatter(otherChatter, chatter)).thenReturn(true);
         handler.handle(ImmutableList.of("#main", "username"), connection);
-        verify(room).unbanChatter(otherChatter);
+        verify(room).unbanChatter(otherChatter, chatter);
         verify(connection).send(Message.infoMessage("OK"));
     }
 
@@ -64,9 +64,9 @@ public class UnbanHandlerTest {
         when(room.getChatter(0L)).thenReturn(chatter);
         when(room.fetchChatter("username")).thenReturn(otherChatter);
         when(room.getName()).thenReturn("#main");
-        when(room.unbanChatter(otherChatter)).thenReturn(false);
+        when(room.unbanChatter(otherChatter, chatter)).thenReturn(false);
         handler.handle(ImmutableList.of("#main", "username"), connection);
-        verify(room).unbanChatter(otherChatter);
+        verify(room).unbanChatter(otherChatter, chatter);
         verify(connection, times(1)).send(eq(Message.errorMessage("INTERNAL_ERROR")));
     }
 
@@ -82,7 +82,7 @@ public class UnbanHandlerTest {
         when(room.fetchChatter("username")).thenReturn(otherChatter);
         when(room.getName()).thenReturn("#main");
         handler.handle(ImmutableList.of("#main", "username"), connection);
-        verify(room, never()).unbanChatter(otherChatter);
+        verify(room, never()).unbanChatter(otherChatter, chatter);
         verify(connection, times(1)).send(eq(Message.errorMessage("UNBAN_DENIED")));
     }
 
@@ -97,7 +97,7 @@ public class UnbanHandlerTest {
         when(room.fetchChatter("username")).thenReturn(otherChatter);
         when(room.getName()).thenReturn("#main");
         handler.handle(ImmutableList.of("#main", "username"), connection);
-        verify(room, never()).unbanChatter(otherChatter);
+        verify(room, never()).unbanChatter(otherChatter, chatter);
         verify(connection, times(1)).send(eq(Message.errorMessage("UNBAN_DENIED")));
     }
 
@@ -109,7 +109,7 @@ public class UnbanHandlerTest {
         when(room.fetchChatter("username")).thenReturn(null);
         when(room.getName()).thenReturn("#main");
         handler.handle(ImmutableList.of("#main", "username"), connection);
-        verify(room, never()).unbanChatter(any(Chatter.class));
+        verify(room, never()).unbanChatter(any(Chatter.class), any(Chatter.class));
         verify(connection, times(1)).send(eq(Message.errorMessage("UNKNOWN_USER")));
     }
 
@@ -125,7 +125,7 @@ public class UnbanHandlerTest {
         when(room.getName()).thenReturn("#main");
         handler.handle(ImmutableList.of("#main", "username"), connection);
         verify(room, never()).fetchChatter("username");
-        verify(room, never()).unbanChatter(any(Chatter.class));
+        verify(room, never()).unbanChatter(any(Chatter.class), any(Chatter.class));
         verify(connection, times(1)).send(eq(Message.errorMessage("NOT_AUTHORIZED")));
     }
 
@@ -134,7 +134,7 @@ public class UnbanHandlerTest {
         when(roomManager.getRoomInstance("#main")).thenReturn(room);
         when(room.contains(connection)).thenReturn(false);
         handler.handle(ImmutableList.of("#main", "username"), connection);
-        verify(room, never()).unbanChatter(any(Chatter.class));
+        verify(room, never()).unbanChatter(any(Chatter.class), any(Chatter.class));
         verify(connection, times(1)).send(eq(Message.errorMessage("NOT_JOINED")));
     }
 
@@ -142,7 +142,7 @@ public class UnbanHandlerTest {
     public void testBadRoom() {
         when(roomManager.getRoomInstance("#main")).thenReturn(null);
         handler.handle(ImmutableList.of("#main", "username"), connection);
-        verify(room, never()).unbanChatter(any(Chatter.class));
+        verify(room, never()).unbanChatter(any(Chatter.class), any(Chatter.class));
         verify(connection, times(1)).send(eq(Message.errorMessage("UNKNOWN_ROOM")));
     }
 }

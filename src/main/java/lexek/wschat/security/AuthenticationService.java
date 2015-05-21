@@ -150,7 +150,7 @@ public class AuthenticationService extends AbstractService<Void> {
             final AuthenticationCallback callback = event.getCallback();
             final Connection connection = event.getConnection();
             if (event.getType() == AuthenticationType.SID && event.getKey() != null) {
-                auth = authenticationManager.checkAuthentication(event.getKey(), ip);
+                auth = authenticationManager.checkFullAuthentication(event.getKey(), ip);
             } else if (event.getType() == AuthenticationType.PASSWORD && event.getKey() != null && event.getName() != null) {
                 if (authenticationManager.failedLoginTries(ip) > 10) {
                     callback.captchaRequired(connection, event.getName(), captchaService.tryAuthorize(() ->

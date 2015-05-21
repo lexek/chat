@@ -424,30 +424,36 @@
                     date
                 </th>
                 <th style="width: 50px">
-                    tag
+                    action
                 </th>
                 <th>
-                    message
+
                 </th>
                 <th style="width: 100px">
                     user
+                </th>
+                <th style="width: 100px">
+                    admin
                 </th>
             </tr>
             </thead>
             <tr ng-repeat="entry in entries">
                 <td>
-                    <abbr title="{{entry.timestamp | date:'dd.MM.yyyy HH:mm'}}">{{entry.timestamp | relativeDate}}</abbr>
+                    <abbr title="{{entry.time | date:'dd.MM.yyyy HH:mm'}}">{{entry.time | relativeDate}}</abbr>
                 </td>
                 <td>
-                    <span class="label" ng-class="getTagLabelClass(entry.tag)">
-                        {{entry.tag}}
+                    <span class="label label-primary">
+                        {{entry.action}}
                     </span>
                 </td>
                 <td>
-                    {{entry.message}}
+                    {{entry.actionDescription}}
                 </td>
                 <td>
-                    {{entry.user}}
+                    <a href="" ng-click="userModal(entry.user.id)">{{entry.user.name}}</a>
+                </td>
+                <td>
+                    <a href="" ng-click="userModal(entry.admin.id)">{{entry.admin.name}}</a>
                 </td>
             </tr>
         </table>
@@ -804,7 +810,7 @@
 <script type="text/ng-template" id="user.html">
     <div class="modal-header">
         <h3 class="modal-title">
-            User profile: {{user.name}}
+            <i class="fa fa-fw fa-user"></i> {{user.name}}
         </h3>
     </div>
     <div class="modal-body">
@@ -913,10 +919,68 @@
     </div>
 </script>
 
+<script type="text/ng-template" id="journal_modal.html">
+    <div class="modal-header">
+        <h3 class="modal-title">
+            Journal for room {{room.name}} <small>page {{page+1}}/{{totalPages}}</small>
+        </h3>
+    </div>
+    <div class="modal-body">
+        <div class="panel panel-default">
+            <table class="table table-hover" ng-if="journal.length > 0">
+                <thead>
+                <tr>
+                    <th style="width: 120px">
+                        date
+                    </th>
+                    <th style="width: 50px">
+                        action
+                    </th>
+                    <th>
+
+                    </th>
+                    <th style="width: 100px">
+                        user
+                    </th>
+                    <th style="width: 100px">
+                        admin
+                    </th>
+                </tr>
+                </thead>
+                <tr ng-repeat="entry in journal">
+                    <td>
+                        <abbr title="{{entry.time | date:'dd.MM.yyyy HH:mm'}}">{{entry.time | relativeDate}}</abbr>
+                    </td>
+                    <td>
+                        <span class="label label-primary">
+                            {{entry.action}}
+                        </span>
+                    </td>
+                    <td>
+                        {{entry.actionDescription}}
+                    </td>
+                    <td>
+                        <a href="" ng-click="userModal(entry.user.id)">{{entry.user.name}}</a>
+                    </td>
+                    <td>
+                        <a href="" ng-click="userModal(entry.admin.id)">{{entry.admin.name}}</a>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <div class="modal-footer" ng-if="(page !== 0) || hasNextPage()">
+        <ul class="pager">
+            <li class="previous" ng-if="page !== 0" ng-click="previousPage()"><a href="">&larr; Previous page</a></li>
+            <li class="next" ng-if="hasNextPage()" ng-click="nextPage()"><a href="">Next page &rarr;</a></li>
+        </ul>
+    </div>
+</script>
+
 <script type="text/ng-template" id="chatters.html">
     <div class="modal-header">
         <h3 class="modal-title">
-            Chatters for room {{room.name}} <small>page {{page+1}}/{{totalPages+1}}</small>
+            Chatters for room {{room.name}} <small>page {{page+1}}/{{totalPages}}</small>
             <div class="pull-right" style="max-width: 200px">
                 <form ng-submit="doSearch()">
                     <div class="input-group">
@@ -1128,7 +1192,7 @@
 
 <script type="text/ng-template" id="room.html">
     <div>
-        <div class="col-md-7">
+        <div class="col-lg-6">
             <div class="panel panel-primary">
                 <div class="panel-heading">
                     <h4 class="panel-title">
@@ -1154,7 +1218,64 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-5">
+        <div class="col-lg-6">
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    <h4 class="panel-title">
+                        <i class="fa fa-fw fa-book"></i> journal
+                    </h4>
+                </div>
+                <div class="panel-body" ng-if="journal.length === 0">
+                    <div class="alert alert-info">
+                        Journal is empty.
+                    </div>
+                </div>
+                <table class="table table-hover" ng-if="journal.length > 0">
+                    <thead>
+                    <tr>
+                        <th style="width: 120px">
+                            date
+                        </th>
+                        <th style="width: 50px">
+                            action
+                        </th>
+                        <th>
+
+                        </th>
+                        <th style="width: 100px">
+                            user
+                        </th>
+                        <th style="width: 100px">
+                            admin
+                        </th>
+                    </tr>
+                    </thead>
+                    <tr ng-repeat="entry in journal">
+                        <td>
+                            <abbr title="{{entry.time | date:'dd.MM.yyyy HH:mm'}}">{{entry.time | relativeDate}}</abbr>
+                        </td>
+                        <td>
+                    <span class="label label-primary">
+                        {{entry.action}}
+                    </span>
+                        </td>
+                        <td>
+                            {{entry.actionDescription}}
+                        </td>
+                        <td>
+                            <a href="" ng-click="showUser(entry.user.id)">{{entry.user.name}}</a>
+                        </td>
+                        <td>
+                            <a href="" ng-click="showUser(entry.admin.id)">{{entry.admin.name}}</a>
+                        </td>
+                    </tr>
+                </table>
+                <div class="panel-footer">
+                    <div class="btn btn-primary" ng-click="showJournal()">all journal</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3">
             <div class="panel panel-primary">
                 <div class="panel-heading">
                     <h4 class="panel-title">
@@ -1212,6 +1333,8 @@
                     <div class="btn btn-primary" ng-click="composeAnnouncement()">create announcement</div>
                 </div>
             </div>
+        </div>
+        <div class="col-lg-3">
             <div class="panel panel-primary">
                 <div class="panel-heading">
                     <h4 class="panel-title">

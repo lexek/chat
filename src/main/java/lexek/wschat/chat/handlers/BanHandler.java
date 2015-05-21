@@ -11,8 +11,8 @@ public class BanHandler extends AbstractModerationHandler {
     }
 
     @Override
-    protected boolean performOperation(Room room, Chatter userChatter) {
-        return room.banChatter(userChatter);
+    protected boolean performOperation(Room room, Chatter mod, Chatter user) {
+        return room.banChatter(user, mod);
     }
 
     @Override

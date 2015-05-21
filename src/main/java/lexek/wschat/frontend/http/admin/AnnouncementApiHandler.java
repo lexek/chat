@@ -7,6 +7,7 @@ import lexek.httpserver.Response;
 import lexek.httpserver.SimpleHttpHandler;
 import lexek.wschat.chat.GlobalRole;
 import lexek.wschat.db.jooq.tables.pojos.Announcement;
+import lexek.wschat.db.model.UserDto;
 import lexek.wschat.security.AuthenticationManager;
 import lexek.wschat.services.AnnouncementService;
 
@@ -21,7 +22,8 @@ public class AnnouncementApiHandler extends SimpleHttpHandler {
 
     @Override
     protected void handle(Request request, Response response) throws Exception {
-        if (authenticationManager.hasRole(request, GlobalRole.ADMIN)) {
+        UserDto user = authenticationManager.checkAuthentication(request);
+        if (user != null && user.hasRole(GlobalRole.ADMIN)) {
             if (request.method() == HttpMethod.POST) {
                 String action = request.postParam("action");
                 if (action != null) {
@@ -29,7 +31,7 @@ public class AnnouncementApiHandler extends SimpleHttpHandler {
                         String idParam = request.postParam("id");
                         Long id = idParam != null ? Longs.tryParse(idParam) : null;
                         if (id != null) {
-                            announcementService.setInactive(id);
+                            announcementService.setInactive(id, user);
                             response.stringContent("ok");
                             return;
                         }
@@ -39,7 +41,7 @@ public class AnnouncementApiHandler extends SimpleHttpHandler {
                         Long roomId = roomParam != null ? Longs.tryParse(roomParam) : null;
                         if (roomId != null && text != null) {
                             Announcement announcement = new Announcement(null, roomId, true, text);
-                            announcementService.announce(announcement);
+                            announcementService.announce(announcement, user);
                             response.stringContent("ok");
                             return;
                         }

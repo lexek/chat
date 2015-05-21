@@ -185,7 +185,7 @@ public class AuthenticationManager {
         return success;
     }
 
-    public UserAuthDto checkAuthentication(String sid, String ip) {
+    public UserAuthDto checkFullAuthentication(String sid, String ip) {
         UserAuthDto auth = null;
         SessionDto session = null;
 
@@ -210,13 +210,22 @@ public class AuthenticationManager {
         return auth;
     }
 
-    public UserAuthDto checkAuthentication(Request request) {
+    public UserAuthDto checkFullAuthentication(Request request) {
         String sid = request.cookieValue("sid");
         UserAuthDto user = null;
         if (sid != null) {
-            user = checkAuthentication(sid, request.ip());
+            user = checkFullAuthentication(sid, request.ip());
         }
         return user;
+    }
+
+    public UserDto checkAuthentication(Request request) {
+        UserAuthDto auth = checkFullAuthentication(request);
+        if (auth != null && auth.getUser() != null) {
+            return auth.getUser();
+        } else {
+            return null;
+        }
     }
 
     private String generateConfirmationCode() {
@@ -376,7 +385,7 @@ public class AuthenticationManager {
     }
 
     public boolean hasRole(Request request, GlobalRole role) {
-        UserAuthDto auth = checkAuthentication(request);
+        UserAuthDto auth = checkFullAuthentication(request);
         return auth != null && auth.getUser() != null && auth.getUser().getRole().compareTo(role) >= 0;
     }
 

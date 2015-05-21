@@ -8,6 +8,7 @@ import lexek.httpserver.SimpleHttpHandler;
 import lexek.wschat.chat.GlobalRole;
 import lexek.wschat.chat.Room;
 import lexek.wschat.chat.RoomManager;
+import lexek.wschat.db.model.UserDto;
 import lexek.wschat.security.AuthenticationManager;
 import lexek.wschat.services.PollService;
 
@@ -26,7 +27,8 @@ public class PollApiHandler extends SimpleHttpHandler {
 
     @Override
     protected void handle(Request request, Response response) throws Exception {
-        if (authenticationManager.hasRole(request, GlobalRole.ADMIN)) {
+        UserDto user = authenticationManager.checkAuthentication(request);
+        if (user != null && user.hasRole(GlobalRole.ADMIN)) {
             if (request.method() == HttpMethod.GET) {
                 String roomParam = request.queryParam("room");
                 Long roomId = roomParam != null ? Longs.tryParse(roomParam) : null;
@@ -45,7 +47,7 @@ public class PollApiHandler extends SimpleHttpHandler {
                     Long roomId = roomParam != null ? Longs.tryParse(roomParam) : null;
                     Room room = roomId != null ? roomManager.getRoomInstance(roomId) : null;
                     if (room != null && questionParam != null && options.size() > 1 && options.size() <= 5) {
-                        pollService.createPoll(room, questionParam, options);
+                        pollService.createPoll(room, user, questionParam, options);
                         response.stringContent("OK");
                         return;
                     }
@@ -54,7 +56,7 @@ public class PollApiHandler extends SimpleHttpHandler {
                     Long roomId = roomParam != null ? Longs.tryParse(roomParam) : null;
                     Room room = roomId != null ? roomManager.getRoomInstance(roomId) : null;
                     if (room != null) {
-                        pollService.closePoll(room);
+                        pollService.closePoll(room, user);
                         response.stringContent("OK");
                         return;
                     }

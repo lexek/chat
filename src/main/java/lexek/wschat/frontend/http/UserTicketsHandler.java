@@ -22,7 +22,7 @@ public class UserTicketsHandler extends SimpleHttpHandler {
 
     @Override
     protected void handle(Request request, Response response) throws Exception {
-        UserAuthDto auth = authenticationManager.checkAuthentication(request);
+        UserAuthDto auth = authenticationManager.checkFullAuthentication(request);
         if (auth != null && auth.getUser() != null) {
             UserDto user = auth.getUser();
             if (request.method() == HttpMethod.GET) {

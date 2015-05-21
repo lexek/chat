@@ -6,6 +6,7 @@ import com.google.common.collect.Multimap;
 import lexek.wschat.chat.*;
 import lexek.wschat.db.dao.AnnouncementDao;
 import lexek.wschat.db.jooq.tables.pojos.Announcement;
+import lexek.wschat.db.model.UserDto;
 
 import java.util.Collection;
 import java.util.List;
@@ -14,33 +15,20 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public class AnnouncementService extends AbstractService {
-    private final MessageBroadcaster messageBroadcaster;
     private final AnnouncementDao announcementDao;
+    private final JournalService journalService;
+    private final MessageBroadcaster messageBroadcaster;
     private final ScheduledExecutorService scheduledExecutor;
     private final Multimap<Room, Announcement> roomAnnouncements = HashMultimap.create();
     private final RoomManager roomManager;
-    private final Runnable task = new Runnable() {
-        @Override
-        public void run() {
-            stateData = System.currentTimeMillis();
-            try {
-                for (Map.Entry<Room, Announcement> entry : roomAnnouncements.entries()) {
-                    messageBroadcaster.submitMessage(
-                            Message.infoMessage(entry.getValue().getText()),
-                            Connection.STUB_CONNECTION,
-                            entry.getKey().FILTER);
-                }
-            } catch (Exception e) {
-                logger.warn("", e);
-            }
-        }
-    };
+    private final Runnable task;
 
     public AnnouncementService(AnnouncementDao announcementDao,
-                               RoomManager roomManager,
+                               JournalService journalService, RoomManager roomManager,
                                MessageBroadcaster messageBroadcaster,
                                ScheduledExecutorService scheduledExecutor) {
         super("announcements", ImmutableList.of("force_announce"));
+        this.journalService = journalService;
         this.messageBroadcaster = messageBroadcaster;
         this.scheduledExecutor = scheduledExecutor;
         this.roomManager = roomManager;
@@ -53,15 +41,32 @@ public class AnnouncementService extends AbstractService {
                 roomAnnouncements.put(room, announcement);
             }
         }
+        task = new Runnable() {
+            @Override
+            public void run() {
+                stateData = System.currentTimeMillis();
+                try {
+                    for (Map.Entry<Room, Announcement> entry : roomAnnouncements.entries()) {
+                        messageBroadcaster.submitMessage(
+                                Message.infoMessage(entry.getValue().getText()),
+                                Connection.STUB_CONNECTION,
+                                entry.getKey().FILTER);
+                    }
+                } catch (Exception e) {
+                    logger.warn("", e);
+                }
+            }
+        };
     }
 
-    public void announce(Announcement announcement) {
+    public void announce(Announcement announcement, UserDto admin) {
         Room room = roomManager.getRoomInstance(announcement.getRoomId());
         if (room != null) {
             announcementDao.add(announcement);
             if (announcement.getId() != null) {
                 roomAnnouncements.put(room, announcement);
                 messageBroadcaster.submitMessage(Message.infoMessage(announcement.getText()), Connection.STUB_CONNECTION);
+                journalService.newAnnouncement(admin, room, announcement);
             }
         }
     }
@@ -72,7 +77,7 @@ public class AnnouncementService extends AbstractService {
         }
     }
 
-    public void setInactive(long id) {
+    public void setInactive(long id, UserDto admin) {
         Map.Entry<Room, Announcement> deleteEntry = null;
         for (Map.Entry<Room, Announcement> entry : roomAnnouncements.entries()) {
             if (entry.getValue().getId().equals(id)) {
@@ -81,6 +86,7 @@ public class AnnouncementService extends AbstractService {
         }
         if (deleteEntry != null) {
             roomAnnouncements.remove(deleteEntry.getKey(), deleteEntry.getValue());
+            journalService.inactiveAnnouncement(admin, deleteEntry.getKey(), deleteEntry.getValue());
         }
         announcementDao.setInactive(id);
     }

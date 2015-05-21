@@ -9,7 +9,7 @@ import lexek.httpserver.SimpleHttpHandler;
 import lexek.wschat.chat.GlobalRole;
 import lexek.wschat.chat.Room;
 import lexek.wschat.chat.RoomManager;
-import lexek.wschat.db.model.UserAuthDto;
+import lexek.wschat.db.model.UserDto;
 import lexek.wschat.security.AuthenticationManager;
 import lexek.wschat.util.Names;
 
@@ -24,25 +24,25 @@ public class RoomsApiHandler extends SimpleHttpHandler {
 
     @Override
     protected void handle(Request request, Response response) throws Exception {
-        UserAuthDto authDto = authenticationManager.checkAuthentication(request);
-        if (authDto != null && authDto.getUser() != null) {
+        UserDto user = authenticationManager.checkAuthentication(request);
+        if (user != null) {
             if (request.method() == HttpMethod.GET) {
-                if (authDto.getUser().hasRole(GlobalRole.ADMIN)) {
+                if (user.hasRole(GlobalRole.ADMIN)) {
                     response.jsonContent(generateJson());
                     return;
                 }
             } else if (request.method() == HttpMethod.POST) {
-                if (authDto.getUser().hasRole(GlobalRole.SUPERADMIN)) {
+                if (user.hasRole(GlobalRole.SUPERADMIN)) {
                     String action = request.postParam("action");
                     String name = request.postParam("name");
                     if (action != null && name != null) {
                         if (action.equals("ADD") && Names.ROOM_PATTERN.matcher(name).matches()) {
                             String topic = request.postParam("topic");
-                            roomManager.createRoom(new lexek.wschat.db.jooq.tables.pojos.Room(null, name, topic));
+                            roomManager.createRoom(new lexek.wschat.db.jooq.tables.pojos.Room(null, name, topic), user);
                             response.stringContent("ok");
                             return;
                         } else if (action.equals("DELETE")) {
-                            roomManager.deleteRoom(name);
+                            roomManager.deleteRoom(name, user);
                             response.stringContent("ok");
                             return;
                         }

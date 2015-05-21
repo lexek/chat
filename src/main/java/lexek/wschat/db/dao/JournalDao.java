@@ -1,12 +1,10 @@
 package lexek.wschat.db.dao;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import lexek.wschat.db.jooq.tables.pojos.Journal;
-import org.jooq.DSLContext;
-import org.jooq.Record;
-import org.jooq.Result;
+import com.google.common.collect.ImmutableSet;
+import lexek.wschat.db.model.DataPage;
+import lexek.wschat.db.model.JournalEntry;
+import lexek.wschat.db.model.UserDto;
+import lexek.wschat.util.Pages;
 import org.jooq.exception.DataAccessException;
 import org.jooq.impl.DSL;
 import org.slf4j.Logger;
@@ -15,67 +13,97 @@ import org.slf4j.LoggerFactory;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
+import static lexek.wschat.db.jooq.Tables.USER;
 import static lexek.wschat.db.jooq.tables.Journal.JOURNAL;
 
 public class JournalDao {
+    private static final Set<String> GLOBAL_ACTIONS = ImmutableSet.of("USER_UPDATE", "NEW_EMOTICON", "NAME_CHANGE",
+            "NEW_ROOM", "DELETED_ROOM");
     private final DataSource dataSource;
-    private final Gson gson = new Gson();
     private final Logger logger = LoggerFactory.getLogger(JournalDao.class);
 
     public JournalDao(DataSource dataSource) {
         this.dataSource = dataSource;
     }
 
-    @Deprecated
-    public static void insert(DSLContext ctx, final Journal pojo) {
-        ctx
-                .insertInto(JOURNAL, JOURNAL.TIMESTAMP, JOURNAL.MESSAGE, JOURNAL.TAG, JOURNAL.USER)
-                .values(pojo.getTimestamp(), pojo.getMessage(), pojo.getTag(), pojo.getUser())
-                .execute();
-    }
-
-    public void add(Journal journal) {
+    public void add(JournalEntry journal) {
+        UserDto user = journal.getUser();
+        UserDto admin = journal.getAdmin();
         try (Connection connection = dataSource.getConnection()) {
-            DSL.using(connection).newRecord(JOURNAL, journal).store();
+            DSL.using(connection)
+                    .insertInto(JOURNAL)
+                    .columns(JOURNAL.USER_ID, JOURNAL.ADMIN_ID, JOURNAL.ACTION, JOURNAL.ACTION_DESCRIPTION,
+                            JOURNAL.TIME, JOURNAL.ROOM_ID)
+                    .values(user != null ? user.getId() : null,
+                            admin != null ? admin.getId() : null,
+                            journal.getAction(),
+                            journal.getActionDescription(),
+                            new Timestamp(journal.getTime()),
+                            journal.getRoomId())
+                    .execute();
         } catch (DataAccessException | SQLException e) {
             logger.error("sql exception", e);
         }
     }
 
-    public String getAllPagedAsJson(int page, int pageLength) {
-        String result = null;
+    public DataPage<JournalEntry> fetchAllGlobal(int page, int pageSize) {
+        DataPage<JournalEntry> result = null;
         try (Connection connection = dataSource.getConnection()) {
-            DSLContext ctx = DSL.using(connection);
-            Result<Record> data = ctx
-                    .select()
-                    .from(JOURNAL)
-                    .orderBy(JOURNAL.TIMESTAMP.desc())
-                    .limit(page * pageLength, pageLength)
-                    .fetch();
-            int total = ctx.fetchCount(ctx.select().from(JOURNAL)) / pageLength;
-            result = formatPageJson(data, total);
+            List<JournalEntry> data = DSL.using(connection)
+                    .selectFrom(JOURNAL
+                            .leftOuterJoin(USER).on(JOURNAL.USER_ID.equal(USER.ID))
+                            .leftOuterJoin(USER.as("admin")).on(JOURNAL.ADMIN_ID.equal(USER.as("admin").ID)))
+                    .where(JOURNAL.ACTION.in(GLOBAL_ACTIONS))
+                    .orderBy(JOURNAL.ID.desc())
+                    .limit(page * pageSize, pageSize)
+                    .fetch()
+                    .stream()
+                    .map(record -> new JournalEntry(
+                            UserDto.fromRecord(record.into(USER)),
+                            UserDto.fromRecord(record.into(USER.as("admin"))),
+                            record.getValue(JOURNAL.ACTION),
+                            record.getValue(JOURNAL.ACTION_DESCRIPTION),
+                            record.getValue(JOURNAL.TIME).getTime(),
+                            record.getValue(JOURNAL.ROOM_ID)))
+                    .collect(Collectors.toList());
+            int count = DSL.using(connection).fetchCount(JOURNAL);
+            result = new DataPage<>(data, page, Pages.pageCount(pageSize, count));
         } catch (DataAccessException | SQLException e) {
             logger.error("sql exception", e);
         }
         return result;
     }
 
-    private String formatPageJson(Result<Record> data, int totalPages) {
-        JsonObject rootObject = new JsonObject();
-        JsonArray dataArray = new JsonArray();
-        for (Record record : data) {
-            org.jooq.Field<?>[] fields = data.fields();
-            JsonObject object = new JsonObject();
-            for (int index = 0; index < fields.length; index++) {
-                object.add(fields[index].getName(), gson.toJsonTree(record.getValue(index)));
-            }
-            dataArray.add(object);
+    public DataPage<JournalEntry> fetchAllForRoom(int page, int pageSize, long roomId) {
+        DataPage<JournalEntry> result = null;
+        try (Connection connection = dataSource.getConnection()) {
+            List<JournalEntry> data = DSL.using(connection)
+                    .selectFrom(JOURNAL
+                            .leftOuterJoin(USER).on(JOURNAL.USER_ID.equal(USER.ID))
+                            .leftOuterJoin(USER.as("admin")).on(JOURNAL.ADMIN_ID.equal(USER.as("admin").ID)))
+                    .where(JOURNAL.ROOM_ID.equal(roomId))
+                    .orderBy(JOURNAL.ID.desc())
+                    .limit(page * pageSize, pageSize)
+                    .fetch()
+                    .stream()
+                    .map(record -> new JournalEntry(
+                            UserDto.fromRecord(record.into(USER)),
+                            UserDto.fromRecord(record.into(USER.as("admin"))),
+                            record.getValue(JOURNAL.ACTION),
+                            record.getValue(JOURNAL.ACTION_DESCRIPTION),
+                            record.getValue(JOURNAL.TIME).getTime(),
+                            record.getValue(JOURNAL.ROOM_ID)))
+                    .collect(Collectors.toList());
+            int count = DSL.using(connection).fetchCount(JOURNAL, JOURNAL.ROOM_ID.equal(roomId));
+            result = new DataPage<>(data, page, Pages.pageCount(pageSize, count));
+        } catch (DataAccessException | SQLException e) {
+            logger.error("sql exception", e);
         }
-
-        rootObject.add("data", dataArray);
-        rootObject.addProperty("totalPages", totalPages);
-
-        return gson.toJson(rootObject);
+        return result;
     }
 }

@@ -2,6 +2,7 @@ package lexek.wschat.chat.handlers;
 
 import com.google.common.collect.ImmutableList;
 import lexek.wschat.chat.*;
+import lexek.wschat.db.jooq.Chat;
 import lexek.wschat.db.model.UserDto;
 import org.junit.Before;
 import org.junit.Test;
@@ -48,9 +49,9 @@ public class SetRoleHandlerTest {
         when(room.getChatter(0L)).thenReturn(chatter);
         when(room.fetchChatter("username")).thenReturn(otherChatter);
         when(room.getName()).thenReturn("#main");
-        when(room.setRole(otherChatter, LocalRole.MOD)).thenReturn(true);
+        when(room.setRole(otherChatter, chatter, LocalRole.MOD)).thenReturn(true);
         handler.handle(ImmutableList.of("#main", "username", "MOD"), connection);
-        verify(room).setRole(otherChatter, LocalRole.MOD);
+        verify(room).setRole(otherChatter, chatter, LocalRole.MOD);
         verify(connection).send(Message.infoMessage("OK"));
     }
 
@@ -64,9 +65,9 @@ public class SetRoleHandlerTest {
         when(room.getChatter(0L)).thenReturn(chatter);
         when(room.fetchChatter("username")).thenReturn(otherChatter);
         when(room.getName()).thenReturn("#main");
-        when(room.setRole(otherChatter, LocalRole.MOD)).thenReturn(false);
+        when(room.setRole(otherChatter, chatter, LocalRole.MOD)).thenReturn(false);
         handler.handle(ImmutableList.of("#main", "username", "MOD"), connection);
-        verify(room).setRole(otherChatter, LocalRole.MOD);
+        verify(room).setRole(otherChatter, chatter, LocalRole.MOD);
         verify(connection, times(1)).send(eq(Message.errorMessage("INTERNAL_ERROR")));
     }
 
@@ -80,9 +81,9 @@ public class SetRoleHandlerTest {
         when(room.getChatter(0L)).thenReturn(chatter);
         when(room.fetchChatter("username")).thenReturn(otherChatter);
         when(room.getName()).thenReturn("#main");
-        when(room.setRole(otherChatter, LocalRole.MOD)).thenReturn(true);
+        when(room.setRole(otherChatter, chatter, LocalRole.MOD)).thenReturn(true);
         handler.handle(ImmutableList.of("#main", "username", "KKK"), connection);
-        verify(room, never()).setRole(otherChatter, LocalRole.MOD);
+        verify(room, never()).setRole(otherChatter, chatter, LocalRole.MOD);
         verify(connection, times(1)).send(eq(Message.errorMessage("UNKNOWN_ROLE")));
     }
 
@@ -101,7 +102,7 @@ public class SetRoleHandlerTest {
         when(room.fetchChatter("username")).thenReturn(otherChatter);
         when(room.getName()).thenReturn("#main");
         handler.handle(ImmutableList.of("#main", "username", "MOD"), connection);
-        verify(room, never()).setRole(otherChatter, LocalRole.MOD);
+        verify(room, never()).setRole(otherChatter, chatter, LocalRole.MOD);
         verify(connection, times(1)).send(eq(Message.errorMessage("BAN_DENIED")));
     }
 
@@ -113,7 +114,7 @@ public class SetRoleHandlerTest {
         when(room.fetchChatter("username")).thenReturn(null);
         when(room.getName()).thenReturn("#main");
         handler.handle(ImmutableList.of("#main", "username", "MOD"), connection);
-        verify(room, never()).setRole(any(Chatter.class), any(LocalRole.class));
+        verify(room, never()).setRole(any(Chatter.class), any(Chatter.class), any(LocalRole.class));
         verify(connection, times(1)).send(eq(Message.errorMessage("UNKNOWN_USER")));
     }
 
@@ -129,7 +130,7 @@ public class SetRoleHandlerTest {
         when(room.getName()).thenReturn("#main");
         handler.handle(ImmutableList.of("#main", "username", "MOD"), connection);
         verify(room, never()).fetchChatter("username");
-        verify(room, never()).setRole(any(Chatter.class), any(LocalRole.class));
+        verify(room, never()).setRole(any(Chatter.class), any(Chatter.class), any(LocalRole.class));
         verify(connection, times(1)).send(eq(Message.errorMessage("NOT_AUTHORIZED")));
     }
 
@@ -138,7 +139,7 @@ public class SetRoleHandlerTest {
         when(roomManager.getRoomInstance("#main")).thenReturn(room);
         when(room.contains(connection)).thenReturn(false);
         handler.handle(ImmutableList.of("#main", "username", "MOD"), connection);
-        verify(room, never()).setRole(any(Chatter.class), any(LocalRole.class));
+        verify(room, never()).setRole(any(Chatter.class), any(Chatter.class), any(LocalRole.class));
         verify(connection, times(1)).send(eq(Message.errorMessage("NOT_JOINED")));
     }
 
@@ -146,7 +147,7 @@ public class SetRoleHandlerTest {
     public void testBadRoom() {
         when(roomManager.getRoomInstance("#main")).thenReturn(null);
         handler.handle(ImmutableList.of("#main", "username", "MOD"), connection);
-        verify(room, never()).setRole(any(Chatter.class), any(LocalRole.class));
+        verify(room, never()).setRole(any(Chatter.class), any(Chatter.class), any(LocalRole.class));
         verify(connection, times(1)).send(eq(Message.errorMessage("UNKNOWN_ROOM")));
     }
 }

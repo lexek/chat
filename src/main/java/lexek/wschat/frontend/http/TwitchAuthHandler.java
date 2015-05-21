@@ -24,7 +24,7 @@ public class TwitchAuthHandler extends SimpleHttpHandler {
 
     @Override
     protected void handle(Request request, Response response) throws Exception {
-        UserAuthDto auth = authenticationManager.checkAuthentication(request);
+        UserAuthDto auth = authenticationManager.checkFullAuthentication(request);
         if (auth != null) {
             response.redirect("/setup_profile");
         } else if (request.queryParamKeys().isEmpty()) {

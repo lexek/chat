@@ -7,12 +7,10 @@ import lexek.wschat.chat.ConnectionManager;
 import lexek.wschat.chat.GlobalRole;
 import lexek.wschat.chat.User;
 import lexek.wschat.db.dao.UserDao;
-import lexek.wschat.db.jooq.tables.pojos.Journal;
 import lexek.wschat.db.jooq.tables.records.UserRecord;
 import lexek.wschat.db.model.DataPage;
 import lexek.wschat.db.model.UserData;
 import lexek.wschat.db.model.UserDto;
-import org.jooq.SortField;
 import org.jooq.TableField;
 
 import java.util.Map;
@@ -38,24 +36,13 @@ public class UserService {
             invalidate(user.getName());
             //close all connection authenticated with that user account
             connectionManager.forEach(connection -> user.getId().equals(connection.getUser().getId()), Connection::close);
-            journalService.journal(new Journal(
-                    null,
-                    System.currentTimeMillis(),
-                    user.getName() + ": " + values.toString(),
-                    admin.getName(),
-                    "admin"
-            ));
+            journalService.userUpdated(user, admin, values);
         }
     }
 
     public boolean changeName(UserDto user, String newName) {
         if (userDao.tryChangeName(user.getId(), newName, user.hasRole(GlobalRole.ADMIN))) {
-            journalService.journal(new Journal(
-                    null,
-                    System.currentTimeMillis(),
-                    "Changed name to " + newName,
-                    user.getName(),
-                    "user"));
+            journalService.nameChanged(user, user.getName());
             userCache.invalidate(user.getName());
             //close all connection authenticated with that user account
             connectionManager.forEach(connection -> user.getId().equals(connection.getUser().getId()), Connection::close);
@@ -66,12 +53,6 @@ public class UserService {
 
     public void delete(UserDto user, UserDto admin) {
         if (userDao.delete(user)) {
-            journalService.journal(new Journal(
-                    null,
-                    System.currentTimeMillis(),
-                    "Deleted user " + user.getName(),
-                    admin.getName(),
-                    "admin"));
             userCache.invalidate(user.getName());
             //close all connection authenticated with that user account
             connectionManager.forEach(connection -> user.getId().equals(connection.getUser().getId()), Connection::close);

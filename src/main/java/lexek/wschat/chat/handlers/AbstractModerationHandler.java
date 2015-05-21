@@ -29,7 +29,7 @@ public abstract class AbstractModerationHandler extends AbstractMsgHandler {
             }
             if (userChatter != null && userChatter.getId() != null) {
                 if (Room.canBan(modChatter, userChatter)) {
-                    if (performOperation(room, userChatter)) {
+                    if (performOperation(room, modChatter, userChatter)) {
                         success(connection, room, modChatter, userChatter);
                     } else {
                         connection.send(Message.errorMessage("INTERNAL_ERROR"));
@@ -45,7 +45,7 @@ public abstract class AbstractModerationHandler extends AbstractMsgHandler {
         }
     }
 
-    protected abstract boolean performOperation(Room room, Chatter userChatter);
+    protected abstract boolean performOperation(Room room, Chatter mod, Chatter userChatter);
 
     protected abstract void success(Connection connection, Room room, Chatter modChatter, Chatter userChatter);
 }

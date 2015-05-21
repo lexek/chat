@@ -49,9 +49,9 @@ public class BanHandlerTest {
         when(room.getChatter(0L)).thenReturn(chatter);
         when(room.fetchChatter("username")).thenReturn(otherChatter);
         when(room.getName()).thenReturn("#main");
-        when(room.banChatter(otherChatter)).thenReturn(true);
+        when(room.banChatter(otherChatter, chatter)).thenReturn(true);
         handler.handle(ImmutableList.of("#main", "username"), connection);
-        verify(room).banChatter(otherChatter);
+        verify(room).banChatter(otherChatter, chatter);
         verify(messageBroadcaster, times(1)).submitMessage(
                 eq(Message.moderationMessage(MessageType.BAN, "#main", "user", "username")),
                 eq(connection),
@@ -68,9 +68,9 @@ public class BanHandlerTest {
         when(room.getChatter(0L)).thenReturn(chatter);
         when(room.fetchChatter("username")).thenReturn(otherChatter);
         when(room.getName()).thenReturn("#main");
-        when(room.banChatter(otherChatter)).thenReturn(false);
+        when(room.banChatter(otherChatter, chatter)).thenReturn(false);
         handler.handle(ImmutableList.of("#main", "username"), connection);
-        verify(room).banChatter(otherChatter);
+        verify(room).banChatter(otherChatter, chatter);
         verifyZeroInteractions(messageBroadcaster);
         verify(connection, times(1)).send(eq(Message.errorMessage("INTERNAL_ERROR")));
     }
@@ -87,7 +87,7 @@ public class BanHandlerTest {
         when(room.fetchChatter("username")).thenReturn(otherChatter);
         when(room.getName()).thenReturn("#main");
         handler.handle(ImmutableList.of("#main", "username"), connection);
-        verify(room, never()).banChatter(otherChatter);
+        verify(room, never()).banChatter(otherChatter, chatter);
         verifyZeroInteractions(messageBroadcaster);
         verify(connection, times(1)).send(eq(Message.errorMessage("BAN_DENIED")));
     }
@@ -103,7 +103,7 @@ public class BanHandlerTest {
         when(room.fetchChatter("username")).thenReturn(otherChatter);
         when(room.getName()).thenReturn("#main");
         handler.handle(ImmutableList.of("#main", "username"), connection);
-        verify(room, never()).banChatter(otherChatter);
+        verify(room, never()).banChatter(otherChatter, chatter);
         verifyZeroInteractions(messageBroadcaster);
         verify(connection, times(1)).send(eq(Message.errorMessage("BAN_DENIED")));
     }
@@ -116,7 +116,7 @@ public class BanHandlerTest {
         when(room.fetchChatter("username")).thenReturn(null);
         when(room.getName()).thenReturn("#main");
         handler.handle(ImmutableList.of("#main", "username"), connection);
-        verify(room, never()).banChatter(any(Chatter.class));
+        verify(room, never()).banChatter(any(Chatter.class), any(Chatter.class));
         verifyZeroInteractions(messageBroadcaster);
         verify(connection, times(1)).send(eq(Message.errorMessage("UNKNOWN_USER")));
     }
@@ -134,7 +134,7 @@ public class BanHandlerTest {
         when(room.getName()).thenReturn("#main");
         handler.handle(ImmutableList.of("#main", "username"), connection);
         verify(room, never()).fetchChatter("username");
-        verify(room, never()).banChatter(any(Chatter.class));
+        verify(room, never()).banChatter(any(Chatter.class), any(Chatter.class));
         verifyZeroInteractions(messageBroadcaster);
         verify(connection, times(1)).send(eq(Message.errorMessage("NOT_AUTHORIZED")));
     }
@@ -144,7 +144,7 @@ public class BanHandlerTest {
         when(roomManager.getRoomInstance("#main")).thenReturn(room);
         when(room.contains(connection)).thenReturn(false);
         handler.handle(ImmutableList.of("#main", "username"), connection);
-        verify(room, never()).banChatter(any(Chatter.class));
+        verify(room, never()).banChatter(any(Chatter.class), any(Chatter.class));
         verifyZeroInteractions(messageBroadcaster);
         verify(connection, times(1)).send(eq(Message.errorMessage("NOT_JOINED")));
     }
@@ -153,7 +153,7 @@ public class BanHandlerTest {
     public void testBadRoom() {
         when(roomManager.getRoomInstance("#main")).thenReturn(null);
         handler.handle(ImmutableList.of("#main", "username"), connection);
-        verify(room, never()).banChatter(any(Chatter.class));
+        verify(room, never()).banChatter(any(Chatter.class), any(Chatter.class));
         verifyZeroInteractions(messageBroadcaster);
         verify(connection, times(1)).send(eq(Message.errorMessage("UNKNOWN_ROOM")));
     }

@@ -11,7 +11,7 @@ public class ClearUserHandler extends AbstractModerationHandler {
     }
 
     @Override
-    protected boolean performOperation(Room room, Chatter userChatter) {
+    protected boolean performOperation(Room room, Chatter mod, Chatter user) {
         return true;
     }
 

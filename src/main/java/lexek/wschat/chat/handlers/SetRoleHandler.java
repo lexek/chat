@@ -24,7 +24,7 @@ public class SetRoleHandler extends AbstractMsgHandler {
             Chatter userChatter = room.fetchChatter(args.get(1));
             if (userChatter != null && userChatter.getId() != null) {
                 if (Room.canChangeRole(modChatter, userChatter, newRole)) {
-                    if (room.setRole(userChatter, newRole)) {
+                    if (room.setRole(userChatter, modChatter, newRole)) {
                         connection.send(Message.infoMessage("OK"));
                     } else {
                         connection.send(Message.errorMessage("INTERNAL_ERROR"));

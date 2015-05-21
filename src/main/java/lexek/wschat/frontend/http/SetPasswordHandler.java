@@ -20,7 +20,7 @@ public class SetPasswordHandler extends SimpleHttpHandler {
     @Override
     protected void handle(Request request, Response response) throws Exception {
         //TODO: require old password
-        UserAuthDto auth = authenticationManager.checkAuthentication(request);
+        UserAuthDto auth = authenticationManager.checkFullAuthentication(request);
         if (auth != null && auth.getUser() != null) {
             if (request.method() == HttpMethod.POST) {
                 String passwordParam = request.postParam("password");

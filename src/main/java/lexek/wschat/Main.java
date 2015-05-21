@@ -95,11 +95,12 @@ public class Main {
         AtomicLong messageId = new AtomicLong(0);
         HistoryService historyService = new HistoryService(20, historyDao);
         MessageBroadcaster messageBroadcaster = new MessageBroadcaster(historyService, connectionManager);
-        RoomManager roomManager = new RoomManager(userService, messageBroadcaster, roomDao, chatterDao);
-        AnnouncementService announcementService = new AnnouncementService(new AnnouncementDao(dataSource), roomManager, messageBroadcaster, scheduledExecutorService);
-        PollService pollService = new PollService(new PollDao(dataSource), messageBroadcaster, roomManager);
+        RoomManager roomManager = new RoomManager(userService, messageBroadcaster, roomDao, chatterDao, journalService);
+        AnnouncementService announcementService = new AnnouncementService(new AnnouncementDao(dataSource), journalService, roomManager, messageBroadcaster, scheduledExecutorService);
+        PollService pollService = new PollService(new PollDao(dataSource), messageBroadcaster, roomManager, journalService);
         AuthenticationService authenticationService = new AuthenticationService(authenticationManager, userService, captchaService);
         TicketService ticketService = new TicketService(new TicketDao(dataSource), messageBroadcaster);
+        EmoticonService emoticonService = new EmoticonService(emoticonDao, journalService);
 
         Set<String> bannedIps = new CopyOnWriteArraySet<>();
         messageReactor.registerHandler(new BanHandler(messageBroadcaster, roomManager));
@@ -190,7 +191,7 @@ public class Main {
         httpRequestDispatcher.add("/admin/api/history", new HistoryApiHandler(authenticationManager, historyService));
         httpRequestDispatcher.add("/admin/api/tickets", new TicketsHandler(authenticationManager, ticketService));
         httpRequestDispatcher.add("/admin/api/ticket_count", new TicketCountHandler(authenticationManager, ticketService));
-        httpRequestDispatcher.add("/admin/api/emoticons", new EmoticonHandler(dataDir, emoticonDao, authenticationManager));
+        httpRequestDispatcher.add("/admin/api/emoticons", new EmoticonHandler(dataDir, emoticonService, authenticationManager));
         httpRequestDispatcher.add("/admin/api/user", new UserApiHandler(authenticationManager, userService));
         httpRequestDispatcher.add("/admin/api/users", new UsersHandler(authenticationManager, userService));
         httpRequestDispatcher.add("/admin/api/chatters", new ChattersAdminApiHandler(authenticationManager, chatterDao));

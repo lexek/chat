@@ -24,7 +24,7 @@ public class TicketsHandler extends SimpleHttpHandler {
 
     @Override
     protected void handle(Request request, Response response) throws Exception {
-        UserAuthDto auth = authenticationManager.checkAuthentication(request);
+        UserAuthDto auth = authenticationManager.checkFullAuthentication(request);
         if (auth != null && auth.getUser() != null && auth.getUser().hasRole(GlobalRole.SUPERADMIN)) {
             if (request.method() == HttpMethod.GET) {
                 handleGet(request, response);

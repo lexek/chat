@@ -13,8 +13,8 @@ public class TimeOutHandler extends AbstractModerationHandler {
     }
 
     @Override
-    protected boolean performOperation(Room room, Chatter userChatter) {
-        return room.timeoutChatter(userChatter, System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(10));
+    protected boolean performOperation(Room room, Chatter mod, Chatter user) {
+        return room.timeoutChatter(user, System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(10));
     }
 
     @Override

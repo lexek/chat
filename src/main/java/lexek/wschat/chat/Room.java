@@ -5,6 +5,7 @@ import com.google.common.collect.LinkedHashMultiset;
 import com.google.common.collect.Multiset;
 import io.netty.util.internal.chmv8.ConcurrentHashMapV8;
 import lexek.wschat.db.dao.ChatterDao;
+import lexek.wschat.services.JournalService;
 import lexek.wschat.services.UserService;
 
 import java.util.HashSet;
@@ -27,12 +28,14 @@ public class Room {
     private final Lock writeLock = lock.writeLock();
     private final UserService userService;
     private final ChatterDao chatterDao;
+    private final JournalService journalService;
     private final long id;
     private final String name;
     private String topic;
 
-    public Room(UserService userService, ChatterDao chatterDao, long id, String name, String topic) {
+    public Room(UserService userService, JournalService journalService, ChatterDao chatterDao, long id, String name, String topic) {
         this.userService = userService;
+        this.journalService = journalService;
         this.chatterDao = chatterDao;
         this.id = id;
         this.name = name;
@@ -146,24 +149,26 @@ public class Room {
                 );
     }
 
-    public boolean banChatter(Chatter chatter) {
+    public boolean banChatter(Chatter chatter, Chatter mod) {
         boolean result = false;
         if (chatter != null && chatter.getId() != null) {
             result = chatterDao.banChatter(chatter.getId());
             if (result) {
                 chatter.setBanned(true);
+                journalService.roomBan(chatter.getUser().getWrappedObject(), mod.getUser().getWrappedObject(), this);
             }
         }
         return result;
     }
 
-    public boolean unbanChatter(Chatter chatter) {
+    public boolean unbanChatter(Chatter chatter, Chatter mod) {
         boolean result = false;
         if (chatter != null && chatter.getId() != null) {
             result = chatterDao.unbanChatter(chatter.getId());
             if (result) {
                 chatter.setBanned(false);
                 chatter.setTimeout(null);
+                journalService.roomUnban(chatter.getUser().getWrappedObject(), mod.getUser().getWrappedObject(), this);
             }
         }
         return result;
@@ -180,12 +185,14 @@ public class Room {
         return result;
     }
 
-    public boolean setRole(Chatter chatter, LocalRole newRole) {
+    public boolean setRole(Chatter chatter, Chatter admin, LocalRole newRole) {
         boolean result = false;
         if (chatter != null && chatter.getId() != null && newRole != LocalRole.GUEST) {
             result = chatterDao.setRole(chatter.getId(), newRole);
             if (result) {
                 chatter.setRole(newRole);
+                journalService.roomRole(chatter.getUser().getWrappedObject(), admin.getUser().getWrappedObject(), this,
+                        newRole);
             }
         }
         return result;

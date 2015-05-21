@@ -8,8 +8,8 @@ public class UnbanHandler extends AbstractModerationHandler {
     }
 
     @Override
-    protected boolean performOperation(Room room, Chatter userChatter) {
-        return room.unbanChatter(userChatter);
+    protected boolean performOperation(Room room, Chatter mod, Chatter user) {
+        return room.unbanChatter(user, mod);
     }
 
     @Override

@@ -1,9 +1,7 @@
 package lexek.wschat.db.dao;
 
 import lexek.wschat.db.jooq.tables.pojos.Emoticon;
-import lexek.wschat.db.jooq.tables.pojos.Journal;
 import org.jooq.DSLContext;
-import org.jooq.Record;
 import org.jooq.exception.DataAccessException;
 import org.jooq.impl.DSL;
 import org.slf4j.Logger;
@@ -37,36 +35,34 @@ public class EmoticonDao {
         return result;
     }
 
-    public void addEmoticon(Emoticon emoticon, Journal journalMessage) {
+    public void addEmoticon(Emoticon emoticon) {
         try (Connection connection = dataSource.getConnection()) {
             DSLContext ctx = DSL.using(connection);
             ctx
                     .insertInto(EMOTICON, EMOTICON.CODE, EMOTICON.FILE_NAME, EMOTICON.WIDTH, EMOTICON.HEIGHT)
                     .values(emoticon.getCode(), emoticon.getFileName(), emoticon.getWidth(), emoticon.getHeight())
                     .execute();
-            JournalDao.insert(ctx, journalMessage);
         } catch (DataAccessException | SQLException e) {
             logger.error("sql exception", e);
         }
     }
 
-    public void delete(long id, String user) {
+    public Emoticon delete(long id) {
+        Emoticon emoticon = null;
         try (Connection connection = dataSource.getConnection()) {
             DSLContext ctx = DSL.using(connection);
-            Record result = ctx
+            emoticon = ctx
                     .select(EMOTICON.CODE)
                     .from(EMOTICON)
                     .where(EMOTICON.ID.equal(id))
-                    .fetchOne();
+                    .fetchOneInto(Emoticon.class);
             ctx
                     .delete(EMOTICON)
                     .where(EMOTICON.ID.equal(id))
                     .execute();
-            Journal journalMessage = new Journal(null, System.currentTimeMillis(),
-                    "Deleted emoticon \"" + result.getValue(EMOTICON.CODE) + "\".", user, "admin");
-            JournalDao.insert(ctx, journalMessage);
         } catch (DataAccessException | SQLException e) {
             logger.error("sql exception", e);
         }
+        return emoticon;
     }
 }

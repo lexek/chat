@@ -7,11 +7,11 @@ import lexek.httpserver.Request;
 import lexek.httpserver.Response;
 import lexek.httpserver.SimpleHttpHandler;
 import lexek.wschat.chat.GlobalRole;
-import lexek.wschat.db.dao.EmoticonDao;
 import lexek.wschat.db.jooq.tables.pojos.Emoticon;
-import lexek.wschat.db.jooq.tables.pojos.Journal;
 import lexek.wschat.db.model.UserAuthDto;
+import lexek.wschat.db.model.UserDto;
 import lexek.wschat.security.AuthenticationManager;
+import lexek.wschat.services.EmoticonService;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -25,23 +25,23 @@ import java.nio.file.StandardOpenOption;
 
 public class EmoticonHandler extends SimpleHttpHandler {
     private final Path emoticonsDir;
-    private final EmoticonDao emoticonDao;
+    private final EmoticonService emoticonService;
     private final AuthenticationManager authenticationManager;
     private String cachedValue = null;
 
-    public EmoticonHandler(File dataDir, EmoticonDao emoticonDao, AuthenticationManager authenticationManager) {
-        this.emoticonDao = emoticonDao;
+    public EmoticonHandler(File dataDir, EmoticonService emoticonService, AuthenticationManager authenticationManager) {
+        this.emoticonService = emoticonService;
         this.authenticationManager = authenticationManager;
         this.emoticonsDir = Paths.get(dataDir.toURI()).resolve("emoticons");
     }
 
-    private void handleDelete(Response response, String name, long id) {
-        emoticonDao.delete(id, name);
+    private void handleDelete(Response response, UserDto admin, long id) {
+        emoticonService.delete(id, admin);
         cachedValue = null;
         response.stringContent("ok");
     }
 
-    private void handleUpload(Request request, Response response, String name) throws IOException {
+    private void handleUpload(Request request, Response response, UserDto admin) throws IOException {
         FileUpload tmpFile = request.postParamFile("file");
         String code = request.postParam("code");
         if (tmpFile != null && !tmpFile.getFilename().isEmpty() && code != null && !code.isEmpty()) {
@@ -55,12 +55,7 @@ public class EmoticonHandler extends SimpleHttpHandler {
             if (width > 200 || height > 200) {
                 response.badRequest();
             } else {
-                String message = "Added emoticon " + code + "; " + emoticonFile.getFileName().toString();
-                Journal journalMessage = new Journal(null, System.currentTimeMillis(), message, name, "admin");
-                emoticonDao.addEmoticon(
-                        new Emoticon(null, code, emoticonFile.getFileName().toString(), height, width),
-                        journalMessage
-                );
+                emoticonService.add(new Emoticon(null, code, emoticonFile.getFileName().toString(), height, width), admin);
                 cachedValue = null;
                 response.redirect("/admin/emoticons");
             }
@@ -71,7 +66,11 @@ public class EmoticonHandler extends SimpleHttpHandler {
 
     private Path createEmoticonFile(String originalName) throws IOException {
         String extension = originalName.substring(originalName.lastIndexOf("."));
-        String newName = Hashing.md5().newHasher().putUnencodedChars(originalName).putLong(System.currentTimeMillis()).hash() + extension;
+        String newName = Hashing.md5()
+                .newHasher()
+                .putUnencodedChars(originalName)
+                .putLong(System.currentTimeMillis())
+                .hash() + extension;
         Path file = emoticonsDir.resolve(newName);
         return Files.createFile(file);
     }
@@ -79,19 +78,19 @@ public class EmoticonHandler extends SimpleHttpHandler {
     @Override
     protected void handle(Request request, Response response) throws Exception {
         if (request.method() == HttpMethod.POST) {
-            UserAuthDto userAuthDto = authenticationManager.checkAuthentication(request);
+            UserAuthDto userAuthDto = authenticationManager.checkFullAuthentication(request);
             if (userAuthDto != null && userAuthDto.getUser() != null && userAuthDto.getUser().hasRole(GlobalRole.ADMIN)) {
                 String deleteParam = request.queryParam("delete");
-                String username = userAuthDto.getUser().getName();
+                UserDto admin = userAuthDto.getUser();
                 if (deleteParam != null) {
-                    handleDelete(response, username, Long.valueOf(deleteParam));
+                    handleDelete(response, admin, Long.valueOf(deleteParam));
                 } else {
-                    handleUpload(request, response, username);
+                    handleUpload(request, response, admin);
                 }
             }
         } else if (request.method() == HttpMethod.GET) {
             if (cachedValue == null) {
-                cachedValue = emoticonDao.getAllAsJson();
+                cachedValue = emoticonService.getAllAsJson();
             }
             response.stringContent(cachedValue, "application/json; charset=utf-8");
         } else {
