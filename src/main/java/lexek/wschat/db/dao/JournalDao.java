@@ -22,8 +22,8 @@ import static lexek.wschat.db.jooq.Tables.USER;
 import static lexek.wschat.db.jooq.tables.Journal.JOURNAL;
 
 public class JournalDao {
-    private static final Set<String> GLOBAL_ACTIONS = ImmutableSet.of("USER_UPDATE", "NEW_EMOTICON", "NAME_CHANGE",
-            "NEW_ROOM", "DELETED_ROOM");
+    private static final Set<String> GLOBAL_ACTIONS = ImmutableSet.of("USER_UPDATE", "NEW_EMOTICON", "DELETED_EMOTICON",
+            "NAME_CHANGE", "NEW_ROOM", "DELETED_ROOM");
     private final DataSource dataSource;
     private final Logger logger = LoggerFactory.getLogger(JournalDao.class);
 
@@ -71,7 +71,7 @@ public class JournalDao {
                             record.getValue(JOURNAL.TIME).getTime(),
                             record.getValue(JOURNAL.ROOM_ID)))
                     .collect(Collectors.toList());
-            int count = DSL.using(connection).fetchCount(JOURNAL);
+            int count = DSL.using(connection).fetchCount(JOURNAL, JOURNAL.ACTION.in(GLOBAL_ACTIONS));
             result = new DataPage<>(data, page, Pages.pageCount(pageSize, count));
         } catch (DataAccessException | SQLException e) {
             logger.error("sql exception", e);
