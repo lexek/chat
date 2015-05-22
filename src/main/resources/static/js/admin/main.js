@@ -58,11 +58,68 @@ var TicketCountServiceFactory = function($http) {
     return new TicketCountService();
 };
 
+var MessageFilter = function($http, $sce) {
+    var emoticons = {};
+    var emoticonRegExp = null;
+    $http({method: 'GET', url: '/admin/api/emoticons'})
+        .success(function(d, status, headers, config) {
+            var data = d["records"];
+            var emoticonCodeList = [];
+            angular.forEach(data, function (e) {
+                emoticons[e[1]] = {
+                    "id": e[0],
+                    "code": e[1],
+                    "fileName": e[2],
+                    "height": e[3],
+                    "width": e[4]
+                };
+                emoticonCodeList.push(e[1]
+                    .replace("\\", "\\\\")
+                    .replace(")", "\\)")
+                    .replace("(", "\\(")
+                    .replace(".", "\\.")
+                    .replace("*", "\\*"));
+            });
+            emoticonRegExp = new RegExp(emoticonCodeList.join("|"), "g");
+        });
+
+    return function(input) {
+        var text = input.replace(/</gi, '&lt;');
+        text = twemoji.parse(text, {
+            base: "/img/",
+            folder: "twemoji",
+            ext: ".png",
+            callback: function(icon, options, variant) {
+                switch ( icon ) {
+                    case 'a9':      // � copyright
+                    case 'ae':      // � registered trademark
+                    case '2122':    // � trademark
+                        return false;
+                }
+                return ''.concat(options.base, options.size, '/', icon, options.ext);
+            }
+        });
+        if (emoticonRegExp) {
+            text = text.replace(emoticonRegExp, function (match) {
+                var emoticon = emoticons[match];
+                if (emoticon) {
+                    return "<img class='faceCode' src='/emoticons/" + emoticon.fileName + "' title='" + emoticon.code + "'></img>"
+                } else {
+                    return null;
+                }
+            });
+        }
+        return $sce.trustAsHtml(text);
+    };
+};
+
+AdminServices.filter("message", ["$http", "$sce", MessageFilter]);
 AdminServices.factory("alert", AlertServiceFactory);
 AdminServices.factory("title", TitleServiceFactory);
 AdminServices.factory("tickets", TicketCountServiceFactory);
 
-var AdminApplication = angular.module("AdminApplication", ["ngRoute", "ngAnimate", "AdminServices", "relativeDate", "ui.inflector", "ui.bootstrap", "ui.bootstrap.datetimepicker"]);
+var AdminApplication = angular.module("AdminApplication", ["ngRoute", "ngAnimate", "AdminServices", "relativeDate",
+    "ui.inflector", "ui.bootstrap", "ui.bootstrap.datetimepicker"]);
 
 Role = function(title, value) {
     this.title = title;

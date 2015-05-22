@@ -16,6 +16,7 @@
     </script>
 
     <script src="//code.jquery.com/jquery-2.1.0.min.js"></script>
+    <script src="/vendor/js/twemoji.js"></script>
     <script src="/vendor/js/angular.js"></script>
     <script src="/vendor/js/angular-animate.2.js"></script>
     <script src="/vendor/js/angular-route.js"></script>
@@ -580,7 +581,7 @@
                     </td>
                     <td ng-if="(entry.type==='MSG') || (entry.type==='ME') || (entry.type==='MSG_EXT')">
                         <span class="btn-link" ng-click="addUserFilter(entry.userName)"><strong>&lt;{{entry.userName}}&gt;</strong></span>
-                        {{entry.message}}
+                        <span ng-bind-html="entry.message | message"></span>
                     </td>
                     <td ng-if="(entry.type==='CLEAR') || (entry.type==='BAN') || (entry.type==='TIMEOUT')">
                         {{entry.userName}} cleared messages of {{entry.message}}
@@ -1206,7 +1207,7 @@
                         </td>
                         <td style="word-break: break-all" ng-if="(entry.type==='MSG') || (entry.type==='ME') || (entry.type==='MSG_EXT')">
                             <strong>&lt;{{entry.userName}}&gt;</strong>
-                            {{entry.message}}
+                            <span ng-bind-html="entry.message | message"></span>
                         </td>
                         <td ng-if="(entry.type==='CLEAR') || (entry.type==='BAN') || (entry.type==='TIMEOUT')">
                             {{entry.userName}} cleared messages of {{entry.message}}
@@ -1214,7 +1215,7 @@
                     </tr>
                 </table>
                 <div class="panel-footer">
-                    <div class="btn btn-primary" ng-click="showHistory()">all messages</div>
+                    <div class="btn btn-default" ng-click="showHistory()">all messages</div>
                 </div>
             </div>
         </div>
@@ -1271,7 +1272,7 @@
                     </tr>
                 </table>
                 <div class="panel-footer">
-                    <div class="btn btn-primary" ng-click="showJournal()">all journal</div>
+                    <div class="btn btn-default" ng-click="showJournal()">all journal</div>
                 </div>
             </div>
         </div>
@@ -1292,7 +1293,7 @@
                 <div class="panel-footer">
                     <div class="btn btn-primary" ng-if="!poll.poll" ng-click="composePoll()">create poll</div>
                     <div class="btn btn-warning" ng-if="poll.poll" ng-click="closePoll()">close poll</div>
-                    <div class="btn btn-primary pull-right" ng-click="showPolls()">view old polls</div>
+                    <div class="btn btn-default pull-right" ng-click="showPolls()">view old polls</div>
                 </div>
             </div>
             <div class="panel panel-primary">
@@ -1374,7 +1375,7 @@
                     </tr>
                 </table>
                 <div class="panel-footer">
-                    <div class="btn btn-primary" ng-click="showChatters()">all chatters</div>
+                    <div class="btn btn-default" ng-click="showChatters()">all chatters</div>
                 </div>
             </div>
         </div>
