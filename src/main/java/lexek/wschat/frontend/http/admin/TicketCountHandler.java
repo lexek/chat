@@ -19,7 +19,7 @@ public class TicketCountHandler extends SimpleHttpHandler {
 
     @Override
     protected void handle(Request request, Response response) throws Exception {
-        if (authenticationManager.hasRole(request, GlobalRole.SUPERADMIN)) {
+        if (authenticationManager.hasRole(request, GlobalRole.ADMIN)) {
             if (request.method() == HttpMethod.GET) {
                 response.stringContent(String.valueOf(ticketService.countOpenTickets()));
                 return;

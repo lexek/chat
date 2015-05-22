@@ -1430,12 +1430,12 @@
                     <li ng-class="{'active': menuId === 'users'}">
                         <a href="/admin/users?page=0"><i class="fa fa-fw fa-users"></i> users</a>
                     </li>
-                <#if user.role == "SUPERADMIN">
                     <li ng-class="{'active': menuId === 'tickets'}">
                         <a href="/admin/tickets?page=0">
                             <i class="fa fa-fw fa-ticket"></i> tickets<span class="badge pull-right">{{getOpenTicketCount()}}</span>
                         </a>
                     </li>
+                <#if user.role == "SUPERADMIN">
                     <li ng-class="{'active': menuId === 'services'}">
                         <a href="/admin/services">
                             <i class="fa fa-fw fa-cogs"></i> services
