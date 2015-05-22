@@ -8,6 +8,7 @@ import lexek.httpserver.Response;
 import lexek.httpserver.SimpleHttpHandler;
 import lexek.wschat.chat.GlobalRole;
 import lexek.wschat.db.dao.JournalDao;
+import lexek.wschat.db.model.UserDto;
 import lexek.wschat.security.AuthenticationManager;
 
 public class JournalHandler extends SimpleHttpHandler {
@@ -23,29 +24,27 @@ public class JournalHandler extends SimpleHttpHandler {
 
     @Override
     protected void handle(Request request, Response response) throws Exception {
-        if (authenticationManager.hasRole(request, GlobalRole.SUPERADMIN)) {
-            if (request.method() == HttpMethod.GET) {
-                handleGet(request, response);
-                return;
+        if (request.method() == HttpMethod.GET) {
+            UserDto userDto = authenticationManager.checkAuthentication(request);
+            String pageParam = request.queryParam("page");
+            String roomParam = request.queryParam("room");
+            Integer page = pageParam != null ? Ints.tryParse(pageParam) : null;
+            Long roomId = roomParam != null ? Longs.tryParse(roomParam) : null;
+
+            if (page != null && page >= 0) {
+                if (roomId != null) {
+                    if (userDto != null && userDto.hasRole(GlobalRole.ADMIN)) {
+                        response.jsonContent(journalDao.fetchAllForRoom(page, PAGE_LENGTH, roomId));
+                        return;
+                    }
+                } else {
+                    if (userDto != null && userDto.hasRole(GlobalRole.SUPERADMIN)) {
+                        response.jsonContent(journalDao.fetchAllGlobal(page, PAGE_LENGTH));
+                        return;
+                    }
+                }
             }
         }
         response.badRequest();
-    }
-
-    private void handleGet(Request request, Response response) {
-        String pageParam = request.queryParam("page");
-        String roomParam = request.queryParam("room");
-        Integer page = pageParam != null ? Ints.tryParse(pageParam) : null;
-        Long roomId = roomParam != null ? Longs.tryParse(roomParam) : null;
-
-        if (page != null && page >= 0) {
-            if (roomId != null) {
-                response.jsonContent(journalDao.fetchAllForRoom(page, PAGE_LENGTH, roomId));
-            } else {
-                response.jsonContent(journalDao.fetchAllGlobal(page, PAGE_LENGTH));
-            }
-        } else {
-            response.badRequest();
-        }
     }
 }
