@@ -1204,18 +1204,18 @@
                     <div class="list-group-item"
                          ng-repeat="message in messages"
                          ng-class="{'list-group-item-warning': message.hidden, 'list-group-item-info': ((message.type==='CLEAR') || (message.type==='BAN') || (message.type==='TIMEOUT'))}">
-                        <h4 class="list-group-item-heading">
-                            {{message.userName}}
-                            <small>
-                                <abbr title="{{message.timestamp | date:'dd.MM.yyyy HH:mm'}}">
-                                    {{message.timestamp | relativeDate}}
-                                </abbr>
-                            </small>
-                        </h4>
-                        <p class="list-group-item-text" ng-bind-html="message.message | message" ng-if="(message.type==='MSG') || (message.type==='ME') || (message.type==='MSG_EXT')"></p>
-                        <p class="list-group-item-text" ng-if="(message.type==='CLEAR') || (message.type==='BAN') || (message.type==='TIMEOUT')">
+                        <small>
+                            <abbr title="{{message.timestamp | date:'dd.MM.yyyy HH:mm'}}">
+                                {{message.timestamp | relativeDate}}
+                            </abbr>
+                        </small>
+                        <strong class="list-group-item-heading">
+                            &lt;{{message.userName}}&gt;
+                        </strong>
+                        <span class="list-group-item-text" ng-bind-html="message.message | message" ng-if="(message.type==='MSG') || (message.type==='ME') || (message.type==='MSG_EXT')"></span>
+                        <span class="list-group-item-text" ng-if="(message.type==='CLEAR') || (message.type==='BAN') || (message.type==='TIMEOUT')">
                             cleared messages of {{message.message}}
-                        </p>
+                        </span>
                     </div>
                 </div>
                 <div class="panel-footer">
