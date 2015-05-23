@@ -1200,20 +1200,24 @@
                         <i class="fa fa-fw fa-comment-o"></i> recent messages
                     </h4>
                 </div>
-                <table class="table table-hover table-striped">
-                    <tr ng-repeat="entry in messages" ng-class="{'warning': entry.hidden, 'info': ((entry.type==='CLEAR') || (entry.type==='BAN') || (entry.type==='TIMEOUT'))}">
-                        <td style="width:120px">
-                            <abbr title="{{entry.timestamp | date:'dd.MM.yyyy HH:mm'}}">{{entry.timestamp | relativeDate}}</abbr>
-                        </td>
-                        <td style="word-break: break-all" ng-if="(entry.type==='MSG') || (entry.type==='ME') || (entry.type==='MSG_EXT')">
-                            <strong>&lt;{{entry.userName}}&gt;</strong>
-                            <span ng-bind-html="entry.message | message"></span>
-                        </td>
-                        <td ng-if="(entry.type==='CLEAR') || (entry.type==='BAN') || (entry.type==='TIMEOUT')">
-                            {{entry.userName}} cleared messages of {{entry.message}}
-                        </td>
-                    </tr>
-                </table>
+                <div class="list-group">
+                    <div class="list-group-item"
+                         ng-repeat="message in messages"
+                         ng-class="{'list-group-item-warning': message.hidden, 'list-group-item-info': ((message.type==='CLEAR') || (message.type==='BAN') || (message.type==='TIMEOUT'))}">
+                        <h4 class="list-group-item-heading">
+                            {{message.userName}}
+                            <small>
+                                <abbr title="{{message.timestamp | date:'dd.MM.yyyy HH:mm'}}">
+                                    {{message.timestamp | relativeDate}}
+                                </abbr>
+                            </small>
+                        </h4>
+                        <p class="list-group-item-text" ng-bind-html="message.message | message" ng-if="(message.type==='MSG') || (message.type==='ME') || (message.type==='MSG_EXT')"></p>
+                        <p class="list-group-item-text" ng-if="(message.type==='CLEAR') || (message.type==='BAN') || (message.type==='TIMEOUT')">
+                            cleared messages of {{message.message}}
+                        </p>
+                    </div>
+                </div>
                 <div class="panel-footer">
                     <div class="btn btn-default" ng-click="showHistory()">all messages</div>
                 </div>
@@ -1293,7 +1297,7 @@
                 <div class="panel-footer">
                     <div class="btn btn-primary" ng-if="!poll.poll" ng-click="composePoll()">create poll</div>
                     <div class="btn btn-warning" ng-if="poll.poll" ng-click="closePoll()">close poll</div>
-                    <div class="btn btn-default pull-right" ng-click="showPolls()">view old polls</div>
+                    <div class="btn btn-default pull-right" ng-click="showPolls()">old polls</div>
                 </div>
             </div>
             <div class="panel panel-primary">
@@ -1342,38 +1346,15 @@
                         <i class="fa fa-fw fa-users"></i> online chatters
                     </h4>
                 </div>
-                <table class="table table-hover" ng-if="chatters.length > 0">
-                    <thead>
-                        <tr>
-                            <th style="width:65px">
-                                Id
-                            </th>
-                            <th>
-                                User
-                            </th>
-                            <th style="width:65px">
-                                Role
-                            </th>
-                            <th style="width:65px">
-                                Banned
-                            </th>
-                        </tr>
-                    </thead>
-                    <tr ng-repeat="user in chatters | orderBy:'id'">
-                        <td>{{user.id}}</td>
-                        <td>
-                            <a href="/admin/users?search={{user.name}}&page=0" ng-click="showUser(user.userId, $event)">{{user.name}}</a>
-                        </td>
-                        <td>
-                            {{user.role}}
-                        </td>
-                        <td style="text-align: center;">
-                            <span>
-                                <span class="fa fa-fw" ng-class="{'fa-check-square-o': user.banned, 'fa-square-o': !user.banned}"></span>
-                            </span>
-                        </td>
-                    </tr>
-                </table>
+                <div class="list-group" ng-if="chatters.length > 0">
+                    <a class="list-group-item" href="" ng-click="showUser(chatter.userId)"
+                        ng-repeat="chatter in chatters"
+                        ng-class="{'list-group-item-success': !user.banned, 'list-group-item-warning': user.banned}">
+                        <h4 class="list-group-item-heading">
+                            {{chatter.name}} <small>{{chatter.role}}</small>
+                        </h4>
+                    </a>
+                </div>
                 <div class="panel-footer">
                     <div class="btn btn-default" ng-click="showChatters()">all chatters</div>
                 </div>
