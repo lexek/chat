@@ -432,7 +432,10 @@ services.service("chatService", ["$modal", "chatSettings", "$translate", "$http"
                         text = text.replace(/(https?:\/\/)([^ <\n\t]*)/gi, function (completeLink, prefix, link) {
                             var linkText = "";
                             try {
-                                linkText = decodeURIComponent(link);
+                                linkText = $.trim(decodeURIComponent(link));
+                                if (linkText.length === 0) {
+                                    linkText = link;
+                                }
                             } catch (e) {
                                 linkText = link;
                             }
