@@ -1,6 +1,7 @@
 package lexek.wschat.chat.handlers;
 
 import lexek.wschat.chat.*;
+import lexek.wschat.db.model.Chatter;
 
 public class UnbanHandler extends AbstractModerationHandler {
     public UnbanHandler(RoomManager roomManager) {

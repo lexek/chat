@@ -1,5 +1,7 @@
-package lexek.wschat.chat;
+package lexek.wschat.db.model;
 
+import lexek.wschat.chat.LocalRole;
+import lexek.wschat.chat.User;
 import org.jooq.Record;
 
 import static lexek.wschat.db.jooq.tables.Chatter.CHATTER;

@@ -2,6 +2,7 @@ package lexek.wschat.chat.handlers;
 
 import com.google.common.collect.ImmutableList;
 import lexek.wschat.chat.*;
+import lexek.wschat.db.model.Chatter;
 import lexek.wschat.services.AnnouncementService;
 import lexek.wschat.services.PollService;
 import lexek.wschat.services.PollState;

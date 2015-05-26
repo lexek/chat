@@ -1,6 +1,6 @@
 package lexek.wschat.db.dao;
 
-import lexek.wschat.chat.Chatter;
+import lexek.wschat.db.model.Chatter;
 import lexek.wschat.chat.LocalRole;
 import lexek.wschat.chat.User;
 import lexek.wschat.db.model.ChatterData;

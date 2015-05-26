@@ -1,6 +1,7 @@
 package lexek.wschat.chat.handlers;
 
 import lexek.wschat.chat.*;
+import lexek.wschat.db.model.Chatter;
 
 public class ClearUserHandler extends AbstractModerationHandler {
     private final MessageBroadcaster messageBroadcaster;

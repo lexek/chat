@@ -1,6 +1,7 @@
 package lexek.wschat.chat.handlers;
 
 import lexek.wschat.chat.*;
+import lexek.wschat.db.model.Chatter;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;

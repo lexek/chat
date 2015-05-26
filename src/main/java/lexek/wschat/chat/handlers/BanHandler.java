@@ -1,6 +1,7 @@
 package lexek.wschat.chat.handlers;
 
 import lexek.wschat.chat.*;
+import lexek.wschat.db.model.Chatter;
 
 public class BanHandler extends AbstractModerationHandler {
     private final MessageBroadcaster messageBroadcaster;
