@@ -1558,6 +1558,31 @@ var RoomController = function($scope, $location, $http, $sce, $modal, alert, tit
             });
     };
 
+    var classMap = {
+        "ROOM_BAN": "warning",
+        "ROOM_UNBAN": "success",
+        "ROOM_ROLE": "success"
+    };
+
+    var actionMap = {
+        "NEW_ROOM": "Room created",
+        "NEW_POLL": "Poll created",
+        "CLOSE_POLL": "Poll closed",
+        "ROOM_BAN": "User banned",
+        "ROOM_UNBAN": "User unbanned",
+        "ROOM_ROLE": "Role changed",
+        "NEW_ANNOUNCEMENT": "Announcement created",
+        "INACTIVE_ANNOUNCEMENT": "Announcement archived"
+    };
+
+    $scope.getClassForJournalAction = function(action) {
+        return 'list-group-item-' + classMap[action];
+    };
+
+    $scope.translateAction = function(action) {
+        return actionMap[action];
+    };
+
     {
         var locationSearch = $location.search();
         $scope.roomId = locationSearch["id"];

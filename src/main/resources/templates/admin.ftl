@@ -1237,46 +1237,35 @@
                         Journal is empty.
                     </div>
                 </div>
-                <table class="table table-hover" ng-if="journal.length > 0">
-                    <thead>
-                    <tr>
-                        <th style="width: 120px">
-                            date
-                        </th>
-                        <th style="width: 50px">
-                            action
-                        </th>
-                        <th>
-
-                        </th>
-                        <th style="width: 100px">
-                            user
-                        </th>
-                        <th style="width: 100px">
-                            admin
-                        </th>
-                    </tr>
-                    </thead>
-                    <tr ng-repeat="entry in journal">
-                        <td>
-                            <abbr title="{{entry.time | date:'dd.MM.yyyy HH:mm'}}">{{entry.time | relativeDate}}</abbr>
-                        </td>
-                        <td>
-                    <span class="label label-primary">
-                        {{entry.action}}
-                    </span>
-                        </td>
-                        <td>
-                            {{entry.actionDescription}}
-                        </td>
-                        <td>
-                            <a href="" ng-click="showUser(entry.user.id)">{{entry.user.name}}</a>
-                        </td>
-                        <td>
-                            <a href="" ng-click="showUser(entry.admin.id)">{{entry.admin.name}}</a>
-                        </td>
-                    </tr>
-                </table>
+                <div class="list-group">
+                    <div class="list-group-item" ng-repeat="entry in journal" ng-class="getClassForJournalAction(entry.action)">
+                        <h4 class="list-group-item-heading">
+                            {{translateAction(entry.action)}}
+                            <small class="pull-right">
+                                <abbr title="{{entry.time | date:'dd.MM.yyyy HH:mm'}}">{{entry.time | relativeDate}}</abbr>
+                            </small>
+                        </h4>
+                        <p class="list-group-item-text">
+                            <span class="" ng-if="entry.admin">
+                                <strong>admin:</strong>
+                                <a href="" ng-click="showUser(entry.admin.id)">{{entry.admin.name}}</a>
+                            </span>
+                            <span class="" ng-if="entry.user">
+                                <strong>user:</strong>
+                                <a href="" ng-click="showUser(entry.user.id)">{{entry.user.name}}</a>
+                            </span>
+                            <span class="" ng-if="entry.actionDescription">
+                                <br />
+                                <span ng-switch="entry.action">
+                                    <span ng-switch-when="NEW_POLL"><strong>Question:</strong> {{entry.actionDescription}}</span>
+                                    <span ng-switch-when="CLOSE_POLL"><strong>Question:</strong> {{entry.actionDescription}}</span>
+                                    <span ng-switch-when="ROOM_ROLE"><strong>New role:</strong> {{entry.actionDescription}}</span>
+                                    <span ng-switch-default ng-bind="entry.actionDescription"></span>
+                                </span>
+                            </span>
+                        </p>
+                    </div>
+                </div>
                 <div class="panel-footer">
                     <div class="btn btn-default" ng-click="showJournal()">all journal</div>
                 </div>
