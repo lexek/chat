@@ -35,7 +35,7 @@ public class GoodGameChatProxy extends AbstractService<Void> {
     public GoodGameChatProxy(EventLoopGroup eventLoopGroup, String channel,
                              MessageBroadcaster messageBroadcaster,
                              AtomicLong messageId, Room room) {
-        super("cybergame.tv", ImmutableList.<String>of());
+        super("goodgame", ImmutableList.<String>of());
         this.eventLoopGroup = eventLoopGroup;
         this.channel = channel;
         this.messageBroadcaster = messageBroadcaster;
