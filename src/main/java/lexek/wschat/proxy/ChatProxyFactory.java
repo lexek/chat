@@ -12,7 +12,6 @@ import lexek.wschat.chat.Room;
 import lexek.wschat.chat.RoomManager;
 import lexek.wschat.proxy.cybergame.CybergameTvChannelInformationProvider;
 import lexek.wschat.proxy.cybergame.CybergameTvChatProxy;
-import lexek.wschat.proxy.goodgame.GoodGameChannelInformationProvider;
 import lexek.wschat.proxy.goodgame.GoodGameChatProxy;
 import lexek.wschat.proxy.twitch.TwitchTvChannelInformationProvider;
 import lexek.wschat.proxy.twitch.TwitchTvChatProxy;
@@ -96,9 +95,10 @@ public class ChatProxyFactory {
                         messageBroadcaster,
                         messageId,
                         targetRoom);
-                streamStatsAggregator.addPlatform(new GoodGameChannelInformationProvider(
+                //TODO: temporarily disabled(issue #6)
+                /*streamStatsAggregator.addPlatform(new GoodGameChannelInformationProvider(
                         httpClient, proxyConfiguration.getChannel()
-                ), false);
+                ), false);*/
                 return result;
             }
             case "sc2tv": {
