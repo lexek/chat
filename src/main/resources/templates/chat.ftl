@@ -500,6 +500,7 @@
                                     --><span ng-if="message.user.service!==null" class="ext" tooltip="{{message.user.serviceRes}}"
                                              tooltip-trigger="mouseenter" tooltip-placement="right"><span ng-if="message.user.service==='twitch.tv'" class="fa fa-twitch" style="color: #6441A5"></span><!--
                                     --><span ng-if="message.user.service==='cybergame.tv'" class="fa fa-gamepad" style="color: #21b384"></span><!--
+                                    --><strong ng-if="message.user.service==='goodgame'" style="color: #73ADFF">GG</strong><!--
                                     --><span ng-if="message.user.service==='sc2tv.ru'" class="sc2tvIcon"></span></span><!--
                                     --><span class="username" bo-style="{'color': message.user.color}" ng-click="addToInput($event)" bo-bind="message.user.name | inflector:'capital'"></span>:
                                 </span>
@@ -565,6 +566,7 @@
                                 <small class="role" bo-if="message.user.service!==null">{{message.user.serviceRes}} <!--
                                 --><a ng-if="message.user.service==='twitch.tv'" ng-href="{{extUrl()}}" target="_blank"><span class="fa fa-twitch" style="color: #999999"></span></a><!--
                                 --><span ng-if="message.user.service==='cybergame.tv'" class="fa fa-gamepad" style="color: #999999"></span><!--
+                                --><strong ng-if="message.user.service==='goodgame'" style="color: #73ADFF">GG</strong><!--
                                 --><span ng-if="message.user.service==='sc2tv.ru'" class="sc2tvIcon"></span></small>
                                 <div class="pull-right btn-group modButtons" ng-if="showModButtons()">
                                     <div class="btn btn-link btn-x" ng-click="message.user.clear()"><span class="fa fa-eraser"></span></div>

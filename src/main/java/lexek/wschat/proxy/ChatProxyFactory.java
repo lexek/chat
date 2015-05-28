@@ -12,6 +12,8 @@ import lexek.wschat.chat.Room;
 import lexek.wschat.chat.RoomManager;
 import lexek.wschat.proxy.cybergame.CybergameTvChannelInformationProvider;
 import lexek.wschat.proxy.cybergame.CybergameTvChatProxy;
+import lexek.wschat.proxy.goodgame.GoodGameChannelInformationProvider;
+import lexek.wschat.proxy.goodgame.GoodGameChatProxy;
 import lexek.wschat.proxy.twitch.TwitchTvChannelInformationProvider;
 import lexek.wschat.proxy.twitch.TwitchTvChatProxy;
 import lexek.wschat.security.AuthenticationManager;
@@ -84,6 +86,17 @@ public class ChatProxyFactory {
                         messageId,
                         targetRoom);
                 streamStatsAggregator.addPlatform(new CybergameTvChannelInformationProvider(
+                        httpClient, proxyConfiguration.getChannel()
+                ), false);
+                return result;
+            }
+            case "goodgame": {
+                GoodGameChatProxy result = new GoodGameChatProxy(eventLoopGroup,
+                        proxyConfiguration.getChannel(),
+                        messageBroadcaster,
+                        messageId,
+                        targetRoom);
+                streamStatsAggregator.addPlatform(new GoodGameChannelInformationProvider(
                         httpClient, proxyConfiguration.getChannel()
                 ), false);
                 return result;
