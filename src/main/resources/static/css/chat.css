@@ -58,37 +58,36 @@ img.emoji {
 }
 
 .btn-link-default {
+    background-color: #E7E7E7;
     color: #878787;
-    padding: 3px 3px 2px;
+    padding: 3px 5px;
     font-size: 19px;
-    transition: color ease-in-out .15s, box-shadow ease-in-out .15s;
+    transition: all ease-in-out .15s, box-shadow ease-in-out .15s;
 }
 .btn-link-default:hover,
 .btn-link-default:focus {
-    color: #5b5b5b;
+    background-color: #B5B5B5;
+    color: white;
 }
 .btn-link-default:active,
 .btn-link-default.active {
+    background-color: #878787;
     background-image: none;
     box-shadow: none;
-    color: #4b4b4b;
+    color: white;
 }
 
 .dark .btn-link-default {
-    color: #5b5b5b;
-    padding: 3px 3px 2px;
-    font-size: 19px;
-    transition: color ease-in-out .15s, box-shadow ease-in-out .15s;
+    background-color: #373737;
 }
+
 .dark .btn-link-default:hover,
 .dark .btn-link-default:focus {
-    color: #696969;
+    background-color: #878787;
 }
 .dark .btn-link-default:active,
 .dark .btn-link-default.active {
-    background-image: none;
-    box-shadow: none;
-    color: #878787;
+    background-color: #B5B5B5;
 }
 
 #inputDiv {
@@ -357,7 +356,7 @@ img.emoji {
 }
 
 .right-part {
-    width: 55px;
+    width: 61px;
     float: right;
 }
 
