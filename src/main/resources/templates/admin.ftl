@@ -1339,7 +1339,7 @@
                 </div>
                 <div class="list-group" ng-if="chatters.length > 0">
                     <a class="list-group-item" href="" ng-click="showUser(chatter.userId)"
-                        ng-repeat="chatter in chatters"
+                        ng-repeat="chatter in chatters | slice:chatterOffset:chatterOffset+5"
                         ng-class="{'list-group-item-success': !user.banned, 'list-group-item-warning': user.banned}">
                         <h4 class="list-group-item-heading">
                             {{chatter.name}} <small>{{chatter.role}}</small>
@@ -1348,6 +1348,18 @@
                 </div>
                 <div class="panel-footer">
                     <div class="btn btn-default" ng-click="showChatters()">all chatters</div>
+                    <div class="btn-group pull-right">
+                        <button class="btn btn-default"
+                                ng-disabled="chatterOffset === 0"
+                                ng-click="chatterOffset=chatterOffset-5">
+                            <span class="fa fa-fw fa-chevron-left"></span>
+                        </button>
+                        <button class="btn btn-default"
+                                ng-disabled="(chatterOffset+5) >= chatters.length"
+                                ng-click="chatterOffset = chatterOffset + 5">
+                            <span class="fa fa-fw fa-chevron-right"></span>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

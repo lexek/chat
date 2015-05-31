@@ -113,6 +113,12 @@ var MessageFilter = function($http, $sce) {
     };
 };
 
+AdminServices.filter('slice', function() {
+  return function(arr, start, end) {
+    return (arr || []).slice(start, end);
+  };
+});
+
 AdminServices.filter("message", ["$http", "$sce", MessageFilter]);
 AdminServices.factory("alert", AlertServiceFactory);
 AdminServices.factory("title", TitleServiceFactory);
@@ -1393,11 +1399,13 @@ var RoomController = function($scope, $location, $http, $sce, $modal, alert, tit
     $scope.journal = [];
     $scope.poll = null;
     $scope.maxPollVotes = 0;
+    $scope.chatterOffset = 0;
 
     var loadPage = function() {
         $scope.messages.length = 0;
         $http({method: "GET", url: "/admin/api/room?id="+$scope.roomId})
             .success(function (d, status, headers, config) {
+                $scope.chatterOffset = 0;
                 $scope.messages = d["history"];
                 $scope.chatters = d["chatters"];
                 $scope.roomData = d["room"];
