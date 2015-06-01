@@ -11,7 +11,7 @@ var setSizes = function() {
         $(".chat").height(windowHeight - 55 + "px");
         $(".online").height(windowHeight - 55 + "px");
     }
-    $(".left-part").width(windowWidth - 66 + "px");
+    $(".left-part").width(windowWidth - 62 + "px");
 };
 
 $(document).ready(function () {
