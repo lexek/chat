@@ -302,6 +302,157 @@ services.service("chatService", ["$modal", "chatSettings", "$translate", "$http"
             }
         }, false);
 
+        var fetchYoutubeTitle = function(videoId, ytKey) {
+            var result = null;
+            $.ajax({
+                "url": "https://www.googleapis.com/youtube/v3/videos?part=snippet&id=" + videoId + "&key=" + ytKey,
+                "success": function (data) {
+                    if (data.items && data.items[0] && data.items[0].snippet) {
+                        result = "<span style=\"color:#cd201f;\" class=\"fa fa-youtube-play\"></span> " + htmlEscape(data.items[0].snippet.title);
+                    }
+                },
+                "async": false,
+                "timeout": 100
+            });
+            return result;
+        };
+
+        var processLink = function (completeLink, prefix, link) {
+            var linkText = "";
+            try {
+                linkText = $.trim(decodeURIComponent(link));
+                if (linkText.length === 0) {
+                    linkText = link;
+                }
+            } catch (e) {
+                linkText = link;
+            }
+            if (linkText.length > 37) {
+                linkText = linkText.substr(0, 32) + "[...]";
+            }
+            linkText = htmlEscape(linkText);
+            var notProcessed = true;
+            var parsedUrl = new Uri(link);
+            var host = parsedUrl.host();
+            if (host === "youtube.com" || host === "www.youtube.com") {
+                var videoId = null;
+                if (parsedUrl.getQueryParamValue("v")) {
+                    videoId = parsedUrl.getQueryParamValue("v");
+                }
+                if (parsedUrl.getQueryParamValue("watch")) {
+                    videoId = parsedUrl.getQueryParamValue("watch");
+                }
+                if (videoId) {
+                    var ytTitle = fetchYoutubeTitle(videoId, ytKey);
+                    if (ytTitle) {
+                        linkText = ytTitle;
+                        notProcessed = false;
+                    }
+                }
+            }
+            if (host === "youtu.be") {
+                var videoId = parsedUrl.uriParts.path;
+                if (videoId[0] === "/") {
+                    videoId = videoId.substr(1);
+                }
+                if (videoId) {
+                    var ytTitle = fetchYoutubeTitle(videoId, ytKey);
+                    if (ytTitle) {
+                        linkText = ytTitle;
+                        notProcessed = false;
+                    }
+                }
+            }
+            if (notProcessed) {
+                var r = /http:\/\/store\.steampowered\.com\/app\/([0-9]+)\/.*/.exec(completeLink);
+                if (r && r[1]) {
+                    var id = r[1];
+                    $.ajax({
+                        "url": "resolve_steam",
+                        "data": {"appid": id},
+                        "success": function (data) {
+                            if (data) {
+                                linkText = "<span style=\"color: #156291;\" class=\"fa fa-steam-square\"></span> " + htmlEscape(data);
+                                notProcessed = false;
+                            }
+                        },
+                        "async": false,
+                        "timeout": 100
+                    });
+                }
+            }
+            return "<a href=\"" + prefix + htmlEscape(link) + "\" target=\"_blank\" title=\"" + htmlEscape(link) + "\">" + linkText + "</a>";
+        }
+
+        var processTextPart = function(text, type, service) {
+            text = htmlEscape(text);
+            text = twemoji.parse(text, {
+                base: "/img/",
+                folder: "twemoji",
+                ext: ".png",
+                callback: function(icon, options, variant) {
+                    switch ( icon ) {
+                        case 'a9':      // � copyright
+                        case 'ae':      // � registered trademark
+                        case '2122':    // � trademark
+                            return false;
+                    }
+                    return ''.concat(options.base, options.size, '/', icon, options.ext);
+                }
+            });
+            if ((type === "MSG_EXT") && (service === "sc2tv.ru")) {
+                text = text.replace(/\[\/?b\]/g, "**");
+                text = text.replace(/\[\/?url\]/g, "");
+                text = text.replace(SC2TV_REGEX, function (match) {
+                    var emoticon = SC2TV_EMOTE_MAP[match];
+                    if (emoticon) {
+                        return "<span class='faceCode' style='background-image: url(/img/sc2tv/" + emoticon.fileName +
+                            "); height: " + emoticon.height + "px; width: " + emoticon.width + "px;' title='" + emoticon.code + "'></span>"
+                    } else {
+                        return null;
+                    }
+                });
+            } else {
+                text = text.replace(chat.emoticonRegExp, function (match) {
+                    var emoticon = chat.emoticons[match];
+                    if (emoticon) {
+                        return "<span class='faceCode' style='background-image: url(emoticons/" + emoticon.fileName +
+                            "); height: " + emoticon.height + "px; width: " + emoticon.width + "px;' title='" + emoticon.code + "'></span>"
+                    } else {
+                        return null;
+                    }
+                });
+            }
+            text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+            text = text.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+            text = text.replace(/%%(.+?)%%/g, '<span class="spoiler">$1</span>');
+            if (text[0] === ">") {
+                text = "<span class=\"greenText\">" + text + "</span>";
+            } else if (text.indexOf("!!!") === 0 && text.length > 3) {
+                text = "<span class=\"nsfwLabel\">NSFW</span> <span class=\"spoiler\">" + text.substr(3) + "</span>";
+            }
+            text = text.replace("@" + chat.self.name, function () {
+                mention = true;
+                return "<span class='mentionLabel'>@" + chat.self.name + "</span>"
+            });
+            return text;
+        }
+
+        var processMessageText = function(chat, text, type, service) {
+            var match;
+            var raw = text;
+            var html = [];
+            var i;
+            while ((match = raw.match(/(https?:\/\/)([^\s]*)/))) {
+                i = match.index;
+                html.push(processTextPart(raw.substr(0, i), type, service));
+                html.push(processLink(match[0], match[1], match[2]));
+                raw = raw.substring(i + match[0].length);
+            }
+            html.push(processTextPart(raw, type, service));
+            return html.join('');
+        }
+
         var processMsg = function(chat, message, hist) {
             var room = message["room"] || chat.activeRoom;
             var type = message['type'];
@@ -377,119 +528,7 @@ services.service("chatService", ["$modal", "chatSettings", "$translate", "$http"
                         (previousMessage.messages.length < 5);
 
                     //BODY
-                    {
-                        text = text.replace(/</gi, '&lt; ');
-                        text = twemoji.parse(text, {
-                            base: "/img/",
-                            folder: "twemoji",
-                            ext: ".png",
-                            callback: function(icon, options, variant) {
-                                switch ( icon ) {
-                                    case 'a9':      // � copyright
-                                    case 'ae':      // � registered trademark
-                                    case '2122':    // � trademark
-                                        return false;
-                                }
-                                return ''.concat(options.base, options.size, '/', icon, options.ext);
-                            }
-                        });
-                        if ((type === "MSG_EXT") && (service === "sc2tv.ru")) {
-                            text = text.replace(/\[\/?b\]/g, "**");
-                            text = text.replace(/\[\/?url\]/g, "");
-                            text = text.replace(SC2TV_REGEX, function (match) {
-                                var emoticon = SC2TV_EMOTE_MAP[match];
-                                if (emoticon) {
-                                    return "<span class='faceCode' style='background-image: url(/img/sc2tv/" + emoticon.fileName +
-                                        "); height: " + emoticon.height + "px; width: " + emoticon.width + "px;' title='" + emoticon.code + "'></span>"
-                                } else {
-                                    return null;
-                                }
-                            });
-                        } else {
-                            text = text.replace(chat.emoticonRegExp, function (match) {
-                                var emoticon = chat.emoticons[match];
-                                if (emoticon) {
-                                    return "<span class='faceCode' style='background-image: url(emoticons/" + emoticon.fileName +
-                                        "); height: " + emoticon.height + "px; width: " + emoticon.width + "px;' title='" + emoticon.code + "'></span>"
-                                } else {
-                                    return null;
-                                }
-                            });
-                        }
-                        text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-                        text = text.replace(/\*([^*]+)\*/g, '<em>$1</em>');
-                        text = text.replace(/%%(.+?)%%/g, '<span class="spoiler">$1</span>');
-                        if (text[0] === ">") {
-                            text = "<span class=\"greenText\">" + text + "</span>";
-                        } else if (text.indexOf("!!!") === 0 && text.length > 3) {
-                            text = "<span class=\"nsfwLabel\">NSFW</span> <span class=\"spoiler\">" + text.substr(3) + "</span>";
-                        }
-
-                        text = text.replace("@" + chat.self.name, function () {
-                            mention = true;
-                            return "<span class='mentionLabel'>@" + chat.self.name + "</span>"
-                        });
-                        text = text.replace(/(https?:\/\/)([^ <\n\t]*)/gi, function (completeLink, prefix, link) {
-                            var linkText = "";
-                            try {
-                                linkText = $.trim(decodeURIComponent(link));
-                                if (linkText.length === 0) {
-                                    linkText = link;
-                                }
-                            } catch (e) {
-                                linkText = link;
-                            }
-                            if (linkText.length > 37) {
-                                linkText = linkText.substr(0, 32) + "[...]";
-                            }
-                            linkText = htmlEscape(linkText);
-                            var notProcessed = true;
-                            var parsedUrl = new Uri(link);
-                            var host = parsedUrl.host();
-                            if (host === "youtube.com" || host === "www.youtube.com") {
-                                var videoId = null;
-                                if (parsedUrl.getQueryParamValue("v")) {
-                                    videoId = parsedUrl.getQueryParamValue("v");
-                                }
-                                if (parsedUrl.getQueryParamValue("watch")) {
-                                    videoId = parsedUrl.getQueryParamValue("watch");
-                                }
-                                if (videoId) {
-                                    $.ajax({
-                                        "url": "https://www.googleapis.com/youtube/v3/videos?part=snippet&id=" + videoId + "&key=" + ytKey,
-                                        "success": function (data) {
-                                            if (data.items && data.items[0] && data.items[0].snippet) {
-                                                linkText = "<span style=\"color:#cd201f;\" class=\"fa fa-youtube-play\"></span> " + htmlEscape(data.items[0].snippet.title);
-                                                notProcessed = false;
-                                            }
-                                        },
-                                        "async": false,
-                                        "timeout": 100
-                                    });
-                                }
-                            }
-                            if (notProcessed) {
-                                var r = /http:\/\/store\.steampowered\.com\/app\/([0-9]+)\/.*/.exec(completeLink);
-                                if (r && r[1]) {
-                                    var id = r[1];
-                                    $.ajax({
-                                        "url": "resolve_steam",
-                                        "data": {"appid": id},
-                                        "success": function (data) {
-                                            if (data) {
-                                                linkText = "<span style=\"color: #156291;\" class=\"fa fa-steam-square\"></span> " + htmlEscape(data);
-                                                notProcessed = false;
-                                            }
-                                        },
-                                        "async": false,
-                                        "timeout": 100
-                                    });
-                                }
-                            }
-                            return "<a href=\"" + prefix + htmlEscape(link) + "\" target=\"_blank\" title=\"" + htmlEscape(link) + "\">" + linkText + "</a>";
-                        });
-                    }
-
+                    text = processMessageText(chat, text, type, service);
 
                     if (!omit) {
                         chat.lastChatter(room, user);
