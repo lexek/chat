@@ -425,7 +425,7 @@ services.service("chatService", ["$modal", "chatSettings", "$translate", "$http"
             text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
             text = text.replace(/\*([^*]+)\*/g, '<em>$1</em>');
             text = text.replace(/%%(.+?)%%/g, '<span class="spoiler">$1</span>');
-            if (text[0] === ">") {
+            if (text.startsWith("&gt;")) {
                 text = "<span class=\"greenText\">" + text + "</span>";
             } else if (text.indexOf("!!!") === 0 && text.length > 3) {
                 text = "<span class=\"nsfwLabel\">NSFW</span> <span class=\"spoiler\">" + text.substr(3) + "</span>";
