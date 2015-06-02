@@ -402,7 +402,6 @@ services.service("chatService", ["$modal", "chatSettings", "$translate", "$http"
             });
             if ((type === "MSG_EXT") && (service === "sc2tv.ru")) {
                 text = text.replace(/\[\/?b\]/g, "**");
-                text = text.replace(/\[\/?url\]/g, "");
                 text = text.replace(SC2TV_REGEX, function (match) {
                     var emoticon = SC2TV_EMOTE_MAP[match];
                     if (emoticon) {
@@ -439,6 +438,9 @@ services.service("chatService", ["$modal", "chatSettings", "$translate", "$http"
         }
 
         var processMessageText = function(chat, text, type, service) {
+            if ((type === "MSG_EXT") && (service === "sc2tv.ru")) {
+                text = text.replace(/\[\/?url\]/g, "");
+            }
             var match;
             var raw = text;
             var html = [];
