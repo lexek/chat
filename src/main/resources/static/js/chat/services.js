@@ -425,11 +425,6 @@ services.service("chatService", ["$modal", "chatSettings", "$translate", "$http"
             text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
             text = text.replace(/\*([^*]+)\*/g, '<em>$1</em>');
             text = text.replace(/%%(.+?)%%/g, '<span class="spoiler">$1</span>');
-            if (text.startsWith("&gt;")) {
-                text = "<span class=\"greenText\">" + text + "</span>";
-            } else if (text.indexOf("!!!") === 0 && text.length > 3) {
-                text = "<span class=\"nsfwLabel\">NSFW</span> <span class=\"spoiler\">" + text.substr(3) + "</span>";
-            }
             text = text.replace("@" + chat.self.name, function () {
                 mention = true;
                 return "<span class='mentionLabel'>@" + chat.self.name + "</span>"
@@ -452,7 +447,13 @@ services.service("chatService", ["$modal", "chatSettings", "$translate", "$http"
                 raw = raw.substring(i + match[0].length);
             }
             html.push(processTextPart(raw, type, service));
-            return html.join('');
+            text = html.join('');
+            if (text.startsWith("&gt;")) {
+                text = "<span class=\"greenText\">" + text + "</span>";
+            } else if (text.indexOf("!!!") === 0 && text.length > 3) {
+                text = "<span class=\"nsfwLabel\">NSFW</span> <span class=\"spoiler\">" + text.substr(3) + "</span>";
+            }
+            return text;
         }
 
         var processMsg = function(chat, message, hist) {
