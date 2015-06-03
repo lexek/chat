@@ -27,6 +27,14 @@ function hexToRgb(hex) {
     } : null;
 }
 
+//https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/startsWith#Polyfill
+if (!String.prototype.startsWith) {
+  String.prototype.startsWith = function(searchString, position) {
+    position = position || 0;
+    return this.indexOf(searchString, position) === position;
+  };
+}
+
 //from google closure
 Array.prototype.remove = function(obj) {
     var i = this.indexOf(obj);
