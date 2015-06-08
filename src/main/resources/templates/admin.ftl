@@ -1168,16 +1168,17 @@
             </div>
             <div ng-repeat="option in input.option" class="form-group" ng-class="{'has-error': optionForm.option.$invalid && optionForm.option.$dirty, 'has-success': !optionForm.option.$invalid}">
                 <ng-form name="optionForm">
-                    <label for="option" class="control-label">Option &num;{{$index}}</label>
+                    <label for="option-{{$index}}" class="control-label">Option &num;{{$index}}</label>
                     <span ng-show="input.option.length > 2" class="btn btn-link btn-link-danger pull-right" ng-click="removeOption($index)">remove option</span>
                     <input
+                            id="option-{{$index}}"
                             ng-model="input.option[$index].value"
                             type="text"
                             class="form-control"
                             name="option"
                             placeholder="option"
                             minlength="1"
-                            maxlength="10"
+                            maxlength="20"
                             required
                             />
                 </ng-form>
