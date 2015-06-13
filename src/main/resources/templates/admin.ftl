@@ -1249,9 +1249,9 @@
                         <h4 class="list-group-item-heading">
                             {{translateAction(entry.action)}}
                             <small class="pull-right">
-                                <a href="" ng-click="showBanContext(entry.time)" ng-if="entry.action==='ROOM_BAN'">
-                                    <span class="fa fa-fw fa-comments"></span>
-                                </a>
+                                <a href="" ng-click="showBanContext(entry.time)" ng-if="entry.action==='ROOM_BAN'"><!--
+                                    --><span class="fa fa-fw fa-comments"></span><!--
+                                --></a>
                                 <abbr title="{{entry.time | date:'dd.MM.yyyy HH:mm'}}">{{entry.time | relativeDate}}</abbr>
                             </small>
                         </h4>
