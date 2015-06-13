@@ -568,38 +568,39 @@
                 </div>
             </div>
         </div>
-        <div class="panel panel-default">
-            <table class="table table-hover table-striped">
-                <thead>
-                <tr>
-                    <th style="width: 120px">
-                        date
-                    </th>
-                    <th>
-                        message
-                    </th>
-                </tr>
-                </thead>
-                <tr ng-repeat="entry in entries" ng-class="{'warning': entry.hidden, 'info': ((entry.type==='CLEAR') || (entry.type==='BAN') || (entry.type==='TIMEOUT'))}">
-                    <td>
-                        <abbr title="{{entry.timestamp | date:'dd.MM.yyyy HH:mm'}}">{{entry.timestamp | relativeDate}}</abbr>
-                    </td>
-                    <td ng-if="(entry.type==='MSG') || (entry.type==='ME') || (entry.type==='MSG_EXT')">
-                        <span class="btn-link" ng-click="addUserFilter(entry.userName)"><strong>&lt;{{entry.userName}}&gt;</strong></span>
-                        <span ng-bind-html="entry.message | message" style="word-break: break-word"></span>
-                    </td>
-                    <td ng-if="(entry.type==='CLEAR') || (entry.type==='BAN') || (entry.type==='TIMEOUT')">
-                        {{entry.userName}} cleared messages of {{entry.message}}
-                    </td>
-                </tr>
-            </table>
+        <div ng-if="(page !== 0) || hasNextPage()">
+            <ul class="pager">
+                <li class="previous" ng-if="page !== 0" ng-click="previousPage()"><a href="">&larr; Previous page</a></li>
+                <li class="next" ng-if="hasNextPage()" ng-click="nextPage()"><a href="">Next page &rarr;</a></li>
+            </ul>
+            <br/>
         </div>
-    </div>
-    <div class="modal-footer" ng-if="(page !== 0) || hasNextPage()">
-        <ul class="pager">
-            <li class="previous" ng-if="page !== 0" ng-click="previousPage()"><a href="">&larr; Previous page</a></li>
-            <li class="next" ng-if="hasNextPage()" ng-click="nextPage()"><a href="">Next page &rarr;</a></li>
-        </ul>
+        <div class="list-group">
+            <div class="list-group-item"
+                 ng-repeat="message in entries"
+                 ng-class="{'list-group-item-warning': message.hidden, 'list-group-item-info': ((message.type==='CLEAR') || (message.type==='BAN') || (message.type==='TIMEOUT'))}">
+                <small>
+                    <abbr title="{{message.timestamp | date:'dd.MM.yyyy HH:mm'}}">{{message.timestamp | relativeDate}}</abbr>
+                </small>
+                <strong class="list-group-item-heading">
+                    &lt;{{message.userName}}&gt;
+                </strong>
+                <span
+                        class="list-group-item-text"
+                        style="word-break: break-word"
+                        ng-bind-html="message.message | message"
+                        ng-if="(message.type==='MSG') || (message.type==='ME') || (message.type==='MSG_EXT')"></span>
+                <span class="list-group-item-text" ng-if="(message.type==='CLEAR') || (message.type==='BAN') || (message.type==='TIMEOUT')">
+                    cleared messages of {{message.message}}
+                </span>
+            </div>
+        </div>
+        <div class="" ng-if="(page !== 0) || hasNextPage()">
+            <ul class="pager">
+                <li class="previous" ng-if="page !== 0" ng-click="previousPage()"><a href="">&larr; Previous page</a></li>
+                <li class="next" ng-if="hasNextPage()" ng-click="nextPage()"><a href="">Next page &rarr;</a></li>
+            </ul>
+        </div>
     </div>
 </script>
 
