@@ -1080,6 +1080,47 @@ var RoomJournalModalController = function($scope, $http, $modal, room) {
         });
     };
 
+    var classMap = {
+        "ROOM_BAN": "warning",
+        "ROOM_UNBAN": "success",
+        "ROOM_ROLE": "success"
+    };
+
+    var actionMap = {
+        "NEW_ROOM": "Room created",
+        "NEW_POLL": "Poll created",
+        "CLOSE_POLL": "Poll closed",
+        "ROOM_BAN": "User banned",
+        "ROOM_UNBAN": "User unbanned",
+        "ROOM_ROLE": "Role changed",
+        "NEW_ANNOUNCEMENT": "Announcement created",
+        "INACTIVE_ANNOUNCEMENT": "Announcement archived"
+    };
+
+    $scope.getClassForJournalAction = function(action) {
+        return 'list-group-item-' + classMap[action];
+    };
+
+    $scope.translateAction = function(action) {
+        return actionMap[action];
+    };
+
+    $scope.showBanContext = function(time) {
+        $modal.open({
+            templateUrl: 'history.html',
+            controller: HistoryController,
+            resolve: {
+                options: function () {
+                    return {
+                        "room": room,
+                        "since": time - 600000,
+                        "until": time + 600000
+                    }
+                }
+            }
+        });
+    }
+
     loadPage();
 };
 
@@ -1186,7 +1227,6 @@ var TicketsController = function($scope, $location, $http, $modal, alert, title)
     }
 };
 
-
 var HistoryController = function($scope, $http, title, options) {
     $scope.entries = [];
     $scope.page = 0;
@@ -1228,7 +1268,7 @@ var HistoryController = function($scope, $http, title, options) {
     };
 
     $scope.addUserFilter = function(user) {
-        if ((user.length > 0) && ($scope.users.indexOf(user) === -1)) {
+        if (user && (user.length > 0) && ($scope.users.indexOf(user) === -1)) {
             $scope.users.push(user);
             $scope.page = 0;
             loadPage();
@@ -1442,7 +1482,6 @@ var RoomController = function($scope, $location, $http, $sce, $modal, alert, tit
         $modal.open({
             templateUrl: 'history.html',
             controller: HistoryController,
-            size: "lg",
             resolve: {
                 options: function () {
                     return {
@@ -1483,7 +1522,6 @@ var RoomController = function($scope, $location, $http, $sce, $modal, alert, tit
         $modal.open({
             templateUrl: 'journal_modal.html',
             controller: RoomJournalModalController,
-            size: "lg",
             resolve: {
                 room: function () {
                     return $scope.roomData;
@@ -1602,7 +1640,6 @@ var RoomController = function($scope, $location, $http, $sce, $modal, alert, tit
         $modal.open({
             templateUrl: 'history.html',
             controller: HistoryController,
-            size: "lg",
             resolve: {
                 options: function () {
                     return {
