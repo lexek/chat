@@ -1187,23 +1187,31 @@ var TicketsController = function($scope, $location, $http, $modal, alert, title)
 };
 
 
-var HistoryController = function($scope, $http, title, room) {
+var HistoryController = function($scope, $http, title, options) {
     $scope.entries = [];
     $scope.page = 0;
     $scope.totalPages = 0;
-    $scope.room = room;
+    $scope.room = options.room;
     $scope.input = {};
+    $scope.since = options.since;
+    $scope.until = options.until;
     $scope.users = [];
 
     var loadPage = function() {
-        var url = "/admin/api/history?page=" + $scope.page;
-        url += "&room=" + $scope.room.id;
+        var params = {
+            "page": $scope.page,
+            "room": $scope.room.id
+        };
         if ($scope.users) {
-            angular.forEach($scope.users, function(e) {
-                url += "&user=" + encodeURIComponent(e);
-            });
+            params["user"] = $scope.users;
         }
-        $http({method: "GET", url: url})
+        if ($scope.since) {
+            params["since"] = $scope.since;
+        }
+        if ($scope.until) {
+            params["until"] = $scope.until;
+        }
+        $http({method: "GET", url: "/admin/api/history", params: params})
             .success(function (d, status, headers, config) {
                 $scope.entries = d["data"];
                 $scope.totalPages = d["pageCount"];
@@ -1334,9 +1342,6 @@ var ChattersController = function($scope, $location, $http, $modal, room) {
             .success(function (d, status, headers, config) {
                 $scope.users = d["data"];
                 $scope.totalPages = d["pageCount"];
-            })
-            .error(function (data, status, headers, config) {
-
             });
     };
 
@@ -1439,8 +1444,10 @@ var RoomController = function($scope, $location, $http, $sce, $modal, alert, tit
             controller: HistoryController,
             size: "lg",
             resolve: {
-                room: function () {
-                    return $scope.roomData;
+                options: function () {
+                    return {
+                        "room": $scope.roomData
+                    }
                 }
             }
         });
@@ -1547,8 +1554,8 @@ var RoomController = function($scope, $location, $http, $sce, $modal, alert, tit
                 }
             }
         }).result.then(function () {
-                loadPage();
-            });
+            loadPage();
+        });
     }
 
     $scope.setAnnouncementInactive = function(id) {
@@ -1590,6 +1597,23 @@ var RoomController = function($scope, $location, $http, $sce, $modal, alert, tit
     $scope.translateAction = function(action) {
         return actionMap[action];
     };
+
+    $scope.showBanContext = function(time) {
+        $modal.open({
+            templateUrl: 'history.html',
+            controller: HistoryController,
+            size: "lg",
+            resolve: {
+                options: function () {
+                    return {
+                        "room": $scope.roomData,
+                        "since": time - 600000,
+                        "until": time + 600000
+                    }
+                }
+            }
+        });
+    }
 
     {
         var locationSearch = $location.search();

@@ -9,6 +9,7 @@ import lexek.wschat.db.model.DataPage;
 import lexek.wschat.db.model.HistoryData;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -34,12 +35,9 @@ public class HistoryService implements EventHandler<MessageEvent> {
         this.historyDao = historyDao;
     }
 
-    public DataPage<HistoryData> getAllPagedAsJson(long roomId, int page, int pageLength) {
-        return historyDao.getAll(roomId, page, pageLength);
-    }
-
-    public DataPage<HistoryData> getAllPagedAsJson(long roomId, int page, int pageLength, List<String> users) {
-        return historyDao.getAllForUsers(roomId, page, pageLength, users);
+    public DataPage<HistoryData> getAllPagedAsJson(long roomId, int page, int pageLength, Optional<List<String>> users,
+                                                   Optional<Long> since, Optional<Long> until) {
+        return historyDao.getAllForUsers(roomId, page, pageLength, users, since, until);
     }
 
     public List<HistoryData> getLast20(long roomId) {

@@ -545,13 +545,18 @@
 <script type="text/ng-template" id="history.html">
     <div class="modal-header">
         <h3 class="modal-title">
-            History for room {{room.name}} <small>page {{page+1}}/{{totalPages+1}}</small>
+            History for room {{room.name}} <small>page {{page+1}}/{{totalPages}}</small>
             <div class="input-group pull-right" style="max-width:200px;">
                 <input ng-model="input.user" type="text" class="form-control" placeholder="User filter">
                 <span class="input-group-btn">
                     <button class="btn btn-default" type="button" ng-click="addUserFilter(input.user)">add</button>
                 </span>
             </div>
+            <small ng-if="since || until">
+                <br/>
+                <span ng-if="since">since {{since|date:'dd.MM.yyyy HH:mm'}} </span>
+                <span ng-if="until">until {{until|date:'dd.MM.yyyy HH:mm'}} </span>
+            </small>
         </h3>
     </div>
     <div class="modal-body">
@@ -1243,6 +1248,9 @@
                         <h4 class="list-group-item-heading">
                             {{translateAction(entry.action)}}
                             <small class="pull-right">
+                                <a href="" ng-click="showBanContext(entry.time)" ng-if="entry.action==='ROOM_BAN'">
+                                    <span class="fa fa-fw fa-comments"></span>
+                                </a>
                                 <abbr title="{{entry.time | date:'dd.MM.yyyy HH:mm'}}">{{entry.time | relativeDate}}</abbr>
                             </small>
                         </h4>
@@ -1255,8 +1263,8 @@
                                 <strong>user:</strong>
                                 <a href="" ng-click="showUser(entry.user.id)">{{entry.user.name}}</a>
                             </span>
+                            <br />
                             <span class="" ng-if="entry.actionDescription">
-                                <br />
                                 <span ng-switch="entry.action">
                                     <span ng-switch-when="NEW_POLL"><strong>Question:</strong> {{entry.actionDescription}}</span>
                                     <span ng-switch-when="CLOSE_POLL"><strong>Question:</strong> {{entry.actionDescription}}</span>

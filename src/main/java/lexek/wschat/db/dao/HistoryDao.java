@@ -5,6 +5,7 @@ import lexek.wschat.db.jooq.tables.pojos.History;
 import lexek.wschat.db.model.DataPage;
 import lexek.wschat.db.model.HistoryData;
 import lexek.wschat.util.Pages;
+import org.jooq.Condition;
 import org.jooq.exception.DataAccessException;
 import org.jooq.impl.DSL;
 import org.slf4j.Logger;
@@ -13,7 +14,9 @@ import org.slf4j.LoggerFactory;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static lexek.wschat.db.jooq.tables.History.HISTORY;
@@ -64,43 +67,24 @@ public class HistoryDao {
         }
     }
 
-    public DataPage<HistoryData> getAll(long roomId, int page, int pageLength) {
-        DataPage<HistoryData> result = null;
-        try (Connection connection = dataSource.getConnection()) {
-            int count = DSL.using(connection).fetchCount(DSL.select().from(HISTORY).where(HISTORY.ROOM_ID.equal(roomId)));
-            List<HistoryData> data = DSL.using(connection)
-                    .select(HISTORY.MESSAGE, HISTORY.TYPE, HISTORY.TIMESTAMP, USER.NAME, HISTORY.HIDDEN)
-                    .from(HISTORY.join(USER).on(HISTORY.USER_ID.equal(USER.ID)))
-                    .where(HISTORY.ROOM_ID.equal(roomId))
-                    .orderBy(HISTORY.TIMESTAMP.desc())
-                    .limit(pageLength * page, pageLength)
-                    .fetch()
-                    .stream()
-                    .map(record -> new HistoryData(
-                            record.getValue(HISTORY.MESSAGE),
-                            MessageType.valueOf(record.getValue(HISTORY.TYPE)),
-                            record.getValue(HISTORY.TIMESTAMP),
-                            record.getValue(USER.NAME),
-                            record.getValue(HISTORY.HIDDEN)
-                    ))
-                    .collect(Collectors.toList());
-            result = new DataPage<>(data, page, Pages.pageCount(pageLength, count));
-        } catch (DataAccessException | SQLException e) {
-            logger.error("sql exception", e);
-        }
-        return result;
-    }
-
-    public DataPage<HistoryData> getAllForUsers(long roomId, int page, int pageLength, List<String> userNames) {
+    public DataPage<HistoryData> getAllForUsers(long roomId, int page, int pageLength,
+                                                Optional<List<String>> users,
+                                                Optional<Long> since,
+                                                Optional<Long> until) {
+        List<Condition> conditions = new ArrayList<>();
+        conditions.add(HISTORY.ROOM_ID.equal(roomId));
+        users.ifPresent(names -> conditions.add(USER.NAME.in(names)));
+        since.ifPresent(value -> conditions.add(HISTORY.TIMESTAMP.greaterOrEqual(value)));
+        until.ifPresent(value -> conditions.add(HISTORY.TIMESTAMP.lessOrEqual(value)));
         DataPage<HistoryData> result = null;
         try (Connection connection = dataSource.getConnection()) {
             int count = DSL.using(connection).fetchCount(DSL.select(DSL.one())
                     .from(HISTORY.join(USER).on(HISTORY.USER_ID.equal(USER.ID)))
-                    .where(HISTORY.ROOM_ID.equal(roomId).and(USER.NAME.in(userNames))));
+                    .where(conditions));
             List<HistoryData> data = DSL.using(connection)
                     .select(HISTORY.MESSAGE, HISTORY.TYPE, HISTORY.TIMESTAMP, USER.NAME, HISTORY.HIDDEN)
                     .from(HISTORY.join(USER).on(HISTORY.USER_ID.equal(USER.ID)))
-                    .where(HISTORY.ROOM_ID.equal(roomId).and(USER.NAME.in(userNames)))
+                    .where(conditions)
                     .orderBy(HISTORY.TIMESTAMP.desc())
                     .limit(pageLength * page, pageLength)
                     .fetch()
