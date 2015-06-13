@@ -1,6 +1,8 @@
 package lexek.httpserver;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.primitives.Ints;
+import com.google.common.primitives.Longs;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpMethod;
@@ -86,6 +88,20 @@ public class Request {
         }
     }
 
+    public Long postParamAsLong(String key) {
+        String s = postParam(key);
+        return s != null ? Longs.tryParse(s) : null;
+    }
+
+    public Integer postParamAsInteger(String key) {
+        String s = postParam(key);
+        return s != null ? Ints.tryParse(s) : null;
+    }
+
+    public boolean postParamAsBoolean(String key) {
+        return "true".equals(postParam(key));
+    }
+
     public List<String> postParams(String key) {
         HttpPostRequestDecoder decoder = getPostRequestDecoder();
         List<InterfaceHttpData> dataList = decoder.getBodyHttpDatas(key);
@@ -120,6 +136,20 @@ public class Request {
     public String queryParam(String key) {
         List<String> params = getQueryDecoder().parameters().get(key);
         return params != null ? params.get(0) : null;
+    }
+
+    public Long queryParamAsLong(String key) {
+        String s = queryParam(key);
+        return s != null ? Longs.tryParse(s) : null;
+    }
+
+    public Integer queryParamAsInteger(String key) {
+        String s = queryParam(key);
+        return s != null ? Ints.tryParse(s) : null;
+    }
+
+    public boolean queryParamAsBoolean(String key) {
+        return "true".equals(queryParam(key));
     }
 
     public List<String> queryParams(String key) {
