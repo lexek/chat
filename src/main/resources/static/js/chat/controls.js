@@ -214,8 +214,9 @@ controlsModule.controller("MenuController", ["$scope", function($scope) {
     };
 }]);
 
-var ProfileController = function($scope, $modalInstance, chat) {
+var ProfileController = function($scope, $modalInstance, $http, chat) {
     $scope.self = chat.self;
+    $scope.apiToken = "";
 
     $scope.doRename = function(name) {
         chat.sendMessage({"type": "NAME", "args": [name]});
@@ -239,6 +240,22 @@ var ProfileController = function($scope, $modalInstance, chat) {
     $scope.close = function() {
         $modalInstance.dismiss('cancel');
     };
+
+    $scope.newToken = function() {
+        $http.post("/token")
+            .success(function(data) {
+                if (data.token) {
+                    $scope.apiToken = data.token;
+                }
+            });
+    };
+
+    $http.get("/token")
+        .success(function(data) {
+            if (data.token) {
+                $scope.apiToken = data.token;
+            }
+        });
 };
 
 controlsModule.controller("SettingsController", ["$scope", "chatService", "$modal", "chatSettings", "$cookieStore",

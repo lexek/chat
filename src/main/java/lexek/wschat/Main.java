@@ -210,6 +210,7 @@ public class Main {
         httpRequestDispatcher.add("/setup_profile", new SetupProfileHandler(authenticationManager, reCaptcha));
         httpRequestDispatcher.add("/register", new RegistrationHandler(authenticationManager, reCaptcha, bannedIps));
         httpRequestDispatcher.add("/password", new SetPasswordHandler(authenticationManager));
+        httpRequestDispatcher.add("/token", new TokenHandler(authenticationManager));
 
         HttpServer httpServer = new HttpServer(sslContext, httpRequestDispatcher);
 

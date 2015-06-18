@@ -11,6 +11,7 @@ import lexek.wschat.db.model.UserAuthDto;
 import lexek.wschat.db.model.UserDto;
 import lexek.wschat.security.social.SocialAuthProfile;
 import lexek.wschat.util.Colors;
+import org.apache.http.HttpHeaders;
 import org.jooq.DSLContext;
 import org.jooq.Record;
 import org.jooq.exception.DataAccessException;
@@ -82,6 +83,26 @@ public class AuthenticationManager {
             }
             return null;
         }
+    }
+
+    public UserAuthDto fastAuthToken(String token) {
+        UserAuthDto auth = null;
+        try (Connection connection = dataSource.getConnection()) {
+            Record record = DSL.using(connection)
+                    .select()
+                    .from(USERAUTH)
+                    .join(USER).on(USERAUTH.USER_ID.equal(USER.ID))
+                    .where(USERAUTH.SERVICE.equal("token").and(USERAUTH.AUTH_KEY.equal(token)))
+                    .fetchOne();
+            if (record != null) {
+                auth = UserAuthDto.fromRecord(record);
+            }
+        } catch (DataAccessException | SQLException e) {
+            auth = null;
+            logger.warn("", e);
+        }
+
+        return auth;
     }
 
     public int failedLoginTries(String ip) {
@@ -211,10 +232,22 @@ public class AuthenticationManager {
     }
 
     public UserAuthDto checkFullAuthentication(Request request) {
-        String sid = request.cookieValue("sid");
         UserAuthDto user = null;
-        if (sid != null) {
-            user = checkFullAuthentication(sid, request.ip());
+        if (request.hasHeader(HttpHeaders.AUTHORIZATION)) {
+            String[] tmp = request.header(HttpHeaders.AUTHORIZATION).split(" ", 2);
+            if (tmp.length == 2) {
+                String type = tmp[0];
+                String token = tmp[1];
+                if (type.equals("Token")) {
+                    user = fastAuthToken(token);
+                }
+            }
+        }
+        if (user == null) {
+            String sid = request.cookieValue("sid");
+            if (sid != null) {
+                user = checkFullAuthentication(sid, request.ip());
+            }
         }
         return user;
     }
@@ -337,6 +370,24 @@ public class AuthenticationManager {
         } catch (DataAccessException | SQLException e) {
             logger.error(e.getMessage());
         }
+    }
+
+    public String createTokenForUser(long userId) {
+        byte[] bytes = new byte[128];
+        secureRandom.nextBytes(bytes);
+        String token = userId + "_" + BaseEncoding.base16().encode(bytes);
+        try (Connection connection = dataSource.getConnection()) {
+            DSL.using(connection)
+                    .insertInto(USERAUTH, USERAUTH.AUTH_NAME, USERAUTH.AUTH_ID, USERAUTH.AUTH_KEY, USERAUTH.SERVICE, USERAUTH.USER_ID)
+                    .values(null, null, token, "token", userId)
+                    .onDuplicateKeyUpdate()
+                    .set(USERAUTH.AUTH_KEY, token)
+                    .execute();
+        } catch (DataAccessException | SQLException e) {
+            logger.error(e.getMessage());
+            token = null;
+        }
+        return token;
     }
 
     public boolean addUserAndTieToAuth(final String name, final UserAuthDto auth) {

@@ -187,6 +187,23 @@
                 </div>
             </form>
         </div>
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <div class="panel-title">
+                    API token
+                </div>
+            </div>
+            <div class="panel-body">
+                <div class="input-group">
+                    <input type="text" class="form-control" ng-model="apiToken" readonly>
+                    <span class="input-group-btn">
+                        <button class="btn btn-default" type="button" ng-click="newToken()">
+                            <i class="fa fa-fw fa-refresh"></i>
+                        </button>
+                    </span>
+                </div>
+            </div>
+        </div>
         <div class="btn btn-warning btn-modal" ng-click="close()">{{'CONTROLS_CLOSE' | translate}}</div>
     </div>
 </script>
