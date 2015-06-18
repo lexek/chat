@@ -37,11 +37,15 @@ public class AnnouncementApiHandler extends SimpleHttpHandler {
                         }
                     } else if (action.equals("ADD")) {
                         String text = request.postParam("text");
-                        String roomParam = request.postParam("room");
-                        Long roomId = roomParam != null ? Longs.tryParse(roomParam) : null;
+                        Long roomId = request.postParamAsLong("room");
+                        boolean onlyBroadcast = request.postParamAsBoolean("onlyBroadcast");
                         if (roomId != null && text != null) {
                             Announcement announcement = new Announcement(null, roomId, true, text);
-                            announcementService.announce(announcement, user);
+                            if (onlyBroadcast) {
+                                announcementService.announceWithoutSaving(announcement);
+                            } else {
+                                announcementService.announce(announcement, user);
+                            }
                             response.stringContent("ok");
                             return;
                         }

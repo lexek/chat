@@ -65,9 +65,22 @@ public class AnnouncementService extends AbstractService {
             announcementDao.add(announcement);
             if (announcement.getId() != null) {
                 roomAnnouncements.put(room, announcement);
-                messageBroadcaster.submitMessage(Message.infoMessage(announcement.getText()), Connection.STUB_CONNECTION);
+                messageBroadcaster.submitMessage(
+                        Message.infoMessage(announcement.getText()),
+                        Connection.STUB_CONNECTION,
+                        room.FILTER);
                 journalService.newAnnouncement(admin, room, announcement);
             }
+        }
+    }
+
+    public void announceWithoutSaving(Announcement announcement) {
+        Room room = roomManager.getRoomInstance(announcement.getRoomId());
+        if (room != null) {
+            messageBroadcaster.submitMessage(
+                    Message.infoMessage(announcement.getText()),
+                    Connection.STUB_CONNECTION,
+                    room.FILTER);
         }
     }
 
