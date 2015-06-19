@@ -375,7 +375,7 @@ public class AuthenticationManager {
     public String createTokenForUser(long userId) {
         byte[] bytes = new byte[128];
         secureRandom.nextBytes(bytes);
-        String token = userId + "_" + BaseEncoding.base16().encode(bytes);
+        String token = userId + "_" + BaseEncoding.base64().encode(bytes);
         try (Connection connection = dataSource.getConnection()) {
             DSL.using(connection)
                     .insertInto(USERAUTH, USERAUTH.AUTH_NAME, USERAUTH.AUTH_ID, USERAUTH.AUTH_KEY, USERAUTH.SERVICE, USERAUTH.USER_ID)
