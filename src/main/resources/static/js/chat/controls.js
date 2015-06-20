@@ -249,13 +249,6 @@ var ProfileController = function($scope, $modalInstance, $http, chat) {
                 }
             });
     };
-
-    $http.get("/token")
-        .success(function(data) {
-            if (data.token) {
-                $scope.apiToken = data.token;
-            }
-        });
 };
 
 controlsModule.controller("SettingsController", ["$scope", "chatService", "$modal", "chatSettings", "$cookieStore",
