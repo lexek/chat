@@ -423,12 +423,12 @@
                 <h4 class="list-group-item-heading">
                     {{translateAction(entry.action)}}
                     <small class="" ng-if="entry.admin">
-                        <strong>admin:</strong>
-                        <a href="" ng-click="showUser(entry.admin.id)">{{entry.admin.name}}</a>
+                        <i class="fa fa-fw fa-wrench" tooltip="admin"></i><!--
+                        --><a href="" ng-click="showUser(entry.admin.id)">{{entry.admin.name}}</a>
                     </small>
                     <small class="" ng-if="entry.user">
-                        <strong>user:</strong>
-                        <a href="" ng-click="showUser(entry.user.id)">{{entry.user.name}}</a>
+                        <i class="fa fa-fw fa-user" tooltip="user"></i><!--
+                        --><a href="" ng-click="showUser(entry.user.id)">{{entry.user.name}}</a>
                     </small>
                     <small class="pull-right">
                         <a href="" ng-click="showBanContext(entry.time)" ng-if="entry.action==='ROOM_BAN'"><!--
@@ -454,15 +454,15 @@
                                 <code ng-bind="entry.actionDescription.newName"></code>
                             </div>
                             <div ng-switch-when="USER_UPDATE">
-                                <table class="table" style="max-width:500px">
+                                <table class="table">
                                     <thead>
                                     <tr>
-                                        <td>
+                                        <th>
                                             attribute
-                                        </td>
-                                        <td>
+                                        </th>
+                                        <th>
                                             value
-                                        </td>
+                                        </th>
                                     </tr>
                                     </thead>
                                     <tbody>
@@ -965,6 +965,14 @@
             <div class="list-group-item" ng-repeat="entry in journal" ng-class="getClassForJournalAction(entry.action)">
                 <h4 class="list-group-item-heading">
                     {{translateAction(entry.action)}}
+                    <small ng-if="entry.admin">
+                        <i class="fa fa-fw fa-wrench" tooltip="admin"></i><!--
+                        --><a href="" ng-click="showUser(entry.admin.id)">{{entry.admin.name}}</a>
+                    </small>
+                    <small ng-if="entry.user">
+                        <i class="fa fa-fw fa-user" tooltip="user"></i><!--
+                        --><a href="" ng-click="showUser(entry.user.id)">{{entry.user.name}}</a>
+                    </small>
                     <small class="pull-right">
                         <a href="" ng-click="showBanContext(entry.time)" ng-if="entry.action==='ROOM_BAN'"><!--
                                     --><span class="fa fa-fw fa-comments"></span><!--
@@ -973,15 +981,6 @@
                     </small>
                 </h4>
                 <p class="list-group-item-text">
-                    <span class="" ng-if="entry.admin">
-                        <strong>admin:</strong>
-                        <a href="" ng-click="showUser(entry.admin.id)">{{entry.admin.name}}</a>
-                    </span>
-                    <span class="" ng-if="entry.user">
-                        <strong>user:</strong>
-                        <a href="" ng-click="showUser(entry.user.id)">{{entry.user.name}}</a>
-                    </span>
-                    <br />
                     <span class="" ng-if="entry.actionDescription">
                         <span ng-switch="entry.action">
                             <span ng-switch-when="NEW_POLL"><strong>Question:</strong> {{entry.actionDescription}}</span>
@@ -1266,6 +1265,14 @@
                     <div class="list-group-item" ng-repeat="entry in journal" ng-class="getClassForJournalAction(entry.action)">
                         <h4 class="list-group-item-heading">
                             {{translateAction(entry.action)}}
+                            <small ng-if="entry.admin">
+                                <i class="fa fa-fw fa-wrench" tooltip="admin"></i><!--
+                                --><a href="" ng-click="showUser(entry.admin.id)">{{entry.admin.name}}</a>
+                            </small>
+                            <small ng-if="entry.user">
+                                <i class="fa fa-fw fa-user" tooltip="user"></i><!--
+                                --><a href="" ng-click="showUser(entry.user.id)">{{entry.user.name}}</a>
+                            </small>
                             <small class="pull-right">
                                 <a href="" ng-click="showBanContext(entry.time)" ng-if="entry.action==='ROOM_BAN'"><!--
                                     --><span class="fa fa-fw fa-comments"></span><!--
@@ -1274,15 +1281,6 @@
                             </small>
                         </h4>
                         <p class="list-group-item-text">
-                            <span class="" ng-if="entry.admin">
-                                <strong>admin:</strong>
-                                <a href="" ng-click="showUser(entry.admin.id)">{{entry.admin.name}}</a>
-                            </span>
-                            <span class="" ng-if="entry.user">
-                                <strong>user:</strong>
-                                <a href="" ng-click="showUser(entry.user.id)">{{entry.user.name}}</a>
-                            </span>
-                            <br />
                             <span class="" ng-if="entry.actionDescription">
                                 <span ng-switch="entry.action">
                                     <span ng-switch-when="NEW_POLL"><strong>Question:</strong> {{entry.actionDescription}}</span>
