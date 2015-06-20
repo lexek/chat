@@ -458,7 +458,7 @@
                                     <thead>
                                     <tr>
                                         <td>
-                                            attr
+                                            attribute
                                         </td>
                                         <td>
                                             value
@@ -467,7 +467,7 @@
                                     </thead>
                                     <tbody>
                                     <tr ng-repeat="(k,v) in entry.actionDescription.oldState"
-                                        ng-if="entry.actionDescription.newState[k]">
+                                        ng-if="entry.actionDescription.newState.hasOwnProperty(k)">
                                         <td ng-bind="k"></td>
                                         <td>
                                             {{v}}
