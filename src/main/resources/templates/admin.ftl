@@ -418,46 +418,72 @@
                 journal
             </h4>
         </div>
-        <table class="table table-hover">
-            <thead>
-            <tr>
-                <th style="width: 120px">
-                    date
-                </th>
-                <th style="width: 50px">
-                    action
-                </th>
-                <th>
-
-                </th>
-                <th style="width: 100px">
-                    user
-                </th>
-                <th style="width: 100px">
-                    admin
-                </th>
-            </tr>
-            </thead>
-            <tr ng-repeat="entry in entries">
-                <td>
-                    <abbr title="{{entry.time | date:'dd.MM.yyyy HH:mm'}}">{{entry.time | relativeDate}}</abbr>
-                </td>
-                <td>
-                    <span class="label label-primary">
-                        {{entry.action}}
-                    </span>
-                </td>
-                <td>
-                    {{entry.actionDescription}}
-                </td>
-                <td>
-                    <a href="" ng-click="userModal(entry.user.id)">{{entry.user.name}}</a>
-                </td>
-                <td>
-                    <a href="" ng-click="userModal(entry.admin.id)">{{entry.admin.name}}</a>
-                </td>
-            </tr>
-        </table>
+        <div class="list-group">
+            <div class="list-group-item" ng-repeat="entry in entries" ng-class="getClassForJournalAction(entry.action)">
+                <h4 class="list-group-item-heading">
+                    {{translateAction(entry.action)}}
+                    <small class="" ng-if="entry.admin">
+                        <strong>admin:</strong>
+                        <a href="" ng-click="showUser(entry.admin.id)">{{entry.admin.name}}</a>
+                    </small>
+                    <small class="" ng-if="entry.user">
+                        <strong>user:</strong>
+                        <a href="" ng-click="showUser(entry.user.id)">{{entry.user.name}}</a>
+                    </small>
+                    <small class="pull-right">
+                        <a href="" ng-click="showBanContext(entry.time)" ng-if="entry.action==='ROOM_BAN'"><!--
+                                    --><span class="fa fa-fw fa-comments"></span><!--
+                                --></a>
+                        <abbr title="{{entry.time | date:'dd.MM.yyyy HH:mm'}}">{{entry.time | relativeDate}}</abbr>
+                    </small>
+                </h4>
+                <p class="list-group-item-text">
+                    <div class="" ng-if="entry.actionDescription">
+                        <div ng-switch="entry.action">
+                            <div ng-switch-when="NEW_EMOTICON">
+                                <img ng-src="/emoticons/{{entry.actionDescription.fileName}}">
+                                <code ng-bind="entry.actionDescription.code"></code>
+                            </div>
+                            <div ng-switch-when="DELETED_EMOTICON">
+                                <img ng-src="/emoticons/{{entry.actionDescription.fileName}}">
+                                <code ng-bind="entry.actionDescription.code"></code>
+                            </div>
+                            <div ng-switch-when="NAME_CHANGE">
+                                <code ng-bind="entry.actionDescription.oldName"></code>
+                                <span class="fa fa-long-arrow-right"></span>
+                                <code ng-bind="entry.actionDescription.newName"></code>
+                            </div>
+                            <div ng-switch-when="USER_UPDATE">
+                                <table class="table" style="max-width:500px">
+                                    <thead>
+                                    <tr>
+                                        <td>
+                                            attr
+                                        </td>
+                                        <td>
+                                            value
+                                        </td>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr ng-repeat="(k,v) in entry.actionDescription.oldState"
+                                        ng-if="entry.actionDescription.newState[k]">
+                                        <td ng-bind="k"></td>
+                                        <td>
+                                            {{v}}
+                                            <span class="fa fa-long-arrow-right"></span>
+                                            {{entry.actionDescription.newState[k]}}
+                                        </td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <span ng-switch-default ng-bind="entry.actionDescription | json"></span>
+                        </div>
+                    </div>
+                </p>
+            </div>
+        </div>
         <div class="panel-footer" ng-if="(page !== 0) || hasNextPage()">
             <ul class="pager">
                 <li class="previous" ng-if="page !== 0" ng-click="previousPage()"><a href="">&larr; Previous page</a></li>

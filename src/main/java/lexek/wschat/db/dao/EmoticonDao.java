@@ -52,7 +52,7 @@ public class EmoticonDao {
         try (Connection connection = dataSource.getConnection()) {
             DSLContext ctx = DSL.using(connection);
             emoticon = ctx
-                    .select(EMOTICON.CODE)
+                    .select()
                     .from(EMOTICON)
                     .where(EMOTICON.ID.equal(id))
                     .fetchOneInto(Emoticon.class);

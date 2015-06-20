@@ -42,7 +42,7 @@ public class UserService {
 
     public boolean changeName(UserDto user, String newName) {
         if (userDao.tryChangeName(user.getId(), newName, user.hasRole(GlobalRole.ADMIN))) {
-            journalService.nameChanged(user, user.getName());
+            journalService.nameChanged(user, user.getName(), newName);
             userCache.invalidate(user.getName());
             //close all connection authenticated with that user account
             connectionManager.forEach(connection -> user.getId().equals(connection.getUser().getId()), Connection::close);

@@ -989,6 +989,11 @@ var JournalController = function($scope, $location, $http, $modal, alert, title)
                 $scope.entries = d["data"];
                 $scope.totalPages = d["pageCount"];
                 title.secondary = "page " + ($scope.page+1) + "/" + ($scope.totalPages);
+                angular.forEach($scope.entries, function (e) {
+                    if (e.actionDescription) {
+                        e.actionDescription = angular.fromJson(e.actionDescription);
+                    }
+                });
             })
             .error(function (data, status, headers, config) {
                 alert.alert("danger", data);
@@ -1011,7 +1016,7 @@ var JournalController = function($scope, $location, $http, $modal, alert, title)
         return (page+1) < $scope.totalPages
     };
 
-    $scope.userModal = function(id) {
+    $scope.showUser = function(id) {
         $modal.open({
             templateUrl: "user.html",
             controller: UserModalController,
@@ -1022,6 +1027,25 @@ var JournalController = function($scope, $location, $http, $modal, alert, title)
                 }
             }
         });
+    };
+
+    var classMap = {
+        "DELETED_EMOTICON": "warning"
+    };
+
+    var actionMap = {
+        "USER_UPDATE": "User changed",
+        "NAME_CHANGE": "User name changed",
+        "NEW_EMOTICON": "New emoticon",
+        "DELETED_EMOTICON": "Deleted emoticon"
+    };
+
+    $scope.getClassForJournalAction = function(action) {
+        return 'list-group-item-' + classMap[action];
+    };
+
+    $scope.translateAction = function(action) {
+        return actionMap[action];
     };
 
     {
