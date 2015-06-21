@@ -99,7 +99,7 @@ public class Request {
     }
 
     public boolean postParamAsBoolean(String key) {
-        return "true".equals(postParam(key));
+        return "true".equalsIgnoreCase(postParam(key));
     }
 
     public List<String> postParams(String key) {
@@ -149,7 +149,7 @@ public class Request {
     }
 
     public boolean queryParamAsBoolean(String key) {
-        return "true".equals(queryParam(key));
+        return "true".equalsIgnoreCase(queryParam(key));
     }
 
     public List<String> queryParams(String key) {
