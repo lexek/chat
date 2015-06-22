@@ -98,6 +98,7 @@ services.service("chatService", ["$modal", "chatSettings", "$translate", "$http"
         this.rooms = settings.getRooms();
         this.lastMessageTimeout = null;
         this.state = CHAT_STATE.DISCONNECTED;
+        this.idCounter = 0;
 
         var c = this;
         User.prototype.clear = function() {
@@ -142,6 +143,7 @@ services.service("chatService", ["$modal", "chatSettings", "$translate", "$http"
     };
 
     chatService.prototype.addMessage = function(message, room, hist, mention) {
+        message.internalId = this.idCounter++;
         if (!room) {
             room = this.activeRoom;
         }

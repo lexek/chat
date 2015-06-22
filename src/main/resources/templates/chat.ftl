@@ -504,47 +504,36 @@
         <div class="tse-scroll-content" scroll-glue="">
             <div class="tse-content">
                 <div ng-if="compact()" class="messages compact " ng-cloak="">
-                    <div bindonce="" ng-repeat="message in messages[getActiveRoom()]" class="messageBody" ng-controller="MessageController">
+                    <div bindonce="" ng-repeat="message in messages[getActiveRoom()] track by message.internalId" class="messageBody" ng-controller="MessageController">
                         <div class="message" bo-if="(message.type === 'MSG_GROUP')">
-                                <span bo-if="!message.mult">
-                                    <span class="timeCompact" ng-if="showTimestamps()">{{message.messages[0].time | date:'HH:mm'}}</span><!--
-                                    --><span class="btn-group btn-group-xs" ng-if="showModButtons()" style="margin-right: 3px">
-                                        <span class="btn btn-default" ng-click="message.user.clear()" title="clear"><span class="fa fa-eraser"></span></span>
-                                        <span class="btn btn-default" ng-click="message.user.ban()" title="ban"><span class="fa fa-ban"></span></span>
-                                        <span class="btn btn-default" ng-click="message.user.timeout()" title="time out"><span class="fa fa-clock-o"></span></span>
-                                    </span><!--
-                                    --><span ng-if="isMod()" class="mod">M</span><!--
-                                    --><span ng-if="isAdmin()" class="admin">A</span><!--
-                                    --><span ng-if="message.user.service!==null" class="ext" tooltip="{{message.user.serviceRes}}"
-                                             tooltip-trigger="mouseenter" tooltip-placement="right"><span ng-if="message.user.service==='twitch.tv'" class="fa fa-twitch" style="color: #6441A5"></span><!--
-                                    --><span ng-if="message.user.service==='cybergame.tv'" class="fa fa-gamepad" style="color: #21b384"></span><!--
-                                    --><strong ng-if="message.user.service==='goodgame'" style="color: #73ADFF">GG</strong><!--
-                                    --><span ng-if="message.user.service==='sc2tv.ru'" class="sc2tvIcon"></span></span><!--
-                                    --><span class="username" bo-style="{'color': message.user.color}" ng-click="addToInput($event)" bo-bind="message.user.name | inflector:'capital'"></span>:
-                                </span>
-                            <#if like>
-                                <span class="like" popover-append-to-body="true" popover="likedTemplate_.html" popover-title="Liked this:" popover-trigger="mouseenter" popover-placement="left">
-                                    <span class="likeButton btn btn-link btn-xs" ng-click="like(message.messages[0].id_)" ng-class="{likedButton: message.messages[0].likes.length &gt; 0}">
-                                        <span class="fa fa-heart"></span><!--
-                                        --><span class="likeCount" ng-if="message.messages[0].likes.length &gt; 0">&nbsp;{{message.messages[0].likes.length}}</span>
+                            <span class="timeCompact" ng-if="showTimestamps()">{{message.messages[0].time | date:'HH:mm'}}</span><!--
+                            --><span class="btn-group btn-group-xs" ng-if="showModButtons()" style="margin-right: 3px">
+                                <span class="btn btn-default" ng-click="message.user.clear()" title="clear"><span class="fa fa-eraser"></span></span>
+                                <span class="btn btn-default" ng-click="message.user.ban()" title="ban"><span class="fa fa-ban"></span></span>
+                                <span class="btn btn-default" ng-click="message.user.timeout()" title="time out"><span class="fa fa-clock-o"></span></span>
+                            </span><!--
+                            --><span bo-if="isMod()" class="mod">M</span><!--
+                            --><span bo-if="isAdmin()" class="admin">A</span><!--
+                            --><span bo-if="message.user.service!==null" class="ext" tooltip="{{message.user.serviceRes}}"
+                                     tooltip-trigger="mouseenter" tooltip-placement="right"><span bo-if="message.user.service==='twitch.tv'" class="fa fa-twitch" style="color: #6441A5"></span><!--
+                            --><span bo-if="message.user.service==='cybergame.tv'" class="fa fa-gamepad" style="color: #21b384"></span><!--
+                            --><strong bo-if="message.user.service==='goodgame'" style="color: #73ADFF">GG</strong><!--
+                            --><span bo-if="message.user.service==='sc2tv.ru'" class="sc2tvIcon"></span></span><!--
+                            --><span class="username" bo-style="{'color': message.user.color}" ng-click="addToInput($event)" bo-bind="message.user.name | inflector:'capital'"></span>:
+                            <span class="userMessageContainer" ng-repeat="msg in message.messages track by $index">
+                                <br bo-if="!$first"/>
+                                <#if like>
+                                    <span class="like" popover-append-to-body="true" popover="likedTemplate.html" popover-title="Liked this:" popover-trigger="mouseenter" popover-placement="left">
+                                        <span class="likeButton btn btn-link btn-xs" ng-click="like(msg.id_)" ng-class="{likedButton: msg.likes.length &gt; 0}">
+                                            <span class="fa fa-heart"></span><!--
+                                            --><span class="likeCount" ng-if="msg.likes.length &gt; 0">&nbsp;{{msg.likes.length}}</span>
+                                        </span>
                                     </span>
-                                </span>
-                            </#if>
-                            <span class="userMessageBody" ng-if="!message.messages[0].hidden" bo-html="message.messages[0].body"></span>
-                            <a class="userMessageBody" ng-if="message.messages[0].hidden" ng-click="message.messages[0].hidden=false">[{{'CHAT_MESSAGE_HIDDEN' | translate}}]</a>
-                            <div class="userMessageContainer" ng-repeat="msg in message.messages.slice(1)">
-                            <#if like>
-                                <span class="like" popover-append-to-body="true" popover="likedTemplate.html" popover-title="Liked this:" popover-trigger="mouseenter" popover-placement="left">
-                                    <span class="likeButton btn btn-link btn-xs" ng-click="like(msg.id_)" ng-class="{likedButton: msg.likes.length &gt; 0}">
-                                        <span class="fa fa-heart"></span><!--
-                                        --><span class="likeCount" ng-if="msg.likes.length &gt; 0">&nbsp;{{msg.likes.length}}</span>
-                                    </span>
-                                </span>
-                            </#if>
-                                <span>&gt; </span>
+                                </#if>
+                                <span bo-if="!$first">&gt; </span>
                                 <span class="userMessageBody" ng-if="!msg.hidden" bo-html="msg.body"></span>
                                 <a class="userMessageBody" ng-if="msg.hidden" ng-click="msg.hidden=false">[{{'CHAT_MESSAGE_HIDDEN' | translate}}]</a>
-                            </div>
+                            </span>
                         </div>
                         <div class="message" bo-if="(message.type == 'ME')" bo-style="{'color': message.user.color}">
                             <span class="timeCompact" ng-if="showTimestamps()">{{message.time | date:'HH:mm'}}</span><!--
@@ -576,23 +565,23 @@
                     </div>
                 </div>
                 <div ng-if="!compact()" class="messages" ng-cloak="">
-                    <div bindonce="" ng-repeat="message in messages[getActiveRoom()]" class="messageBody" ng-controller="MessageController">
+                    <div bindonce="" ng-repeat="message in messages[getActiveRoom()] track by message.internalId" class="messageBody" ng-controller="MessageController">
                         <div class="message" bo-if="(message.type == 'MSG_GROUP')" bo-style="{'border-color': message.user.color}">
                             <div class="messageHeading">
                                 <span class="username" bo-style="{'color': message.user.color}" ng-click="addToInput($event)" bo-bind="message.user.name | inflector:'capital'"></span>
-                                <small class="role" bo-if="message.user.service===null">{{"ROLE_" + getHighestRole().role.title | translate}}</small>
-                                <small class="role" bo-if="message.user.service!==null">{{message.user.serviceRes}} <!--
-                                --><a ng-if="message.user.service==='twitch.tv'" ng-href="{{extUrl()}}" target="_blank"><span class="fa fa-twitch" style="color: #999999"></span></a><!--
-                                --><span ng-if="message.user.service==='cybergame.tv'" class="fa fa-gamepad" style="color: #999999"></span><!--
-                                --><strong ng-if="message.user.service==='goodgame'" style="color: #73ADFF">GG</strong><!--
-                                --><span ng-if="message.user.service==='sc2tv.ru'" class="sc2tvIcon"></span></small>
+                                <small class="role" bo-if="message.user.service===null" bo-bind="'ROLE_' + getHighestRole().role.title | translate"></small>
+                                <small class="role" bo-if="message.user.service!==null"><span bo-bind="message.user.serviceRes"></span> <!--
+                                --><a bo-if="message.user.service==='twitch.tv'" bo-href="extUrl()" target="_blank"><span class="fa fa-twitch" style="color: #999999"></span></a><!--
+                                --><span bo-if="message.user.service==='cybergame.tv'" class="fa fa-gamepad" style="color: #999999"></span><!--
+                                --><strong bo-if="message.user.service==='goodgame'" style="color: #73ADFF">GG</strong><!--
+                                --><span bo-if="message.user.service==='sc2tv.ru'" class="sc2tvIcon"></span></small>
                                 <div class="pull-right btn-group modButtons" ng-if="showModButtons()">
                                     <div class="btn btn-link btn-x" ng-click="message.user.clear()"><span class="fa fa-eraser"></span></div>
                                     <div class="btn btn-link btn-x" ng-click="message.user.ban()"><span class="fa fa-ban"></span></div>
                                     <div class="btn btn-link btn-x" ng-click="message.user.timeout()"><span class="fa fa-clock-o"></span></div>
                                 </div>
                             </div>
-                            <div class="userMessageContainer" ng-repeat="msg in message.messages">
+                            <div class="userMessageContainer" ng-repeat="msg in message.messages track by $index">
                                 <div class="time" bo-bind="msg.time | date:'HH:mm'"></div>
                                 <#if like><div class="like" popover-append-to-body="true" popover="likedTemplate.html" popover-title="Liked this:" popover-trigger="mouseenter" popover-placement="left">
                                         <span class="likeButton btn btn-link btn-xs" ng-click="like(msg.id_)" ng-class="{likedButton: msg.likes.length &gt; 0}">
