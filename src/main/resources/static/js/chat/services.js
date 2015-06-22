@@ -417,8 +417,11 @@ services.service("chatService", ["$modal", "chatSettings", "$translate", "$http"
                 text = text.replace(chat.emoticonRegExp, function (match) {
                     var emoticon = chat.emoticons[match];
                     if (emoticon) {
-                        return "<span class='faceCode' style='background-image: url(emoticons/" + emoticon.fileName +
-                            "); height: " + emoticon.height + "px; width: " + emoticon.width + "px;' title='" + emoticon.code + "'></span>"
+                        return "<img " +
+                            "src='emoticons/" + emoticon.fileName + "' " +
+                            "style='height: " + emoticon.height + "px; width: " + emoticon.width + "px;' " +
+                            "title='" + emoticon.code + "'" +
+                            "alt='" + emoticon.code + "'></img>"
                     } else {
                         return null;
                     }
