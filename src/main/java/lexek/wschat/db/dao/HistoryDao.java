@@ -42,10 +42,10 @@ public class HistoryDao {
         try (Connection connection = dataSource.getConnection()) {
             DSL.using(connection).transaction(txCfg -> {
                 DSL.using(txCfg)
-                        .update(HISTORY.join(USER).on(HISTORY.USER_ID.equal(USER.ID)))
-                        .set(HISTORY.HIDDEN, true)
-                        .where(USER.NAME.equal(name).and(HISTORY.TIMESTAMP.greaterOrEqual(since)))
-                        .execute();
+                    .update(HISTORY.join(USER).on(HISTORY.USER_ID.equal(USER.ID)))
+                    .set(HISTORY.HIDDEN, true)
+                    .where(USER.NAME.equal(name).and(HISTORY.TIMESTAMP.greaterOrEqual(since)))
+                    .execute();
                 DSL.using(txCfg).newRecord(HISTORY, message).store();
             });
         } catch (DataAccessException | SQLException e) {
@@ -57,10 +57,10 @@ public class HistoryDao {
         try (Connection connection = dataSource.getConnection()) {
             DSL.using(connection).transaction(txCfg -> {
                 DSL.using(connection)
-                        .update(HISTORY)
-                        .set(HISTORY.HIDDEN, true)
-                        .where(HISTORY.ROOM_ID.equal(roomId).and(HISTORY.TIMESTAMP.greaterOrEqual(since)))
-                        .execute();
+                    .update(HISTORY)
+                    .set(HISTORY.HIDDEN, true)
+                    .where(HISTORY.ROOM_ID.equal(roomId).and(HISTORY.TIMESTAMP.greaterOrEqual(since)))
+                    .execute();
             });
         } catch (DataAccessException | SQLException e) {
             logger.error("sql exception", e);
@@ -79,24 +79,24 @@ public class HistoryDao {
         DataPage<HistoryData> result = null;
         try (Connection connection = dataSource.getConnection()) {
             int count = DSL.using(connection).fetchCount(DSL.select(DSL.one())
-                    .from(HISTORY.join(USER).on(HISTORY.USER_ID.equal(USER.ID)))
-                    .where(conditions));
+                .from(HISTORY.join(USER).on(HISTORY.USER_ID.equal(USER.ID)))
+                .where(conditions));
             List<HistoryData> data = DSL.using(connection)
-                    .select(HISTORY.MESSAGE, HISTORY.TYPE, HISTORY.TIMESTAMP, USER.NAME, HISTORY.HIDDEN)
-                    .from(HISTORY.join(USER).on(HISTORY.USER_ID.equal(USER.ID)))
-                    .where(conditions)
-                    .orderBy(HISTORY.TIMESTAMP.desc())
-                    .limit(pageLength * page, pageLength)
-                    .fetch()
-                    .stream()
-                    .map(record -> new HistoryData(
-                            record.getValue(HISTORY.MESSAGE),
-                            MessageType.valueOf(record.getValue(HISTORY.TYPE)),
-                            record.getValue(HISTORY.TIMESTAMP),
-                            record.getValue(USER.NAME),
-                            record.getValue(HISTORY.HIDDEN)
-                    ))
-                    .collect(Collectors.toList());
+                .select(HISTORY.MESSAGE, HISTORY.TYPE, HISTORY.TIMESTAMP, USER.NAME, HISTORY.HIDDEN)
+                .from(HISTORY.join(USER).on(HISTORY.USER_ID.equal(USER.ID)))
+                .where(conditions)
+                .orderBy(HISTORY.TIMESTAMP.desc())
+                .limit(pageLength * page, pageLength)
+                .fetch()
+                .stream()
+                .map(record -> new HistoryData(
+                    record.getValue(HISTORY.MESSAGE),
+                    MessageType.valueOf(record.getValue(HISTORY.TYPE)),
+                    record.getValue(HISTORY.TIMESTAMP),
+                    record.getValue(USER.NAME),
+                    record.getValue(HISTORY.HIDDEN)
+                ))
+                .collect(Collectors.toList());
             result = new DataPage<>(data, page, Pages.pageCount(pageLength, count));
         } catch (DataAccessException | SQLException e) {
             logger.error("sql exception", e);
@@ -108,21 +108,21 @@ public class HistoryDao {
         List<HistoryData> result = null;
         try (Connection connection = dataSource.getConnection()) {
             result = DSL.using(connection)
-                    .select(HISTORY.MESSAGE, HISTORY.TYPE, HISTORY.TIMESTAMP, USER.NAME, HISTORY.HIDDEN)
-                    .from(HISTORY.join(USER).on(HISTORY.USER_ID.equal(USER.ID)))
-                    .where(HISTORY.ROOM_ID.equal(roomId))
-                    .orderBy(HISTORY.TIMESTAMP.desc())
-                    .limit(20)
-                    .fetch()
-                    .stream()
-                    .map(record -> new HistoryData(
-                            record.getValue(HISTORY.MESSAGE),
-                            MessageType.valueOf(record.getValue(HISTORY.TYPE)),
-                            record.getValue(HISTORY.TIMESTAMP),
-                            record.getValue(USER.NAME),
-                            record.getValue(HISTORY.HIDDEN)
-                    ))
-                    .collect(Collectors.toList());
+                .select(HISTORY.MESSAGE, HISTORY.TYPE, HISTORY.TIMESTAMP, USER.NAME, HISTORY.HIDDEN)
+                .from(HISTORY.join(USER).on(HISTORY.USER_ID.equal(USER.ID)))
+                .where(HISTORY.ROOM_ID.equal(roomId))
+                .orderBy(HISTORY.TIMESTAMP.desc())
+                .limit(20)
+                .fetch()
+                .stream()
+                .map(record -> new HistoryData(
+                    record.getValue(HISTORY.MESSAGE),
+                    MessageType.valueOf(record.getValue(HISTORY.TYPE)),
+                    record.getValue(HISTORY.TIMESTAMP),
+                    record.getValue(USER.NAME),
+                    record.getValue(HISTORY.HIDDEN)
+                ))
+                .collect(Collectors.toList());
         } catch (DataAccessException | SQLException e) {
             logger.error("sql exception", e);
         }

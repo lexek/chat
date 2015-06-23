@@ -37,8 +37,8 @@ public class WebSocketConnectionAdapter extends Connection {
     @Override
     public String toString() {
         return "WebSocketConnectionAdapter{" +
-                "channel=" + channel.metadata() +
-                "} " + super.toString();
+            "channel=" + channel.metadata() +
+            "} " + super.toString();
     }
 
     public Channel getChannel() {

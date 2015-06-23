@@ -13,9 +13,9 @@ public class ChatHomeHandler extends SimpleHttpHandler {
 
     public ChatHomeHandler(boolean allowLikes, boolean singleRoom) {
         this.data = ImmutableMap.of(
-                "title", TITLE,
-                "like", allowLikes,
-                "singleRoom", singleRoom
+            "title", TITLE,
+            "like", allowLikes,
+            "singleRoom", singleRoom
         );
     }
 

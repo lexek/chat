@@ -29,11 +29,11 @@ public class SessionDto {
     public static SessionDto fromRecord(Record record, UserAuthDto userAuth) {
         if (record != null && record.getValue(SESSION.ID) != null) {
             return new SessionDto(
-                    record.getValue(SESSION.ID),
-                    userAuth,
-                    record.getValue(SESSION.SID),
-                    record.getValue(SESSION.IP),
-                    record.getValue(SESSION.EXPIRES)
+                record.getValue(SESSION.ID),
+                userAuth,
+                record.getValue(SESSION.SID),
+                record.getValue(SESSION.IP),
+                record.getValue(SESSION.EXPIRES)
             );
         } else {
             return null;

@@ -40,18 +40,18 @@ public class TwitchTvSocialAuthService implements SocialAuthService {
     @Override
     public String getRedirectUrl() {
         return "https://api.twitch.tv/kraken/oauth2/authorize?response_type=code&client_id=" +
-                clientId + "&redirect_uri=" + url + "&scope=user_read chat_login";
+            clientId + "&redirect_uri=" + url + "&scope=user_read chat_login";
     }
 
     @Override
     public String authenticate(String code) throws IOException {
         HttpPost request = new HttpPost("https://api.twitch.tv/kraken/oauth2/token");
         HttpEntity entity = new UrlEncodedFormEntity(ImmutableList.of(
-                new BasicNameValuePair("client_secret", secret),
-                new BasicNameValuePair("client_id", clientId),
-                new BasicNameValuePair("grant_type", "authorization_code"),
-                new BasicNameValuePair("redirect_uri", url),
-                new BasicNameValuePair("code", code)
+            new BasicNameValuePair("client_secret", secret),
+            new BasicNameValuePair("client_id", clientId),
+            new BasicNameValuePair("grant_type", "authorization_code"),
+            new BasicNameValuePair("redirect_uri", url),
+            new BasicNameValuePair("code", code)
         ), CharsetUtil.UTF_8);
         request.setEntity(entity);
         request.setHeader(HttpHeaders.ACCEPT, "application/json");

@@ -16,7 +16,7 @@ import java.util.Set;
 
 public class JsonCodec implements Codec {
     private static final Set<String> allowedUserFields = ImmutableSet.of(
-            "name", "role", "color", "timedOut", "banned"
+        "name", "role", "color", "timedOut", "banned"
     );
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final ThreadLocal<Gson> gson = new ThreadLocal<Gson>() {
@@ -26,7 +26,7 @@ public class JsonCodec implements Codec {
                 @Override
                 public boolean shouldSkipField(FieldAttributes f) {
                     return (f.getDeclaringClass() == UserDto.class && !allowedUserFields.contains(f.getName())) ||
-                            (f.getDeclaringClass() == PollState.class && f.getName().equals("voted"));
+                        (f.getDeclaringClass() == PollState.class && f.getName().equals("voted"));
                 }
 
                 @Override
@@ -34,9 +34,9 @@ public class JsonCodec implements Codec {
                     return false;
                 }
             })
-                    .registerTypeAdapter(Message.class,
-                            (JsonSerializer<Message>) (src, typeOfSrc, context) -> context.serialize(src.getData()))
-                    .create();
+                .registerTypeAdapter(Message.class,
+                    (JsonSerializer<Message>) (src, typeOfSrc, context) -> context.serialize(src.getData()))
+                .create();
         }
     };
 

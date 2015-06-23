@@ -65,7 +65,7 @@ public class IrcCodec implements Codec {
                     }
                 }
                 return ":" + user.getName() + " 353 " + user.getName() + " = " + room + " :@server " + sb.toString() + "\r\n" +
-                        ":" + user.getName() + " 366 " + user.getName() + " " + room + " :End of /NAMES list";
+                    ":" + user.getName() + " 366 " + user.getName() + " " + room + " :End of /NAMES list";
             }
             case JOIN: {
                 String room = message.get(ROOM);
@@ -80,7 +80,7 @@ public class IrcCodec implements Codec {
                 String msg;
                 if (user.getRole().compareTo(GlobalRole.MOD) >= 0) {
                     msg = ":" + user.getName() + "!" + user.getName() + "@" + serverName + " JOIN " + room + "\r\n" +
-                            ":server MODE " + room + " +o " + user.getName();
+                        ":server MODE " + room + " +o " + user.getName();
                 } else {
                     msg = ":" + user.getName() + "!" + user.getName() + "@" + serverName + " JOIN " + room;
                 }

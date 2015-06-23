@@ -73,17 +73,17 @@ public class RoomApiHandler extends SimpleHttpHandler {
         {
             JsonArray history = new JsonArray();
             historyService.getLast20(roomId)
-                    .stream()
-                    .map(data -> {
-                        JsonObject object = new JsonObject();
-                        object.addProperty("message", data.getMessage());
-                        object.addProperty("type", data.getType().toString());
-                        object.addProperty("timestamp", data.getTimestamp());
-                        object.addProperty("userName", data.getUserName());
-                        object.addProperty("hidden", data.isHidden());
-                        return object;
-                    })
-                    .forEach(history::add);
+                .stream()
+                .map(data -> {
+                    JsonObject object = new JsonObject();
+                    object.addProperty("message", data.getMessage());
+                    object.addProperty("type", data.getType().toString());
+                    object.addProperty("timestamp", data.getTimestamp());
+                    object.addProperty("userName", data.getUserName());
+                    object.addProperty("hidden", data.isHidden());
+                    return object;
+                })
+                .forEach(history::add);
             rootObject.add("history", history);
         }
         {

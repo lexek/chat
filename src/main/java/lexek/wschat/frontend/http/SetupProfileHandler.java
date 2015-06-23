@@ -30,7 +30,7 @@ public class SetupProfileHandler extends SimpleHttpHandler {
         boolean captchaRequired = authenticationManager.failedLoginTries(ip) > 10;
         if (request.method() == HttpMethod.GET) {
             response.renderTemplate("setup_profile",
-                    ImmutableMap.of("captchaRequired", captchaRequired));
+                ImmutableMap.of("captchaRequired", captchaRequired));
             return;
         } else if (request.method() == HttpMethod.POST) {
             UserAuthDto auth = authenticationManager.checkFullAuthentication(request);
@@ -47,18 +47,18 @@ public class SetupProfileHandler extends SimpleHttpHandler {
                                 return;
                             } else {
                                 response.renderTemplate("setup_profile",
-                                        ImmutableMap.of(
-                                                "new_account_error", "This name is already taken.",
-                                                "captchaRequired", captchaRequired
-                                        ));
+                                    ImmutableMap.of(
+                                        "new_account_error", "This name is already taken.",
+                                        "captchaRequired", captchaRequired
+                                    ));
                                 return;
                             }
                         }
                     } else {
                         String password = request.postParam("password");
                         if (password != null &&
-                                USERNAME_PATTERN.matcher(username).matches() &&
-                                PASSWORD_PATTERN.matcher(password).matches()) {
+                            USERNAME_PATTERN.matcher(username).matches() &&
+                            PASSWORD_PATTERN.matcher(password).matches()) {
                             boolean captchaValid = false;
                             if (captchaRequired) {
                                 String captchaResponse = request.postParam("g-recaptcha-response");
@@ -73,10 +73,10 @@ public class SetupProfileHandler extends SimpleHttpHandler {
                                 UserAuthDto userAuth = authenticationManager.fastAuth(username, password, ip);
                                 if (userAuth == null) {
                                     response.renderTemplate("setup_profile",
-                                            ImmutableMap.of(
-                                                    "login_error", "Bas username or password.",
-                                                    "captchaRequired", captchaRequired
-                                            ));
+                                        ImmutableMap.of(
+                                            "login_error", "Bas username or password.",
+                                            "captchaRequired", captchaRequired
+                                        ));
                                     return;
                                 } else {
                                     if (authenticationManager.tieUserWithExistingAuth(userAuth.getUser(), auth)) {
@@ -84,16 +84,16 @@ public class SetupProfileHandler extends SimpleHttpHandler {
                                         return;
                                     } else {
                                         response.renderTemplate("setup_profile",
-                                                ImmutableMap.of(
-                                                        "login_error", "Couldn't tie this account.",
-                                                        "captchaRequired", captchaRequired
-                                                ));
+                                            ImmutableMap.of(
+                                                "login_error", "Couldn't tie this account.",
+                                                "captchaRequired", captchaRequired
+                                            ));
                                         return;
                                     }
                                 }
                             } else {
                                 response.renderTemplate("setup_profile",
-                                        ImmutableMap.of("login_error", "Invalid captcha.", "captchaRequired", true));
+                                    ImmutableMap.of("login_error", "Invalid captcha.", "captchaRequired", true));
                                 return;
                             }
                         }

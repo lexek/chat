@@ -32,7 +32,7 @@ public enum JsonResponseHandler implements ResponseHandler<JsonElement> {
         } else {
             if (entity != null) {
                 logger.debug("bad response {} {}", statusCode,
-                        CharStreams.toString(new InputStreamReader(httpResponse.getEntity().getContent())));
+                    CharStreams.toString(new InputStreamReader(httpResponse.getEntity().getContent())));
             }
             throw new ClientProtocolException("got status code " + statusCode);
         }

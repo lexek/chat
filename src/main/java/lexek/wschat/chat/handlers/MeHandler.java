@@ -26,14 +26,14 @@ public class MeHandler extends AbstractMsgHandler {
             connection.send(Message.errorMessage("MESSAGE_TOO_BIG"));
         } else if (msg.length() != 0) {
             Message message = Message.meMessage(
-                    room.getName(),
-                    chatter.getUser().getName(),
-                    chatter.getRole(),
-                    chatter.getUser().getRole(),
-                    chatter.getUser().getColor(),
-                    messageId.getAndIncrement(),
-                    System.currentTimeMillis(),
-                    msg);
+                room.getName(),
+                chatter.getUser().getName(),
+                chatter.getRole(),
+                chatter.getUser().getRole(),
+                chatter.getUser().getColor(),
+                messageId.getAndIncrement(),
+                System.currentTimeMillis(),
+                msg);
             messageBroadcaster.submitMessage(message, connection, room.FILTER);
         }
     }

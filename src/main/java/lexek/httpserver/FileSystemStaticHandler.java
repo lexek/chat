@@ -41,8 +41,8 @@ public class FileSystemStaticHandler extends AbstractStaticHandler {
                 String fullPath = file.getPath();
                 String dataCanonicalPath = dataPath.getCanonicalPath();
                 return file.exists()
-                        && file.isFile()
-                        && fullPath.startsWith(dataCanonicalPath + File.separator);
+                    && file.isFile()
+                    && fullPath.startsWith(dataCanonicalPath + File.separator);
             } catch (IOException e) {
                 return false;
             }

@@ -47,7 +47,7 @@ public class Message {
 
     public static Message selfJoinMessage(String room, Chatter chatter) {
         return new Message(ImmutableMap.<MessageDataKey, Object>of(Keys.TYPE, MessageType.SELF_JOIN,
-                Keys.ROOM, room, Keys.CHATTER, chatter));
+            Keys.ROOM, room, Keys.CHATTER, chatter));
     }
 
     public static Message historyMessage(List<Message> messages) {
@@ -88,56 +88,56 @@ public class Message {
 
     public static Message msgMessage(String room, String name, LocalRole role, GlobalRole globalRole, String color, long messageId, long time, String text) {
         return new Message(ImmutableMap.<MessageDataKey, Object>builder()
-                .put(Keys.TYPE, MessageType.MSG)
-                .put(Keys.ROOM, room)
-                .put(Keys.NAME, name)
-                .put(Keys.GLOBAL_ROLE, globalRole)
-                .put(Keys.LOCAL_ROLE, role)
-                .put(Keys.COLOR, color)
-                .put(Keys.MESSAGE_ID, messageId)
-                .put(Keys.TIME, time)
-                .put(Keys.TEXT, text)
-                .build());
+            .put(Keys.TYPE, MessageType.MSG)
+            .put(Keys.ROOM, room)
+            .put(Keys.NAME, name)
+            .put(Keys.GLOBAL_ROLE, globalRole)
+            .put(Keys.LOCAL_ROLE, role)
+            .put(Keys.COLOR, color)
+            .put(Keys.MESSAGE_ID, messageId)
+            .put(Keys.TIME, time)
+            .put(Keys.TEXT, text)
+            .build());
     }
 
     public static Message extMessage(String room, String name, LocalRole role, GlobalRole globalRole, String color, long messageId, long time,
                                      String text, String service, String serviceResource) {
         return new Message(ImmutableMap.<MessageDataKey, Object>builder()
-                .put(Keys.TYPE, MessageType.MSG_EXT)
-                .put(Keys.ROOM, room)
-                .put(Keys.NAME, name)
-                .put(Keys.GLOBAL_ROLE, globalRole)
-                .put(Keys.LOCAL_ROLE, role)
-                .put(Keys.COLOR, color)
-                .put(Keys.MESSAGE_ID, messageId)
-                .put(Keys.TIME, time)
-                .put(Keys.TEXT, text)
-                .put(Keys.SERVICE, service)
-                .put(Keys.SERVICE_RESOURCE, serviceResource)
-                .build());
+            .put(Keys.TYPE, MessageType.MSG_EXT)
+            .put(Keys.ROOM, room)
+            .put(Keys.NAME, name)
+            .put(Keys.GLOBAL_ROLE, globalRole)
+            .put(Keys.LOCAL_ROLE, role)
+            .put(Keys.COLOR, color)
+            .put(Keys.MESSAGE_ID, messageId)
+            .put(Keys.TIME, time)
+            .put(Keys.TEXT, text)
+            .put(Keys.SERVICE, service)
+            .put(Keys.SERVICE_RESOURCE, serviceResource)
+            .build());
     }
 
     public static Message meMessage(String room, String name, LocalRole role, GlobalRole globalRole, String color, long messageId, long time, String text) {
         return new Message(ImmutableMap.<MessageDataKey, Object>builder()
-                .put(Keys.TYPE, MessageType.ME)
-                .put(Keys.ROOM, room)
-                .put(Keys.NAME, name)
-                .put(Keys.GLOBAL_ROLE, globalRole)
-                .put(Keys.LOCAL_ROLE, role)
-                .put(Keys.COLOR, color)
-                .put(Keys.MESSAGE_ID, messageId)
-                .put(Keys.TIME, time)
-                .put(Keys.TEXT, text)
-                .build());
+            .put(Keys.TYPE, MessageType.ME)
+            .put(Keys.ROOM, room)
+            .put(Keys.NAME, name)
+            .put(Keys.GLOBAL_ROLE, globalRole)
+            .put(Keys.LOCAL_ROLE, role)
+            .put(Keys.COLOR, color)
+            .put(Keys.MESSAGE_ID, messageId)
+            .put(Keys.TIME, time)
+            .put(Keys.TEXT, text)
+            .build());
     }
 
     public static Message likeMessage(String room, String name, long messageId) {
         return new Message(ImmutableMap.<MessageDataKey, Object>builder()
-                .put(Keys.TYPE, MessageType.LIKE)
-                .put(Keys.ROOM, room)
-                .put(Keys.NAME, name)
-                .put(Keys.MESSAGE_ID, messageId)
-                .build());
+            .put(Keys.TYPE, MessageType.LIKE)
+            .put(Keys.ROOM, room)
+            .put(Keys.NAME, name)
+            .put(Keys.MESSAGE_ID, messageId)
+            .build());
     }
 
     public static Message emptyMessage(MessageType messageType) {

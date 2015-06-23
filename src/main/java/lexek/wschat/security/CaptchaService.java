@@ -13,10 +13,10 @@ import java.util.concurrent.atomic.AtomicLong;
 public class CaptchaService {
     private final Logger logger = LoggerFactory.getLogger(CaptchaService.class);
     private final ConcurrentMap<Long, Runnable> onSuccessActions = CacheBuilder.newBuilder()
-            .expireAfterWrite(10, TimeUnit.MINUTES)
-            .maximumSize(200)
-            .<Long, Runnable>build()
-            .asMap();
+        .expireAfterWrite(10, TimeUnit.MINUTES)
+        .maximumSize(200)
+        .<Long, Runnable>build()
+        .asMap();
     private final AtomicLong counter = new AtomicLong();
 
     public long tryAuthorize(final Connection connection, Runnable onSuccess) {

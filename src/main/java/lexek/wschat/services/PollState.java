@@ -41,9 +41,9 @@ public class PollState {
     @Override
     public String toString() {
         return "PollState{" +
-                "poll=" + poll +
-                ", votes=" + Arrays.toString(votes) +
-                ", voted=" + voted +
-                '}';
+            "poll=" + poll +
+            ", votes=" + Arrays.toString(votes) +
+            ", voted=" + voted +
+            '}';
     }
 }

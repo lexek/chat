@@ -38,7 +38,7 @@ public class PollService {
             PollState pollState = new PollState(poll);
             this.activePolls.put(room, pollState);
             this.messageBroadcaster.submitMessage(Message.pollMessage(MessageType.POLL, room.getName(), pollState),
-                    Connection.STUB_CONNECTION, room.FILTER);
+                Connection.STUB_CONNECTION, room.FILTER);
             this.journalService.newPoll(admin, room, poll);
             return pollState;
         } else {
@@ -56,8 +56,8 @@ public class PollService {
             if (result) {
                 pollState.addVote(pollState.getPoll().getOptions().get(option), user.getId());
                 this.messageBroadcaster.submitMessage(
-                        Message.pollMessage(MessageType.POLL_UPDATE, room.getName(), pollState),
-                        Connection.STUB_CONNECTION, room.FILTER);
+                    Message.pollMessage(MessageType.POLL_UPDATE, room.getName(), pollState),
+                    Connection.STUB_CONNECTION, room.FILTER);
             }
         }
         return result;
@@ -68,7 +68,7 @@ public class PollService {
         if (pollState != null) {
             pollDao.closePoll(pollState.getPoll().getId());
             this.messageBroadcaster.submitMessage(Message.pollMessage(MessageType.POLL_END, room.getName(), pollState),
-                    Connection.STUB_CONNECTION, room.FILTER);
+                Connection.STUB_CONNECTION, room.FILTER);
             this.journalService.closedPoll(admin, room, pollState.getPoll());
         }
     }

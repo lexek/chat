@@ -67,10 +67,10 @@ public class EmoticonHandler extends SimpleHttpHandler {
     private Path createEmoticonFile(String originalName) throws IOException {
         String extension = originalName.substring(originalName.lastIndexOf("."));
         String newName = Hashing.md5()
-                .newHasher()
-                .putUnencodedChars(originalName)
-                .putLong(System.currentTimeMillis())
-                .hash() + extension;
+            .newHasher()
+            .putUnencodedChars(originalName)
+            .putLong(System.currentTimeMillis())
+            .hash() + extension;
         Path file = emoticonsDir.resolve(newName);
         return Files.createFile(file);
     }

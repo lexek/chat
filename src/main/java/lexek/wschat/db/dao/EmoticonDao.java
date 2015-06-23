@@ -25,10 +25,10 @@ public class EmoticonDao {
         String result = null;
         try (Connection connection = dataSource.getConnection()) {
             result = DSL.using(connection)
-                    .select()
-                    .from(EMOTICON)
-                    .orderBy(EMOTICON.CODE.desc())
-                    .fetch().formatJSON();
+                .select()
+                .from(EMOTICON)
+                .orderBy(EMOTICON.CODE.desc())
+                .fetch().formatJSON();
         } catch (DataAccessException | SQLException e) {
             logger.error("sql exception", e);
         }
@@ -39,9 +39,9 @@ public class EmoticonDao {
         try (Connection connection = dataSource.getConnection()) {
             DSLContext ctx = DSL.using(connection);
             ctx
-                    .insertInto(EMOTICON, EMOTICON.CODE, EMOTICON.FILE_NAME, EMOTICON.WIDTH, EMOTICON.HEIGHT)
-                    .values(emoticon.getCode(), emoticon.getFileName(), emoticon.getWidth(), emoticon.getHeight())
-                    .execute();
+                .insertInto(EMOTICON, EMOTICON.CODE, EMOTICON.FILE_NAME, EMOTICON.WIDTH, EMOTICON.HEIGHT)
+                .values(emoticon.getCode(), emoticon.getFileName(), emoticon.getWidth(), emoticon.getHeight())
+                .execute();
         } catch (DataAccessException | SQLException e) {
             logger.error("sql exception", e);
         }
@@ -52,14 +52,14 @@ public class EmoticonDao {
         try (Connection connection = dataSource.getConnection()) {
             DSLContext ctx = DSL.using(connection);
             emoticon = ctx
-                    .select()
-                    .from(EMOTICON)
-                    .where(EMOTICON.ID.equal(id))
-                    .fetchOneInto(Emoticon.class);
+                .select()
+                .from(EMOTICON)
+                .where(EMOTICON.ID.equal(id))
+                .fetchOneInto(Emoticon.class);
             ctx
-                    .delete(EMOTICON)
-                    .where(EMOTICON.ID.equal(id))
-                    .execute();
+                .delete(EMOTICON)
+                .where(EMOTICON.ID.equal(id))
+                .execute();
         } catch (DataAccessException | SQLException e) {
             logger.error("sql exception", e);
         }

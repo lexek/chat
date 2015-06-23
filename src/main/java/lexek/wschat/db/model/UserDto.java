@@ -29,13 +29,13 @@ public class UserDto implements Serializable {
     public static UserDto fromRecord(Record record) {
         if (record != null && record.getValue(USER.ID) != null) {
             return new UserDto(
-                    record.getValue(USER.ID),
-                    record.getValue(USER.NAME),
-                    GlobalRole.valueOf(record.getValue(USER.ROLE)),
-                    record.getValue(USER.COLOR),
-                    record.getValue(USER.BANNED),
-                    record.getValue(USER.RENAME_AVAILABLE),
-                    record.getValue(USER.EMAIL)
+                record.getValue(USER.ID),
+                record.getValue(USER.NAME),
+                GlobalRole.valueOf(record.getValue(USER.ROLE)),
+                record.getValue(USER.COLOR),
+                record.getValue(USER.BANNED),
+                record.getValue(USER.RENAME_AVAILABLE),
+                record.getValue(USER.EMAIL)
             );
         } else {
             return null;
@@ -101,14 +101,14 @@ public class UserDto implements Serializable {
     @Override
     public String toString() {
         return "UserDto{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", role=" + role +
-                ", color='" + color + '\'' +
-                ", banned=" + banned +
-                ", renameAvailable=" + renameAvailable +
-                ", email=" + email +
-                '}';
+            "id=" + id +
+            ", name='" + name + '\'' +
+            ", role=" + role +
+            ", color='" + color + '\'' +
+            ", banned=" + banned +
+            ", renameAvailable=" + renameAvailable +
+            ", email=" + email +
+            '}';
     }
 
     public boolean hasRole(GlobalRole other) {

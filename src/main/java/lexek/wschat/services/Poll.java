@@ -28,9 +28,9 @@ public class Poll {
     @Override
     public String toString() {
         return "Poll{" +
-                "id=" + id +
-                ", question='" + question + '\'' +
-                ", options=" + options +
-                '}';
+            "id=" + id +
+            ", question='" + question + '\'' +
+            ", options=" + options +
+            '}';
     }
 }

@@ -108,17 +108,17 @@ public class Request {
         List<String> result = new ArrayList<>();
         if (dataList != null) {
             result = dataList
-                    .stream()
-                    .filter(data -> data.getHttpDataType() == InterfaceHttpData.HttpDataType.Attribute)
-                    .map(data -> {
-                        try {
-                            return ((Attribute) data).getValue();
-                        } catch (IOException e) {
-                            return null;
-                        }
-                    })
-                    .filter(s -> s != null)
-                    .collect(Collectors.toList());
+                .stream()
+                .filter(data -> data.getHttpDataType() == InterfaceHttpData.HttpDataType.Attribute)
+                .map(data -> {
+                    try {
+                        return ((Attribute) data).getValue();
+                    } catch (IOException e) {
+                        return null;
+                    }
+                })
+                .filter(s -> s != null)
+                .collect(Collectors.toList());
         }
         return result;
     }

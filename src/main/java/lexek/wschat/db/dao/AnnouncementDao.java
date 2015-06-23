@@ -27,10 +27,10 @@ public class AnnouncementDao {
         try (Connection connection = dataSource.getConnection()) {
             DSLContext ctx = DSL.using(connection);
             Record r = ctx
-                    .insertInto(ANNOUNCEMENT, ANNOUNCEMENT.ROOM_ID, ANNOUNCEMENT.ACTIVE, ANNOUNCEMENT.TEXT)
-                    .values(pojo.getRoomId(), true, pojo.getText())
-                    .returning(ANNOUNCEMENT.ID)
-                    .fetchOne();
+                .insertInto(ANNOUNCEMENT, ANNOUNCEMENT.ROOM_ID, ANNOUNCEMENT.ACTIVE, ANNOUNCEMENT.TEXT)
+                .values(pojo.getRoomId(), true, pojo.getText())
+                .returning(ANNOUNCEMENT.ID)
+                .fetchOne();
             pojo.setId(r.getValue(ANNOUNCEMENT.ID));
         } catch (DataAccessException | SQLException e) {
             logger.error("sql exception", e);
@@ -42,10 +42,10 @@ public class AnnouncementDao {
         try (Connection connection = dataSource.getConnection()) {
             DSLContext ctx = DSL.using(connection);
             result = ctx
-                    .select()
-                    .from(ANNOUNCEMENT)
-                    .where(ANNOUNCEMENT.ACTIVE.isTrue())
-                    .fetch().into(Announcement.class);
+                .select()
+                .from(ANNOUNCEMENT)
+                .where(ANNOUNCEMENT.ACTIVE.isTrue())
+                .fetch().into(Announcement.class);
         } catch (DataAccessException | SQLException e) {
             logger.error("sql exception", e);
         }
@@ -56,10 +56,10 @@ public class AnnouncementDao {
         try (Connection connection = dataSource.getConnection()) {
             DSLContext ctx = DSL.using(connection);
             ctx
-                    .update(ANNOUNCEMENT)
-                    .set(ANNOUNCEMENT.ACTIVE, false)
-                    .where(ANNOUNCEMENT.ID.equal(id))
-                    .execute();
+                .update(ANNOUNCEMENT)
+                .set(ANNOUNCEMENT.ACTIVE, false)
+                .where(ANNOUNCEMENT.ID.equal(id))
+                .execute();
         } catch (DataAccessException | SQLException e) {
             logger.error("sql exception", e);
         }

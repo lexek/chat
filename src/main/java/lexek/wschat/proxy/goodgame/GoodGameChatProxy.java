@@ -102,27 +102,27 @@ public class GoodGameChatProxy extends AbstractService<Void> {
         protected void channelRead0(ChannelHandlerContext ctx, GoodGameEvent msg) throws Exception {
             if (msg.getType() == GoodGameEventType.MESSAGE) {
                 Message message = Message.extMessage(
-                        "#main",
-                        msg.getUser(),
-                        LocalRole.USER,
-                        GlobalRole.USER,
-                        Colors.generateColor(msg.getUser()),
-                        messageId.getAndIncrement(),
-                        System.currentTimeMillis(),
-                        msg.getText(),
-                        "goodgame",
-                        "GoodGame"
+                    "#main",
+                    msg.getUser(),
+                    LocalRole.USER,
+                    GlobalRole.USER,
+                    Colors.generateColor(msg.getUser()),
+                    messageId.getAndIncrement(),
+                    System.currentTimeMillis(),
+                    msg.getText(),
+                    "goodgame",
+                    "GoodGame"
                 );
                 messageBroadcaster.submitMessage(
-                        message,
-                        Connection.STUB_CONNECTION,
-                        room.FILTER);
+                    message,
+                    Connection.STUB_CONNECTION,
+                    room.FILTER);
             } else if (msg.getType() == GoodGameEventType.USER_BAN) {
                 Message message = Message.moderationMessage(
-                        MessageType.CLEAR_EXT,
-                        "#main",
-                        "*gg_ext",
-                        msg.getUser()
+                    MessageType.CLEAR_EXT,
+                    "#main",
+                    "*gg_ext",
+                    msg.getUser()
                 );
                 messageBroadcaster.submitMessage(message, Connection.STUB_CONNECTION, room.FILTER);
             }

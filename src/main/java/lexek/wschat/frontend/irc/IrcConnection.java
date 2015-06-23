@@ -51,7 +51,7 @@ public class IrcConnection extends Connection {
     @Override
     public String toString() {
         return "IrcConnection{" +
-                "channel=" + channel +
-                "} " + super.toString();
+            "channel=" + channel +
+            "} " + super.toString();
     }
 }

@@ -44,13 +44,13 @@ public class RoomManager {
 
     public void partAll(Connection connection, boolean sendPartMessage) {
         rooms.values()
-                .stream()
-                .filter(room -> room.contains(connection) &&
-                        room.part(connection) &&
-                        connection.getUser().hasRole(GlobalRole.USER) &&
-                        sendPartMessage)
-                .forEach(room -> messageBroadcaster.submitMessage(
-                        Message.partMessage(room.getName(), connection.getUser().getName()), connection, room.FILTER));
+            .stream()
+            .filter(room -> room.contains(connection) &&
+                room.part(connection) &&
+                connection.getUser().hasRole(GlobalRole.USER) &&
+                sendPartMessage)
+            .forEach(room -> messageBroadcaster.submitMessage(
+                Message.partMessage(room.getName(), connection.getUser().getName()), connection, room.FILTER));
     }
 
     public void createRoom(lexek.wschat.db.jooq.tables.pojos.Room roomPojo, UserDto admin) {

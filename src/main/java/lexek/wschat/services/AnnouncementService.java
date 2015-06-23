@@ -48,9 +48,9 @@ public class AnnouncementService extends AbstractService {
                 try {
                     for (Map.Entry<Room, Announcement> entry : roomAnnouncements.entries()) {
                         messageBroadcaster.submitMessage(
-                                Message.infoMessage(entry.getValue().getText()),
-                                Connection.STUB_CONNECTION,
-                                entry.getKey().FILTER);
+                            Message.infoMessage(entry.getValue().getText()),
+                            Connection.STUB_CONNECTION,
+                            entry.getKey().FILTER);
                     }
                 } catch (Exception e) {
                     logger.warn("", e);
@@ -66,9 +66,9 @@ public class AnnouncementService extends AbstractService {
             if (announcement.getId() != null) {
                 roomAnnouncements.put(room, announcement);
                 messageBroadcaster.submitMessage(
-                        Message.infoMessage(announcement.getText()),
-                        Connection.STUB_CONNECTION,
-                        room.FILTER);
+                    Message.infoMessage(announcement.getText()),
+                    Connection.STUB_CONNECTION,
+                    room.FILTER);
                 journalService.newAnnouncement(admin, room, announcement);
             }
         }
@@ -78,9 +78,9 @@ public class AnnouncementService extends AbstractService {
         Room room = roomManager.getRoomInstance(announcement.getRoomId());
         if (room != null) {
             messageBroadcaster.submitMessage(
-                    Message.infoMessage(announcement.getText()),
-                    Connection.STUB_CONNECTION,
-                    room.FILTER);
+                Message.infoMessage(announcement.getText()),
+                Connection.STUB_CONNECTION,
+                room.FILTER);
         }
     }
 

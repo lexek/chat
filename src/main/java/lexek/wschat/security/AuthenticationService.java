@@ -35,11 +35,11 @@ public class AuthenticationService extends AbstractService<Void> {
         EventFactory<AuthenticationEvent> eventFactory = AuthenticationEvent::new;
         ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("AUTHENTICATION_SERVICE_%d").build();
         this.disruptor = new Disruptor<>(
-                eventFactory,
-                32,
-                Executors.newSingleThreadExecutor(threadFactory),
-                ProducerType.MULTI,
-                new BlockingWaitStrategy()
+            eventFactory,
+            32,
+            Executors.newSingleThreadExecutor(threadFactory),
+            ProducerType.MULTI,
+            new BlockingWaitStrategy()
         );
         this.ringBuffer = this.disruptor.getRingBuffer();
         this.disruptor.handleExceptionsWith(new LoggingExceptionHandler());
@@ -154,8 +154,8 @@ public class AuthenticationService extends AbstractService<Void> {
             } else if (event.getType() == AuthenticationType.PASSWORD && event.getKey() != null && event.getName() != null) {
                 if (authenticationManager.failedLoginTries(ip) > 10) {
                     callback.captchaRequired(connection, event.getName(), captchaService.tryAuthorize(() ->
-                            finishAuthentication(authenticationManager.fastAuth(event.getName(), event.getKey(), ip),
-                                    connection, callback)));
+                        finishAuthentication(authenticationManager.fastAuth(event.getName(), event.getKey(), ip),
+                            connection, callback)));
                     return;
                 } else {
                     auth = authenticationManager.fastAuth(event.getName(), event.getKey(), ip);

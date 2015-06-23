@@ -121,33 +121,33 @@ public class Room {
         User user = userChatter.getUser();
         User modUser = modChatter.getUser();
         return userChatter.getRole() != LocalRole.ADMIN &&
+            (
                 (
-                        (
-                                modChatter.hasRole(LocalRole.MOD) &&
-                                        modChatter.hasGreaterRole(userChatter.getRole()) &&
-                                        modUser.hasGreaterRole(user.getRole())
-                        ) || (
-                                user != null &&
-                                        modUser.hasRole(GlobalRole.MOD) &&
-                                        modUser.hasGreaterRole(user.getRole())
-                        )
-                );
+                    modChatter.hasRole(LocalRole.MOD) &&
+                        modChatter.hasGreaterRole(userChatter.getRole()) &&
+                        modUser.hasGreaterRole(user.getRole())
+                ) || (
+                    user != null &&
+                        modUser.hasRole(GlobalRole.MOD) &&
+                        modUser.hasGreaterRole(user.getRole())
+                )
+            );
     }
 
     public static boolean canChangeRole(Chatter modChatter, Chatter userChatter, LocalRole newRole) {
         User user = userChatter.getUser();
         User modUser = modChatter.getUser();
         return newRole != LocalRole.GUEST &&
+            (
                 (
-                        (
-                                modChatter.hasRole(LocalRole.ADMIN) &&
-                                        modChatter.hasGreaterRole(userChatter.getRole())
-                        ) || (
-                                user != null &&
-                                        modUser.hasRole(GlobalRole.ADMIN) &&
-                                        modUser.hasGreaterRole(user.getRole())
-                        )
-                );
+                    modChatter.hasRole(LocalRole.ADMIN) &&
+                        modChatter.hasGreaterRole(userChatter.getRole())
+                ) || (
+                    user != null &&
+                        modUser.hasRole(GlobalRole.ADMIN) &&
+                        modUser.hasGreaterRole(user.getRole())
+                )
+            );
     }
 
     public boolean banChatter(Chatter chatter, Chatter mod) {
@@ -193,7 +193,7 @@ public class Room {
             if (result) {
                 chatter.setRole(newRole);
                 journalService.roomRole(chatter.getUser().getWrappedObject(), admin.getUser().getWrappedObject(), this,
-                        newRole);
+                    newRole);
             }
         }
         return result;

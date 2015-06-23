@@ -8,9 +8,9 @@ public abstract class SimpleHttpHandler implements HttpHandler {
     @Override
     public FullHttpResponse handle(ViewResolvers viewResolvers, FullHttpRequest request, Channel channel) throws Exception {
         FullHttpResponse response = new DefaultFullHttpResponse(
-                HttpVersion.HTTP_1_1,
-                HttpResponseStatus.OK,
-                channel.alloc().buffer()
+            HttpVersion.HTTP_1_1,
+            HttpResponseStatus.OK,
+            channel.alloc().buffer()
         );
         Request requestWrapper = new Request(Net.getIp(channel.remoteAddress()), request);
         Response responseWrapper = new Response(response, viewResolvers);

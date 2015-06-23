@@ -23,7 +23,7 @@ import static lexek.wschat.db.jooq.tables.Journal.JOURNAL;
 
 public class JournalDao {
     private static final Set<String> GLOBAL_ACTIONS = ImmutableSet.of("USER_UPDATE", "NEW_EMOTICON", "DELETED_EMOTICON",
-            "NAME_CHANGE", "NEW_ROOM", "DELETED_ROOM");
+        "NAME_CHANGE", "NEW_ROOM", "DELETED_ROOM");
     private final DataSource dataSource;
     private final Logger logger = LoggerFactory.getLogger(JournalDao.class);
 
@@ -36,16 +36,16 @@ public class JournalDao {
         UserDto admin = journal.getAdmin();
         try (Connection connection = dataSource.getConnection()) {
             DSL.using(connection)
-                    .insertInto(JOURNAL)
-                    .columns(JOURNAL.USER_ID, JOURNAL.ADMIN_ID, JOURNAL.ACTION, JOURNAL.ACTION_DESCRIPTION,
-                            JOURNAL.TIME, JOURNAL.ROOM_ID)
-                    .values(user != null ? user.getId() : null,
-                            admin != null ? admin.getId() : null,
-                            journal.getAction(),
-                            journal.getActionDescription(),
-                            new Timestamp(journal.getTime()),
-                            journal.getRoomId())
-                    .execute();
+                .insertInto(JOURNAL)
+                .columns(JOURNAL.USER_ID, JOURNAL.ADMIN_ID, JOURNAL.ACTION, JOURNAL.ACTION_DESCRIPTION,
+                    JOURNAL.TIME, JOURNAL.ROOM_ID)
+                .values(user != null ? user.getId() : null,
+                    admin != null ? admin.getId() : null,
+                    journal.getAction(),
+                    journal.getActionDescription(),
+                    new Timestamp(journal.getTime()),
+                    journal.getRoomId())
+                .execute();
         } catch (DataAccessException | SQLException e) {
             logger.error("sql exception", e);
         }
@@ -55,22 +55,22 @@ public class JournalDao {
         DataPage<JournalEntry> result = null;
         try (Connection connection = dataSource.getConnection()) {
             List<JournalEntry> data = DSL.using(connection)
-                    .selectFrom(JOURNAL
-                            .leftOuterJoin(USER).on(JOURNAL.USER_ID.equal(USER.ID))
-                            .leftOuterJoin(USER.as("admin")).on(JOURNAL.ADMIN_ID.equal(USER.as("admin").ID)))
-                    .where(JOURNAL.ACTION.in(GLOBAL_ACTIONS))
-                    .orderBy(JOURNAL.ID.desc())
-                    .limit(page * pageSize, pageSize)
-                    .fetch()
-                    .stream()
-                    .map(record -> new JournalEntry(
-                            UserDto.fromRecord(record.into(USER)),
-                            UserDto.fromRecord(record.into(USER.as("admin"))),
-                            record.getValue(JOURNAL.ACTION),
-                            record.getValue(JOURNAL.ACTION_DESCRIPTION),
-                            record.getValue(JOURNAL.TIME).getTime(),
-                            record.getValue(JOURNAL.ROOM_ID)))
-                    .collect(Collectors.toList());
+                .selectFrom(JOURNAL
+                    .leftOuterJoin(USER).on(JOURNAL.USER_ID.equal(USER.ID))
+                    .leftOuterJoin(USER.as("admin")).on(JOURNAL.ADMIN_ID.equal(USER.as("admin").ID)))
+                .where(JOURNAL.ACTION.in(GLOBAL_ACTIONS))
+                .orderBy(JOURNAL.ID.desc())
+                .limit(page * pageSize, pageSize)
+                .fetch()
+                .stream()
+                .map(record -> new JournalEntry(
+                    UserDto.fromRecord(record.into(USER)),
+                    UserDto.fromRecord(record.into(USER.as("admin"))),
+                    record.getValue(JOURNAL.ACTION),
+                    record.getValue(JOURNAL.ACTION_DESCRIPTION),
+                    record.getValue(JOURNAL.TIME).getTime(),
+                    record.getValue(JOURNAL.ROOM_ID)))
+                .collect(Collectors.toList());
             int count = DSL.using(connection).fetchCount(JOURNAL, JOURNAL.ACTION.in(GLOBAL_ACTIONS));
             result = new DataPage<>(data, page, Pages.pageCount(pageSize, count));
         } catch (DataAccessException | SQLException e) {
@@ -83,22 +83,22 @@ public class JournalDao {
         DataPage<JournalEntry> result = null;
         try (Connection connection = dataSource.getConnection()) {
             List<JournalEntry> data = DSL.using(connection)
-                    .selectFrom(JOURNAL
-                            .leftOuterJoin(USER).on(JOURNAL.USER_ID.equal(USER.ID))
-                            .leftOuterJoin(USER.as("admin")).on(JOURNAL.ADMIN_ID.equal(USER.as("admin").ID)))
-                    .where(JOURNAL.ROOM_ID.equal(roomId))
-                    .orderBy(JOURNAL.ID.desc())
-                    .limit(page * pageSize, pageSize)
-                    .fetch()
-                    .stream()
-                    .map(record -> new JournalEntry(
-                            UserDto.fromRecord(record.into(USER)),
-                            UserDto.fromRecord(record.into(USER.as("admin"))),
-                            record.getValue(JOURNAL.ACTION),
-                            record.getValue(JOURNAL.ACTION_DESCRIPTION),
-                            record.getValue(JOURNAL.TIME).getTime(),
-                            record.getValue(JOURNAL.ROOM_ID)))
-                    .collect(Collectors.toList());
+                .selectFrom(JOURNAL
+                    .leftOuterJoin(USER).on(JOURNAL.USER_ID.equal(USER.ID))
+                    .leftOuterJoin(USER.as("admin")).on(JOURNAL.ADMIN_ID.equal(USER.as("admin").ID)))
+                .where(JOURNAL.ROOM_ID.equal(roomId))
+                .orderBy(JOURNAL.ID.desc())
+                .limit(page * pageSize, pageSize)
+                .fetch()
+                .stream()
+                .map(record -> new JournalEntry(
+                    UserDto.fromRecord(record.into(USER)),
+                    UserDto.fromRecord(record.into(USER.as("admin"))),
+                    record.getValue(JOURNAL.ACTION),
+                    record.getValue(JOURNAL.ACTION_DESCRIPTION),
+                    record.getValue(JOURNAL.TIME).getTime(),
+                    record.getValue(JOURNAL.ROOM_ID)))
+                .collect(Collectors.toList());
             int count = DSL.using(connection).fetchCount(JOURNAL, JOURNAL.ROOM_ID.equal(roomId));
             result = new DataPage<>(data, page, Pages.pageCount(pageSize, count));
         } catch (DataAccessException | SQLException e) {

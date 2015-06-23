@@ -70,13 +70,13 @@ public class TwitchUser {
     @Override
     public String toString() {
         return "TwitchUser{" +
-                "nick='" + nick + '\'' +
-                ", color='" + color + '\'' +
-                ", mod=" + mod +
-                ", staff=" + staff +
-                ", admin=" + admin +
-                ", subscriber=" + subscriber +
-                ", emoticonSets=" + Arrays.toString(emoticonSets) +
-                '}';
+            "nick='" + nick + '\'' +
+            ", color='" + color + '\'' +
+            ", mod=" + mod +
+            ", staff=" + staff +
+            ", admin=" + admin +
+            ", subscriber=" + subscriber +
+            ", emoticonSets=" + Arrays.toString(emoticonSets) +
+            '}';
     }
 }

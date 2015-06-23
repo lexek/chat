@@ -47,12 +47,12 @@ public class RequestDispatcher extends SimpleChannelInboundHandler<FullHttpReque
 
         if (response == null) {
             response = new DefaultFullHttpResponse(
-                    HttpVersion.HTTP_1_1,
-                    HttpResponseStatus.NOT_FOUND,
-                    channel.alloc().buffer());
+                HttpVersion.HTTP_1_1,
+                HttpResponseStatus.NOT_FOUND,
+                channel.alloc().buffer());
             serverMessageHandler.handle(
-                    new ServerMessage(HttpResponseStatus.NOT_FOUND, null),
-                    new Response(response, viewResolvers));
+                new ServerMessage(HttpResponseStatus.NOT_FOUND, null),
+                new Response(response, viewResolvers));
         }
 
         HttpHeaders.setContentLength(response, response.content().readableBytes());
@@ -77,9 +77,9 @@ public class RequestDispatcher extends SimpleChannelInboundHandler<FullHttpReque
         e.printStackTrace(writer);
         writer.flush();
         FullHttpResponse response = new DefaultFullHttpResponse(
-                HttpVersion.HTTP_1_1,
-                HttpResponseStatus.INTERNAL_SERVER_ERROR,
-                allocator.buffer());
+            HttpVersion.HTTP_1_1,
+            HttpResponseStatus.INTERNAL_SERVER_ERROR,
+            allocator.buffer());
         Response wrapper = new Response(response, viewResolvers);
         serverMessageHandler.handle(new ServerMessage(HttpResponseStatus.INTERNAL_SERVER_ERROR, buffer.toString()), wrapper);
         return response;

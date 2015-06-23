@@ -8,7 +8,7 @@ import io.netty.util.CharsetUtil;
 @ChannelHandler.Sharable
 public class FlashPolicyFileHandler extends ChannelInboundHandlerAdapter {
     private static final ByteBuf FLASH_POLICY_REQUEST = Unpooled
-            .copiedBuffer("<policy-file-request/>\0", CharsetUtil.US_ASCII);
+        .copiedBuffer("<policy-file-request/>\0", CharsetUtil.US_ASCII);
     private final ByteBuf preparedResponse;
 
     public FlashPolicyFileHandler(int port) {
@@ -43,13 +43,13 @@ public class FlashPolicyFileHandler extends ChannelInboundHandlerAdapter {
 
     private ByteBuf generateResponse(int port) {
         return Unpooled.copiedBuffer(
-                "<?xml version=\"1.0\"?>\r\n"
-                        + "<!DOCTYPE cross-domain-policy SYSTEM \"/xml/dtds/cross-domain-policy.dtd\">\r\n"
-                        + "<cross-domain-policy>\r\n"
-                        + "  <site-control permitted-cross-domain-policies=\"master-only\"/>\r\n"
-                        + "  <allow-access-from domain=\"*\" to-ports=\"" + port + "\" />\r\n"
-                        + "</cross-domain-policy>\r\n",
-                CharsetUtil.US_ASCII
+            "<?xml version=\"1.0\"?>\r\n"
+                + "<!DOCTYPE cross-domain-policy SYSTEM \"/xml/dtds/cross-domain-policy.dtd\">\r\n"
+                + "<cross-domain-policy>\r\n"
+                + "  <site-control permitted-cross-domain-policies=\"master-only\"/>\r\n"
+                + "  <allow-access-from domain=\"*\" to-ports=\"" + port + "\" />\r\n"
+                + "</cross-domain-policy>\r\n",
+            CharsetUtil.US_ASCII
         );
     }
 }

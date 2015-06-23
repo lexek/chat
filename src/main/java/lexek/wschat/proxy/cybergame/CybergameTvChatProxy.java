@@ -105,21 +105,21 @@ public class CybergameTvChatProxy extends AbstractService<Void> {
         @Override
         protected void channelRead0(ChannelHandlerContext ctx, CybergameTvInboundMessage message) throws Exception {
             Message chatMessage = Message.extMessage(
-                    "#main",
-                    message.getFrom(),
-                    LocalRole.USER,
-                    GlobalRole.USER,
-                    Colors.generateColor(message.getFrom()),
-                    messageId.getAndIncrement(),
-                    System.currentTimeMillis(),
-                    message.getText(),
-                    "cybergame.tv",
-                    channel
+                "#main",
+                message.getFrom(),
+                LocalRole.USER,
+                GlobalRole.USER,
+                Colors.generateColor(message.getFrom()),
+                messageId.getAndIncrement(),
+                System.currentTimeMillis(),
+                message.getText(),
+                "cybergame.tv",
+                channel
             );
             messageBroadcaster.submitMessage(
-                    chatMessage,
-                    Connection.STUB_CONNECTION,
-                    room.FILTER);
+                chatMessage,
+                Connection.STUB_CONNECTION,
+                room.FILTER);
         }
 
         @Override

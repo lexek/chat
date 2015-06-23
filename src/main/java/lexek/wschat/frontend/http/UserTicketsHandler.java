@@ -40,7 +40,7 @@ public class UserTicketsHandler extends SimpleHttpHandler {
         String categoryParam = request.postParam("category");
         String textParam = request.postParam("text");
         if (categoryParam != null && textParam != null && categories.contains(categoryParam) && textParam.length() > 5
-                && textParam.length() < 1024) {
+            && textParam.length() < 1024) {
             if (ticketService.submit(categoryParam, textParam, user)) {
                 response.stringContent("ok");
             } else {

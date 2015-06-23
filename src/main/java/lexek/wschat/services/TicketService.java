@@ -43,7 +43,7 @@ public class TicketService {
             ticket.setAdminReply(comment);
             dao.update(ticket);
             Message msg = Message.infoMessage("Your ticket " + ticket.getText() + " was closed by " + closedBy.getName() +
-                    " with comment: " + comment);
+                " with comment: " + comment);
             messageBroadcaster.submitMessage(msg, Connection.STUB_CONNECTION, new UserIdFilter(ticket.getId()));
         }
     }

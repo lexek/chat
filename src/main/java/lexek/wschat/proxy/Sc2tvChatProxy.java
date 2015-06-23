@@ -98,16 +98,16 @@ public class Sc2tvChatProxy extends AbstractService<Void> {
                     if (id != null && id > lastId) {
                         if (!firstRun) {
                             Message chatMessage = Message.extMessage(
-                                    "#main",
-                                    message.get("name").getAsString(),
-                                    LocalRole.USER,
-                                    GlobalRole.USER,
-                                    Colors.generateColor(message.get("name").getAsString()),
-                                    messageId.getAndIncrement(),
-                                    System.currentTimeMillis(),
-                                    message.get("message").getAsString(),
-                                    "sc2tv.ru",
-                                    "sc2tv"
+                                "#main",
+                                message.get("name").getAsString(),
+                                LocalRole.USER,
+                                GlobalRole.USER,
+                                Colors.generateColor(message.get("name").getAsString()),
+                                messageId.getAndIncrement(),
+                                System.currentTimeMillis(),
+                                message.get("message").getAsString(),
+                                "sc2tv.ru",
+                                "sc2tv"
                             );
                             messageBroadcaster.submitMessage(chatMessage, Connection.STUB_CONNECTION, room.FILTER);
                         }
@@ -149,9 +149,9 @@ public class Sc2tvChatProxy extends AbstractService<Void> {
 
         private HttpRequest composeRequest() {
             HttpRequest request = new DefaultFullHttpRequest(
-                    HttpVersion.HTTP_1_1,
-                    HttpMethod.GET,
-                    "http://chat.sc2tv.ru/memfs/channel-" + channel + ".json");
+                HttpVersion.HTTP_1_1,
+                HttpMethod.GET,
+                "http://chat.sc2tv.ru/memfs/channel-" + channel + ".json");
             if (lastModified != null) {
                 HttpHeaders.setDateHeader(request, HttpHeaders.Names.IF_MODIFIED_SINCE, lastModified);
             }

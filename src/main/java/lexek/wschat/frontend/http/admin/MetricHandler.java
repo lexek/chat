@@ -40,19 +40,19 @@ public class MetricHandler extends SimpleHttpHandler {
                 try (Connection connection = dataSource.getConnection()) {
                     long startTime = System.currentTimeMillis() - TimeUnit.MILLISECONDS.convert(24, TimeUnit.HOURS);
                     metrics = DSL.using(connection)
-                            .select(METRIC.NAME, METRIC.TIME, METRIC.VALUE)
-                            .from(METRIC)
-                            .where(METRIC.TIME.greaterOrEqual(startTime))
-                            .orderBy(METRIC.TIME)
-                            .fetch()
-                            .into(Metric.class);
+                        .select(METRIC.NAME, METRIC.TIME, METRIC.VALUE)
+                        .from(METRIC)
+                        .where(METRIC.TIME.greaterOrEqual(startTime))
+                        .orderBy(METRIC.TIME)
+                        .fetch()
+                        .into(Metric.class);
                     streams = DSL.using(connection)
-                            .select()
-                            .from(STREAM)
-                            .where(STREAM.ENDED.greaterOrEqual(new Timestamp(startTime)))
-                            .orderBy(STREAM.STARTED)
-                            .fetch()
-                            .into(Stream.class);
+                        .select()
+                        .from(STREAM)
+                        .where(STREAM.ENDED.greaterOrEqual(new Timestamp(startTime)))
+                        .orderBy(STREAM.STARTED)
+                        .fetch()
+                        .into(Stream.class);
                     response.jsonContent(ImmutableMap.of("metrics", metrics, "streams", streams));
                 } catch (DataAccessException | SQLException e) {
                     response.internalError();

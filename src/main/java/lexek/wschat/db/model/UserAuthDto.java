@@ -31,12 +31,12 @@ public class UserAuthDto {
     public static UserAuthDto fromRecord(Record record, UserDto userDto) {
         if (record != null && record.getValue(USERAUTH.ID) != null) {
             return new UserAuthDto(
-                    record.getValue(USERAUTH.ID),
-                    userDto,
-                    record.getValue(USERAUTH.SERVICE),
-                    record.getValue(USERAUTH.AUTH_ID),
-                    record.getValue(USERAUTH.AUTH_KEY),
-                    record.getValue(USERAUTH.AUTH_NAME)
+                record.getValue(USERAUTH.ID),
+                userDto,
+                record.getValue(USERAUTH.SERVICE),
+                record.getValue(USERAUTH.AUTH_ID),
+                record.getValue(USERAUTH.AUTH_KEY),
+                record.getValue(USERAUTH.AUTH_NAME)
             );
         } else {
             return null;

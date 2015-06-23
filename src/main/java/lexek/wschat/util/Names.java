@@ -12,11 +12,11 @@ public class Names {
     private static String IP_DOMAIN = "\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\]";
 
     public static final Pattern EMAIL = java.util.regex.Pattern.compile(
-            "^" + ATOM + "+(\\." + ATOM + "+)*@"
-                    + DOMAIN
-                    + "|"
-                    + IP_DOMAIN
-                    + ")$",
-            java.util.regex.Pattern.CASE_INSENSITIVE
+        "^" + ATOM + "+(\\." + ATOM + "+)*@"
+            + DOMAIN
+            + "|"
+            + IP_DOMAIN
+            + ")$",
+        java.util.regex.Pattern.CASE_INSENSITIVE
     );
 }

@@ -15,7 +15,7 @@ public class TwitchUserMessage extends TwitchEventMessage {
     @Override
     public String toString() {
         return "TwitchUserMessage{" +
-                "user=" + user +
-                "} " + super.toString();
+            "user=" + user +
+            "} " + super.toString();
     }
 }

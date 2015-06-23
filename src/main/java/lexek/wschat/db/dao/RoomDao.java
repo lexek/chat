@@ -28,10 +28,10 @@ public class RoomDao {
         try (Connection connection = dataSource.getConnection()) {
             DSLContext ctx = DSL.using(connection);
             long id = ctx
-                    .insertInto(ROOM, ROOM.NAME, ROOM.TOPIC)
-                    .values(room.getName(), room.getTopic())
-                    .returning(ROOM.ID)
-                    .fetchOne().getId();
+                .insertInto(ROOM, ROOM.NAME, ROOM.TOPIC)
+                .values(room.getName(), room.getTopic())
+                .returning(ROOM.ID)
+                .fetchOne().getId();
             room.setId(id);
         } catch (DataAccessException | SQLException e) {
             logger.error("sql exception", e);
@@ -43,10 +43,10 @@ public class RoomDao {
         try (Connection connection = dataSource.getConnection()) {
             DSLContext ctx = DSL.using(connection);
             result = ctx
-                    .select()
-                    .from(ROOM)
-                    .fetch()
-                    .into(Room.class);
+                .select()
+                .from(ROOM)
+                .fetch()
+                .into(Room.class);
         } catch (DataAccessException | SQLException e) {
             logger.error("sql exception", e);
         }
@@ -57,9 +57,9 @@ public class RoomDao {
         try (Connection connection = dataSource.getConnection()) {
             DSLContext ctx = DSL.using(connection);
             ctx
-                    .delete(ROOM)
-                    .where(ROOM.NAME.equal(name))
-                    .execute();
+                .delete(ROOM)
+                .where(ROOM.NAME.equal(name))
+                .execute();
         } catch (DataAccessException | SQLException e) {
             logger.error("sql exception", e);
         }

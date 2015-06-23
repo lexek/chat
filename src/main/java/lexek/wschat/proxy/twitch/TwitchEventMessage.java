@@ -25,8 +25,8 @@ public class TwitchEventMessage {
     @Override
     public String toString() {
         return "TwitchEventMessage{" +
-                "type=" + type +
-                ", data='" + data + '\'' +
-                '}';
+            "type=" + type +
+            ", data='" + data + '\'' +
+            '}';
     }
 }

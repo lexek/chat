@@ -36,17 +36,17 @@ public class ChatterDao {
         Chatter chatter = null;
         try (Connection connection = dataSource.getConnection()) {
             Record record = DSL.using(connection)
-                    .select()
-                    .from(CHATTER)
-                    .where(CHATTER.USER_ID.equal(user.getId()).and(CHATTER.ROOM_ID.equal(roomId)))
-                    .fetchOne();
+                .select()
+                .from(CHATTER)
+                .where(CHATTER.USER_ID.equal(user.getId()).and(CHATTER.ROOM_ID.equal(roomId)))
+                .fetchOne();
             chatter = Chatter.fromRecord(record, user);
             if (chatter == null) {
                 long id = DSL.using(connection)
-                        .insertInto(CHATTER, CHATTER.USER_ID, CHATTER.ROOM_ID, CHATTER.ROLE, CHATTER.TIMEOUT, CHATTER.BANNED)
-                        .values(user.getId(), roomId, LocalRole.USER.toString(), null, false)
-                        .returning(CHATTER.ID)
-                        .fetchOne().getId();
+                    .insertInto(CHATTER, CHATTER.USER_ID, CHATTER.ROOM_ID, CHATTER.ROLE, CHATTER.TIMEOUT, CHATTER.BANNED)
+                    .values(user.getId(), roomId, LocalRole.USER.toString(), null, false)
+                    .returning(CHATTER.ID)
+                    .fetchOne().getId();
                 chatter = new Chatter(id, LocalRole.USER, false, null, user);
             }
         } catch (DataAccessException | SQLException e) {
@@ -62,10 +62,10 @@ public class ChatterDao {
         Chatter chatter = null;
         try (Connection connection = dataSource.getConnection()) {
             Record record = DSL.using(connection)
-                    .select()
-                    .from(CHATTER.join(USER).on(CHATTER.USER_ID.equal(USER.ID)))
-                    .where(USER.NAME.equal(name).and(CHATTER.ROOM_ID.equal(roomId)))
-                    .fetchOne();
+                .select()
+                .from(CHATTER.join(USER).on(CHATTER.USER_ID.equal(USER.ID)))
+                .where(USER.NAME.equal(name).and(CHATTER.ROOM_ID.equal(roomId)))
+                .fetchOne();
             if (record != null) {
                 chatter = Chatter.fromRecord(record, new User(UserDto.fromRecord(record)));
             }
@@ -80,10 +80,10 @@ public class ChatterDao {
         try (Connection connection = dataSource.getConnection()) {
             DSLContext ctx = DSL.using(connection);
             result = ctx
-                    .update(CHATTER)
-                    .set(CHATTER.BANNED, true)
-                    .where(CHATTER.ID.equal(chatterId))
-                    .execute() != 0;
+                .update(CHATTER)
+                .set(CHATTER.BANNED, true)
+                .where(CHATTER.ID.equal(chatterId))
+                .execute() != 0;
         } catch (DataAccessException | SQLException e) {
             logger.error("sql exception", e);
         }
@@ -95,11 +95,11 @@ public class ChatterDao {
         try (Connection connection = dataSource.getConnection()) {
             DSLContext ctx = DSL.using(connection);
             result = ctx
-                    .update(CHATTER)
-                    .set(CHATTER.BANNED, false)
-                    .set(CHATTER.TIMEOUT, (Long) null)
-                    .where(CHATTER.ID.equal(chatterId))
-                    .execute() != 0;
+                .update(CHATTER)
+                .set(CHATTER.BANNED, false)
+                .set(CHATTER.TIMEOUT, (Long) null)
+                .where(CHATTER.ID.equal(chatterId))
+                .execute() != 0;
         } catch (DataAccessException | SQLException e) {
             logger.error("sql exception", e);
         }
@@ -111,10 +111,10 @@ public class ChatterDao {
         try (Connection connection = dataSource.getConnection()) {
             DSLContext ctx = DSL.using(connection);
             result = ctx
-                    .update(CHATTER)
-                    .set(CHATTER.TIMEOUT, until)
-                    .where(CHATTER.ID.equal(chatterId))
-                    .execute() != 0;
+                .update(CHATTER)
+                .set(CHATTER.TIMEOUT, until)
+                .where(CHATTER.ID.equal(chatterId))
+                .execute() != 0;
         } catch (DataAccessException | SQLException e) {
             logger.error("sql exception", e);
         }
@@ -126,10 +126,10 @@ public class ChatterDao {
         try (Connection connection = dataSource.getConnection()) {
             DSLContext ctx = DSL.using(connection);
             result = ctx
-                    .update(CHATTER)
-                    .set(CHATTER.ROLE, newRole.toString())
-                    .where(CHATTER.ID.equal(chatterId))
-                    .execute() != 0;
+                .update(CHATTER)
+                .set(CHATTER.ROLE, newRole.toString())
+                .where(CHATTER.ID.equal(chatterId))
+                .execute() != 0;
         } catch (DataAccessException | SQLException e) {
             logger.error("sql exception", e);
         }
@@ -140,23 +140,23 @@ public class ChatterDao {
         DataPage<ChatterData> result = null;
         try (Connection connection = dataSource.getConnection()) {
             List<ChatterData> data = DSL.using(connection)
-                    .select(CHATTER.ID, CHATTER.USER_ID, CHATTER.ROOM_ID, CHATTER.ROLE, CHATTER.TIMEOUT, CHATTER.BANNED, USER.NAME)
-                    .from(CHATTER.join(USER).on(CHATTER.USER_ID.equal(USER.ID)))
-                    .where(CHATTER.ROOM_ID.equal(room))
-                    .orderBy(CHATTER.ID)
-                    .limit(page * pageLength, pageLength)
-                    .fetch()
-                    .stream()
-                    .map(record -> new ChatterData(
-                            record.getValue(CHATTER.ID),
-                            record.getValue(CHATTER.USER_ID),
-                            record.getValue(USER.NAME),
-                            record.getValue(CHATTER.ROOM_ID),
-                            LocalRole.valueOf(record.getValue(CHATTER.ROLE)),
-                            record.getValue(CHATTER.TIMEOUT),
-                            record.getValue(CHATTER.BANNED)
-                    ))
-                    .collect(Collectors.toList());
+                .select(CHATTER.ID, CHATTER.USER_ID, CHATTER.ROOM_ID, CHATTER.ROLE, CHATTER.TIMEOUT, CHATTER.BANNED, USER.NAME)
+                .from(CHATTER.join(USER).on(CHATTER.USER_ID.equal(USER.ID)))
+                .where(CHATTER.ROOM_ID.equal(room))
+                .orderBy(CHATTER.ID)
+                .limit(page * pageLength, pageLength)
+                .fetch()
+                .stream()
+                .map(record -> new ChatterData(
+                    record.getValue(CHATTER.ID),
+                    record.getValue(CHATTER.USER_ID),
+                    record.getValue(USER.NAME),
+                    record.getValue(CHATTER.ROOM_ID),
+                    LocalRole.valueOf(record.getValue(CHATTER.ROLE)),
+                    record.getValue(CHATTER.TIMEOUT),
+                    record.getValue(CHATTER.BANNED)
+                ))
+                .collect(Collectors.toList());
             result = new DataPage<>(data, page, Pages.pageCount(pageLength, count(connection, room, null)));
         } catch (DataAccessException | SQLException e) {
             logger.error("sql exception", e);
@@ -168,23 +168,23 @@ public class ChatterDao {
         DataPage<ChatterData> result = null;
         try (Connection connection = dataSource.getConnection()) {
             List<ChatterData> data = DSL.using(connection)
-                    .select(CHATTER.ID, CHATTER.USER_ID, CHATTER.ROOM_ID, CHATTER.ROLE, CHATTER.TIMEOUT, CHATTER.BANNED, USER.NAME)
-                    .from(CHATTER.join(USER).on(CHATTER.USER_ID.equal(USER.ID)))
-                    .where(CHATTER.ROOM_ID.equal(room).and(USER.NAME.like(nameParam, '!')))
-                    .orderBy(CHATTER.ID)
-                    .limit(page * pageLength, pageLength)
-                    .fetch()
-                    .stream()
-                    .map(record -> new ChatterData(
-                            record.getValue(CHATTER.ID),
-                            record.getValue(CHATTER.USER_ID),
-                            record.getValue(USER.NAME),
-                            record.getValue(CHATTER.ROOM_ID),
-                            LocalRole.valueOf(record.getValue(CHATTER.ROLE)),
-                            record.getValue(CHATTER.TIMEOUT),
-                            record.getValue(CHATTER.BANNED)
-                    ))
-                    .collect(Collectors.toList());
+                .select(CHATTER.ID, CHATTER.USER_ID, CHATTER.ROOM_ID, CHATTER.ROLE, CHATTER.TIMEOUT, CHATTER.BANNED, USER.NAME)
+                .from(CHATTER.join(USER).on(CHATTER.USER_ID.equal(USER.ID)))
+                .where(CHATTER.ROOM_ID.equal(room).and(USER.NAME.like(nameParam, '!')))
+                .orderBy(CHATTER.ID)
+                .limit(page * pageLength, pageLength)
+                .fetch()
+                .stream()
+                .map(record -> new ChatterData(
+                    record.getValue(CHATTER.ID),
+                    record.getValue(CHATTER.USER_ID),
+                    record.getValue(USER.NAME),
+                    record.getValue(CHATTER.ROOM_ID),
+                    LocalRole.valueOf(record.getValue(CHATTER.ROLE)),
+                    record.getValue(CHATTER.TIMEOUT),
+                    record.getValue(CHATTER.BANNED)
+                ))
+                .collect(Collectors.toList());
             int count = count(connection, room, USER.NAME.like(nameParam, '!'));
             result = new DataPage<>(data, page, Pages.pageCount(pageLength, count));
         } catch (DataAccessException | SQLException e) {
@@ -196,10 +196,10 @@ public class ChatterDao {
     private int count(Connection connection, long room, Condition condition) {
         if (condition != null) {
             return DSL.using(connection)
-                    .fetchCount(
-                            CHATTER.join(USER).on(CHATTER.USER_ID.equal(USER.ID)),
-                            CHATTER.ROOM_ID.eq(room).and(condition)
-                    );
+                .fetchCount(
+                    CHATTER.join(USER).on(CHATTER.USER_ID.equal(USER.ID)),
+                    CHATTER.ROOM_ID.eq(room).and(condition)
+                );
         } else {
             return DSL.using(connection).fetchCount(CHATTER, CHATTER.ROOM_ID.eq(room));
         }

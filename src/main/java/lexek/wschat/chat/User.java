@@ -6,13 +6,13 @@ import org.jetbrains.annotations.NotNull;
 
 public class User {
     private static final UserDto userDto = new UserDto(
-            null,
-            "unauthenticated",
-            GlobalRole.UNAUTHENTICATED,
-            Colors.generateColor("unauthenticated"),
-            false,
-            false,
-            null);
+        null,
+        "unauthenticated",
+        GlobalRole.UNAUTHENTICATED,
+        Colors.generateColor("unauthenticated"),
+        false,
+        false,
+        null);
     public static final User UNAUTHENTICATED_USER = new User(userDto);
 
     private UserDto wrappedObject;
@@ -96,8 +96,8 @@ public class User {
     @Override
     public String toString() {
         return "User{" +
-                "wrappedObject=" + wrappedObject +
-                ", lastMessage=" + lastMessage +
-                '}';
+            "wrappedObject=" + wrappedObject +
+            ", lastMessage=" + lastMessage +
+            '}';
     }
 }

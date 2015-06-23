@@ -47,9 +47,9 @@ public class HistoryApiHandler extends SimpleHttpHandler {
                 }
             }
             response.jsonContent(historyService.getAllPagedAsJson(roomId, page, PAGE_LENGTH,
-                    Optional.ofNullable(users),
-                    Optional.ofNullable(request.queryParamAsLong("since")),
-                    Optional.ofNullable(request.queryParamAsLong("until"))));
+                Optional.ofNullable(users),
+                Optional.ofNullable(request.queryParamAsLong("since")),
+                Optional.ofNullable(request.queryParamAsLong("until"))));
         } else {
             response.badRequest();
         }

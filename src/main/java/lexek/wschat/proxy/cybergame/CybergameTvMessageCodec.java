@@ -47,8 +47,8 @@ public class CybergameTvMessageCodec extends MessageToMessageCodec<TextWebSocket
                 if (command.get("command").getAsString().equals("chatMessage")) {
                     JsonObject message = jsonParser.parse(command.get("message").getAsString()).getAsJsonObject();
                     out.add(new CybergameTvInboundMessage(
-                                    message.get("from").getAsString(),
-                                    message.get("text").getAsString())
+                            message.get("from").getAsString(),
+                            message.get("text").getAsString())
                     );
                     logger.debug("decoded message");
                 }

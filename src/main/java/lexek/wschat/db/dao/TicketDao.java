@@ -32,10 +32,10 @@ public class TicketDao {
         try (Connection connection = dataSource.getConnection()) {
             success = DSL.using(connection).transactionResult(c -> {
                 int count = DSL.using(c).fetchCount(
-                        DSL.using(c)
-                                .select()
-                                .from(TICKET)
-                                .where(TICKET.USER.equal(pojo.getUser()).and(TICKET.IS_OPEN.isTrue())));
+                    DSL.using(c)
+                        .select()
+                        .from(TICKET)
+                        .where(TICKET.USER.equal(pojo.getUser()).and(TICKET.IS_OPEN.isTrue())));
                 if (count < 5) {
                     DSL.using(c).executeInsert(DSL.using(c).newRecord(TICKET, pojo));
                     return true;
@@ -54,10 +54,10 @@ public class TicketDao {
         try (Connection connection = dataSource.getConnection()) {
             DSLContext ctx = DSL.using(connection);
             result = ctx
-                    .select()
-                    .from(TICKET)
-                    .where(TICKET.ID.equal(id))
-                    .fetchOneInto(Ticket.class);
+                .select()
+                .from(TICKET)
+                .where(TICKET.ID.equal(id))
+                .fetchOneInto(Ticket.class);
         } catch (DataAccessException | SQLException e) {
             logger.error("sql exception", e);
         }
@@ -77,20 +77,20 @@ public class TicketDao {
         try (Connection connection = dataSource.getConnection()) {
             DSLContext ctx = DSL.using(connection);
             List<TicketData> data = ctx
-                    .select()
-                    .from(TICKET)
-                    .join(USER.as("user")).on(TICKET.USER.equal(USER.as("user").ID))
-                    .leftOuterJoin(USER.as("closedBy")).on(TICKET.CLOSED_BY.equal(USER.as("closedBy").ID))
-                    .where(TICKET.IS_OPEN.equal(isOpen))
-                    .orderBy(TICKET.TIMESTAMP.desc())
-                    .limit(page * pageLength, pageLength)
-                    .fetch()
-                    .stream()
-                    .map(record -> new TicketData(
-                            UserDto.fromRecord(record.into(USER.as("user"))),
-                            record.into(TICKET).into(Ticket.class),
-                            record.getValue(USER.as("closedBy").NAME)))
-                    .collect(Collectors.toList());
+                .select()
+                .from(TICKET)
+                .join(USER.as("user")).on(TICKET.USER.equal(USER.as("user").ID))
+                .leftOuterJoin(USER.as("closedBy")).on(TICKET.CLOSED_BY.equal(USER.as("closedBy").ID))
+                .where(TICKET.IS_OPEN.equal(isOpen))
+                .orderBy(TICKET.TIMESTAMP.desc())
+                .limit(page * pageLength, pageLength)
+                .fetch()
+                .stream()
+                .map(record -> new TicketData(
+                    UserDto.fromRecord(record.into(USER.as("user"))),
+                    record.into(TICKET).into(Ticket.class),
+                    record.getValue(USER.as("closedBy").NAME)))
+                .collect(Collectors.toList());
             int total = ctx.fetchCount(ctx.select().from(TICKET).where(TICKET.IS_OPEN.equal(isOpen))) / pageLength;
             result = new DataPage<>(data, page, total / pageLength);
         } catch (DataAccessException | SQLException e) {
@@ -104,12 +104,12 @@ public class TicketDao {
         try (Connection connection = dataSource.getConnection()) {
             DSLContext ctx = DSL.using(connection);
             List<Ticket> data = ctx
-                    .select(TICKET.IS_OPEN, TICKET.CATEGORY, TICKET.TEXT, TICKET.ADMIN_REPLY)
-                    .from(TICKET)
-                    .where(TICKET.USER.equal(user.getId()))
-                    .orderBy(TICKET.TIMESTAMP.desc())
-                    .limit(page * pageLength, pageLength)
-                    .fetchInto(Ticket.class);
+                .select(TICKET.IS_OPEN, TICKET.CATEGORY, TICKET.TEXT, TICKET.ADMIN_REPLY)
+                .from(TICKET)
+                .where(TICKET.USER.equal(user.getId()))
+                .orderBy(TICKET.TIMESTAMP.desc())
+                .limit(page * pageLength, pageLength)
+                .fetchInto(Ticket.class);
             int total = ctx.fetchCount(ctx.select().from(TICKET).where(TICKET.USER.equal(user.getId()))) / pageLength;
             result = new DataPage<>(data, page, total / pageLength);
         } catch (DataAccessException | SQLException e) {
@@ -123,13 +123,13 @@ public class TicketDao {
         try (Connection connection = dataSource.getConnection()) {
             DSLContext ctx = DSL.using(connection);
             result = ctx
-                    .select()
-                    .from(TICKET)
-                    .where(TICKET.USER.equal(userId))
-                    .orderBy(TICKET.TIMESTAMP.desc())
-                    .limit(10)
-                    .fetch()
-                    .formatJSON();
+                .select()
+                .from(TICKET)
+                .where(TICKET.USER.equal(userId))
+                .orderBy(TICKET.TIMESTAMP.desc())
+                .limit(10)
+                .fetch()
+                .formatJSON();
         } catch (DataAccessException | SQLException e) {
             logger.error("sql exception", e);
         }
@@ -141,20 +141,20 @@ public class TicketDao {
         try (Connection connection = dataSource.getConnection()) {
             DSLContext ctx = DSL.using(connection);
             result = ctx
-                    .select()
-                    .from(TICKET)
-                    .where(TICKET.USER.equal(userId)
-                            .and(TICKET.REPLY_DELIVERED.isFalse().or(TICKET.REPLY_DELIVERED.isNull()))
-                            .and(TICKET.IS_OPEN.isFalse()))
-                    .fetch()
-                    .into(Ticket.class);
+                .select()
+                .from(TICKET)
+                .where(TICKET.USER.equal(userId)
+                    .and(TICKET.REPLY_DELIVERED.isFalse().or(TICKET.REPLY_DELIVERED.isNull()))
+                    .and(TICKET.IS_OPEN.isFalse()))
+                .fetch()
+                .into(Ticket.class);
             ctx
-                    .update(TICKET)
-                    .set(TICKET.REPLY_DELIVERED, true)
-                    .where(TICKET.USER.equal(userId)
-                            .and(TICKET.REPLY_DELIVERED.isFalse().or(TICKET.REPLY_DELIVERED.isNull()))
-                            .and(TICKET.IS_OPEN.isFalse()))
-                    .execute();
+                .update(TICKET)
+                .set(TICKET.REPLY_DELIVERED, true)
+                .where(TICKET.USER.equal(userId)
+                    .and(TICKET.REPLY_DELIVERED.isFalse().or(TICKET.REPLY_DELIVERED.isNull()))
+                    .and(TICKET.IS_OPEN.isFalse()))
+                .execute();
         } catch (DataAccessException | SQLException e) {
             logger.error("sql exception", e);
         }
@@ -166,17 +166,17 @@ public class TicketDao {
         try (Connection connection = dataSource.getConnection()) {
             DSLContext ctx = DSL.using(connection);
             ctx
-                    .update(TICKET)
-                    .set(TICKET.ADMIN_REPLY, comment)
-                    .set(TICKET.IS_OPEN, false)
-                    .set(TICKET.CLOSED_BY, closedBy)
-                    .where(TICKET.ID.equal(id).and(TICKET.IS_OPEN.isTrue()))
-                    .execute();
+                .update(TICKET)
+                .set(TICKET.ADMIN_REPLY, comment)
+                .set(TICKET.IS_OPEN, false)
+                .set(TICKET.CLOSED_BY, closedBy)
+                .where(TICKET.ID.equal(id).and(TICKET.IS_OPEN.isTrue()))
+                .execute();
             ticket = ctx
-                    .select()
-                    .from(TICKET)
-                    .where(TICKET.ID.equal(id))
-                    .fetchOne().into(Ticket.class);
+                .select()
+                .from(TICKET)
+                .where(TICKET.ID.equal(id))
+                .fetchOne().into(Ticket.class);
         } catch (DataAccessException | SQLException e) {
             logger.error("sql exception", e);
         }

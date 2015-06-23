@@ -23,11 +23,11 @@ public class MessageBroadcaster extends AbstractService<Void> {
         EventFactory<MessageEvent> eventFactory = MessageEvent::new;
         ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("MESSAGE_BROADCASTER_%d").build();
         this.disruptor = new Disruptor<>(
-                eventFactory,
-                64,
-                Executors.newFixedThreadPool(2, threadFactory),
-                ProducerType.MULTI,
-                new BlockingWaitStrategy()
+            eventFactory,
+            64,
+            Executors.newFixedThreadPool(2, threadFactory),
+            ProducerType.MULTI,
+            new BlockingWaitStrategy()
         );
         this.ringBuffer = this.disruptor.getRingBuffer();
         this.disruptor.handleExceptionsWith(new LoggingExceptionHandler());

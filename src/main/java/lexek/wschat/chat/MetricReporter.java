@@ -46,18 +46,18 @@ public class MetricReporter extends ScheduledReporter {
 
             try (java.sql.Connection connection = dataSource.getConnection()) {
                 DSL.using(connection)
-                        .batchInsert(records)
-                        .execute();
+                    .batchInsert(records)
+                    .execute();
                 if (streamInfo != null) {
                     Timestamp t = new Timestamp(time);
                     Timestamp started = new Timestamp(streamInfo.getStarted());
                     DSL.using(connection)
-                            .insertInto(STREAM, STREAM.ID, STREAM.STARTED, STREAM.ENDED, STREAM.TITLE)
-                            .values(streamInfo.getStreamId(), started, t, streamInfo.getTitle())
-                            .onDuplicateKeyUpdate()
-                            .set(STREAM.TITLE, streamInfo.getTitle())
-                            .set(STREAM.ENDED, t)
-                            .execute();
+                        .insertInto(STREAM, STREAM.ID, STREAM.STARTED, STREAM.ENDED, STREAM.TITLE)
+                        .values(streamInfo.getStreamId(), started, t, streamInfo.getTitle())
+                        .onDuplicateKeyUpdate()
+                        .set(STREAM.TITLE, streamInfo.getTitle())
+                        .set(STREAM.ENDED, t)
+                        .execute();
                 }
             } catch (DataAccessException | SQLException e) {
                 logger.warn("sql exception", e);

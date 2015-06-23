@@ -8,7 +8,7 @@ import static lexek.wschat.db.jooq.tables.Chatter.CHATTER;
 
 public class Chatter {
     public static final Chatter GUEST_CHATTER =
-            new Chatter(null, LocalRole.GUEST, false, null, User.UNAUTHENTICATED_USER);
+        new Chatter(null, LocalRole.GUEST, false, null, User.UNAUTHENTICATED_USER);
 
     private Long id;
     private LocalRole role;
@@ -75,11 +75,11 @@ public class Chatter {
     public static Chatter fromRecord(Record record, User user) {
         if (record != null && record.getValue(CHATTER.ID) != null) {
             return new Chatter(
-                    record.getValue(CHATTER.ID),
-                    LocalRole.valueOf(record.getValue(CHATTER.ROLE)),
-                    record.getValue(CHATTER.BANNED),
-                    record.getValue(CHATTER.TIMEOUT),
-                    user
+                record.getValue(CHATTER.ID),
+                LocalRole.valueOf(record.getValue(CHATTER.ROLE)),
+                record.getValue(CHATTER.BANNED),
+                record.getValue(CHATTER.TIMEOUT),
+                user
             );
         } else {
             return null;

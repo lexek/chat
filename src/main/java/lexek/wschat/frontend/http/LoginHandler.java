@@ -70,7 +70,7 @@ public class LoginHandler extends SimpleHttpHandler {
             }
             logger.debug("Wrong username or password:{}@{}", username, request.ip());
             response.jsonContent(ImmutableMap.of("success", false, "error", "Wrong user name or password.",
-                    "captchaRequired", authenticationManager.failedLoginTries(ip) > 10));
+                "captchaRequired", authenticationManager.failedLoginTries(ip) > 10));
         } else {
             response.stringContent("This resource accepts only POST requests.");
         }

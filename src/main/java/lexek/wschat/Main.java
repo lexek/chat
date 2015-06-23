@@ -108,9 +108,9 @@ public class Main {
         messageReactor.registerHandler(new ColorHandler(userDao));
         messageReactor.registerHandler(new JoinHandler(roomManager, announcementService, messageBroadcaster, pollService));
         messageReactor.registerHandler(new RestrictionFilter(captchaService,
-                new MsgHandler(messageId, messageBroadcaster, roomManager), bannedIps));
+            new MsgHandler(messageId, messageBroadcaster, roomManager), bannedIps));
         messageReactor.registerHandler(new RestrictionFilter(captchaService,
-                new MeHandler(messageBroadcaster, messageId, roomManager), bannedIps));
+            new MeHandler(messageBroadcaster, messageId, roomManager), bannedIps));
         messageReactor.registerHandler(new PartHandler(messageBroadcaster, roomManager));
         messageReactor.registerHandler(new SetRoleHandler(roomManager));
         messageReactor.registerHandler(new TimeOutHandler(messageBroadcaster, roomManager));
@@ -126,14 +126,14 @@ public class Main {
         serviceManager.registerService(authenticationService);
 
         ChatProxyFactory chatProxyFactory = new ChatProxyFactory(connectionManager, messageId, authenticationManager,
-                roomManager, messageBroadcaster, metricRegistry);
+            roomManager, messageBroadcaster, metricRegistry);
         for (ProxyConfiguration proxyConfiguration : settings.getProxy()) {
             serviceManager.registerService(chatProxyFactory.newInstance(proxyConfiguration));
         }
 
         SslContext sslContext = SslContextBuilder
-                .forServer(new File("./cert.pem"), new File("./key.pk8"))
-                .build();
+            .forServer(new File("./cert.pem"), new File("./key.pk8"))
+            .build();
 
         EventLoopGroup bossGroup;
         EventLoopGroup childGroup;
@@ -151,15 +151,15 @@ public class Main {
         WebSocketConnectionGroup webSocketConnectionGroup = new WebSocketConnectionGroup(webSocketProtocol.getCodec());
         connectionManager.registerGroup(webSocketConnectionGroup);
         WebSocketChatHandler webSocketChatHandler = new WebSocketChatHandler(authenticationService, messageReactor,
-                webSocketProtocol, webSocketConnectionGroup, roomManager);
+            webSocketProtocol, webSocketConnectionGroup, roomManager);
         WebSocketChatServer webSocketChatServer = new WebSocketChatServer(wsPort, webSocketChatHandler, bossGroup,
-                childGroup, sslContext);
+            childGroup, sslContext);
 
         IrcProtocol ircProtocol = new IrcProtocol(new IrcCodec(ircHost));
         IrcConnectionGroup ircConnectionGroup = new IrcConnectionGroup(ircProtocol.getCodec());
         connectionManager.registerGroup(ircConnectionGroup);
         IrcServerHandler ircServerHandler = new IrcServerHandler(messageReactor, ircHost,
-                authenticationService, ircConnectionGroup, roomManager, ircProtocol);
+            authenticationService, ircConnectionGroup, roomManager, ircProtocol);
         IrcServer ircServer = new IrcServer(ircServerHandler, bossGroup, childGroup, sslContext);
 
         freemarker.template.Configuration freemarker = new freemarker.template.Configuration();
@@ -204,10 +204,10 @@ public class Main {
         httpRequestDispatcher.add("/login", new LoginHandler(authenticationManager, reCaptcha));
         httpRequestDispatcher.add("/check_username", new UsernameCheckHandler(userService));
         httpRequestDispatcher.add("/twitch_auth", new TwitchAuthHandler(
-                authenticationManager,
-                new TwitchTvSocialAuthService(settings.getHttp().getTwitchClientId(),
-                        settings.getHttp().getTwitchSecret(),
-                        settings.getHttp().getTwitchUrl())));
+            authenticationManager,
+            new TwitchTvSocialAuthService(settings.getHttp().getTwitchClientId(),
+                settings.getHttp().getTwitchSecret(),
+                settings.getHttp().getTwitchUrl())));
         httpRequestDispatcher.add("/setup_profile", new SetupProfileHandler(authenticationManager, reCaptcha));
         httpRequestDispatcher.add("/register", new RegistrationHandler(authenticationManager, reCaptcha, bannedIps));
         httpRequestDispatcher.add("/password", new SetPasswordHandler(authenticationManager));

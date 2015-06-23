@@ -19,10 +19,10 @@ public class BanHandler extends AbstractModerationHandler {
     @Override
     protected void success(Connection connection, Room room, Chatter modChatter, Chatter userChatter) {
         Message message = Message.moderationMessage(
-                MessageType.BAN,
-                room.getName(),
-                modChatter.getUser().getName(),
-                userChatter.getUser().getName()
+            MessageType.BAN,
+            room.getName(),
+            modChatter.getUser().getName(),
+            userChatter.getUser().getName()
         );
         messageBroadcaster.submitMessage(message, connection, room.FILTER);
     }

@@ -116,16 +116,16 @@ public class TwitchTvChatProxy extends AbstractService<Map<String, Object>> {
         public void onMessage(TwitchUser user, String message) {
             if (!connections.containsKey(user.getNick().toLowerCase())) {
                 Message msg = Message.extMessage(
-                        room.getName(),
-                        user.getNick(),
-                        LocalRole.USER,
-                        GlobalRole.USER,
-                        Colors.generateColor(user.getNick()),
-                        messageId.getAndIncrement(),
-                        System.currentTimeMillis(),
-                        message,
-                        "twitch.tv",
-                        channel
+                    room.getName(),
+                    user.getNick(),
+                    LocalRole.USER,
+                    GlobalRole.USER,
+                    Colors.generateColor(user.getNick()),
+                    messageId.getAndIncrement(),
+                    System.currentTimeMillis(),
+                    message,
+                    "twitch.tv",
+                    channel
                 );
                 messageBroadcaster.submitMessage(msg, Connection.STUB_CONNECTION, room.FILTER);
             }
@@ -134,10 +134,10 @@ public class TwitchTvChatProxy extends AbstractService<Map<String, Object>> {
         @Override
         public void onClear(String name) {
             Message msg = Message.moderationMessage(
-                    MessageType.CLEAR_EXT,
-                    "#main",
-                    "*twitch_ext",
-                    name
+                MessageType.CLEAR_EXT,
+                "#main",
+                "*twitch_ext",
+                name
             );
             messageBroadcaster.submitMessage(msg, Connection.STUB_CONNECTION, room.FILTER);
         }

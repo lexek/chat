@@ -29,7 +29,7 @@ public class HttpServer extends AbstractService<Integer> {
     private Channel channel;
 
     public HttpServer(SslContext sslContext, RequestDispatcher requestDispatcher)
-            throws FileNotFoundException, SSLException {
+        throws FileNotFoundException, SSLException {
         super("httpServer", ImmutableList.<String>of());
         this.stateData = PORT;
 

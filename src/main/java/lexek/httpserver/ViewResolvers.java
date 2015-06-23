@@ -13,8 +13,8 @@ public class ViewResolvers {
         @Override
         protected Gson initialValue() {
             return new GsonBuilder()
-                    .registerTypeAdapter(Date.class, (JsonSerializer<Date>) (src, typeOfSrc, context) -> new JsonPrimitive(src.getTime()))
-                    .create();
+                .registerTypeAdapter(Date.class, (JsonSerializer<Date>) (src, typeOfSrc, context) -> new JsonPrimitive(src.getTime()))
+                .create();
         }
     };
 

@@ -95,10 +95,10 @@ public abstract class Connection {
     @Override
     public String toString() {
         return "Connection{" +
-                "protocol=" + protocol +
-                ", user=" + user +
-                ", state=" + state +
-                '}';
+            "protocol=" + protocol +
+            ", user=" + user +
+            ", state=" + state +
+            '}';
     }
 
 

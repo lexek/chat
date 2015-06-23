@@ -18,9 +18,9 @@ import java.util.List;
 
 @ChannelHandler.Sharable
 public class WebSocketChatHandler extends SimpleChannelInboundHandler<WebSocketFrame>
-        implements AuthenticationCallback<WebSocketConnectionAdapter> {
+    implements AuthenticationCallback<WebSocketConnectionAdapter> {
     private static final AttributeKey<WebSocketConnectionAdapter> WRAPPER_ATTR_KEY =
-            AttributeKey.valueOf("WEBSOCKET_CONNECTION_WRAPPER");
+        AttributeKey.valueOf("WEBSOCKET_CONNECTION_WRAPPER");
     private static final AttributeKey<String> SID_ATTR_KEY = AttributeKey.valueOf("WEBSOCKET_SID");
 
     private final Logger logger = LoggerFactory.getLogger(WebSocketChatHandler.class);
@@ -104,7 +104,7 @@ public class WebSocketChatHandler extends SimpleChannelInboundHandler<WebSocketF
                 }
             }
             channel.writeAndFlush(new TextWebSocketFrame(protocol.getCodec().encode(
-                    Message.errorMessage("Not authenticated, try refreshing page."), null)));
+                Message.errorMessage("Not authenticated, try refreshing page."), null)));
         }
     }
 

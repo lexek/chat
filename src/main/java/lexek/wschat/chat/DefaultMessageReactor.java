@@ -26,9 +26,9 @@ public class DefaultMessageReactor extends AbstractService implements MessageRea
     private final Logger messageLogger = LoggerFactory.getLogger("messages");
     private final Table<MessageType, Integer, MessageHandler> handlers = HashBasedTable.create();
     private final EnumSet<MessageType> availableForBanned = EnumSet.of(
-            MessageType.PART,
-            MessageType.PING,
-            MessageType.JOIN);
+        MessageType.PART,
+        MessageType.PING,
+        MessageType.JOIN);
     private final EnumSet<MessageType> meteredTypes = EnumSet.of(MessageType.MSG, MessageType.ME);
     private final Meter meter;
     private final Disruptor<InboundMessageEvent> disruptor;
@@ -40,11 +40,11 @@ public class DefaultMessageReactor extends AbstractService implements MessageRea
         EventFactory<InboundMessageEvent> eventFactory = InboundMessageEvent::new;
         ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("MESSAGE_REACTOR_%d").build();
         this.disruptor = new Disruptor<>(
-                eventFactory,
-                64,
-                Executors.newSingleThreadExecutor(threadFactory),
-                ProducerType.MULTI,
-                new BlockingWaitStrategy()
+            eventFactory,
+            64,
+            Executors.newSingleThreadExecutor(threadFactory),
+            ProducerType.MULTI,
+            new BlockingWaitStrategy()
         );
         this.ringBuffer = this.disruptor.getRingBuffer();
         this.disruptor.handleExceptionsWith(new LoggingExceptionHandler());
@@ -82,7 +82,7 @@ public class DefaultMessageReactor extends AbstractService implements MessageRea
         if (handler == null) {
             connection.send(Message.errorMessage("UNKNOWN_COMMAND"));
             messageLogger.info("{}[{}] HANDLER: NULL; MSG: {}", user.getName(), connection.getIp(),
-                    message.getType().toString() + message.getArgs());
+                message.getType().toString() + message.getArgs());
         } else {
             int interval = user.getRole().getMessageTimeInterval();
             long timeFromLastMessage = System.currentTimeMillis() - user.getLastMessage();
@@ -110,10 +110,10 @@ public class DefaultMessageReactor extends AbstractService implements MessageRea
             handler.handle(message.getArgs(), connection);
             if (handler.isNeedsLogging()) {
                 messageLogger.info("{}[{}] HANDLER: {}; MSG: {} {}", user.getName(), connection.getIp(),
-                        handler.getClass().getSimpleName(), message.getType(), message.getArgs());
+                    handler.getClass().getSimpleName(), message.getType(), message.getArgs());
             } else {
                 messageLogger.debug("{}[{}] HANDLER: {}; MSG: {} {}", user.getName(), connection.getIp(),
-                        handler.getClass().getSimpleName(), message.getType(), message.getArgs());
+                    handler.getClass().getSimpleName(), message.getType(), message.getArgs());
             }
         } else {
             connection.send(Message.errorMessage("NOT_AUTHORIZED"));

@@ -17,14 +17,14 @@ import static lexek.wschat.chat.Message.Keys;
 
 public class HistoryService implements EventHandler<MessageEvent> {
     private static final Set<MessageType> STORE_TYPES = ImmutableSet.of(
-            MessageType.MSG,
-            MessageType.ME,
-            MessageType.MSG_EXT,
-            MessageType.BAN,
-            MessageType.TIMEOUT,
-            MessageType.CLEAR,
-            MessageType.CLEAR_EXT,
-            MessageType.LIKE
+        MessageType.MSG,
+        MessageType.ME,
+        MessageType.MSG_EXT,
+        MessageType.BAN,
+        MessageType.TIMEOUT,
+        MessageType.CLEAR,
+        MessageType.CLEAR_EXT,
+        MessageType.LIKE
     );
 
     private final int maxHistory;
@@ -63,13 +63,13 @@ public class HistoryService implements EventHandler<MessageEvent> {
         User user = connection.getUser();
         if (type == MessageType.MSG || type == MessageType.ME) {
             historyDao.add(new History(null, room.getId(), user.getId(), message.get(Keys.TIME),
-                    message.getType().toString(), message.get(Keys.TEXT), false));
+                message.getType().toString(), message.get(Keys.TEXT), false));
         } else if (type == MessageType.CLEAR || type == MessageType.BAN || type == MessageType.TIMEOUT) {
             long t = System.currentTimeMillis();
             String userName = message.get(Keys.NAME);
             historyDao.hideUserMessages(
-                    new History(null, room.getId(), user.getId(), t, message.getType().toString(), userName, false),
-                    userName, t - TimeUnit.MINUTES.toMillis(10));
+                new History(null, room.getId(), user.getId(), t, message.getType().toString(), userName, false),
+                userName, t - TimeUnit.MINUTES.toMillis(10));
         }
         if (room != null) {
             List<Message> messages = room.getHistory();

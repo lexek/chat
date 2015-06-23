@@ -37,8 +37,8 @@ public class InboundMessage {
     @Override
     public String toString() {
         return "InboundMessage{" +
-                "type=" + type +
-                ", args=" + args +
-                '}';
+            "type=" + type +
+            ", args=" + args +
+            '}';
     }
 }

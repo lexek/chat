@@ -17,9 +17,9 @@ public class LikeHandler extends AbstractMsgHandler {
     protected void handle(Connection connection, Room room, Chatter chatter, List<String> args) {
         Long id = Long.parseLong(args.get(1));
         Message message = Message.likeMessage(
-                room.getName(),
-                connection.getUser().getName(),
-                id);
+            room.getName(),
+            connection.getUser().getName(),
+            id);
         messageBroadcaster.submitMessage(message, connection, room.FILTER);
     }
 }

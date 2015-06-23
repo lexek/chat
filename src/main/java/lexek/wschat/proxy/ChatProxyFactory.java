@@ -66,35 +66,35 @@ public class ChatProxyFactory {
         switch (proxyConfiguration.getType()) {
             case "twitch": {
                 TwitchTvChatProxy result = new TwitchTvChatProxy(proxyConfiguration.getChannel(),
-                        connectionManager,
-                        messageId,
-                        messageBroadcaster,
-                        authenticationManager,
-                        targetRoom,
-                        eventLoopGroup);
+                    connectionManager,
+                    messageId,
+                    messageBroadcaster,
+                    authenticationManager,
+                    targetRoom,
+                    eventLoopGroup);
                 streamStatsAggregator.addPlatform(new TwitchTvChannelInformationProvider(
-                        proxyConfiguration.getChannel(),
-                        httpClient
+                    proxyConfiguration.getChannel(),
+                    httpClient
                 ), proxyConfiguration.isUseTitle());
                 return result;
             }
             case "cybergame": {
                 CybergameTvChatProxy result = new CybergameTvChatProxy(eventLoopGroup,
-                        proxyConfiguration.getChannel(),
-                        messageBroadcaster,
-                        messageId,
-                        targetRoom);
+                    proxyConfiguration.getChannel(),
+                    messageBroadcaster,
+                    messageId,
+                    targetRoom);
                 streamStatsAggregator.addPlatform(new CybergameTvChannelInformationProvider(
-                        httpClient, proxyConfiguration.getChannel()
+                    httpClient, proxyConfiguration.getChannel()
                 ), false);
                 return result;
             }
             case "goodgame": {
                 GoodGameChatProxy result = new GoodGameChatProxy(eventLoopGroup,
-                        proxyConfiguration.getChannel(),
-                        messageBroadcaster,
-                        messageId,
-                        targetRoom);
+                    proxyConfiguration.getChannel(),
+                    messageBroadcaster,
+                    messageId,
+                    targetRoom);
                 //TODO: temporarily disabled(issue #6)
                 /*streamStatsAggregator.addPlatform(new GoodGameChannelInformationProvider(
                         httpClient, proxyConfiguration.getChannel()
@@ -103,10 +103,10 @@ public class ChatProxyFactory {
             }
             case "sc2tv": {
                 return new Sc2tvChatProxy(proxyConfiguration.getChannel(),
-                        messageBroadcaster,
-                        eventLoopGroup,
-                        messageId,
-                        targetRoom);
+                    messageBroadcaster,
+                    eventLoopGroup,
+                    messageId,
+                    targetRoom);
             }
             default:
                 throw new IllegalArgumentException("Unknown proxy name");

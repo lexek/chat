@@ -20,8 +20,8 @@ public class PollOption {
     @Override
     public String toString() {
         return "PollOption{" +
-                "optionId=" + optionId +
-                ", text='" + text + '\'' +
-                '}';
+            "optionId=" + optionId +
+            ", text='" + text + '\'' +
+            '}';
     }
 }

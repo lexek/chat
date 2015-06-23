@@ -26,21 +26,21 @@ public class JournalService {
 
     public void nameChanged(UserDto user, String oldName, String newName) {
         String description = gson.toJson(ImmutableMap.of(
-                "oldName", oldName,
-                "newName", newName
+            "oldName", oldName,
+            "newName", newName
         ));
         journalDao.add(new JournalEntry(user, null, "NAME_CHANGE", description, now(), null));
     }
 
     public void userUpdated(UserDto user, UserDto admin, Map<TableField<UserRecord, ?>, Object> values) {
         String description = gson.toJson(ImmutableMap.of(
-                "oldState", gson.toJsonTree(user),
-                "newState", gson.toJsonTree(values
-                        .entrySet()
-                        .stream()
-                        .collect(Collectors.toMap(
-                                entry -> StringUtils.toCamelCaseLC(entry.getKey().getName()),
-                                Map.Entry::getValue)))));
+            "oldState", gson.toJsonTree(user),
+            "newState", gson.toJsonTree(values
+                .entrySet()
+                .stream()
+                .collect(Collectors.toMap(
+                    entry -> StringUtils.toCamelCaseLC(entry.getKey().getName()),
+                    Map.Entry::getValue)))));
         journalDao.add(new JournalEntry(user, admin, "USER_UPDATE", description, now(), null));
     }
 

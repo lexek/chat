@@ -39,11 +39,11 @@ public class UserDao {
                 condition.and(USER.RENAME_AVAILABLE.equal(true));
             }
             result = DSL.using(connection)
-                    .update(USER)
-                    .set(USER.NAME, newName)
-                    .set(USER.RENAME_AVAILABLE, false)
-                    .where(condition)
-                    .execute() == 1;
+                .update(USER)
+                .set(USER.NAME, newName)
+                .set(USER.RENAME_AVAILABLE, false)
+                .where(condition)
+                .execute() == 1;
         } catch (DataAccessException | SQLException e) {
             logger.error("sql exception", e);
         }
@@ -54,10 +54,10 @@ public class UserDao {
         UserDto userDto = null;
         try (Connection connection = dataSource.getConnection()) {
             Record record = DSL.using(connection)
-                    .select()
-                    .from(USER)
-                    .where(USER.NAME.equal(name))
-                    .fetchOne();
+                .select()
+                .from(USER)
+                .where(USER.NAME.equal(name))
+                .fetchOne();
             userDto = UserDto.fromRecord(record);
         } catch (DataAccessException | SQLException e) {
             logger.error("sql exception", e);
@@ -69,10 +69,10 @@ public class UserDao {
         UserDto userDto = null;
         try (Connection connection = dataSource.getConnection()) {
             Record record = DSL.using(connection)
-                    .select()
-                    .from(USER)
-                    .where(USER.ID.equal(id))
-                    .fetchOne();
+                .select()
+                .from(USER)
+                .where(USER.ID.equal(id))
+                .fetchOne();
             userDto = UserDto.fromRecord(record);
         } catch (DataAccessException | SQLException e) {
             logger.error("sql exception", e);
@@ -84,10 +84,10 @@ public class UserDao {
         boolean success = false;
         try (Connection connection = dataSource.getConnection()) {
             success = DSL.using(connection)
-                    .update(USER)
-                    .set(values)
-                    .where(USER.ID.equal(id))
-                    .execute() == 1;
+                .update(USER)
+                .set(values)
+                .where(USER.ID.equal(id))
+                .execute() == 1;
         } catch (DataAccessException | SQLException e) {
             logger.error("sql exception", e);
         }
@@ -97,10 +97,10 @@ public class UserDao {
     public void setColor(long id, String color) {
         try (Connection connection = dataSource.getConnection()) {
             DSL.using(connection)
-                    .update(USER)
-                    .set(USER.COLOR, color)
-                    .where(USER.ID.equal(id))
-                    .execute();
+                .update(USER)
+                .set(USER.COLOR, color)
+                .where(USER.ID.equal(id))
+                .execute();
         } catch (DataAccessException | SQLException e) {
             logger.error("sql exception", e);
         }
@@ -110,21 +110,21 @@ public class UserDao {
         DataPage<UserData> result = null;
         try (Connection connection = dataSource.getConnection()) {
             List<UserData> data = DSL.using(connection)
-                    .select(USER.ID, USER.NAME, USER.ROLE, USER.COLOR, USER.BANNED, USER.RENAME_AVAILABLE, USER.EMAIL,
-                            DSL.groupConcat(USERAUTH.SERVICE).as("authServices"),
-                            DSL.groupConcat(DSL.coalesce(USERAUTH.AUTH_NAME, "")).as("authNames"))
-                    .from(USER.join(USERAUTH).on(USER.ID.equal(USERAUTH.USER_ID)))
-                    .groupBy(USER.ID)
-                    .orderBy(USER.ID)
-                    .limit(page * pageLength, pageLength)
-                    .fetch()
-                    .stream()
-                    .map(record -> new UserData(
-                            UserDto.fromRecord(record),
-                            record.getValue("authServices", String.class),
-                            record.getValue("authNames", String.class)
-                    ))
-                    .collect(Collectors.toList());
+                .select(USER.ID, USER.NAME, USER.ROLE, USER.COLOR, USER.BANNED, USER.RENAME_AVAILABLE, USER.EMAIL,
+                    DSL.groupConcat(USERAUTH.SERVICE).as("authServices"),
+                    DSL.groupConcat(DSL.coalesce(USERAUTH.AUTH_NAME, "")).as("authNames"))
+                .from(USER.join(USERAUTH).on(USER.ID.equal(USERAUTH.USER_ID)))
+                .groupBy(USER.ID)
+                .orderBy(USER.ID)
+                .limit(page * pageLength, pageLength)
+                .fetch()
+                .stream()
+                .map(record -> new UserData(
+                    UserDto.fromRecord(record),
+                    record.getValue("authServices", String.class),
+                    record.getValue("authNames", String.class)
+                ))
+                .collect(Collectors.toList());
             result = new DataPage<>(data, page, Pages.pageCount(pageLength, DSL.using(connection).fetchCount(USER)));
         } catch (DataAccessException | SQLException e) {
             logger.error("sql exception", e);
@@ -136,25 +136,25 @@ public class UserDao {
         DataPage<UserData> result = null;
         try (Connection connection = dataSource.getConnection()) {
             List<UserData> data = DSL.using(connection)
-                    .select(USER.ID, USER.NAME, USER.ROLE, USER.COLOR, USER.BANNED,
-                            USER.RENAME_AVAILABLE, USER.EMAIL,
-                            DSL.groupConcat(USERAUTH.SERVICE).as("authServices"),
-                            DSL.groupConcat(DSL.coalesce(USERAUTH.AUTH_NAME, "")).as("authNames"))
-                    .from(USER.join(USERAUTH).on(USER.ID.equal(USERAUTH.USER_ID)))
-                    .where(USER.NAME.like(nameParam, '!'))
-                    .orderBy(USER.ID)
-                    .limit(page * pageLength, pageLength)
-                    .fetch()
-                    .stream()
-                    .map(record -> new UserData(
-                            UserDto.fromRecord(record),
-                            record.getValue("authServices", String.class),
-                            record.getValue("authNames", String.class)
-                    ))
-                    .collect(Collectors.toList());
+                .select(USER.ID, USER.NAME, USER.ROLE, USER.COLOR, USER.BANNED,
+                    USER.RENAME_AVAILABLE, USER.EMAIL,
+                    DSL.groupConcat(USERAUTH.SERVICE).as("authServices"),
+                    DSL.groupConcat(DSL.coalesce(USERAUTH.AUTH_NAME, "")).as("authNames"))
+                .from(USER.join(USERAUTH).on(USER.ID.equal(USERAUTH.USER_ID)))
+                .where(USER.NAME.like(nameParam, '!'))
+                .orderBy(USER.ID)
+                .limit(page * pageLength, pageLength)
+                .fetch()
+                .stream()
+                .map(record -> new UserData(
+                    UserDto.fromRecord(record),
+                    record.getValue("authServices", String.class),
+                    record.getValue("authNames", String.class)
+                ))
+                .collect(Collectors.toList());
 
             result = new DataPage<>(data, page,
-                    Pages.pageCount(pageLength, DSL.using(connection).fetchCount(USER, USER.NAME.like(nameParam, '!'))));
+                Pages.pageCount(pageLength, DSL.using(connection).fetchCount(USER, USER.NAME.like(nameParam, '!'))));
         } catch (DataAccessException | SQLException e) {
             logger.error("sql exception", e);
         }
@@ -165,9 +165,9 @@ public class UserDao {
         boolean result = false;
         try (Connection connection = dataSource.getConnection()) {
             result = DSL.using(connection)
-                    .delete(USER)
-                    .where(USER.ID.equal(user.getId()))
-                    .execute() == 1;
+                .delete(USER)
+                .where(USER.ID.equal(user.getId()))
+                .execute() == 1;
         } catch (DataAccessException | SQLException e) {
             logger.error("sql exception", e);
         }
@@ -178,10 +178,10 @@ public class UserDao {
         boolean result = false;
         try (Connection connection = dataSource.getConnection()) {
             result = DSL.using(connection)
-                    .selectOne()
-                    .from(USER)
-                    .where(USER.NAME.equal(username))
-                    .fetchOne() == null;
+                .selectOne()
+                .from(USER)
+                .where(USER.NAME.equal(username))
+                .fetchOne() == null;
         } catch (DataAccessException | SQLException e) {
             logger.error("sql exception", e);
         }
@@ -192,18 +192,18 @@ public class UserDao {
         UserData result = null;
         try (Connection connection = dataSource.getConnection()) {
             Record record = DSL.using(connection)
-                    .select(USER.ID, USER.NAME, USER.ROLE, USER.COLOR, USER.BANNED, USER.RENAME_AVAILABLE, USER.EMAIL,
-                            DSL.groupConcat(USERAUTH.SERVICE).as("authServices"),
-                            DSL.groupConcat(DSL.coalesce(USERAUTH.AUTH_NAME, "")).as("authNames"))
-                    .from(USER.join(USERAUTH).on(USER.ID.equal(USERAUTH.USER_ID)))
-                    .where(USER.ID.equal(id))
-                    .groupBy(USER.ID)
-                    .fetchOne();
+                .select(USER.ID, USER.NAME, USER.ROLE, USER.COLOR, USER.BANNED, USER.RENAME_AVAILABLE, USER.EMAIL,
+                    DSL.groupConcat(USERAUTH.SERVICE).as("authServices"),
+                    DSL.groupConcat(DSL.coalesce(USERAUTH.AUTH_NAME, "")).as("authNames"))
+                .from(USER.join(USERAUTH).on(USER.ID.equal(USERAUTH.USER_ID)))
+                .where(USER.ID.equal(id))
+                .groupBy(USER.ID)
+                .fetchOne();
             if (record != null) {
                 result = new UserData(
-                        UserDto.fromRecord(record),
-                        record.getValue("authServices", String.class),
-                        record.getValue("authNames", String.class)
+                    UserDto.fromRecord(record),
+                    record.getValue("authServices", String.class),
+                    record.getValue("authNames", String.class)
                 );
             }
         } catch (DataAccessException | SQLException e) {
