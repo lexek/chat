@@ -1554,7 +1554,7 @@ var RoomController = function($scope, $location, $http, $sce, $modal, alert, tit
 
     var loadPage = function() {
         $scope.messages.length = 0;
-        $http({method: "GET", url: "/admin/api/room?id="+$scope.roomId})
+        $http({method: "GET", url: "/admin/api/room", params: {id: $scope.roomId}})
             .success(function (d, status, headers, config) {
                 $scope.chatterOffset = 0;
                 $scope.messages = d["history"];
@@ -1567,7 +1567,7 @@ var RoomController = function($scope, $location, $http, $sce, $modal, alert, tit
             .error(function (data, status, headers, config) {
                 alert.alert("danger", data);
             });
-        $http({method: "GET", url: "/admin/api/poll?room="+$scope.roomId})
+        $http({method: "GET", url: "/admin/api/poll", params: {room: $scope.roomId}})
             .success(function (d, status, headers, config) {
                 $scope.poll = d;
                 $scope.maxPollVotes = Math.max.apply(null, $scope.poll.votes);
@@ -1575,7 +1575,7 @@ var RoomController = function($scope, $location, $http, $sce, $modal, alert, tit
             .error(function (data, status, headers, config) {
                 alert.alert("danger", data);
             });
-        $http({method: "GET", url: "/admin/api/journal?page=0&room=" + $scope.roomId})
+        $http({method: "GET", url: "/admin/api/journal", params: {room: $scope.roomId, peek: "true"}})
             .success(function (d, status, headers, config) {
                 $scope.journal = d.data;
             })

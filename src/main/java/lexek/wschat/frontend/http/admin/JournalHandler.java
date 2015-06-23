@@ -1,7 +1,5 @@
 package lexek.wschat.frontend.http.admin;
 
-import com.google.common.primitives.Ints;
-import com.google.common.primitives.Longs;
 import io.netty.handler.codec.http.HttpMethod;
 import lexek.httpserver.Request;
 import lexek.httpserver.Response;
@@ -26,12 +24,14 @@ public class JournalHandler extends SimpleHttpHandler {
     protected void handle(Request request, Response response) throws Exception {
         if (request.method() == HttpMethod.GET) {
             UserDto userDto = authenticationManager.checkAuthentication(request);
-            String pageParam = request.queryParam("page");
-            String roomParam = request.queryParam("room");
-            Integer page = pageParam != null ? Ints.tryParse(pageParam) : null;
-            Long roomId = roomParam != null ? Longs.tryParse(roomParam) : null;
+            Integer page = request.queryParamAsInteger("page");
+            Long roomId = request.queryParamAsLong("room");
+            boolean peek = request.queryParamAsBoolean("peek");
 
-            if (page != null && page >= 0) {
+            if (peek && roomId != null) {
+                response.jsonContent(journalDao.fetchAllForRoom(0, 6, roomId));
+                return;
+            } else if (page != null && page >= 0) {
                 if (roomId != null) {
                     if (userDto != null && userDto.hasRole(GlobalRole.ADMIN)) {
                         response.jsonContent(journalDao.fetchAllForRoom(page, PAGE_LENGTH, roomId));
