@@ -14,6 +14,9 @@ import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.SQLException;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -38,7 +41,11 @@ public class StatisticsDao {
                     .from(HISTORY)
                     .where(ImmutableList.of(
                             HISTORY.USER_ID.equal(userId),
-                            HISTORY.TIMESTAMP.greaterOrEqual(System.currentTimeMillis() - TimeUnit.DAYS.toMillis(7))
+                            HISTORY.TIMESTAMP.greaterOrEqual(
+                                    Instant.now()
+                                            .minus(Duration.ofDays(7))
+                                            .truncatedTo(ChronoUnit.DAYS)
+                                            .toEpochMilli())
                     ))
                     .asTable("t", "date");
 
@@ -69,7 +76,10 @@ public class StatisticsDao {
                     .from(HISTORY.join(USER).on(HISTORY.USER_ID.equal(USER.ID)))
                     .where(ImmutableList.of(
                             HISTORY.ROOM_ID.equal(roomId),
-                            HISTORY.TIMESTAMP.greaterOrEqual(System.currentTimeMillis() - TimeUnit.DAYS.toMillis(7))
+                            HISTORY.TIMESTAMP.greaterOrEqual(Instant.now()
+                                    .minus(Duration.ofDays(7))
+                                    .truncatedTo(ChronoUnit.DAYS)
+                                    .toEpochMilli())
                     ))
                     .groupBy(HISTORY.USER_ID)
                     .orderBy(DSL.field("count", Long.class).desc())
