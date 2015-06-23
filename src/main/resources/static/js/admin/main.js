@@ -673,7 +673,41 @@ var OnlineController = function($scope, $http, $modal, alert, title) {
 };
 
 
-var UserController = function($scope, $route, $http, alert, id) {
+var UserActivityController = function($scope, $http, $modal, user) {
+    $scope.user = user;
+    $http({method: "POST", params: {"userId": user.id},  url: "/admin/api/activity"})
+        .success(function(data, status, headers, config) {
+            var activity = {};
+            angular.forEach(data, function(v, k) {
+                activity[k/1000] = v;
+            });
+            var startDate = new Date();
+            startDate.setDate(startDate.getDate() - 7);
+            var cfg = {
+                label: {
+                    position: "left",
+                    align: "left",
+                    width: 50
+                },
+                itemSelector: "#userActivity",
+                domain: 'day',
+                subDomain: 'hour',
+                range: 7,
+                cellSize: 20,
+                domainGutter: 10,
+                data: activity,
+                startDate: startDate,
+                colLimit: 24,
+                verticalOrientation: true,
+                subDomainTextFormat: "%H",
+                itemName: ["message", "messages"]
+            };
+            var cal = new CalHeatMap();
+            cal.init(cfg);
+        })
+};
+
+var UserController = function($scope, $route, $http, $modal, alert, id) {
     var editing = '';
     $scope.auth = {};
     $scope.input = {};
@@ -778,7 +812,7 @@ var UserController = function($scope, $route, $http, alert, id) {
     $scope.reset = function(variable) {
         $scope.edit("");
         $scope.input[variable] = $scope.user[variable];
-    }
+    };
 
     $scope.requestDelete = function() {
         var data = {
@@ -798,6 +832,18 @@ var UserController = function($scope, $route, $http, alert, id) {
 
     $scope.hasAuth = function(auth) {
         return auth in $scope.auth;
+    };
+
+    $scope.showActivity = function() {
+        $modal.open({
+            templateUrl: "user_activity.html",
+            controller: UserActivityController,
+            resolve: {
+                user: function () {
+                    return $scope.user;
+                }
+            }
+        });
     };
 
     var init = function() {
@@ -821,9 +867,9 @@ var UserController = function($scope, $route, $http, alert, id) {
     });
 };
 
-AdminApplication.controller("UserController", ["$scope", "$route", "$http", "alert", UserController]);
+AdminApplication.controller("UserController", ["$scope", "$route", "$http", "$modal", "alert", UserController]);
 
-var UserModalController = function($scope, $http, $modalInstance, id) {
+var UserModalController = function($scope, $http, $modal, $modalInstance, id) {
     var editing = '';
     $scope.input = {};
     $scope.auth = [];
@@ -948,7 +994,7 @@ var UserModalController = function($scope, $http, $modalInstance, id) {
     $scope.reset = function(variable) {
         $scope.edit("");
         $scope.input[variable] = $scope.user[variable];
-    }
+    };
 
     $scope.requestDelete = function() {
         var data = {
@@ -968,6 +1014,18 @@ var UserModalController = function($scope, $http, $modalInstance, id) {
 
     $scope.hasAuth = function(auth) {
         return auth in $scope.auth;
+    };
+
+    $scope.showActivity = function() {
+        $modal.open({
+            templateUrl: "user_activity.html",
+            controller: UserActivityController,
+            resolve: {
+                user: function () {
+                    return $scope.user;
+                }
+            }
+        });
     };
 
     $scope.closeModal = function() {
@@ -1143,7 +1201,7 @@ var RoomJournalModalController = function($scope, $http, $modal, room) {
                 }
             }
         });
-    }
+    };
 
     loadPage();
 };

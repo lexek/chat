@@ -182,6 +182,7 @@ public class Main {
         httpRequestDispatcher.add("/recaptcha/[0-9]+", new RecaptchaHandler(captchaService, reCaptcha));
         httpRequestDispatcher.add("/api/chatters", new ChattersApiHandler(roomManager));
         httpRequestDispatcher.add("/api/tickets", new UserTicketsHandler(authenticationManager, ticketService));
+        httpRequestDispatcher.add("/admin/api/activity", new ActivityHandler(authenticationManager, new StatisticsDao(dataSource)));
         httpRequestDispatcher.add("/admin/api/metrics", new MetricHandler(dataSource, authenticationManager));
         httpRequestDispatcher.add("/admin/api/journal", new JournalHandler(authenticationManager, new JournalDao(dataSource)));
         httpRequestDispatcher.add("/admin/api/rooms", new RoomsApiHandler(authenticationManager, roomManager));

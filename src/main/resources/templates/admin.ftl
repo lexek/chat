@@ -7,6 +7,7 @@
     <link rel="stylesheet" type="text/css" href='//fonts.googleapis.com/css?family=Roboto:400,400italic,700,700italic&subset=latin,cyrillic'>
     <link rel="stylesheet" type="text/css" href="/vendor/css/animate.css"/>
     <link rel="stylesheet" type="text/css" href="/vendor/css/bootstrap.css"/>
+    <link rel="stylesheet" type="text/css" href="/vendor/css/cal-heatmap.css" />
     <link rel="stylesheet" type="text/css" href="/css/font-awesome.css">
 
     <base href="/admin/" />
@@ -16,6 +17,8 @@
     </script>
 
     <script src="//code.jquery.com/jquery-2.1.0.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js" charset="utf-8"></script>
+    <script src="/vendor/js/cal-heatmap.js"></script>
     <script src="/vendor/js/twemoji.js"></script>
     <script src="/vendor/js/angular.js"></script>
     <script src="/vendor/js/angular-animate.2.js"></script>
@@ -830,6 +833,10 @@
                         </div>
                     </div>
                 </form>
+                <hr/>
+                <div class="btn btn-link" ng-click="showActivity()">
+                    <i class="fa fa-fw fa-bar-chart"></i> Show user activity
+                </div>
             </div>
             <div class="panel-footer">
                 <#if user.role == "SUPERADMIN">
@@ -945,12 +952,27 @@
                 </div>
             </div>
         </form>
+        <hr/>
+        <div class="btn btn-link" ng-click="showActivity()">
+            <i class="fa fa-fw fa-bar-chart"></i> Show user activity
+        </div>
     </div>
     <div class="modal-footer">
         <#if user.role == "SUPERADMIN">
             <div ng-disabled="user && !canEdit('name')" ng-click="requestDelete()" class="btn btn-danger pull-left">Delete user</div>
         </#if>
         <div class="btn btn-warning" ng-click="closeModal()">Close</div>
+    </div>
+</script>
+
+<script type="text/ng-template" id="user_activity.html">
+    <div class="modal-header">
+        <h3 class="modal-title">
+            <i class="fa fa-fw fa-user"></i> {{user.name}} activity
+        </h3>
+    </div>
+    <div class="modal-body">
+        <div id="userActivity"></div>
     </div>
 </script>
 
