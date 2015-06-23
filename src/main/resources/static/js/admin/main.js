@@ -699,7 +699,6 @@ var UserActivityController = function($scope, $http, $modal, user) {
                 start: startDate,
                 colLimit: 24,
                 verticalOrientation: true,
-                subDomainTextFormat: "%H",
                 itemName: ["message", "messages"]
             };
             var cal = new CalHeatMap();
