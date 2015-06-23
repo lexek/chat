@@ -976,6 +976,26 @@
     </div>
 </script>
 
+<script type="text/ng-template" id="top_chatters.html">
+    <div class="modal-header">
+        <h3 class="modal-title">
+            <i class="fa fa-fw fa-trophy"></i> {{room.name}} top chatters
+        </h3>
+    </div>
+    <div class="modal-body">
+        <div class="list-group">
+            <a href="" ng-repeat="entry in entries" class="list-group-item" ng-click="showActivity(entry.userId, entry.name)">
+                <h4 class="list-group-item-heading">
+                    {{entry.name}}
+                    <small class="pull-right">
+                        {{entry.count}} messages
+                    </small>
+                </h4>
+            </a>
+        </div>
+    </div>
+</script>
+
 <script type="text/ng-template" id="journal_modal.html">
     <div class="modal-header">
         <h3 class="modal-title">
@@ -1383,6 +1403,9 @@
                 <div class="panel-heading">
                     <h4 class="panel-title">
                         <i class="fa fa-fw fa-users"></i> online chatters
+                        <a href="" class="pull-right" ng-click="showTopChatters()" tooltip="show top chatters">
+                            <i class="fa fa-fw fa-trophy"></i>
+                        </a>
                     </h4>
                 </div>
                 <div class="list-group" ng-if="chatters.length > 0">

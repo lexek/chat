@@ -24,6 +24,11 @@ public class ActivityHandler extends SimpleHttpHandler {
                 response.jsonContent(statisticsDao.getUserActivity(userId));
                 return;
             }
+            Long roomId = request.queryParamAsLong("roomId");
+            if (roomId != null) {
+                response.jsonContent(statisticsDao.getTopChatters(roomId));
+                return;
+            }
             response.badRequest();
         } else {
             response.forbidden();

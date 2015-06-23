@@ -1,6 +1,7 @@
 package lexek.wschat.db.dao;
 
 import com.google.common.collect.ImmutableList;
+import lexek.wschat.db.model.UserMessageCount;
 import org.jooq.Record1;
 import org.jooq.Record3;
 import org.jooq.Table;
@@ -13,11 +14,13 @@ import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static lexek.wschat.db.jooq.tables.History.HISTORY;
+import static lexek.wschat.db.jooq.tables.User.USER;
 
 public class StatisticsDao {
     private final Logger logger = LoggerFactory.getLogger(StatisticsDao.class);
@@ -52,6 +55,29 @@ public class StatisticsDao {
                             r -> r.value1().getTime() + TimeUnit.HOURS.toMillis(r.value2()),
                             Collectors.summingLong(Record3::value3)
                     ));
+        } catch (DataAccessException | SQLException e) {
+            logger.error("sql exception", e);
+        }
+        return result;
+    }
+
+    public List<UserMessageCount> getTopChatters(long roomId) {
+        List<UserMessageCount> result = null;
+        try (Connection connection = dataSource.getConnection()) {
+            result = DSL.using(connection)
+                    .select(USER.ID, USER.NAME, DSL.count().as("count"))
+                    .from(HISTORY.join(USER).on(HISTORY.USER_ID.equal(USER.ID)))
+                    .where(ImmutableList.of(
+                            HISTORY.ROOM_ID.equal(roomId),
+                            HISTORY.TIMESTAMP.greaterOrEqual(System.currentTimeMillis() - TimeUnit.DAYS.toMillis(7))
+                    ))
+                    .groupBy(HISTORY.USER_ID)
+                    .orderBy(DSL.field("count", Long.class).desc())
+                    .limit(20)
+                    .fetch()
+                    .stream()
+                    .map(r -> new UserMessageCount(r.value2(), r.value1(), r.value3()))
+                    .collect(Collectors.toList());
         } catch (DataAccessException | SQLException e) {
             logger.error("sql exception", e);
         }

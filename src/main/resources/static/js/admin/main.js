@@ -675,7 +675,7 @@ var OnlineController = function($scope, $http, $modal, alert, title) {
 
 var UserActivityController = function($scope, $http, $modal, user) {
     $scope.user = user;
-    $http({method: "POST", params: {"userId": user.id},  url: "/admin/api/activity"})
+    $http({method: "GET", params: {"userId": user.id},  url: "/admin/api/activity"})
         .success(function(data, status, headers, config) {
             var activity = {};
             angular.forEach(data, function(v, k) {
@@ -1521,6 +1521,31 @@ var ChattersController = function($scope, $location, $http, $modal, room) {
     loadPage();
 };
 
+var TopChattersController = function($scope, $http, $modal, room) {
+    $scope.room = room;
+    $scope.entries = [];
+
+    $http({method: "GET", params: {"roomId": room.id},  url: "/admin/api/activity"})
+        .success(function(data) {
+            $scope.entries = data;
+        });
+
+    $scope.showActivity = function(id, name) {
+        $modal.open({
+            templateUrl: "user_activity.html",
+            controller: UserActivityController,
+            resolve: {
+                user: function () {
+                    return {
+                        id: id,
+                        name: name
+                    };
+                }
+            }
+        });
+    };
+};
+
 var RoomController = function($scope, $location, $http, $sce, $modal, alert, title) {
     $scope.messages = [];
     $scope.journal = [];
@@ -1579,6 +1604,19 @@ var RoomController = function($scope, $location, $http, $sce, $modal, alert, tit
             templateUrl: 'chatters.html',
             controller: ChattersController,
             size: "lg",
+            resolve: {
+                room: function () {
+                    return $scope.roomData;
+                }
+            }
+        });
+    };
+
+    $scope.showTopChatters = function() {
+        $modal.open({
+            templateUrl: 'top_chatters.html',
+            controller: TopChattersController,
+            size: "sm",
             resolve: {
                 room: function () {
                     return $scope.roomData;
@@ -1662,7 +1700,7 @@ var RoomController = function($scope, $location, $http, $sce, $modal, alert, tit
 
     $scope.safe = function(text) {
         return $sce.trustAsHtml(text);
-    }
+    };
 
     $scope.composeAnnouncement = function() {
         $modal.open({
@@ -1676,7 +1714,7 @@ var RoomController = function($scope, $location, $http, $sce, $modal, alert, tit
         }).result.then(function () {
             loadPage();
         });
-    }
+    };
 
     $scope.setAnnouncementInactive = function(id) {
         var data = {
