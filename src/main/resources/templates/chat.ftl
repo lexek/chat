@@ -508,9 +508,9 @@
                         <div class="message" bo-if="(message.type === 'MSG_GROUP')">
                             <span class="timeCompact" ng-if="showTimestamps()">{{message.messages[0].time | date:'HH:mm'}}</span><!--
                             --><span class="btn-group btn-group-xs" ng-if="showModButtons()" style="margin-right: 3px">
-                                <span class="btn btn-default" ng-click="message.user.clear()" title="clear"><span class="fa fa-eraser"></span></span>
-                                <span class="btn btn-default" ng-click="message.user.ban()" title="ban"><span class="fa fa-ban"></span></span>
-                                <span class="btn btn-default" ng-click="message.user.timeout()" title="time out"><span class="fa fa-clock-o"></span></span>
+                                <span class="btn btn-default" ng-click="clear()" title="clear"><span class="fa fa-eraser"></span></span>
+                                <span class="btn btn-default" ng-click="ban()" title="ban"><span class="fa fa-ban"></span></span>
+                                <span class="btn btn-default" ng-click="timeout()" title="time out"><span class="fa fa-clock-o"></span></span>
                             </span><!--
                             --><span bo-if="isMod()" class="mod">M</span><!--
                             --><span bo-if="isAdmin()" class="admin">A</span><!--
@@ -538,9 +538,9 @@
                         <div class="message" bo-if="(message.type == 'ME')" bo-style="{'color': message.user.color}">
                             <span class="timeCompact" ng-if="showTimestamps()">{{message.time | date:'HH:mm'}}</span><!--
                                     --><span class="btn-group btn-group-xs" ng-if="showModButtons()">
-                                        <span class="btn btn-default" ng-click="message.user.clear()" title="clear"><span class="fa fa-eraser"></span></span>
-                                        <span class="btn btn-default" ng-click="message.user.ban()" title="ban"><span class="fa fa-ban"></span></span>
-                                        <span class="btn btn-default" ng-click="message.user.timeout()" title="time out"><span class="fa fa-clock-o"></span></span>
+                                        <span class="btn btn-default" ng-click="clear()" title="clear"><span class="fa fa-eraser"></span></span>
+                                        <span class="btn btn-default" ng-click="ban()" title="ban"><span class="fa fa-ban"></span></span>
+                                        <span class="btn btn-default" ng-click="timeout()" title="time out"><span class="fa fa-clock-o"></span></span>
                                     </span><!--
                                     --><span ng-if="isMod()" class="mod">M</span><!--
                                     --><span ng-if="isAdmin()" class="admin">A</span><!--
@@ -576,9 +576,9 @@
                                 --><strong bo-if="message.user.service==='goodgame'" style="color: #73ADFF">GG</strong><!--
                                 --><span bo-if="message.user.service==='sc2tv.ru'" class="sc2tvIcon"></span></small>
                                 <div class="pull-right btn-group modButtons" ng-if="showModButtons()">
-                                    <div class="btn btn-link btn-x" ng-click="message.user.clear()"><span class="fa fa-eraser"></span></div>
-                                    <div class="btn btn-link btn-x" ng-click="message.user.ban()"><span class="fa fa-ban"></span></div>
-                                    <div class="btn btn-link btn-x" ng-click="message.user.timeout()"><span class="fa fa-clock-o"></span></div>
+                                    <div class="btn btn-link btn-x" ng-click="clear()"><span class="fa fa-eraser"></span></div>
+                                    <div class="btn btn-link btn-x" ng-click="ban()"><span class="fa fa-ban"></span></div>
+                                    <div class="btn btn-link btn-x" ng-click="timeout()"><span class="fa fa-clock-o"></span></div>
                                 </div>
                             </div>
                             <div class="userMessageContainer" ng-repeat="msg in message.messages track by $index">

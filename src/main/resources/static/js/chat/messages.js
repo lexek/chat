@@ -1,5 +1,6 @@
-var messagesModule = angular.module("chat.messages", ["chat.services"]);
+var messagesModule = angular.module("chat.messages", ["chat.services.chat"]);
 
+//TODO: fix moderation
 messagesModule.controller("MessageController", ["$scope", "chatService", "chatSettings", "$element", function($scope, chat, settings) {
     $scope.showTimestamps = function() {
         return $scope.message.showTS || settings.getS("showTS");
@@ -52,6 +53,16 @@ messagesModule.controller("MessageController", ["$scope", "chatService", "chatSe
                 return "http://www.twitch.tv/" + $scope.message.user.name + "/profile";
             }
         }
+    };
+
+    $scope.clear = function() {
+        chat.clear($scope.message.user);
+    };
+    $scope.timeout = function() {
+        chat.timeout($scope.message.user);
+    };
+    $scope.ban = function() {
+        chat.ban($scope.message.user);
     };
 }]);
 
