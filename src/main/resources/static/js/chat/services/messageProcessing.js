@@ -58,17 +58,15 @@ module.service("messageProcessingService", ["$q", "$translate", "$modal", "$time
             unprocessedText: msg.text,
             mention: false
         };
-        var previousMessage = chat.lastMessage[ctx.room];
         var service = msg.type === "MSG_EXT" ? ctx.msg["service"] : null;
         var serviceRes = service ? ctx.msg["serviceResource"] : null;
-        var lastChatter = chat.lastChatterInRoom[ctx.room];
         var user = new User(msg.name, msg.color, levels[msg.role], globalLevels[msg.globalRole], service, serviceRes);
         ctx.proc.user = user;
 
         //TODO: improve
         var showModButtons = (user.role !== levels.ADMIN)
             && (chat.self && (chat.self.name !== user.name) && (msg.type != "ME")) &&
-            (((chat.localRole[room] >= levels.MOD) && (chat.localRole[room] > user.role) && (chat.self.role >= user.globalRole))
+            (((chat.localRole[ctx.room] >= levels.MOD) && (chat.localRole[ctx.room] > user.role) && (chat.self.role >= user.globalRole))
             || ((chat.self.role >= globalLevels.MOD) && (chat.self.role > user.globalRole)));
         var ignored = settings.getIgnored().indexOf(user.name.toLowerCase()) != -1;
         var showIgnored = settings.getS("showIgnored");
@@ -76,21 +74,22 @@ module.service("messageProcessingService", ["$q", "$translate", "$modal", "$time
         var hidden = ignored && showIgnored;
         var omit = (ignored && !showIgnored) ||
             ((msg.type === "MSG_EXT") && ((service === "sc2tv.ru") || (service === "cybergame.tv")) && hideExt);
-        var stackWithPrevious =
-            (previousMessage.type === "MSG_GROUP") && ((msg.type === "MSG") || (msg.type === "MSG_EXT")) &&
-            (lastChatter &&
-                (lastChatter.name.toLowerCase() === user.name.toLowerCase()) &&
-                (lastChatter.service === user.service)
-            ) &&
-            (previousMessage.messages.length < 5);
 
         if (!omit) {
             processMessageText(chat, ctx, msg).then(function() {
-                chat.lastChatter(ctx.room, user);
                 var elem = null;
+                var lastChatter = chat.lastChatterInRoom[ctx.room];
+                var previousMessage = chat.lastMessage[ctx.room];
+                var stackWithPrevious =
+                    (previousMessage.type === "MSG_GROUP") && ((msg.type === "MSG") || (msg.type === "MSG_EXT")) &&
+                    (lastChatter &&
+                        (lastChatter.name.toLowerCase() === user.name.toLowerCase()) &&
+                        (lastChatter.service === user.service)
+                    ) &&
+                    (previousMessage.messages.length < 5);
+                chat.lastChatter(ctx.room, user);
                 if (stackWithPrevious) {
                     previousMessage.messages.push(new GroupedMessage(ctx.proc.text, msg.id, msg.time, hidden));
-                    chat.messageUpdated(previousMessage);
                 } else {
                     if (msg.type === "MSG" || msg.type === "MSG_EXT") {
                         elem = new MessageGroup(user, showModButtons, ctx.history);
@@ -101,9 +100,6 @@ module.service("messageProcessingService", ["$q", "$translate", "$modal", "$time
                 }
                 if (elem != null) {
                     chat.addMessage(elem, ctx.room, ctx.history, ctx.proc.mention);
-                    if (!ctx.history) {
-                        chat.messagesUpdated();
-                    }
                 }
                 if (ctx.proc.mention && !ctx.history) {
                     notificationService.notify(user.name, ctx.proc.unprocessedText);
