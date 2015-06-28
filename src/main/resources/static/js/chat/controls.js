@@ -1,4 +1,4 @@
-var controlsModule = angular.module("chat.controls", ["chat.services", "ui.bootstrap", "colorpicker.module", "ngCookies", "vcRecaptcha"]);
+var controlsModule = angular.module("chat.controls", ["chat.services.chat", "ui.bootstrap", "colorpicker.module", "ngCookies", "vcRecaptcha"]);
 
 controlsModule.controller("RoomWidgetController", ["$scope", "chatService", function($scope, chatService) {
     $scope.open = false;

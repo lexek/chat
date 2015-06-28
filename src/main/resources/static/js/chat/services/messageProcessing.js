@@ -157,7 +157,7 @@ module.service("messageProcessingService", ["$q", "$translate", "$modal", "$time
     var processTimeoutMessage = function(chat, ctx, msg) {
         chat.lastChatter(ctx.room, null);
         chat.addMessage(
-            new Message(msg.type, $translate.instant("CHAT_TIMEOUT_USER", {"mod": msg.mod, "user": msg.name})), room);
+            new Message(msg.type, $translate.instant("CHAT_TIMEOUT_USER", {"mod": msg.mod, "user": msg.name})), ctx.room);
         chat.hideMessagesFromUser(ctx.room, msg.name);
         if (!ctx.history) {
             chat.messagesUpdated();
@@ -317,7 +317,7 @@ module.service("messageProcessingService", ["$q", "$translate", "$modal", "$time
                         "name": chat.self.name,
                         "role": $translate.instant("ROLE_" + chat.self.role.title)
                     }
-                )), room);
+                )), ctx.room);
                 chat.messagesUpdated();
                 break;
             case 'ROLE':

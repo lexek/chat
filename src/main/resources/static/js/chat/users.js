@@ -1,4 +1,4 @@
-var usersModule = angular.module("chat.users", ["chat.services"]);
+var usersModule = angular.module("chat.users", ["chat.services.chat"]);
 
 extendedOnlineElems = false;
 
