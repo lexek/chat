@@ -2,41 +2,6 @@ var usersModule = angular.module("chat.users", ["chat.services"]);
 
 extendedOnlineElems = false;
 
-/**
- * @param {string} title
- * @param {number} value
- * @constructor
- */
-Level = function(title, value) {
-    this.title = title;
-    this.value = value;
-};
-
-Level.prototype.valueOf = function() {
-    return this.value;
-};
-
-/**
- * @enum
- */
-levels = {
-    'GUEST': new Level("GUEST", 1),
-    'USER': new Level("USER", 2),
-    'MOD': new Level("MOD", 3),
-    'ADMIN': new Level("ADMIN", 4)
-};
-
-globalLevels = {
-    'UNAUTHENTICATED': new Level("UNAUTHENTICATED", 0),
-    'GUEST': new Level("GUEST", 1),
-    'USER_UNCONFIRMED': new Level("USER_UNCONFIRMED", 2),
-    'USER': new Level("USER", 2),
-    "SUPPORTER": new Level("SUPPORTER", 3),
-    'MOD': new Level("MOD", 4),
-    'ADMIN': new Level("ADMIN", 5),
-    'SUPERADMIN': new Level("SUPERADMIN", 6)
-};
-
 usersModule.filter("users", function() {
     return function(users) {
         return users.filter(function (user) {
@@ -105,33 +70,29 @@ usersModule.controller("UserController", ["$scope", "chatService", function($sco
                 )
             );
     };
-
     $scope.canTimeOut = function() {
         return !$scope.user.timedOut && $scope.showModButtons();
     };
-
     $scope.canBan = function() {
         return !$scope.user.banned && $scope.showModButtons() && ($scope.user.role < levels.SUPPORTER);
     };
-
     $scope.canUnban = function() {
         return ($scope.user.banned || $scope.user.timedOut) && $scope.showModButtons();
     };
-
     $scope.clear = function() {
-        chat.sendMessage({"type": "CLEAR", args: [chat.activeRoom, $scope.user.name]});
+        chat.clear($scope.user);
     };
     $scope.timeout = function() {
-        chat.sendMessage({"type": "TIMEOUT", args: [chat.activeRoom, $scope.user.name]});
+        chat.timeout($scope.user);
         $scope.user.timedOut = true;
     };
     $scope.unban = function() {
-        chat.sendMessage({"type": "UNBAN", args: [chat.activeRoom, $scope.user.name]});
+        chat.unban($scope.user);
         $scope.user.banned = false;
         $scope.user.timedOut = false;
     };
     $scope.ban = function() {
-        chat.sendMessage({"type": "BAN", args: [chat.activeRoom, $scope.user.name]});
+        chat.ban($scope.user);
         $scope.user.banned = true;
     };
 }]);

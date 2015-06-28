@@ -19,9 +19,16 @@
         <js>/vendor/js/angular-relative-date.js</js>
         <js>/vendor/js/angular-recaptcha.js</js>
         <js>/vendor/js/bootstrap-colorpicker.js</js>
+        <js>/js/chat/types/chatState.js</js>
+        <js>/js/chat/types/role.js</js>
+        <js>/js/chat/types/user.js</js>
         <js>/js/libs.js</js>
         <js>/js/chat/sc2emotes.js</js>
         <js>/js/chat/lang.js</js>
+        <js>/js/chat/services/settings.js</js>
+        <js>/js/chat/services/windowState.js</js>
+        <js>/js/chat/services/notifications.js</js>
+        <js>/js/chat/services/messageProcessing.js</js>
         <js>/js/chat/services.js</js>
         <js>/js/chat/messages.js</js>
         <js>/js/chat/users.js</js>

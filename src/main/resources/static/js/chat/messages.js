@@ -9,6 +9,8 @@ messagesModule.controller("MessageController", ["$scope", "chatService", "chatSe
         chat.sendMessage({"type":"LIKE", "args":[chat.activeRoom, id_.toString()]});
     };
 
+
+    //TODO: ext users moderation
     $scope.isSupporter = function() {
         return false;
     };
