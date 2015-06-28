@@ -531,7 +531,7 @@
                                     </span>
                                 </#if>
                                 <span bo-if="!$first">&gt; </span>
-                                <span class="userMessageBody" ng-if="!msg.hidden" bo-html="msg.body"></span>
+                                <span class="userMessageBody" ng-if="!msg.hidden" ng-bind-html="msg.body"></span>
                                 <a class="userMessageBody" ng-if="msg.hidden" ng-click="msg.hidden=false">[{{'CHAT_MESSAGE_HIDDEN' | translate}}]</a>
                             </span>
                         </div>
@@ -553,14 +553,14 @@
                                     </span>
                                 </span></#if><!--
                          --><span class="username" ng-click="addToInput($event)" bo-bind="message.user.name | inflector:'capital'"></span>
-                            <span class="userMessageBody" ng-if="!message.hidden" bo-html="message.body"></span>
+                            <span class="userMessageBody" ng-if="!message.hidden" ng-bind-html="message.body"></span>
                             <a class="userMessageBody" ng-if="message.hidden" ng-click="message.hidden=false">[{{'CHAT_MESSAGE_HIDDEN' | translate}}]</a>
                         </div>
                         <div class="alert-msg alert-msg-danger" bo-if="message.type === 'ERROR'">
-                            <span bo-html="message.body"></span>
+                            <span ng-bind-html="message.body"></span>
                         </div>
                         <div class="alert-msg alert-msg-info" bo-if="!((message.type === 'ME') || (message.type === 'MSG_GROUP') || (message.type === 'ERROR'))">
-                            <span bo-html="message.body"></span>
+                            <span ng-bind-html="message.body"></span>
                         </div>
                     </div>
                 </div>
@@ -589,7 +589,7 @@
                                             --><span class="likeCount" ng-if="msg.likes.length &gt; 0">&nbsp;{{msg.likes.length}}</span>
                                         </span>
                                 </div></#if>
-                                <div class="userMessageBody" bo-style="{'border-color': message.user.color}" ng-if="!msg.hidden" bo-html="msg.body"></div>
+                                <div class="userMessageBody" bo-style="{'border-color': message.user.color}" ng-if="!msg.hidden" ng-bind-html="msg.body"></div>
                                 <a class="userMessageBody" bo-style="{'border-color': message.user.color}" ng-if="msg.hidden" ng-click="msg.hidden=false">[{{'CHAT_MESSAGE_HIDDEN' | translate}}]</a>
                             </div>
                         </div>
@@ -604,15 +604,15 @@
                             <div class="me">
                                     <span class="username"
                                           ng-click="addToInput($event)" bo-bind="message.user.name | inflector:'capital'"></span>
-                                <span class="userMessageBodyMe" ng-if="!message.hidden" bo-html="message.body"></span>
+                                <span class="userMessageBodyMe" ng-if="!message.hidden" ng-bind-html="message.body"></span>
                                 <a class="userMessageBodyMe" ng-if="message.hidden" ng-click="message.hidden=false">[{{'CHAT_MESSAGE_HIDDEN' | translate}}]</a>
                             </div>
                         </div>
                         <div class="alert-msg alert-msg-danger" bo-if="message.type == 'ERROR'">
-                            <span bo-html="message.body"></span>
+                            <span ng-bind-html="message.body"></span>
                         </div>
                         <div class="alert-msg alert-msg-info" bo-if="!((message.type == 'ME') || (message.type == 'MSG_GROUP') || (message.type == 'ERROR'))">
-                            <span bo-html="message.body"></span>
+                            <span ng-bind-html="message.body"></span>
                         </div>
                     </div>
                 </div>

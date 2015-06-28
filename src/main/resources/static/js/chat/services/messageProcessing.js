@@ -1,9 +1,9 @@
 var module = angular.module("chat.messageProcessing", ["chat.services.settings", "chat.services.notifications", "chat.services.linkResolver"]);
 
-module.service("messageProcessingService", ["$q", "$translate", "$modal", "$timeout", "chatSettings", "notificationService", "linkResolver", function($q, $translate, $modal, $timeout, settings, notificationService, linkResolver) {
+module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal", "$timeout", "chatSettings", "notificationService", "linkResolver", function($q, $sce, $translate, $modal, $timeout, settings, notificationService, linkResolver) {
     var Message = function (type, body, user, showModButtons, id_, time, showTS, hidden) {
         this.type = type;
-        this.body = body;
+        this.body = $sce.trustAsHtml(body);
         this.showModButtons = showModButtons;
         this.id_ = id_;
         this.user = user;
@@ -26,7 +26,7 @@ module.service("messageProcessingService", ["$q", "$translate", "$modal", "$time
     };
 
     var GroupedMessage = function(body, id_, time, hidden) {
-        this.body = body;
+        this.body = $sce.trustAsHtml(body);
         this.id_ = id_;
         this.time = time;
         this.hidden = hidden;
@@ -87,35 +87,45 @@ module.service("messageProcessingService", ["$q", "$translate", "$modal", "$time
             ((msg.type === "MSG_EXT") && ((service === "sc2tv.ru") || (service === "cybergame.tv")) && hideExt);
 
         if (!omit) {
-            processMessageText(chat, ctx, msg).then(function() {
-                var elem = null;
-                var lastChatter = chat.lastChatterInRoom[ctx.room];
-                var previousMessage = chat.lastMessage[ctx.room];
-                var stackWithPrevious =
-                    (previousMessage.type === "MSG_GROUP") && ((msg.type === "MSG") || (msg.type === "MSG_EXT")) &&
-                    (lastChatter &&
-                        (lastChatter.name.toLowerCase() === user.name.toLowerCase()) &&
-                        (lastChatter.service === user.service)
-                    ) &&
-                    (previousMessage.messages.length < 5);
-                chat.lastChatter(ctx.room, user);
-                if (stackWithPrevious) {
-                    previousMessage.messages.push(new GroupedMessage(ctx.proc.text, msg.id, msg.time, hidden));
+            var tempText = htmlEscape(ctx.proc.unprocessedText);
+            var elem = null;
+            var lastChatter = chat.lastChatterInRoom[ctx.room];
+            var previousMessage = chat.lastMessage[ctx.room];
+            var stackWithPrevious =
+                (previousMessage.type === "MSG_GROUP") && ((msg.type === "MSG") || (msg.type === "MSG_EXT")) &&
+                (lastChatter &&
+                    (lastChatter.name.toLowerCase() === user.name.toLowerCase()) &&
+                    (lastChatter.service === user.service)
+                ) &&
+                (previousMessage.messages.length < 5);
+            chat.lastChatter(ctx.room, user);
+            if (stackWithPrevious) {
+                var e = new GroupedMessage(tempText, msg.id, msg.time, hidden);
+                previousMessage.messages.push(e);
+                processMessageText(chat, ctx, msg).then(function() {
+                    e.body = $sce.trustAsHtml(ctx.proc.text);
+                });
+            } else {
+                if (msg.type === "MSG" || msg.type === "MSG_EXT") {
+                    elem = new MessageGroup(user, showModButtons, ctx.history);
+                    var e = new GroupedMessage(tempText, msg.id, msg.time, hidden);
+                    elem.messages.push(e);
+                    processMessageText(chat, ctx, msg).then(function() {
+                        e.body = $sce.trustAsHtml(ctx.proc.text);
+                    });
                 } else {
-                    if (msg.type === "MSG" || msg.type === "MSG_EXT") {
-                        elem = new MessageGroup(user, showModButtons, ctx.history);
-                        elem.messages.push(new GroupedMessage(ctx.proc.text, msg.id, msg.time, hidden));
-                    } else {
-                        elem = new Message(msg.type, ctx.proc.text, user, showModButtons, msg.id, msg.time, ctx.history, hidden)
-                    }
+                    elem = new Message(msg.type, tempText, user, showModButtons, msg.id, msg.time, ctx.history, hidden);
+                    processMessageText(chat, ctx, msg).then(function() {
+                        elem.body = $sce.trustAsHtml(ctx.proc.text);
+                    });
                 }
-                if (elem != null) {
-                    chat.addMessage(elem, ctx.room, ctx.history, ctx.proc.mention);
-                }
-                if (ctx.proc.mention && !ctx.history) {
-                    notificationService.notify(user.name, ctx.proc.unprocessedText);
-                }
-            });
+            }
+            if (elem != null) {
+                chat.addMessage(elem, ctx.room, ctx.history, ctx.proc.mention);
+            }
+            if (ctx.proc.mention && !ctx.history) {
+                notificationService.notify(user.name, ctx.proc.unprocessedText);
+            }
         }
     };
 
