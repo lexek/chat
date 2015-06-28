@@ -265,11 +265,6 @@ img.emoji {
     font-size: smaller;
 }
 
-.faceCode {
-    display: inline-block;
-    vertical-align: bottom;
-}
-
 .spoiler {
     background-color: #D2D2D2;
     color: #D2D2D2;
@@ -279,7 +274,7 @@ img.emoji {
     min-height: 1em;
 }
 
-.spoiler .faceCode,
+.spoiler img.emoticon,
 .spoiler a,
 .spoiler span.mentionLabel,
 .spoiler img.emoji {
@@ -291,7 +286,7 @@ img.emoji {
     transition: color .1s ease-in;
 }
 
-.spoiler:hover .faceCode,
+.spoiler:hover img.emoticon,
 .spoiler:hover a,
 .spoiler:hover span.mentionLabel,
 .spoiler:hover img.emoji {
