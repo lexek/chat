@@ -1,6 +1,6 @@
-var module = angular.module("chat.messageProcessing", ["chat.services.settings", "chat.services.notifications"]);
+var module = angular.module("chat.messageProcessing", ["chat.services.settings", "chat.services.notifications", "chat.services.linkResolver"]);
 
-module.service("messageProcessingService", ["$translate", "$modal", "$timeout", "chatSettings", "notificationService", function($translate, $modal, $timeout, settings, notificationService) {
+module.service("messageProcessingService", ["$translate", "$modal", "$timeout", "chatSettings", "notificationService", "linkResolver", function($translate, $modal, $timeout, settings, notificationService, linkResolver) {
     var Message = function (type, body, user, showModButtons, id_, time, showTS, hidden) {
         this.type = type;
         this.body = body;
@@ -281,7 +281,7 @@ module.service("messageProcessingService", ["$translate", "$modal", "$timeout", 
                     controller: AnonCaptchaController,
                     resolve: {
                         _id: function () {
-                            return msg.text;
+                            return message.text;
                         },
                         isUser: chat.self.role === levels.USER
                     }
@@ -367,91 +367,6 @@ module.service("messageProcessingService", ["$translate", "$modal", "$timeout", 
         }
     };
 
-    var fetchYoutubeTitle = function(videoId, ytKey) {
-        var result = null;
-        $.ajax({
-            "url": "https://www.googleapis.com/youtube/v3/videos?part=snippet&id=" + videoId + "&key=" + ytKey,
-            "success": function (data) {
-                if (data.items && data.items[0] && data.items[0].snippet) {
-                    result = "<span style=\"color:#cd201f;\" class=\"fa fa-youtube-play\"></span> " + htmlEscape(data.items[0].snippet.title);
-                }
-            },
-            "async": false,
-            "timeout": 100
-        });
-        return result;
-    };
-
-    var processLink = function (completeLink, prefix, link) {
-        var linkText = "";
-        try {
-            linkText = $.trim(decodeURIComponent(link));
-            if (linkText.length === 0) {
-                linkText = link;
-            }
-        } catch (e) {
-            linkText = link;
-        }
-        if (linkText.length > 37) {
-            linkText = linkText.substr(0, 32) + "[...]";
-        }
-        linkText = htmlEscape(linkText);
-        var notProcessed = true;
-        var parsedUrl = new Uri(link);
-        var host = parsedUrl.host();
-        //TODO: async
-        if (host === "youtube.com" || host === "www.youtube.com") {
-            var videoId = null;
-            if (parsedUrl.getQueryParamValue("v")) {
-                videoId = parsedUrl.getQueryParamValue("v");
-            }
-            if (parsedUrl.getQueryParamValue("watch")) {
-                videoId = parsedUrl.getQueryParamValue("watch");
-            }
-            if (videoId) {
-                var ytTitle = fetchYoutubeTitle(videoId, ytKey);
-                if (ytTitle) {
-                    linkText = ytTitle;
-                    notProcessed = false;
-                }
-            }
-        }
-        //TODO: async
-        if (host === "youtu.be") {
-            var videoId = parsedUrl.uriParts.path;
-            if (videoId[0] === "/") {
-                videoId = videoId.substr(1);
-            }
-            if (videoId) {
-                var ytTitle = fetchYoutubeTitle(videoId, ytKey);
-                if (ytTitle) {
-                    linkText = ytTitle;
-                    notProcessed = false;
-                }
-            }
-        }
-        //TODO: async
-        if (notProcessed) {
-            var r = /http:\/\/store\.steampowered\.com\/app\/([0-9]+)\/.*/.exec(completeLink);
-            if (r && r[1]) {
-                var id = r[1];
-                $.ajax({
-                    "url": "resolve_steam",
-                    "data": {"appid": id},
-                    "success": function (data) {
-                        if (data) {
-                            linkText = "<span style=\"color: #156291;\" class=\"fa fa-steam-square\"></span> " + htmlEscape(data);
-                            notProcessed = false;
-                        }
-                    },
-                    "async": false,
-                    "timeout": 100
-                });
-            }
-        }
-        return "<a href=\"" + prefix + htmlEscape(link) + "\" target=\"_blank\" title=\"" + htmlEscape(link) + "\">" + linkText + "</a>";
-    };
-
     var processTextPart = function(chat, ctx, msg, text) {
         text = htmlEscape(text);
         text = twemoji.parse(text, {
@@ -516,7 +431,7 @@ module.service("messageProcessingService", ["$translate", "$modal", "$timeout", 
         while ((match = raw.match(/(https?:\/\/)([^\s]*)/))) {
             i = match.index;
             html.push(processTextPart(chat, ctx, msg, raw.substr(0, i)));
-            html.push(processLink(match[0], match[1], match[2]));
+            html.push(linkResolver.resolve(match[0], match[1], match[2]));
             raw = raw.substring(i + match[0].length);
         }
         html.push(processTextPart(chat, ctx, msg, raw));

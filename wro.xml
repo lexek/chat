@@ -25,6 +25,7 @@
         <js>/js/libs.js</js>
         <js>/js/chat/sc2emotes.js</js>
         <js>/js/chat/lang.js</js>
+        <js>/js/chat/services/linkResolver.js</js>
         <js>/js/chat/services/settings.js</js>
         <js>/js/chat/services/windowState.js</js>
         <js>/js/chat/services/notifications.js</js>
