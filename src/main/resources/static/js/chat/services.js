@@ -417,7 +417,7 @@ services.service("chatService", ["$modal", "chatSettings", "$translate", "$http"
                 text = text.replace(chat.emoticonRegExp, function (match) {
                     var emoticon = chat.emoticons[match];
                     if (emoticon) {
-                        return "<img " +
+                        return "<img class='emoticon' " +
                             "src='emoticons/" + emoticon.fileName + "' " +
                             "style='height: " + emoticon.height + "px; width: " + emoticon.width + "px;' " +
                             "title='" + emoticon.code + "'" +
