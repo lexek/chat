@@ -393,9 +393,11 @@ module.service("messageProcessingService", ["$q", "$translate", "$modal", "$time
             text = text.replace(SC2TV_REGEX, function (match) {
                 var emoticon = SC2TV_EMOTE_MAP[match];
                 if (emoticon) {
-                    //TODO: better code
-                    return "<span class='faceCode' style='background-image: url(/img/sc2tv/" + emoticon.fileName +
-                        "); height: " + emoticon.height + "px; width: " + emoticon.width + "px;' title='" + emoticon.code + "'></span>"
+                    return "<img class='emoticon' " +
+                        "src='/img/sc2tv/" + emoticon.fileName + "' " +
+                        "style='height: " + emoticon.height + "px; width: " + emoticon.width + "px;' " +
+                        "title='" + emoticon.code + "'" +
+                        "alt='" + emoticon.code + "'></img>"
                 } else {
                     return null;
                 }
