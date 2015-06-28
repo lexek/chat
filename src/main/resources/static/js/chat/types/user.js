@@ -33,11 +33,3 @@ var User = function(name, color, role, globalRole, service, serviceRes) {
 User.prototype.rgbColor = function() {
     return hexToRgb(this.color);
 };
-
-/**
- * @param {Level} role
- * @returns {boolean}
- */
-User.prototype.hasGlobalRole = function(role) {
-    return this.globalRole >= role;
-};

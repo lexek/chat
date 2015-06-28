@@ -10,7 +10,6 @@ messagesModule.controller("MessageController", ["$scope", "chatService", "chatSe
         chat.sendMessage({"type":"LIKE", "args":[chat.activeRoom, id_.toString()]});
     };
 
-
     $scope.isSupporter = function() {
         return false;
     };
@@ -54,6 +53,16 @@ messagesModule.controller("MessageController", ["$scope", "chatService", "chatSe
                 return "http://www.twitch.tv/" + $scope.message.user.name + "/profile";
             }
         }
+    };
+
+    $scope.clear = function() {
+        chat.clear($scope.message.user);
+    };
+    $scope.timeout = function() {
+        chat.timeout($scope.message.user);
+    };
+    $scope.ban = function() {
+        chat.ban($scope.message.user);
     };
 }]);
 

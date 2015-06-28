@@ -35,7 +35,7 @@ module.service("messageProcessingService", ["$q", "$translate", "$modal", "$time
 
     var processClearMessage = function (chat, ctx, msg) {
         chat.lastChatter(ctx.room, null);
-        if (chat.self.hasGlobalRole(globalLevels.MOD) || chat.hasLocalRole(levels.MOD, ctx.room)) {
+        if ((chat.self.role >= globalLevels.MOD) || chat.hasLocalRole(levels.MOD, ctx.room)) {
             chat.addMessage(
                 new Message(msg.type, $translate.instant("CHAT_CLEAR_USER", {"mod": msg.mod, "user": msg.name}))
             );
@@ -46,7 +46,7 @@ module.service("messageProcessingService", ["$q", "$translate", "$modal", "$time
 
     var processClearRoomMessage = function(chat, ctx) {
         chat.lastChatter(ctx.room, null);
-        if (!(chat.self.hasGlobalRole(globalLevels.MOD) || chat.hasLocalRole(levels.MOD, ctx.room))) {
+        if (!((chat.self.role >= globalLevels.MOD) || chat.hasLocalRole(levels.MOD, ctx.room))) {
             chat.messages[ctx.room].length = 0;
         }
         chat.messages[ctx.room].push(new Message("INFO", $translate.instant("CHAT_CLEAR")));
