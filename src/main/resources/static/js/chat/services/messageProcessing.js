@@ -67,7 +67,8 @@ module.service("messageProcessingService", ["$q", "$translate", "$modal", "$time
             (
                 chat.self &&
                 (chat.self.name !== user.name) &&
-                (msg.type != "ME")
+                (msg.type !== "ME") &&
+                (msg.type !== "MSG_EXT")
             ) && (
                 (
                     (chat.localRole[ctx.room] >= levels.MOD) &&
