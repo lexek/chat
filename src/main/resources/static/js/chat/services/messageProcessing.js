@@ -63,11 +63,21 @@ module.service("messageProcessingService", ["$q", "$translate", "$modal", "$time
         var user = new User(msg.name, msg.color, levels[msg.role], globalLevels[msg.globalRole], service, serviceRes);
         ctx.proc.user = user;
 
-        //TODO: improve
-        var showModButtons = (user.role !== levels.ADMIN)
-            && (chat.self && (chat.self.name !== user.name) && (msg.type != "ME")) &&
-            (((chat.localRole[ctx.room] >= levels.MOD) && (chat.localRole[ctx.room] > user.role) && (chat.self.role >= user.globalRole))
-            || ((chat.self.role >= globalLevels.MOD) && (chat.self.role > user.globalRole)));
+        var showModButtons = (user.role !== levels.ADMIN) &&
+            (
+                chat.self &&
+                (chat.self.name !== user.name) &&
+                (msg.type != "ME")
+            ) && (
+                (
+                    (chat.localRole[ctx.room] >= levels.MOD) &&
+                    (chat.localRole[ctx.room] > user.role) &&
+                    (chat.self.role >= user.globalRole)
+                ) || (
+                    (chat.self.role >= globalLevels.MOD) &&
+                    (chat.self.role > user.globalRole)
+                )
+            );
         var ignored = settings.getIgnored().indexOf(user.name.toLowerCase()) != -1;
         var showIgnored = settings.getS("showIgnored");
         var hideExt = settings.getS("hideExt");
