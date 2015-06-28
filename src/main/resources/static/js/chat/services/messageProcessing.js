@@ -1,6 +1,6 @@
 var module = angular.module("chat.messageProcessing", ["chat.services.settings", "chat.services.notifications", "chat.services.linkResolver"]);
 
-module.service("messageProcessingService", ["$translate", "$modal", "$timeout", "chatSettings", "notificationService", "linkResolver", function($translate, $modal, $timeout, settings, notificationService, linkResolver) {
+module.service("messageProcessingService", ["$q", "$translate", "$modal", "$timeout", "chatSettings", "notificationService", "linkResolver", function($q, $translate, $modal, $timeout, settings, notificationService, linkResolver) {
     var Message = function (type, body, user, showModButtons, id_, time, showTS, hidden) {
         this.type = type;
         this.body = body;
@@ -84,32 +84,31 @@ module.service("messageProcessingService", ["$translate", "$modal", "$timeout", 
             ) &&
             (previousMessage.messages.length < 5);
 
-        //BODY
-        processMessageText(chat, ctx, msg);
-
         if (!omit) {
-            chat.lastChatter(ctx.room, user);
-            var elem = null;
-            if (stackWithPrevious) {
-                previousMessage.messages.push(new GroupedMessage(ctx.proc.text, msg.id, msg.time, hidden));
-                chat.messageUpdated(previousMessage);
-            } else {
-                if (msg.type === "MSG" || msg.type === "MSG_EXT") {
-                    elem = new MessageGroup(user, showModButtons, ctx.history);
-                    elem.messages.push(new GroupedMessage(ctx.proc.text, msg.id, msg.time, hidden));
+            processMessageText(chat, ctx, msg).then(function() {
+                chat.lastChatter(ctx.room, user);
+                var elem = null;
+                if (stackWithPrevious) {
+                    previousMessage.messages.push(new GroupedMessage(ctx.proc.text, msg.id, msg.time, hidden));
+                    chat.messageUpdated(previousMessage);
                 } else {
-                    elem = new Message(msg.type, ctx.proc.text, user, showModButtons, msg.id, msg.time, ctx.history, hidden)
+                    if (msg.type === "MSG" || msg.type === "MSG_EXT") {
+                        elem = new MessageGroup(user, showModButtons, ctx.history);
+                        elem.messages.push(new GroupedMessage(ctx.proc.text, msg.id, msg.time, hidden));
+                    } else {
+                        elem = new Message(msg.type, ctx.proc.text, user, showModButtons, msg.id, msg.time, ctx.history, hidden)
+                    }
                 }
-            }
-            if (elem != null) {
-                chat.addMessage(elem, ctx.room, ctx.history, ctx.proc.mention);
-                if (!ctx.history) {
-                    chat.messagesUpdated();
+                if (elem != null) {
+                    chat.addMessage(elem, ctx.room, ctx.history, ctx.proc.mention);
+                    if (!ctx.history) {
+                        chat.messagesUpdated();
+                    }
                 }
-            }
-            if (ctx.proc.mention && !ctx.history) {
-                notificationService.notify(user.name, ctx.proc.unprocessedText);
-            }
+                if (ctx.proc.mention && !ctx.history) {
+                    notificationService.notify(user.name, ctx.proc.unprocessedText);
+                }
+            });
         }
     };
 
@@ -419,7 +418,12 @@ module.service("messageProcessingService", ["$translate", "$modal", "$timeout", 
         return text;
     };
 
+    var isPromise = function(o) {
+        return o && angular.isFunction(o.then);
+    };
+
     var processMessageText = function(chat, ctx, msg) {
+        var deferred = $q.defer();
         ctx.proc.text = ctx.proc.unprocessedText;
         if ((msg.type === "MSG_EXT") && (ctx.proc.user.service === "sc2tv.ru")) {
             ctx.proc.text = ctx.proc.text.replace(/\[\/?url]/g, "");
@@ -435,13 +439,31 @@ module.service("messageProcessingService", ["$translate", "$modal", "$timeout", 
             raw = raw.substring(i + match[0].length);
         }
         html.push(processTextPart(chat, ctx, msg, raw));
-        var text = html.join('');
-        if (text.startsWith("&gt;")) {
-            text = "<span class=\"greenText\">" + text + "</span>";
-        } else if (text.indexOf("!!!") === 0 && text.length > 3) {
-            text = "<span class=\"nsfwLabel\">NSFW</span> <span class=\"spoiler\">" + text.substr(3) + "</span>";
-        }
-        ctx.proc.text = text;
+        var promises = [];
+        angular.forEach(html, function(e) {
+            if (isPromise(e)) {
+                promises.push(e);
+            }
+        });
+        $q.all(promises).then(function(result) {
+            var i = 0;
+            html = $.map(html, function(e) {
+                if (isPromise(e)) {
+                    return result[i++];
+                } else {
+                    return e;
+                }
+            });
+            var text = html.join('');
+            if (text.startsWith("&gt;")) {
+                text = "<span class=\"greenText\">" + text + "</span>";
+            } else if (text.indexOf("!!!") === 0 && text.length > 3) {
+                text = "<span class=\"nsfwLabel\">NSFW</span> <span class=\"spoiler\">" + text.substr(3) + "</span>";
+            }
+            ctx.proc.text = text;
+            deferred.resolve();
+        });
+        return deferred.promise;
     };
 
     return new MessageProcessingService();
