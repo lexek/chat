@@ -426,13 +426,13 @@ controlsModule.controller("SettingsController", ["$scope", "chatService", "$moda
     };
 }]);
 
-var AnonCaptchaController = function($scope, $modalInstance, _id, isUser) {
+var AnonCaptchaController = function($scope, $modalInstance, id, isUser) {
     document.lastModal = $modalInstance;
 
     $scope.isUser = isUser;
 
     $scope.ok = function () {
-        $.post("recaptcha/" + _id, $("#anonCaptchaForm").serialize(), function(data) {
+        $.post("recaptcha/" + id, $("#anonCaptchaForm").serialize(), function(data) {
             if (data == "OK") {
                 $modalInstance.close();
             } else {

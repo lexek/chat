@@ -280,7 +280,7 @@ module.service("messageProcessingService", ["$translate", "$modal", "$timeout", 
                     templateUrl: 'anonCaptcha.html',
                     controller: AnonCaptchaController,
                     resolve: {
-                        _id: function () {
+                        id: function () {
                             return message.text;
                         },
                         isUser: chat.self.role === levels.USER
@@ -373,7 +373,7 @@ module.service("messageProcessingService", ["$translate", "$modal", "$timeout", 
             base: "/img/",
             folder: "twemoji",
             ext: ".png",
-            callback: function(icon, options, variant) {
+            callback: function(icon, options) {
                 switch ( icon ) {
                     case 'a9':      // � copyright
                     case 'ae':      // � registered trademark
@@ -384,7 +384,7 @@ module.service("messageProcessingService", ["$translate", "$modal", "$timeout", 
             }
         });
         if ((msg.type === "MSG_EXT") && (ctx.proc.user.service === "sc2tv.ru")) {
-            text = text.replace(/\[\/?b\]/g, "**");
+            text = text.replace(/\[\/?b]/g, "**");
             text = text.replace(SC2TV_REGEX, function (match) {
                 var emoticon = SC2TV_EMOTE_MAP[match];
                 if (emoticon) {
@@ -422,7 +422,7 @@ module.service("messageProcessingService", ["$translate", "$modal", "$timeout", 
     var processMessageText = function(chat, ctx, msg) {
         ctx.proc.text = ctx.proc.unprocessedText;
         if ((msg.type === "MSG_EXT") && (ctx.proc.user.service === "sc2tv.ru")) {
-            ctx.proc.text = ctx.proc.text.replace(/\[\/?url\]/g, "");
+            ctx.proc.text = ctx.proc.text.replace(/\[\/?url]/g, "");
         }
         var match;
         var raw = ctx.proc.text;
