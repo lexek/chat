@@ -336,6 +336,7 @@ services.service("chatService", ["$modal", "chatSettings", "$translate", "$http"
             var notProcessed = true;
             var parsedUrl = new Uri(link);
             var host = parsedUrl.host();
+            //TODO: async
             if (host === "youtube.com" || host === "www.youtube.com") {
                 var videoId = null;
                 if (parsedUrl.getQueryParamValue("v")) {
@@ -352,6 +353,7 @@ services.service("chatService", ["$modal", "chatSettings", "$translate", "$http"
                     }
                 }
             }
+            //TODO: async
             if (host === "youtu.be") {
                 var videoId = parsedUrl.uriParts.path;
                 if (videoId[0] === "/") {
@@ -365,6 +367,7 @@ services.service("chatService", ["$modal", "chatSettings", "$translate", "$http"
                     }
                 }
             }
+            //TODO: async
             if (notProcessed) {
                 var r = /http:\/\/store\.steampowered\.com\/app\/([0-9]+)\/.*/.exec(completeLink);
                 if (r && r[1]) {
@@ -384,7 +387,7 @@ services.service("chatService", ["$modal", "chatSettings", "$translate", "$http"
                 }
             }
             return "<a href=\"" + prefix + htmlEscape(link) + "\" target=\"_blank\" title=\"" + htmlEscape(link) + "\">" + linkText + "</a>";
-        }
+        };
 
         var processTextPart = function(text, type, service) {
             text = htmlEscape(text);
@@ -431,11 +434,12 @@ services.service("chatService", ["$modal", "chatSettings", "$translate", "$http"
             text = text.replace(/\*([^*]+)\*/g, '<em>$1</em>');
             text = text.replace(/%%(.+?)%%/g, '<span class="spoiler">$1</span>');
             text = text.replace("@" + chat.self.name, function () {
+                //TODO: fix this
                 mention = true;
                 return "<span class='mentionLabel'>@" + chat.self.name + "</span>"
             });
             return text;
-        }
+        };
 
         var processMessageText = function(chat, text, type, service) {
             if ((type === "MSG_EXT") && (service === "sc2tv.ru")) {
@@ -459,7 +463,7 @@ services.service("chatService", ["$modal", "chatSettings", "$translate", "$http"
                 text = "<span class=\"nsfwLabel\">NSFW</span> <span class=\"spoiler\">" + text.substr(3) + "</span>";
             }
             return text;
-        }
+        };
 
         var processMsg = function(chat, message, hist) {
             var room = message["room"] || chat.activeRoom;
