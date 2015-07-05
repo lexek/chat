@@ -353,21 +353,21 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
                 chat.pollsUpdatedCallback();
                 break;
             case "POLL_UPDATE":
-                if (currentPoll.poll.id === message.pollData.poll.id) {
-                    currentPoll.votes = message.pollData.votes;
-                    currentPoll.maxPollVotes = Math.max.apply(null, message.pollData.votes);
+                if (ctx.currentPoll.poll.id === message.pollData.poll.id) {
+                    ctx.currentPoll.votes = message.pollData.votes;
+                    ctx.currentPoll.maxPollVotes = Math.max.apply(null, message.pollData.votes);
                     chat.pollsUpdatedCallback();
                 }
                 break;
             case "POLL_VOTED":
-                currentPoll.voted = true;
+                ctx.currentPoll.voted = true;
                 chat.pollsUpdatedCallback();
                 break;
             case "POLL_END":
-                if (currentPoll.poll.id === message.pollData.poll.id) {
-                    currentPoll.votes = message.pollData.votes;
-                    currentPoll.maxPollVotes = Math.max.apply(null, message.pollData.votes);
-                    currentPoll.open = false;
+                if (ctx.currentPoll.poll.id === message.pollData.poll.id) {
+                    ctx.currentPoll.votes = message.pollData.votes;
+                    ctx.currentPoll.maxPollVotes = Math.max.apply(null, message.pollData.votes);
+                    ctx.currentPoll.open = false;
                     chat.pollsUpdatedCallback();
                     $timeout(function() {
                         var poll = chat.polls[ctx.room];
