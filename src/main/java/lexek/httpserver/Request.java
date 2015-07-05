@@ -3,6 +3,7 @@ package lexek.httpserver;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.primitives.Ints;
 import com.google.common.primitives.Longs;
+import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpMethod;
@@ -31,6 +32,12 @@ public class Request {
     public Request(String ip, FullHttpRequest nettyRequest) {
         this.ip = ip;
         this.nettyRequest = nettyRequest;
+    }
+
+    ByteBuf content() {return nettyRequest.content();}
+
+    public HttpHeaders headers() {
+        return nettyRequest.headers();
     }
 
     public String header(String key) {

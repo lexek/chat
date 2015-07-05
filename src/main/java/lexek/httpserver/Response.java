@@ -2,6 +2,7 @@ package lexek.httpserver;
 
 import com.google.gson.JsonObject;
 import freemarker.template.TemplateException;
+import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -22,6 +23,10 @@ public class Response {
     public Response(FullHttpResponse wrappedResponse, ViewResolvers viewResolvers) {
         this.wrappedResponse = wrappedResponse;
         this.viewResolvers = viewResolvers;
+    }
+
+    ByteBuf getBuffer() {
+        return wrappedResponse.content();
     }
 
     public void renderTemplate(String template, Object data) throws IOException, TemplateException {
@@ -54,6 +59,10 @@ public class Response {
 
     public void cookie(Cookie cookie) {
         header(HttpHeaders.Names.SET_COOKIE, ServerCookieEncoder.STRICT.encode(cookie));
+    }
+
+    public void status(int status) {
+        wrappedResponse.setStatus(HttpResponseStatus.valueOf(status));
     }
 
     public void notFound() {

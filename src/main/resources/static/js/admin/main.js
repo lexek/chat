@@ -61,7 +61,7 @@ var TicketCountServiceFactory = function($http) {
 var MessageFilter = function($http, $sce) {
     var emoticons = {};
     var emoticonRegExp = null;
-    $http({method: 'GET', url: '/admin/api/emoticons'})
+    $http({method: 'GET', url: '/rest/emoticons/all'})
         .success(function(d, status, headers, config) {
             var data = d["records"];
             var emoticonCodeList = [];
@@ -196,7 +196,7 @@ AdminApplication.controller("AnnouncementsWidgetController", AnnouncementsWidget
 
 var DashboardController = function($scope, $http, alert) {
     var loadMetrics = function () {
-        $http({method: "GET", url: "/admin/api/metrics"})
+        $http({method: "GET", url: "/rest/stats/global/metrics"})
             .success(function (d, status, headers, config) {
                 var data = d["metrics"];
                 var streams = d["streams"];
@@ -391,7 +391,7 @@ var EmoticonsController = function($scope, $http, alert) {
 
     var loadEmoticons = function() {
         $scope.emoticons.length = 0;
-        $http({method: "GET", url: "/admin/api/emoticons"})
+        $http({method: "GET", url: "/rest/emoticons/all"})
             .success(function (d, status, headers, config) {
                 var data = d["records"];
                 angular.forEach(data, function (e) {
@@ -410,7 +410,7 @@ var EmoticonsController = function($scope, $http, alert) {
     };
 
     $scope.requestDelete = function(id) {
-        $http({method: "POST", url: "/admin/api/emoticons?delete="+id})
+        $http({method: "DELETE", url: "/rest/emoticons/"+id})
             .success(function(data, status, headers, config) {
                 loadEmoticons();
             })
@@ -422,7 +422,7 @@ var EmoticonsController = function($scope, $http, alert) {
     $scope.submitForm = function() {
         $http({
             method  : "POST",
-            url     : "/admin/api/emoticons",
+            url     : "/rest/emoticons/add",
             data    : $scope.formData,
             headers : { "Content-Type": "multipart/form-data" }
         })
@@ -585,7 +585,7 @@ var OnlineController = function($scope, $http, $modal, alert, title) {
 
     var loadOnline = function() {
         $scope.connections.length = 0;
-        $http({method: "GET", url: "/admin/api/online"})
+        $http({method: "GET", url: "/rest/users/online"})
             .success(function (data, status, headers, config) {
                 $scope.connections = data;
                 title.secondary = $scope.connections.length;
@@ -597,7 +597,7 @@ var OnlineController = function($scope, $http, $modal, alert, title) {
 
     var loadBlockedIps = function() {
         $scope.connections.length = 0;
-        $http({method: "GET", url: "/admin/api/blockedip"})
+        $http({method: "GET", url: "/rest/security/ip-block"})
             .success(function (data, status, headers, config) {
                 $scope.blockedIps = data;
             })
@@ -628,7 +628,7 @@ var OnlineController = function($scope, $http, $modal, alert, title) {
     };
 
     $scope.blockIp = function(ip) {
-        $http({method: "POST", url: "/admin/api/blockedip?add="+ip})
+        $http({method: "PUT", url: "/rest/security/ip-block", params: {ip: ip}})
             .success(function (data, status, headers, config) {
                 $scope.blockedIps = data;
             })
@@ -637,7 +637,7 @@ var OnlineController = function($scope, $http, $modal, alert, title) {
     };
 
     $scope.unblockIp = function(ip) {
-        $http({method: "POST", url: "/admin/api/blockedip?remove="+ip})
+        $http({method: "DELETE", url: "/rest/security/ip-block", params: {ip: ip}})
             .success(function (data, status, headers, config) {
                 $scope.blockedIps = data;
             })
@@ -675,7 +675,7 @@ var OnlineController = function($scope, $http, $modal, alert, title) {
 
 var UserActivityController = function($scope, $http, $modal, user) {
     $scope.user = user;
-    $http({method: "GET", params: {"userId": user.id},  url: "/admin/api/activity"})
+    $http({method: "GET", url: "/rest/stats/user/" + user.id + "/activity"})
         .success(function(data, status, headers, config) {
             var activity = {};
             angular.forEach(data, function(v, k) {
@@ -1040,8 +1040,7 @@ var JournalController = function($scope, $location, $http, $modal, alert, title)
     $scope.secondaryTitle = $scope.page;
 
     var loadPage = function() {
-        var url = "/admin/api/journal?page=" + $scope.page;
-        $http({method: "GET", url: url})
+        $http({method: "GET", url: "/rest/journal/global", params: {page: $scope.page}})
             .success(function (d, status, headers, config) {
                 $scope.entries = d["data"];
                 $scope.totalPages = d["pageCount"];
@@ -1123,7 +1122,7 @@ var RoomJournalModalController = function($scope, $http, $modal, room) {
     $scope.page = 0;
 
     var loadPage = function() {
-        $http({method: "GET", url: "/admin/api/journal", params: {page: $scope.page, room: room.id}})
+        $http({method: "GET", url: "/rest/journal/room/" + room.id, params: {page: $scope.page}})
             .success(function (d, status, headers, config) {
                 $scope.journal = d["data"];
                 $scope.totalPages = d["pageCount"];
@@ -1320,8 +1319,7 @@ var HistoryController = function($scope, $http, title, options) {
 
     var loadPage = function() {
         var params = {
-            "page": $scope.page,
-            "room": $scope.room.id
+            "page": $scope.page
         };
         if ($scope.users) {
             params["user"] = $scope.users;
@@ -1332,7 +1330,7 @@ var HistoryController = function($scope, $http, title, options) {
         if ($scope.until) {
             params["until"] = $scope.until;
         }
-        $http({method: "GET", url: "/admin/api/history", params: params})
+        $http({method: "GET", url: "/rest/history/room/"+$scope.room.id, params: params})
             .success(function (d, status, headers, config) {
                 $scope.entries = d["data"];
                 $scope.totalPages = d["pageCount"];
@@ -1382,7 +1380,7 @@ var PollsController = function($scope, $http, room) {
 
     var loadPage = function() {
         $scope.polls.length = 0;
-        var url = "/admin/api/polls?room=" + room.id;
+        var url = "/rest/poll/room/" + room.id + "/all";
         $http({method: "GET", url: url})
             .success(function (d, status, headers, config) {
                 $scope.polls = d;
@@ -1411,17 +1409,15 @@ var ComposePollController = function($scope, $modalInstance, $http, roomId) {
     $scope.submit = function() {
         $scope.busy = true;
         var data = {
-            "action": "CREATE",
-            "room": roomId,
             "question": $scope.input.question,
-            "option": $.map($scope.input.option, function(e) {return e.value})
+            "options": $.map($scope.input.option, function(e) {return e.value})
         };
-        $http({method: "POST", url: "/admin/api/poll", data: $.param(data, true), headers: {"Content-Type": "application/x-www-form-urlencoded"}})
-            .success(function(data, status, headers, config) {
-                $modalInstance.close();
+        $http({method: "PUT", url: "/rest/poll/room/" + roomId + "/current", data: data})
+            .success(function(data) {
+                $modalInstance.close(data);
                 $scope.busy = false;
             })
-            .error(function(data, status, headers, config) {
+            .error(function(data) {
                 $scope.error = data;
                 $scope.busy = false;
             });
@@ -1453,13 +1449,11 @@ var ChattersController = function($scope, $location, $http, $modal, room) {
 
     var loadPage = function() {
         $scope.users.length = 0;
-        var order = $scope.order;
-        var orderDesc = $scope.orderDesc;
-        var url = "/admin/api/chatters?page=" + $scope.page + "&room=" + $scope.room.id;
-        if ($scope.search) {
-            url += "&search=" + encodeURI($scope.search);
-        }
-        $http({method: "GET", url: url})
+        var params = {
+            page: $scope.page,
+            search: $scope.search
+        };
+        $http({method: "GET", url: "/rest/chatters/"+room.id, params: params})
             .success(function (d, status, headers, config) {
                 $scope.users = d["data"];
                 $scope.totalPages = d["pageCount"];
@@ -1524,7 +1518,7 @@ var TopChattersController = function($scope, $http, $modal, room) {
     $scope.room = room;
     $scope.entries = [];
 
-    $http({method: "GET", params: {"roomId": room.id},  url: "/admin/api/activity"})
+    $http({method: "GET", url: "/rest/stats/room/" + room.id + "/topChatters"})
         .success(function(data) {
             $scope.entries = data;
         });
@@ -1567,7 +1561,7 @@ var RoomController = function($scope, $location, $http, $sce, $modal, alert, tit
             .error(function (data, status, headers, config) {
                 alert.alert("danger", data);
             });
-        $http({method: "GET", url: "/admin/api/poll", params: {room: $scope.roomId}})
+        $http({method: "GET", url: "/rest/poll/room/" + $scope.roomId + "/current"})
             .success(function (d, status, headers, config) {
                 $scope.poll = d;
                 $scope.maxPollVotes = Math.max.apply(null, $scope.poll.votes);
@@ -1575,7 +1569,7 @@ var RoomController = function($scope, $location, $http, $sce, $modal, alert, tit
             .error(function (data, status, headers, config) {
                 alert.alert("danger", data);
             });
-        $http({method: "GET", url: "/admin/api/journal", params: {room: $scope.roomId, peek: "true"}})
+        $http({method: "GET", url: "/rest/journal/room/" + $scope.roomId + "/peek"})
             .success(function (d, status, headers, config) {
                 $scope.journal = d.data;
             })
@@ -1651,13 +1645,9 @@ var RoomController = function($scope, $location, $http, $sce, $modal, alert, tit
 
     $scope.closePoll = function() {
         if ($scope.poll.poll) {
-            var data = {
-                "action": "CLOSE",
-                "room": $scope.roomData.id
-            };
-            $http({method: "POST", url: "/admin/api/poll", data: $.param(data), headers: {"Content-Type": "application/x-www-form-urlencoded"}})
+            $http({method: "DELETE", url: "/rest/poll/room/" + $scope.roomData.id + "/current"})
                 .success(function(data, status, headers, config) {
-                    loadPage();
+                    $scope.poll = null;
                 })
                 .error(function(data, status, headers, config) {
                     alert.alert("danger", data);
@@ -1676,8 +1666,10 @@ var RoomController = function($scope, $location, $http, $sce, $modal, alert, tit
                 }
             }
         });
-        modalInstance.result.then(function () {
-            loadPage();
+        modalInstance.result.then(function (data) {
+            if (data) {
+                $scope.poll = data;
+            }
         });
     };
 
@@ -1716,12 +1708,7 @@ var RoomController = function($scope, $location, $http, $sce, $modal, alert, tit
     };
 
     $scope.setAnnouncementInactive = function(id) {
-        var data = {
-            "action": "DELETE",
-            "id": id
-        };
-
-        $http({method: "POST", data: $.param(data), url: "/admin/api/announcement"})
+        $http({method: "DELETE", url: "/rest/announcements/"+id})
             .success(function(data, status, headers, config) {
                 loadPage();
             })
@@ -1769,7 +1756,7 @@ var RoomController = function($scope, $location, $http, $sce, $modal, alert, tit
                 }
             }
         });
-    }
+    };
 
     {
         var locationSearch = $location.search();
@@ -1815,17 +1802,16 @@ var ComposeAnnouncementController = function($scope, $http, $modalInstance, room
     $scope.room = room;
 
     $scope.input = {
-        until: $scope.today,
-        text: ""
+        text: "",
+        onlyBroadcast: false
     };
 
     $scope.submitForm = function() {
         var data = {
-            "action": "ADD",
-            "room": room.id,
-            "text": $scope.input.text
+            "text": $scope.input.text,
+            "onlyBroadcast": $scope.input.onlyBroadcast
         };
-        $http({method: "POST", url: "/admin/api/announcement", data: $.param(data), headers: {"Content-Type": "application/x-www-form-urlencoded"}})
+        $http({method: "PUT", url: "/rest/announcements/room/"+room.id, data: data})
             .success(function(data, status, headers, config) {
                 $modalInstance.close();
             })
@@ -1837,7 +1823,7 @@ var ComposeAnnouncementController = function($scope, $http, $modalInstance, room
     $scope.close = function() {
         $modalInstance.dismiss('cancel');
     };
-}
+};
 
 AdminApplication.config(["$routeProvider", "$locationProvider", function($routeProvider, $locationProvider) {
     $locationProvider.html5Mode(true);

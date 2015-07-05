@@ -20,6 +20,7 @@ import lexek.wschat.chat.handlers.*;
 import lexek.wschat.db.dao.*;
 import lexek.wschat.frontend.http.*;
 import lexek.wschat.frontend.http.admin.*;
+import lexek.wschat.frontend.http.rest.admin.*;
 import lexek.wschat.frontend.irc.*;
 import lexek.wschat.frontend.ws.WebSocketChatHandler;
 import lexek.wschat.frontend.ws.WebSocketChatServer;
@@ -31,10 +32,22 @@ import lexek.wschat.security.AuthenticationManager;
 import lexek.wschat.security.AuthenticationService;
 import lexek.wschat.security.CaptchaService;
 import lexek.wschat.security.ReCaptcha;
+import lexek.wschat.security.jersey.Auth;
+import lexek.wschat.security.jersey.SecurityFeature;
+import lexek.wschat.security.jersey.UserParamValueFactoryProvider;
 import lexek.wschat.security.social.TwitchTvSocialAuthService;
 import lexek.wschat.services.*;
+import org.glassfish.hk2.api.InjectionResolver;
+import org.glassfish.hk2.api.TypeLiteral;
+import org.glassfish.hk2.utilities.binding.AbstractBinder;
+import org.glassfish.jersey.filter.LoggingFilter;
+import org.glassfish.jersey.media.multipart.MultiPartFeature;
+import org.glassfish.jersey.server.ResourceConfig;
+import org.glassfish.jersey.server.ServerProperties;
+import org.glassfish.jersey.server.spi.internal.ValueFactoryProvider;
 import org.slf4j.LoggerFactory;
 
+import javax.inject.Singleton;
 import javax.sql.DataSource;
 import java.io.File;
 import java.nio.file.Files;
@@ -173,7 +186,36 @@ public class Main {
         ViewResolvers viewResolvers = new ViewResolvers(freemarker);
         ServerMessageHandler serverMessageHandler = new ServerMessageHandler();
 
-        final RequestDispatcher httpRequestDispatcher = new RequestDispatcher(serverMessageHandler, viewResolvers);
+        ResourceConfig resourceConfig = new ResourceConfig() {
+            {
+                property(ServerProperties.TRACING, "ALL");
+                register(new LoggingFilter());
+
+                register(MultiPartFeature.class);
+                register(SecurityFeature.class);
+                register(new AbstractBinder() {
+                    @Override
+                    protected void configure() {
+                        bind(UserParamValueFactoryProvider.class).to(ValueFactoryProvider.class).in(Singleton.class);
+                        bind(UserParamValueFactoryProvider.InjectionResolver.class).to(
+                            new TypeLiteral<InjectionResolver<Auth>>() {}).in(Singleton.class);
+                    }
+                });
+                registerInstances(
+                    new StatisticsResource(new StatisticsDao(dataSource)),
+                    new AnnouncementResource(announcementService),
+                    new ChattersResource(chatterDao),
+                    new EmoticonsResource(dataDir, emoticonService),
+                    new HistoryResource(historyService),
+                    new IpBlockResource(bannedIps),
+                    new JournalResource(journalDao),
+                    new UsersResource(connectionManager),
+                    new PollResource(roomManager, pollService)
+                );
+            }
+        };
+
+        final RequestDispatcher httpRequestDispatcher = new RequestDispatcher(serverMessageHandler, viewResolvers, authenticationManager, resourceConfig);
         httpRequestDispatcher.add("/.*", new FileSystemStaticHandler(dataDir));
         httpRequestDispatcher.add("/.*", new ClassPathStaticHandler(ClassPathStaticHandler.class, "/static/"));
         httpRequestDispatcher.add("/chat.html", new ChatHomeHandler(settings.getHttp().isAllowLikes(), settings.getHttp().isSingleRoom()));
@@ -182,23 +224,12 @@ public class Main {
         httpRequestDispatcher.add("/recaptcha/[0-9]+", new RecaptchaHandler(captchaService, reCaptcha));
         httpRequestDispatcher.add("/api/chatters", new ChattersApiHandler(roomManager));
         httpRequestDispatcher.add("/api/tickets", new UserTicketsHandler(authenticationManager, ticketService));
-        httpRequestDispatcher.add("/admin/api/activity", new ActivityHandler(authenticationManager, new StatisticsDao(dataSource)));
-        httpRequestDispatcher.add("/admin/api/metrics", new MetricHandler(dataSource, authenticationManager));
-        httpRequestDispatcher.add("/admin/api/journal", new JournalHandler(authenticationManager, new JournalDao(dataSource)));
         httpRequestDispatcher.add("/admin/api/rooms", new RoomsApiHandler(authenticationManager, roomManager));
         httpRequestDispatcher.add("/admin/api/room", new RoomApiHandler(authenticationManager, roomManager, historyService, announcementService));
-        httpRequestDispatcher.add("/admin/api/poll", new PollApiHandler(authenticationManager, roomManager, pollService));
-        httpRequestDispatcher.add("/admin/api/polls", new PollsApiHandler(authenticationManager, roomManager, pollService));
-        httpRequestDispatcher.add("/admin/api/history", new HistoryApiHandler(authenticationManager, historyService));
         httpRequestDispatcher.add("/admin/api/tickets", new TicketsHandler(authenticationManager, ticketService));
         httpRequestDispatcher.add("/admin/api/ticket_count", new TicketCountHandler(authenticationManager, ticketService));
-        httpRequestDispatcher.add("/admin/api/emoticons", new EmoticonHandler(dataDir, emoticonService, authenticationManager));
         httpRequestDispatcher.add("/admin/api/user", new UserApiHandler(authenticationManager, userService));
         httpRequestDispatcher.add("/admin/api/users", new UsersHandler(authenticationManager, userService));
-        httpRequestDispatcher.add("/admin/api/chatters", new ChattersAdminApiHandler(authenticationManager, chatterDao));
-        httpRequestDispatcher.add("/admin/api/online", new OnlineHandler(authenticationManager, connectionManager));
-        httpRequestDispatcher.add("/admin/api/blockedip", new IpBlockHandler(bannedIps, authenticationManager));
-        httpRequestDispatcher.add("/admin/api/announcement", new AnnouncementApiHandler(authenticationManager, announcementService));
         httpRequestDispatcher.add("/admin/api/services", new ServiceApiHandler(authenticationManager, serviceManager));
         httpRequestDispatcher.add("/admin/.*", new AdminPageHandler(authenticationManager));
         httpRequestDispatcher.add("/login", new LoginHandler(authenticationManager, reCaptcha));

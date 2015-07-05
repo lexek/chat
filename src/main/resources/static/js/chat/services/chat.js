@@ -32,7 +32,7 @@ function($modal, settings, $translate, $http, $timeout, notificationService, msg
 
         var c = this;
 
-        $http({method: 'GET', url: '/admin/api/emoticons'})
+        $http({method: 'GET', url: '/rest/emoticons/all'})
             .success(function(d, status, headers, config) {
                 if (status == 200) {
                     var data = d["records"];

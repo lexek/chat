@@ -1,6 +1,8 @@
 package lexek.wschat.db.dao;
 
 import com.google.common.collect.ImmutableList;
+import lexek.wschat.db.jooq.tables.pojos.Metric;
+import lexek.wschat.db.jooq.tables.pojos.Stream;
 import lexek.wschat.db.model.UserMessageCount;
 import org.jooq.Record1;
 import org.jooq.Record3;
@@ -14,6 +16,7 @@ import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -23,6 +26,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static lexek.wschat.db.jooq.tables.History.HISTORY;
+import static lexek.wschat.db.jooq.tables.Metric.METRIC;
+import static lexek.wschat.db.jooq.tables.Stream.STREAM;
 import static lexek.wschat.db.jooq.tables.User.USER;
 
 public class StatisticsDao {
@@ -92,5 +97,38 @@ public class StatisticsDao {
             logger.error("sql exception", e);
         }
         return result;
+    }
+
+    public List<Metric> getMetrics(long since) {
+        List<Metric> metrics = null;
+        try (Connection connection = dataSource.getConnection()) {
+            metrics = DSL.using(connection)
+                .select(METRIC.NAME, METRIC.TIME, METRIC.VALUE)
+                .from(METRIC)
+                .where(METRIC.TIME.greaterOrEqual(since))
+                .orderBy(METRIC.TIME)
+                .fetch()
+                .into(Metric.class);
+        } catch (DataAccessException | SQLException e) {
+            logger.error("sql exception", e);
+        }
+        return metrics;
+
+    }
+
+    public List<Stream> getStreams(long since) {
+        List<Stream> streams = null;
+        try (Connection connection = dataSource.getConnection()) {
+            streams = DSL.using(connection)
+                .select()
+                .from(STREAM)
+                .where(STREAM.ENDED.greaterOrEqual(new Timestamp(since)))
+                .orderBy(STREAM.STARTED)
+                .fetch()
+                .into(Stream.class);
+        } catch (DataAccessException | SQLException e) {
+            logger.error("sql exception", e);
+        }
+        return streams;
     }
 }
