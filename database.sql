@@ -33,7 +33,7 @@ CREATE TABLE `room` (
 	UNIQUE INDEX `NAME_UNIQUE` (`name`)
 );
 
-INSERT INTO `room` values(null, "#main", "main room"); --create main room entry
+INSERT INTO `room` values(null, "#main", "main room");
 
 CREATE TABLE `chatter` (
 	`id` BIGINT(20) NOT NULL AUTO_INCREMENT,
