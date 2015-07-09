@@ -188,6 +188,7 @@ public class Main {
 
         ResourceConfig resourceConfig = new ResourceConfig() {
             {
+                property(ServerProperties.WADL_FEATURE_DISABLE, Boolean.TRUE);
                 property(ServerProperties.TRACING, "ALL");
                 register(new LoggingFilter());
 
