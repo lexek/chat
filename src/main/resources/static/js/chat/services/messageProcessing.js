@@ -414,18 +414,20 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
                 }
             });
         } else {
-            text = text.replace(chat.emoticonRegExp, function (match) {
-                var emoticon = chat.emoticons[match];
-                if (emoticon) {
-                    return "<img class='emoticon' " +
-                        "src='emoticons/" + emoticon.fileName + "' " +
-                        "style='height: " + emoticon.height + "px; width: " + emoticon.width + "px;' " +
-                        "title='" + emoticon.code + "'" +
-                        "alt='" + emoticon.code + "'></img>"
-                } else {
-                    return null;
-                }
-            });
+            if (chat.emoticons.length !== 0) {
+                text = text.replace(chat.emoticonRegExp, function (match) {
+                    var emoticon = chat.emoticons[match];
+                    if (emoticon) {
+                        return "<img class='emoticon' " +
+                            "src='emoticons/" + emoticon.fileName + "' " +
+                            "style='height: " + emoticon.height + "px; width: " + emoticon.width + "px;' " +
+                            "title='" + emoticon.code + "'" +
+                            "alt='" + emoticon.code + "'></img>"
+                    } else {
+                        return null;
+                    }
+                });
+            }
         }
         text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
         text = text.replace(/\*([^*]+)\*/g, '<em>$1</em>');
