@@ -5,7 +5,6 @@ import io.netty.channel.*;
 import io.netty.handler.codec.http.*;
 import lexek.wschat.security.AuthenticationManager;
 import org.glassfish.jersey.server.ApplicationHandler;
-import org.glassfish.jersey.server.ResourceConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

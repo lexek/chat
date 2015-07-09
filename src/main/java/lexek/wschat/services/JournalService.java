@@ -7,15 +7,9 @@ import lexek.wschat.chat.Room;
 import lexek.wschat.db.dao.JournalDao;
 import lexek.wschat.db.jooq.tables.pojos.Announcement;
 import lexek.wschat.db.jooq.tables.pojos.Emoticon;
-import lexek.wschat.db.jooq.tables.records.UserRecord;
 import lexek.wschat.db.model.JournalEntry;
 import lexek.wschat.db.model.UserDto;
 import lexek.wschat.db.model.form.UserChangeSet;
-import org.jooq.TableField;
-import org.jooq.tools.StringUtils;
-
-import java.util.Map;
-import java.util.stream.Collectors;
 
 public class JournalService {
     private final Gson gson = new Gson();

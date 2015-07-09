@@ -2,7 +2,10 @@ package lexek.wschat.frontend.http.rest.admin;
 
 import lexek.wschat.chat.ConnectionManager;
 import lexek.wschat.chat.GlobalRole;
-import lexek.wschat.db.model.*;
+import lexek.wschat.db.model.DataPage;
+import lexek.wschat.db.model.OnlineUser;
+import lexek.wschat.db.model.UserData;
+import lexek.wschat.db.model.UserDto;
 import lexek.wschat.db.model.form.UserChangeSet;
 import lexek.wschat.security.jersey.Auth;
 import lexek.wschat.security.jersey.RequiredRole;

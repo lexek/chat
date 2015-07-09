@@ -7,7 +7,6 @@ import lexek.wschat.security.jersey.RequiredRole;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import java.util.Collection;
 import java.util.Set;
 

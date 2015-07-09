@@ -34,7 +34,9 @@ public class Request {
         this.nettyRequest = nettyRequest;
     }
 
-    ByteBuf content() {return nettyRequest.content();}
+    ByteBuf content() {
+        return nettyRequest.content();
+    }
 
     public HttpHeaders headers() {
         return nettyRequest.headers();

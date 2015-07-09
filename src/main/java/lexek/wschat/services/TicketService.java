@@ -4,8 +4,8 @@ import lexek.wschat.chat.*;
 import lexek.wschat.db.dao.TicketDao;
 import lexek.wschat.db.jooq.tables.pojos.Ticket;
 import lexek.wschat.db.model.DataPage;
-import lexek.wschat.db.model.rest.TicketRestModel;
 import lexek.wschat.db.model.UserDto;
+import lexek.wschat.db.model.rest.TicketRestModel;
 
 public class TicketService {
     private final TicketDao dao;

@@ -2,7 +2,6 @@ package lexek.wschat.frontend.http.rest.admin;
 
 import com.google.common.hash.Hashing;
 import lexek.wschat.chat.GlobalRole;
-import lexek.wschat.db.DataException;
 import lexek.wschat.db.jooq.tables.pojos.Emoticon;
 import lexek.wschat.db.model.UserDto;
 import lexek.wschat.security.jersey.Auth;
@@ -15,7 +14,6 @@ import javax.imageio.ImageIO;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import javax.ws.rs.*;
-import javax.ws.rs.Path;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.awt.image.BufferedImage;
@@ -23,7 +21,8 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.file.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 @Path("/emoticons")
 @RequiredRole(GlobalRole.ADMIN)

@@ -5,7 +5,8 @@ import lexek.wschat.db.model.UserDto;
 
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
-import javax.ws.rs.core.*;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
 import java.io.IOException;
 import java.security.Principal;
 
@@ -29,5 +30,5 @@ public class SecurityFilter implements ContainerRequestFilter {
             Response.status(Response.Status.BAD_REQUEST)
                 .entity("Access denied.")
                 .build());
-        }
+    }
 }

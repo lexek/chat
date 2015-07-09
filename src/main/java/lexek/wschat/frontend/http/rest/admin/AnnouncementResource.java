@@ -13,12 +13,9 @@ import lexek.wschat.services.AnnouncementService;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
-import javax.ws.rs.core.*;
-import java.net.URI;
+import javax.ws.rs.core.MediaType;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 
 @Path("/rooms/{roomId}/announcements")
@@ -50,8 +47,8 @@ public class AnnouncementResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Announcement add(@PathParam("roomId") @Min(0) long roomId,
-                   @Auth UserDto user,
-                   @Valid AnnouncementForm formData
+                            @Auth UserDto user,
+                            @Valid AnnouncementForm formData
     ) {
         String text = formData.getText();
         Announcement announcement = new Announcement(null, roomId, true, text);

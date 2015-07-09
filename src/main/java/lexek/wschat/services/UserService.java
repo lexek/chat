@@ -7,14 +7,10 @@ import lexek.wschat.chat.ConnectionManager;
 import lexek.wschat.chat.GlobalRole;
 import lexek.wschat.chat.User;
 import lexek.wschat.db.dao.UserDao;
-import lexek.wschat.db.jooq.tables.records.UserRecord;
 import lexek.wschat.db.model.DataPage;
 import lexek.wschat.db.model.UserData;
 import lexek.wschat.db.model.UserDto;
 import lexek.wschat.db.model.form.UserChangeSet;
-import org.jooq.TableField;
-
-import java.util.Map;
 
 public class UserService {
     private final Cache<String, User> userCache = CacheBuilder.newBuilder().weakValues().build();
