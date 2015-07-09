@@ -1,1 +1,6 @@
 language: java
+services:
+  -mysql
+before_script:
+  - mysql -e "create database chat;"
+  - mysql chat < database.sql
