@@ -54,7 +54,7 @@ public class RoomResource {
 
     @Path("/new")
     @RequiredRole(GlobalRole.SUPERADMIN)
-    @PUT
+    @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public void createRoom(

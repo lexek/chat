@@ -26,7 +26,7 @@ public class IpBlockResource {
         return blockedIps;
     }
 
-    @PUT
+    @POST
     @Produces(MediaType.APPLICATION_JSON)
     public Collection<String> blockIp(@QueryParam("ip") @NotNull String ip) {
         if (!NetUtil.isValidIpV4Address(ip)) {

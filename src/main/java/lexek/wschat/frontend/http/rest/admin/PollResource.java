@@ -50,7 +50,7 @@ public class PollResource {
     }
 
     @Path("/current")
-    @PUT
+    @POST
     @Produces(MediaType.APPLICATION_JSON)
     public PollState createPoll(
         @PathParam("roomId") @Min(0) long roomId,

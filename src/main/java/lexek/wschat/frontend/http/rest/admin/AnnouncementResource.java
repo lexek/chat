@@ -1,7 +1,6 @@
 package lexek.wschat.frontend.http.rest.admin;
 
 import com.google.common.collect.ImmutableMap;
-import lexek.httpserver.*;
 import lexek.wschat.chat.GlobalRole;
 import lexek.wschat.chat.Room;
 import lexek.wschat.chat.RoomManager;
@@ -16,7 +15,8 @@ import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.*;
+import java.net.URI;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -45,7 +45,8 @@ public class AnnouncementResource {
         return announcementService.getAnnouncements(room);
     }
 
-    @PUT
+    @Path("/new")
+    @POST
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Announcement add(@PathParam("roomId") @Min(0) long roomId,

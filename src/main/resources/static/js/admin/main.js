@@ -355,7 +355,7 @@ var DashboardController = function($scope, $http, alert) {
         data["topic"] = "";
         $scope.input = {};
         $http({
-            method: "PUT",
+            method: "POST",
             data: data,
             url: "/rest/rooms/new"
         }).success(function () {
@@ -622,7 +622,7 @@ var OnlineController = function($scope, $http, $modal, alert, title) {
     };
 
     $scope.blockIp = function(ip) {
-        $http({method: "PUT", url: "/rest/security/ip-block", params: {ip: ip}})
+        $http({method: "POST", url: "/rest/security/ip-block", params: {ip: ip}})
             .success(function (data, status, headers, config) {
                 $scope.blockedIps = data;
             })
@@ -1401,7 +1401,7 @@ var ComposePollController = function($scope, $modalInstance, $http, roomId) {
             "options": $.map($scope.input.option, function(e) {return e.value})
         };
         $http({
-            method: "PUT",
+            method: "POST",
             url: StringFormatter.format("/rest/rooms/{number}/polls/current", roomId),
             data: data
         }).success(function(data) {
@@ -1799,7 +1799,7 @@ var ComposeAnnouncementController = function($scope, $http, $modalInstance, room
             "text": $scope.input.text,
             "onlyBroadcast": $scope.input.onlyBroadcast
         };
-        $http({method: "PUT", url: StringFormatter.format("/rest/rooms/{number}/announcements", room.id), data: data})
+        $http({method: "POST", url: StringFormatter.format("/rest/rooms/{number}/announcements", room.id), data: data})
             .success(function(data) {
                 $modalInstance.close(data);
             });
