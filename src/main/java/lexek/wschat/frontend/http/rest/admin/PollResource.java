@@ -16,7 +16,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
 
-@Path("/poll")
+@Path("/room/{roomId}/poll")
 @RequiredRole(GlobalRole.ADMIN)
 public class PollResource {
     private final RoomManager roomManager;
@@ -27,7 +27,7 @@ public class PollResource {
         this.pollService = pollService;
     }
 
-    @Path("/room/{roomId}/current")
+    @Path("/current")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public PollState getCurrentPollForRoom(@PathParam("roomId") @Min(0) long roomId) {
@@ -38,7 +38,7 @@ public class PollResource {
         return pollService.getActivePoll(room);
     }
 
-    @Path("/room/{roomId}/all")
+    @Path("/all")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public List<PollState> getOldPolls(@PathParam("roomId") @Min(0) long roomId) {
@@ -49,7 +49,7 @@ public class PollResource {
         return pollService.getOldPolls(room);
     }
 
-    @Path("/room/{roomId}/current")
+    @Path("/current")
     @PUT
     @Produces(MediaType.APPLICATION_JSON)
     public PollState createPoll(
@@ -64,7 +64,7 @@ public class PollResource {
         return pollService.createPoll(room, admin, form.getQuestion(), form.getOptions());
     }
 
-    @Path("/room/{roomId}/current")
+    @Path("/current")
     @DELETE
     @Produces(MediaType.APPLICATION_JSON)
     public PollState closeCurrentPoll(

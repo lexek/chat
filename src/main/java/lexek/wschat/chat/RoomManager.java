@@ -53,6 +53,25 @@ public class RoomManager {
                 Message.partMessage(room.getName(), connection.getUser().getName()), connection, room.FILTER));
     }
 
+    public void createRoom(String name, String topic, UserDto admin) {
+        if (!rooms.containsKey(name)) {
+            lexek.wschat.db.jooq.tables.pojos.Room pojo = new lexek.wschat.db.jooq.tables.pojos.Room(null, name, topic);
+            roomDao.add(pojo);
+            Room room = new Room(userService, journalService, chatterDao, pojo.getId(), pojo.getName(), pojo.getTopic());
+            rooms.put(pojo.getName(), room);
+            journalService.newRoom(admin, room);
+        }
+    }
+
+    public void deleteRoom(Room room, UserDto admin) {
+        if (!room.getName().equals("#main")) {
+            roomDao.delete(room.getId());
+            roomIds.remove(room.getId());
+            journalService.deletedRoom(admin, room);
+        }
+    }
+
+    @Deprecated
     public void createRoom(lexek.wschat.db.jooq.tables.pojos.Room roomPojo, UserDto admin) {
         if (!rooms.containsKey(roomPojo.getName())) {
             roomDao.add(roomPojo);
@@ -62,6 +81,7 @@ public class RoomManager {
         }
     }
 
+    @Deprecated
     public void deleteRoom(String name, UserDto admin) {
         if (!name.equals("#main")) {
             roomDao.delete(name);

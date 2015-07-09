@@ -13,7 +13,7 @@ import javax.ws.rs.core.MediaType;
 import java.util.List;
 import java.util.Optional;
 
-@Path("/history")
+@Path("/room/{roomId}/history")
 @RequiredRole(GlobalRole.ADMIN)
 public class HistoryResource {
     private static final int PAGE_LENGTH = 15;
@@ -24,11 +24,11 @@ public class HistoryResource {
         this.historyService = historyService;
     }
 
-    @Path("/room/{roomId}")
+    @Path("/all")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public DataPage<HistoryData> getRoomHistory(
-        @PathParam("roomId") long roomId,
+        @PathParam("roomId") @Min(0) long roomId,
         @QueryParam("page") @Min(0) int page,
         @QueryParam("user") @Size(max = 20) List<String> users,
         @QueryParam("since") @Min(0) Long since,
@@ -39,5 +39,12 @@ public class HistoryResource {
             users != null && users.isEmpty() ? Optional.empty() : Optional.ofNullable(users),
             Optional.ofNullable(since),
             Optional.ofNullable(until));
+    }
+
+    @Path("/peek")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<HistoryData> peekRoomHistory(@PathParam("roomId") @Min(0) long roomId) {
+        return historyService.getLast20(roomId);
     }
 }

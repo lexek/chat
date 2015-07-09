@@ -203,14 +203,17 @@ public class Main {
                 });
                 registerInstances(
                     new StatisticsResource(new StatisticsDao(dataSource)),
-                    new AnnouncementResource(announcementService),
-                    new ChattersResource(chatterDao),
+                    new AnnouncementResource(announcementService, roomManager),
+                    new ChattersResource(chatterDao, roomManager),
                     new EmoticonsResource(dataDir, emoticonService),
                     new HistoryResource(historyService),
                     new IpBlockResource(bannedIps),
                     new JournalResource(journalDao),
                     new UsersResource(connectionManager),
-                    new PollResource(roomManager, pollService)
+                    new PollResource(roomManager, pollService),
+                    new RoomResource(roomManager),
+                    new ServicesResource(serviceManager),
+                    new TicketResource(ticketService)
                 );
             }
         };
@@ -224,13 +227,8 @@ public class Main {
         httpRequestDispatcher.add("/recaptcha/[0-9]+", new RecaptchaHandler(captchaService, reCaptcha));
         httpRequestDispatcher.add("/api/chatters", new ChattersApiHandler(roomManager));
         httpRequestDispatcher.add("/api/tickets", new UserTicketsHandler(authenticationManager, ticketService));
-        httpRequestDispatcher.add("/admin/api/rooms", new RoomsApiHandler(authenticationManager, roomManager));
-        httpRequestDispatcher.add("/admin/api/room", new RoomApiHandler(authenticationManager, roomManager, historyService, announcementService));
-        httpRequestDispatcher.add("/admin/api/tickets", new TicketsHandler(authenticationManager, ticketService));
-        httpRequestDispatcher.add("/admin/api/ticket_count", new TicketCountHandler(authenticationManager, ticketService));
         httpRequestDispatcher.add("/admin/api/user", new UserApiHandler(authenticationManager, userService));
         httpRequestDispatcher.add("/admin/api/users", new UsersHandler(authenticationManager, userService));
-        httpRequestDispatcher.add("/admin/api/services", new ServiceApiHandler(authenticationManager, serviceManager));
         httpRequestDispatcher.add("/admin/.*", new AdminPageHandler(authenticationManager));
         httpRequestDispatcher.add("/login", new LoginHandler(authenticationManager, reCaptcha));
         httpRequestDispatcher.add("/check_username", new UsernameCheckHandler(userService));
