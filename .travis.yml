@@ -1,0 +1,8 @@
+language: java
+jdk:
+  - oraclejdk8
+before_install:
+  - mysql -e "create database chat;"
+  - mysql -u root -e "CREATE USER chat@localhost IDENTIFIED BY '135792468';"
+  - mysql -u root -e "GRANT ALL ON chat.* TO chat@localhost; FLUSH PRIVILEGES;"
+  - mysql chat < database.sql
