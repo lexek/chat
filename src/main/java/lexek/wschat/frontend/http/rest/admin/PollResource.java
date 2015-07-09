@@ -16,7 +16,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
 
-@Path("/room/{roomId}/poll")
+@Path("/rooms/{roomId}/polls")
 @RequiredRole(GlobalRole.ADMIN)
 public class PollResource {
     private final RoomManager roomManager;

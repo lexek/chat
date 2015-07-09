@@ -13,7 +13,7 @@ import javax.ws.rs.core.MediaType;
 import java.util.List;
 import java.util.Optional;
 
-@Path("/room/{roomId}/history")
+@Path("/rooms/{roomId}/history")
 @RequiredRole(GlobalRole.ADMIN)
 public class HistoryResource {
     private static final int PAGE_LENGTH = 15;

@@ -17,7 +17,7 @@ import javax.ws.rs.core.MediaType;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Path("/room")
+@Path("/rooms")
 @RequiredRole(GlobalRole.ADMIN)
 public class RoomResource {
     private final RoomManager roomManager;

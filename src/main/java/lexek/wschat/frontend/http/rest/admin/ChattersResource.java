@@ -16,7 +16,7 @@ import javax.ws.rs.core.MediaType;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Path("/room/{roomId}/chatters")
+@Path("/rooms/{roomId}/chatters")
 @RequiredRole(GlobalRole.ADMIN)
 public class ChattersResource {
     private static final int PAGE_LENGTH = 10;

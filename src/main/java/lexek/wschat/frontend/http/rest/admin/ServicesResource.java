@@ -13,7 +13,7 @@ import javax.ws.rs.core.MediaType;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Path("/service")
+@Path("/services")
 @RequiredRole(GlobalRole.SUPERADMIN)
 public class ServicesResource {
     private final ServiceManager serviceManager;

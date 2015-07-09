@@ -21,7 +21,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-@Path("/room/{roomId}/announcements")
+@Path("/rooms/{roomId}/announcements")
 @RequiredRole(GlobalRole.ADMIN)
 public class AnnouncementResource {
     private final AnnouncementService announcementService;

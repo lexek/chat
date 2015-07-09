@@ -344,7 +344,7 @@ var DashboardController = function($scope, $http, alert) {
     var loadRooms = function() {
         $http({
             method: "GET",
-            url: "/rest/room/all"
+            url: "/rest/rooms/all"
         }).success(function (d) {
             $scope.entries = d;
         });
@@ -357,7 +357,7 @@ var DashboardController = function($scope, $http, alert) {
         $http({
             method: "PUT",
             data: data,
-            url: "/rest/room/new"
+            url: "/rest/rooms/new"
         }).success(function () {
             loadRooms();
         });
@@ -367,7 +367,7 @@ var DashboardController = function($scope, $http, alert) {
         $http({
             method: "DELETE",
             data: data,
-            url: "/rest/room/" + id
+            url: "/rest/rooms/" + id
         }).success(function () {
             loadRooms();
         });
@@ -1116,11 +1116,14 @@ var RoomJournalModalController = function($scope, $http, $modal, room) {
     $scope.page = 0;
 
     var loadPage = function() {
-        $http({method: "GET", url: "/rest/journal/room/" + room.id, params: {page: $scope.page}})
-            .success(function (d, status, headers, config) {
-                $scope.journal = d["data"];
-                $scope.totalPages = d["pageCount"];
-            });
+        $http({
+            method: "GET",
+            url: StringFormatter.format("/rest/journal/room/{number}", room.id),
+            params: {page: $scope.page}
+        }).success(function (d, status, headers, config) {
+            $scope.journal = d["data"];
+            $scope.totalPages = d["pageCount"];
+        });
     };
 
     $scope.previousPage = function() {
@@ -1320,7 +1323,7 @@ var HistoryController = function($scope, $http, title, options) {
         if ($scope.until) {
             params["until"] = $scope.until;
         }
-        $http({method: "GET", url: StringFormatter.format("/rest/room/{number}/history/all", $scope.room.id), params: params})
+        $http({method: "GET", url: StringFormatter.format("/rest/rooms/{number}/history/all", $scope.room.id), params: params})
             .success(function (d) {
                 $scope.entries = d["data"];
                 $scope.totalPages = d["pageCount"];
@@ -1367,17 +1370,15 @@ var PollsController = function($scope, $http, room) {
 
     var loadPage = function() {
         $scope.polls.length = 0;
-        var url = "/rest/poll/room/" + room.id + "/all";
-        $http({method: "GET", url: url})
-            .success(function (d, status, headers, config) {
-                $scope.polls = d;
-                angular.forEach($scope.polls, function(e) {
-                    e.maxPollVotes = Math.max.apply(null, e.votes)
-                });
-            })
-            .error(function (data, status, headers, config) {
-                alert.alert("danger", data);
+        $http({
+            method: "GET",
+            url: StringFormatter.format("/rest/rooms/{number}/polls/all", room.id)
+        }).success(function (d) {
+            $scope.polls = d;
+            angular.forEach($scope.polls, function(e) {
+                e.maxPollVotes = Math.max.apply(null, e.votes)
             });
+        });
     };
 
     loadPage();
@@ -1399,15 +1400,14 @@ var ComposePollController = function($scope, $modalInstance, $http, roomId) {
             "question": $scope.input.question,
             "options": $.map($scope.input.option, function(e) {return e.value})
         };
-        $http({method: "PUT", url: "/rest/poll/room/" + roomId + "/current", data: data})
-            .success(function(data) {
-                $modalInstance.close(data);
-                $scope.busy = false;
-            })
-            .error(function(data) {
-                $scope.error = data;
-                $scope.busy = false;
-            });
+        $http({
+            method: "PUT",
+            url: StringFormatter.format("/rest/rooms/{number}/polls/current", roomId),
+            data: data
+        }).success(function(data) {
+            $modalInstance.close(data);
+            $scope.busy = false;
+        });
     };
 
     $scope.addOption = function() {
@@ -1440,7 +1440,7 @@ var ChattersController = function($scope, $location, $http, $modal, room) {
             page: $scope.page,
             search: $scope.search
         };
-        $http({method: "GET", url: StringFormatter.format("/rest/room/{number}/chatters/all", room.id), params: params})
+        $http({method: "GET", url: StringFormatter.format("/rest/rooms/{number}/chatters/all", room.id), params: params})
             .success(function (d, status, headers, config) {
                 $scope.users = d["data"];
                 $scope.totalPages = d["pageCount"];
@@ -1535,26 +1535,26 @@ var RoomController = function($scope, $location, $http, $sce, $modal, alert, tit
 
     var loadPage = function() {
         $scope.messages.length = 0;
-        $http({method: "GET", url: StringFormatter.format("/rest/room/{number}/history/peek", $scope.roomId)})
+        $http({method: "GET", url: StringFormatter.format("/rest/rooms/{number}/history/peek", $scope.roomId)})
             .success(function (data) {
                 $scope.messages = data;
             });
-        $http({method: "GET", url: StringFormatter.format("/rest/room/{number}/announcements/all", $scope.roomId)})
+        $http({method: "GET", url: StringFormatter.format("/rest/rooms/{number}/announcements/all", $scope.roomId)})
             .success(function (data) {
                 $scope.announcements = data;
             });
-        $http({method: "GET", url: StringFormatter.format("/rest/room/{number}/info", $scope.roomId)})
+        $http({method: "GET", url: StringFormatter.format("/rest/rooms/{number}/info", $scope.roomId)})
             .success(function (data) {
                 $scope.roomData = data;
                 title.title = $scope.roomData.name;
             });
-        $http({method: "GET", url: StringFormatter.format("/rest/room/{number}/chatters/online", $scope.roomId)})
+        $http({method: "GET", url: StringFormatter.format("/rest/rooms/{number}/chatters/online", $scope.roomId)})
             .success(function (data) {
                 $scope.chatterOffset = 0;
                 $scope.chatters = data;
                 title.secondary = $scope.chatters.length + " online"
             });
-        $http({method: "GET", url: StringFormatter.format("/rest/room/{number}/poll/current", $scope.roomId)})
+        $http({method: "GET", url: StringFormatter.format("/rest/rooms/{number}/polls/current", $scope.roomId)})
             .success(function (data) {
                 $scope.poll = data;
                 $scope.maxPollVotes = Math.max.apply(null, $scope.poll.votes);
@@ -1632,13 +1632,12 @@ var RoomController = function($scope, $location, $http, $sce, $modal, alert, tit
 
     $scope.closePoll = function() {
         if ($scope.poll.poll) {
-            $http({method: "DELETE", url: "/rest/poll/room/" + $scope.roomData.id + "/current"})
-                .success(function(data, status, headers, config) {
-                    $scope.poll = null;
-                })
-                .error(function(data, status, headers, config) {
-                    alert.alert("danger", data);
-                });
+            $http({
+                method: "DELETE",
+                url: StringFormatter.format("/rest/rooms/{number}/polls/current", $scope.roomData.id)
+            }).success(function() {
+                $scope.poll = null;
+            });
         }
     };
 
@@ -1699,7 +1698,7 @@ var RoomController = function($scope, $location, $http, $sce, $modal, alert, tit
     $scope.setAnnouncementInactive = function(id) {
         $http({
             method: "DELETE",
-            url: StringFormatter.format("/rest/room/{number}/announcements/{number}",$scope.roomId, id)
+            url: StringFormatter.format("/rest/rooms/{number}/announcements/{number}", $scope.roomId, id)
         }).success(function() {
             var object = null;
             $scope.announcements = $scope.announcements.filter(function(e) {
@@ -1765,7 +1764,7 @@ var ServicesController = function($scope, $location, $http, alert) {
         $scope.entries.length = 0;
         $http({
             method: "GET",
-            url: "/rest/service/all"
+            url: "/rest/services/all"
         }).success(function (d, status, headers, config) {
             $scope.entries = d;
         });
@@ -1800,7 +1799,7 @@ var ComposeAnnouncementController = function($scope, $http, $modalInstance, room
             "text": $scope.input.text,
             "onlyBroadcast": $scope.input.onlyBroadcast
         };
-        $http({method: "PUT", url: StringFormatter.format("/rest/room/{number}/announcements", room.id), data: data})
+        $http({method: "PUT", url: StringFormatter.format("/rest/rooms/{number}/announcements", room.id), data: data})
             .success(function(data) {
                 $modalInstance.close(data);
             });
