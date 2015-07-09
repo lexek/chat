@@ -1,9 +1,12 @@
 package lexek.wschat.db.model;
 
+import com.fasterxml.jackson.annotation.JsonRawValue;
+
 public class JournalEntry {
     private final UserDto user;
     private final long time;
     private final String action;
+    @JsonRawValue
     private final String actionDescription;
     private final UserDto admin;
     private final Long roomId;

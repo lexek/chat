@@ -455,36 +455,25 @@ var UsersController = function($scope, $location, $http, alert, title) {
     $scope.user = null;
 
     var loadPage = function() {
-        var order = $scope.order;
-        var orderDesc = $scope.orderDesc;
-        var url = "/admin/api/users?page=" + $scope.page;
-        if (order && order !== "") {
-            url += "&orderBy=" + order;
-            if (orderDesc) {
-                url += "&orderDesc=true";
+        $http({
+            method: "GET",
+            url: "/rest/users/all",
+            params: {
+                search: $scope.search,
+                page: $scope.page
             }
-        }
-        if ($scope.search) {
-            url += "&search=" + encodeURI($scope.search);
-        }
-        $http({method: "GET", url: url})
-            .success(function (d, status, headers, config) {
-                $scope.users = [];
-                angular.forEach(d["data"], function(e) {
-                    var u = e.user;
-                    u.authServices = e.authServices;
-                    u.authNames = e.authNames;
-                    $scope.users.push(u);
-                });
-                $scope.totalPages = d["pageCount"];
-                title.secondary = "page " + ($scope.page+1) + "/" + ($scope.totalPages);
-                $scope.user = null;
-            })
-            .error(function (data, status, headers, config) {
-                alert.alert("danger", data);
-                $scope.users.length = 0;
-                $scope.user = null;
+        }).success(function (d) {
+            $scope.users = [];
+            angular.forEach(d["data"], function(e) {
+                var u = e.user;
+                u.authServices = e.authServices;
+                u.authNames = e.authNames;
+                $scope.users.push(u);
             });
+            $scope.totalPages = d["pageCount"];
+            title.secondary = "page " + ($scope.page+1) + "/" + ($scope.totalPages);
+            $scope.user = null;
+        });
     };
 
     $scope.selectUser = function(u) {
@@ -719,69 +708,55 @@ var UserController = function($scope, $route, $http, $modal, alert, id) {
     };
 
     $scope.saveRenameAvailable = function() {
-        var data = {
-            action: "UPDATE",
-            id: $scope.user.id,
-            rename: $scope.input.renameAvailable
-        };
-        $http({method: "POST", data: $.param(data),  url: "/admin/api/user"})
-            .success(function(data, status, headers, config) {
-                $scope.user.renameAvailable = $scope.input.renameAvailable;
-            })
-            .error(function(data, status, headers, config) {
-                alert.alert("danger", data);
-            });
+        $http({
+            method: "PUT",
+            data: {
+                rename: $scope.input.renameAvailable
+            },
+            url: "/rest/users/" + $scope.user.id
+        }).success(function() {
+            $scope.user.renameAvailable = $scope.input.renameAvailable;
+        });
     };
 
     $scope.saveBanned = function() {
-        var data = {
-            action: "UPDATE",
-            id: $scope.user.id,
-            banned: $scope.input.banned
-        };
-        $http({method: "POST", data: $.param(data), url: "/admin/api/user"})
-            .success(function(data, status, headers, config) {
-                $scope.user.banned = $scope.input.banned;
-            })
-            .error(function(data, status, headers, config) {
-                alert.alert("danger", data);
-            });
+        $http({
+            method: "PUT",
+            data: {
+                banned: $scope.input.banned
+            },
+            url: "/rest/users/" + $scope.user.id
+        }).success(function() {
+            $scope.user.banned = $scope.input.banned;
+        });
     };
 
     $scope.saveRole = function() {
-        var data = {
-            action: "UPDATE",
-            id: $scope.user.id,
-            role: $scope.input.role
-        };
         if ($scope.input.role === "USER" || $scope.input.role === "MOD" || $scope.input.role === "ADMIN") {
-            $http({method: "POST", data: $.param(data), url: "/admin/api/user"})
-                .success(function (data, status, headers, config) {
-                    $scope.user.role = $scope.input.role;
-                    $scope.edit("");
-                })
-                .error(function (data, status, headers, config) {
-                    $scope.edit("");
-                    alert.alert("danger", data);
-                });
+            $http({
+                method: "PUT",
+                data: {
+                    role: $scope.input.role
+                },
+                url: "/rest/users/" + $scope.user.id
+            }).success(function () {
+                $scope.user.role = $scope.input.role;
+                $scope.edit("");
+            });
         }
     };
 
     $scope.saveName = function() {
-        var data = {
-            action: "UPDATE",
-            id: $scope.user.id,
-            name: $scope.input.name
-        };
-        $http({method: "POST", data: $.param(data), url: "/admin/api/user"})
-            .success(function (data, status, headers, config) {
-                $scope.user.name = $scope.input.name;
-                $scope.edit("");
-            })
-            .error(function (data, status, headers, config) {
-                $scope.edit("");
-                alert.alert("danger", data);
-            });
+        $http({
+            method: "PUT",
+            data: {
+                name: $scope.input.name
+            },
+            url: "/rest/users/" + $scope.user.id
+        }).success(function () {
+            $scope.user.name = $scope.input.name;
+            $scope.edit("");
+        });
     };
 
     $scope.editing = function(variable) {
@@ -808,18 +783,13 @@ var UserController = function($scope, $route, $http, $modal, alert, id) {
     };
 
     $scope.requestDelete = function() {
-        var data = {
-            action: "DELETE",
-            id: $scope.user.id
-        };
         if (confirm("You sure that you want to delete user \"" + $scope.user.name + "\"?")) {
-            $http({method: "POST", data: $.param(data), url: "/admin/api/users"})
-                .success(function(data, status, headers, config) {
-                    $route.reload();
-                })
-                .error(function(data, status, headers, config) {
-                    alert.alert("danger", data);
-                });
+            $http({
+                method: "POST",
+                url: "/rest/users/" + $scope.user.id
+            }).success(function() {
+                $route.reload();
+            });
         }
     };
 
@@ -877,23 +847,22 @@ var UserModalController = function($scope, $http, $modal, $modalInstance, id) {
     }
 
     var loadPage = function() {
-        var url = "/admin/api/user?id=" + id;
-        $http({method: "GET", url: url})
-            .success(function (d, status, headers, config) {
-                $scope.user = d.user;
-                $scope.input.name = $scope.user.name;
-                $scope.input.role = $scope.user.role;
-                $scope.input.banned = $scope.user.banned;
-                $scope.input.renameAvailable = $scope.user.renameAvailable;
-                if (d.authServices) {
-                    var namesArray = d.authNames.split(",");
-                    angular.forEach(d.authServices.split(","), function(e, i) {
-                        $scope.auth[e] = namesArray[i];
-                    });
-                }
-            })
-            .error(function (data, status, headers, config) {
-            });
+        $http({
+            method: "GET",
+            url: StringFormatter.format("/rest/users/{number}", id)
+        }).success(function (d) {
+            $scope.user = d.user;
+            $scope.input.name = $scope.user.name;
+            $scope.input.role = $scope.user.role;
+            $scope.input.banned = $scope.user.banned;
+            $scope.input.renameAvailable = $scope.user.renameAvailable;
+            if (d.authServices) {
+                var namesArray = d.authNames.split(",");
+                angular.forEach(d.authServices.split(","), function(e, i) {
+                    $scope.auth[e] = namesArray[i];
+                });
+            }
+        });
     };
 
     $scope.isUser = function() {
@@ -901,69 +870,55 @@ var UserModalController = function($scope, $http, $modal, $modalInstance, id) {
     };
 
     $scope.saveRenameAvailable = function() {
-        var data = {
-            action: "UPDATE",
-            id: $scope.user.id,
-            rename: $scope.input.renameAvailable
-        };
-        $http({method: "POST", data: $.param(data),  url: "/admin/api/user"})
-            .success(function(data, status, headers, config) {
-                $scope.user.renameAvailable = $scope.input.renameAvailable;
-            })
-            .error(function(data, status, headers, config) {
-                alert.alert("danger", data);
-            });
+        $http({
+            method: "PUT",
+            data: {
+                rename: $scope.input.renameAvailable
+            },
+            url: "/rest/users/" + $scope.user.id
+        }).success(function() {
+            $scope.user.renameAvailable = $scope.input.renameAvailable;
+        });
     };
 
     $scope.saveBanned = function() {
-        var data = {
-            action: "UPDATE",
-            id: $scope.user.id,
-            banned: $scope.input.banned
-        };
-        $http({method: "POST", data: $.param(data), url: "/admin/api/user"})
-            .success(function(data, status, headers, config) {
-                $scope.user.banned = $scope.input.banned;
-            })
-            .error(function(data, status, headers, config) {
-                alert.alert("danger", data);
-            });
+        $http({
+            method: "PUT",
+            data: {
+                banned: $scope.input.banned
+            },
+            url: "/rest/users/" + $scope.user.id
+        }).success(function() {
+            $scope.user.banned = $scope.input.banned;
+        });
     };
 
     $scope.saveRole = function() {
-        var data = {
-            action: "UPDATE",
-            id: $scope.user.id,
-            role: $scope.input.role
-        };
         if ($scope.input.role === "USER" || $scope.input.role === "MOD" || $scope.input.role === "ADMIN") {
-            $http({method: "POST", data: $.param(data), url: "/admin/api/user"})
-                .success(function (data, status, headers, config) {
-                    $scope.user.role = $scope.input.role;
-                    $scope.edit("");
-                })
-                .error(function (data, status, headers, config) {
-                    $scope.edit("");
-                    alert.alert("danger", data);
-                });
+            $http({
+                method: "PUT",
+                data: {
+                    role: $scope.input.role
+                },
+                url: "/rest/users/" + $scope.user.id
+            }).success(function () {
+                $scope.user.role = $scope.input.role;
+                $scope.edit("");
+            });
         }
     };
 
     $scope.saveName = function() {
-        var data = {
-            action: "UPDATE",
-            id: $scope.user.id,
-            name: $scope.input.name
-        };
-        $http({method: "POST", data: $.param(data), url: "/admin/api/user"})
-            .success(function (data, status, headers, config) {
-                $scope.user.name = $scope.input.name;
-                $scope.edit("");
-            })
-            .error(function (data, status, headers, config) {
-                $scope.edit("");
-                alert.alert("danger", data);
-            });
+        $http({
+            method: "PUT",
+            data: {
+                name: $scope.input.name
+            },
+            url: "/rest/users/" + $scope.user.id
+        }).success(function () {
+            $scope.user.name = $scope.input.name;
+            $scope.edit("");
+        });
     };
 
     $scope.editing = function(variable) {
@@ -990,18 +945,13 @@ var UserModalController = function($scope, $http, $modal, $modalInstance, id) {
     };
 
     $scope.requestDelete = function() {
-        var data = {
-            action: "DELETE",
-            id: $scope.user.id
-        };
         if (confirm("You sure that you want to delete user \"" + $scope.user.name + "\"?")) {
-            $http({method: "POST", data: $.param(data), url: "/admin/api/users"})
-                .success(function(data, status, headers, config) {
-                    $route.reload();
-                })
-                .error(function(data, status, headers, config) {
-                    alert.alert("danger", data);
-                });
+            $http({
+                method: "DELETE",
+                url: "/rest/users/" + $scope.user.id
+            }).success(function() {
+                $route.reload();
+            });
         }
     };
 
@@ -1039,11 +989,6 @@ var JournalController = function($scope, $location, $http, $modal, alert, title)
                 $scope.entries = d["data"];
                 $scope.totalPages = d["pageCount"];
                 title.secondary = "page " + ($scope.page+1) + "/" + ($scope.totalPages);
-                angular.forEach($scope.entries, function (e) {
-                    if (e.actionDescription) {
-                        e.actionDescription = angular.fromJson(e.actionDescription);
-                    }
-                });
             })
             .error(function (data, status, headers, config) {
                 alert.alert("danger", data);

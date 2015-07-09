@@ -179,8 +179,6 @@ public class Main {
         freemarker.setClassForTemplateLoading(Main.class, "/templates");
         freemarker.setDefaultEncoding("UTF-8");
         freemarker.setObjectWrapper(new DefaultObjectWrapper());
-        //uncomment to disable template caching
-        //freemarker.setCacheStorage(new NullCacheStorage());
 
         ReCaptcha reCaptcha = new ReCaptcha(settings.getHttp().getRecaptchaKey());
         ViewResolvers viewResolvers = new ViewResolvers(freemarker);
@@ -210,7 +208,7 @@ public class Main {
                     new HistoryResource(historyService),
                     new IpBlockResource(bannedIps),
                     new JournalResource(journalDao),
-                    new UsersResource(connectionManager),
+                    new UsersResource(connectionManager, userService),
                     new PollResource(roomManager, pollService),
                     new RoomResource(roomManager),
                     new ServicesResource(serviceManager),
@@ -228,8 +226,6 @@ public class Main {
         httpRequestDispatcher.add("/recaptcha/[0-9]+", new RecaptchaHandler(captchaService, reCaptcha));
         httpRequestDispatcher.add("/api/chatters", new ChattersApiHandler(roomManager));
         httpRequestDispatcher.add("/api/tickets", new UserTicketsHandler(authenticationManager, ticketService));
-        httpRequestDispatcher.add("/admin/api/user", new UserApiHandler(authenticationManager, userService));
-        httpRequestDispatcher.add("/admin/api/users", new UsersHandler(authenticationManager, userService));
         httpRequestDispatcher.add("/admin/.*", new AdminPageHandler(authenticationManager));
         httpRequestDispatcher.add("/login", new LoginHandler(authenticationManager, reCaptcha));
         httpRequestDispatcher.add("/check_username", new UsernameCheckHandler(userService));

@@ -1,13 +1,12 @@
 package lexek.wschat.db.dao;
 
-import lexek.wschat.db.jooq.tables.records.UserRecord;
 import lexek.wschat.db.model.DataPage;
 import lexek.wschat.db.model.UserData;
 import lexek.wschat.db.model.UserDto;
+import lexek.wschat.db.model.form.UserChangeSet;
 import lexek.wschat.util.Pages;
 import org.jooq.Condition;
 import org.jooq.Record;
-import org.jooq.TableField;
 import org.jooq.exception.DataAccessException;
 import org.jooq.impl.DSL;
 import org.slf4j.Logger;
@@ -16,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -80,18 +80,38 @@ public class UserDao {
         return userDto;
     }
 
-    public boolean setFields(Map<TableField<UserRecord, ?>, Object> values, long id) {
-        boolean success = false;
+    public UserDto update(long id, UserChangeSet changeSet) {
+        Map<org.jooq.Field<?>, Object> changeMap = new HashMap<>();
+        if (changeSet.getBanned() != null) {
+            changeMap.put(USER.BANNED, changeSet.getBanned());
+        }
+        if (changeSet.getRenameAvailable() != null) {
+            changeMap.put(USER.RENAME_AVAILABLE, changeSet.getRenameAvailable());
+        }
+        if (changeSet.getName() != null) {
+            changeMap.put(USER.NAME, changeSet.getName());
+        }
+        if (changeSet.getRole() != null) {
+            changeMap.put(USER.ROLE, changeSet.getRole().toString());
+        }
+        UserDto userDto = null;
         try (Connection connection = dataSource.getConnection()) {
-            success = DSL.using(connection)
+            boolean success = DSL.using(connection)
                 .update(USER)
-                .set(values)
+                .set(changeMap)
                 .where(USER.ID.equal(id))
                 .execute() == 1;
+            if (success) {
+                Record record = DSL.using(connection)
+                    .selectFrom(USER)
+                    .where(USER.ID.equal(id))
+                    .fetchOne();
+                userDto = UserDto.fromRecord(record);
+            }
         } catch (DataAccessException | SQLException e) {
             logger.error("sql exception", e);
         }
-        return success;
+        return userDto;
     }
 
     public void setColor(long id, String color) {

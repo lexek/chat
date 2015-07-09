@@ -10,6 +10,7 @@ import lexek.wschat.db.jooq.tables.pojos.Emoticon;
 import lexek.wschat.db.jooq.tables.records.UserRecord;
 import lexek.wschat.db.model.JournalEntry;
 import lexek.wschat.db.model.UserDto;
+import lexek.wschat.db.model.form.UserChangeSet;
 import org.jooq.TableField;
 import org.jooq.tools.StringUtils;
 
@@ -32,15 +33,10 @@ public class JournalService {
         journalDao.add(new JournalEntry(user, null, "NAME_CHANGE", description, now(), null));
     }
 
-    public void userUpdated(UserDto user, UserDto admin, Map<TableField<UserRecord, ?>, Object> values) {
+    public void userUpdated(UserDto user, UserDto admin, UserChangeSet changeSet) {
         String description = gson.toJson(ImmutableMap.of(
             "oldState", gson.toJsonTree(user),
-            "newState", gson.toJsonTree(values
-                .entrySet()
-                .stream()
-                .collect(Collectors.toMap(
-                    entry -> StringUtils.toCamelCaseLC(entry.getKey().getName()),
-                    Map.Entry::getValue)))));
+            "newState", gson.toJsonTree(changeSet)));
         journalDao.add(new JournalEntry(user, admin, "USER_UPDATE", description, now(), null));
     }
 
