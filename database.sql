@@ -23,7 +23,7 @@ CREATE TABLE `userauth` (
 	UNIQUE INDEX `UNIQUE_USER_SERVICE` (`service`, `user_id`),
 	INDEX `FOREIGN_USERID` (`user_id`),
 	CONSTRAINT `USER_ID` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE
-)
+);
 
 CREATE TABLE `room` (
 	`id` BIGINT(20) NOT NULL AUTO_INCREMENT,
@@ -33,7 +33,7 @@ CREATE TABLE `room` (
 	UNIQUE INDEX `NAME_UNIQUE` (`name`)
 );
 
-INSERT INTO `room` values(null, "#main", "main room"); --create main room entry
+INSERT INTO `room` values(null, "#main", "main room");
 
 CREATE TABLE `chatter` (
 	`id` BIGINT(20) NOT NULL AUTO_INCREMENT,
@@ -99,7 +99,7 @@ CREATE TABLE `journal` (
 	CONSTRAINT `FK_JOURNAL_USER` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON UPDATE CASCADE ON DELETE CASCADE,
 	CONSTRAINT `FK_JOURNAL_ROOM` FOREIGN KEY (`room_id`) REFERENCES `room` (`id`) ON UPDATE CASCADE ON DELETE CASCADE,
 	CONSTRAINT `FK_JOURNAL_ADMIN_USER` FOREIGN KEY (`admin_id`) REFERENCES `user` (`id`) ON UPDATE CASCADE ON DELETE CASCADE
-)
+);
 
 CREATE TABLE `metric` (
 	`id` BIGINT(20) NOT NULL AUTO_INCREMENT,
