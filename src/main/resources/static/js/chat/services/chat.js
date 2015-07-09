@@ -33,26 +33,28 @@ function($modal, settings, $translate, $http, $timeout, notificationService, msg
         var c = this;
 
         $http({method: 'GET', url: '/admin/api/emoticons'})
-            .success(function(d, status, headers, config) {
+            .success(function(d, status) {
                 if (status == 200) {
                     var data = d["records"];
-                    var emoticonCodeList = [];
-                    angular.forEach(data, function (e) {
-                        c.emoticons[e[1]] = {
-                            "id": e[0],
-                            "code": e[1],
-                            "fileName": e[2],
-                            "height": e[3],
-                            "width": e[4]
-                        };
-                        emoticonCodeList.push(e[1]
-                            .replace("\\", "\\\\")
-                            .replace(")", "\\)")
-                            .replace("(", "\\(")
-                            .replace(".", "\\.")
-                            .replace("*", "\\*"));
-                    });
-                    c.emoticonRegExp = new RegExp(emoticonCodeList.join("|"), "g");
+                    if (data) {
+                        var emoticonCodeList = [];
+                        angular.forEach(data, function (e) {
+                            c.emoticons[e[1]] = {
+                                "id": e[0],
+                                "code": e[1],
+                                "fileName": e[2],
+                                "height": e[3],
+                                "width": e[4]
+                            };
+                            emoticonCodeList.push(e[1]
+                                .replace("\\", "\\\\")
+                                .replace(")", "\\)")
+                                .replace("(", "\\(")
+                                .replace(".", "\\.")
+                                .replace("*", "\\*"));
+                        });
+                        c.emoticonRegExp = new RegExp(emoticonCodeList.join("|"), "g");
+                    }
                 }
             })
             .error(function(data, status, headers, config) {
