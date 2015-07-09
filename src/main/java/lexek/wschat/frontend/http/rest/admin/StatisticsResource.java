@@ -40,6 +40,7 @@ public class StatisticsResource {
 
     @Path("/global/metrics")
     @GET
+    @Produces(MediaType.APPLICATION_JSON)
     public Map getMetrics() {
         long since = System.currentTimeMillis() - TimeUnit.MILLISECONDS.convert(24, TimeUnit.HOURS);
         return ImmutableMap.of(
