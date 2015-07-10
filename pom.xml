@@ -139,6 +139,7 @@
                 <version>${jooq.version}</version>
                 <executions>
                     <execution>
+                        <phase>compile</phase>
                         <goals>
                             <goal>generate</goal>
                         </goals>
