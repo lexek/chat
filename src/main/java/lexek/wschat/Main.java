@@ -40,7 +40,6 @@ import lexek.wschat.services.*;
 import org.glassfish.hk2.api.InjectionResolver;
 import org.glassfish.hk2.api.TypeLiteral;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
-import org.glassfish.jersey.filter.LoggingFilter;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.ServerProperties;
@@ -187,9 +186,8 @@ public class Main {
         ResourceConfig resourceConfig = new ResourceConfig() {
             {
                 property(ServerProperties.WADL_FEATURE_DISABLE, Boolean.TRUE);
-                property(ServerProperties.TRACING, "ALL");
-                register(new LoggingFilter());
-
+                //property(ServerProperties.TRACING, "ALL");
+                register(new Slf4jLoggingFilter());
                 register(JerseyExceptionMapper.class);
                 register(MultiPartFeature.class);
                 register(SecurityFeature.class);
