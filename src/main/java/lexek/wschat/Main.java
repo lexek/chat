@@ -40,6 +40,7 @@ import lexek.wschat.services.*;
 import org.glassfish.hk2.api.InjectionResolver;
 import org.glassfish.hk2.api.TypeLiteral;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
+import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.ServerProperties;
@@ -189,6 +190,7 @@ public class Main {
                 //property(ServerProperties.TRACING, "ALL");
                 register(new Slf4jLoggingFilter());
                 register(JerseyExceptionMapper.class);
+                register(JacksonFeature.class);
                 register(MultiPartFeature.class);
                 register(SecurityFeature.class);
                 register(new AbstractBinder() {
