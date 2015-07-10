@@ -7,6 +7,6 @@ before_install:
   - mysql -u root -e "GRANT ALL ON chat.* TO chat@localhost; FLUSH PRIVILEGES;"
   - mysql chat < database.sql
 install:
-  - mvn install
+  - mvn install -DskipTests
 script:
   - mvn surefire:test
