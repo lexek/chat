@@ -224,7 +224,6 @@ public class Main {
         httpRequestDispatcher.add("/resolve_steam", new SteamNameResolver());
         httpRequestDispatcher.add("/confirm_email", new ConfirmEmailHandler(authenticationManager, connectionManager));
         httpRequestDispatcher.add("/recaptcha/[0-9]+", new RecaptchaHandler(captchaService, reCaptcha));
-        httpRequestDispatcher.add("/api/chatters", new ChattersApiHandler(roomManager));
         httpRequestDispatcher.add("/api/tickets", new UserTicketsHandler(authenticationManager, ticketService));
         httpRequestDispatcher.add("/admin/.*", new AdminPageHandler(authenticationManager));
         httpRequestDispatcher.add("/login", new LoginHandler(authenticationManager, reCaptcha));

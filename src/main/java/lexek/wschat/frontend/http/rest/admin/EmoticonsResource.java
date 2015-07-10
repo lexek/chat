@@ -91,6 +91,7 @@ public class EmoticonsResource {
         return "ok";
     }
 
+    //TODO: better representation
     @Path("/all")
     @RequiredRole(GlobalRole.UNAUTHENTICATED)
     @GET
