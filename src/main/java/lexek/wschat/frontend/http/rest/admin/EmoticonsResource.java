@@ -54,7 +54,7 @@ public class EmoticonsResource {
         int width = image.getWidth();
         int height = image.getHeight();
         if (width > 200 || height > 200) {
-            return Response.status(400).entity("bad request").build();
+            return Response.status(400).entity("Image is too big.").build();
         } else {
             boolean success = true;
             try {

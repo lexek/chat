@@ -6,6 +6,7 @@ import lexek.wschat.db.jooq.tables.pojos.Ticket;
 import lexek.wschat.db.model.DataPage;
 import lexek.wschat.db.model.UserDto;
 import lexek.wschat.db.model.form.CloseTicketForm;
+import lexek.wschat.db.model.rest.ErrorModel;
 import lexek.wschat.db.model.rest.TicketRestModel;
 import lexek.wschat.security.jersey.Auth;
 import lexek.wschat.security.jersey.RequiredRole;
@@ -16,6 +17,7 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.util.Map;
 
 @Path("/tickets")
@@ -54,7 +56,7 @@ public class TicketResource {
     ) {
         Ticket ticket = ticketService.getTicket(ticketId);
         if (ticket == null) {
-            throw new WebApplicationException(400);
+            throw new WebApplicationException(Response.status(404).entity(new ErrorModel("Unknown ticket.")).build());
         }
         ticketService.closeTicket(ticket, admin, form.getComment());
         return ticket;

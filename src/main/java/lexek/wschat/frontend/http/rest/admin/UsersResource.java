@@ -7,6 +7,7 @@ import lexek.wschat.db.model.OnlineUser;
 import lexek.wschat.db.model.UserData;
 import lexek.wschat.db.model.UserDto;
 import lexek.wschat.db.model.form.UserChangeSet;
+import lexek.wschat.db.model.rest.ErrorModel;
 import lexek.wschat.security.jersey.Auth;
 import lexek.wschat.security.jersey.RequiredRole;
 import lexek.wschat.services.UserService;
@@ -80,19 +81,19 @@ public class UsersResource {
         boolean anyChanges = false;
         if (changeSet.getName() != null) {
             if (user.getRole() != GlobalRole.USER || !admin.hasRole(GlobalRole.SUPERADMIN)) {
-                return Response.status(403).build();
+                return Response.status(403).entity(new ErrorModel("Forbidden.")).build();
             }
             anyChanges = true;
         }
         if (changeSet.getRole() != null) {
             if (user.hasRole(admin.getRole()) || !admin.hasRole(changeSet.getRole())) {
-                return Response.status(403).build();
+                return Response.status(403).entity(new ErrorModel("Forbidden.")).build();
             }
             anyChanges = true;
         }
         if (changeSet.getName() != null) {
             if (user.hasRole(admin.getRole())) {
-                return Response.status(403).build();
+                return Response.status(403).entity(new ErrorModel("Forbidden.")).build();
             }
             anyChanges = true;
         }
@@ -103,7 +104,7 @@ public class UsersResource {
             userService.update(user, admin, changeSet);
             return Response.ok().build();
         } else {
-            return Response.status(400).build();
+            return Response.status(400).entity(new ErrorModel("No changes found.")).build();
         }
     }
 
@@ -120,7 +121,7 @@ public class UsersResource {
             userService.delete(user, admin);
             return user;
         } else {
-            throw new WebApplicationException(400);
+            throw new WebApplicationException(Response.status(400).entity(new ErrorModel("Forbidden.")).build());
         }
     }
 }

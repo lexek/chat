@@ -190,6 +190,7 @@ public class Main {
                 property(ServerProperties.TRACING, "ALL");
                 register(new LoggingFilter());
 
+                register(JerseyExceptionMapper.class);
                 register(MultiPartFeature.class);
                 register(SecurityFeature.class);
                 register(new AbstractBinder() {
@@ -197,7 +198,8 @@ public class Main {
                     protected void configure() {
                         bind(UserParamValueFactoryProvider.class).to(ValueFactoryProvider.class).in(Singleton.class);
                         bind(UserParamValueFactoryProvider.InjectionResolver.class).to(
-                            new TypeLiteral<InjectionResolver<Auth>>() {}).in(Singleton.class);
+                            new TypeLiteral<InjectionResolver<Auth>>() {
+                            }).in(Singleton.class);
                     }
                 });
                 registerInstances(

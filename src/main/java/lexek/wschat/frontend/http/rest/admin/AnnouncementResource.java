@@ -7,6 +7,7 @@ import lexek.wschat.chat.RoomManager;
 import lexek.wschat.db.jooq.tables.pojos.Announcement;
 import lexek.wschat.db.model.UserDto;
 import lexek.wschat.db.model.form.AnnouncementForm;
+import lexek.wschat.db.model.rest.ErrorModel;
 import lexek.wschat.security.jersey.Auth;
 import lexek.wschat.security.jersey.RequiredRole;
 import lexek.wschat.services.AnnouncementService;
@@ -15,6 +16,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.util.Collection;
 import java.util.Map;
 
@@ -37,7 +39,10 @@ public class AnnouncementResource {
     ) {
         Room room = roomManager.getRoomInstance(roomId);
         if (room == null) {
-            throw new WebApplicationException(400);
+            throw new WebApplicationException(Response
+                .status(404)
+                .entity(new ErrorModel("Unknown room."))
+                .build());
         }
         return announcementService.getAnnouncements(room);
     }
@@ -50,6 +55,13 @@ public class AnnouncementResource {
                             @Auth UserDto user,
                             @Valid AnnouncementForm formData
     ) {
+        Room room = roomManager.getRoomInstance(roomId);
+        if (room == null) {
+            throw new WebApplicationException(Response
+                .status(404)
+                .entity(new ErrorModel("Unknown room."))
+                .build());
+        }
         String text = formData.getText();
         Announcement announcement = new Announcement(null, roomId, true, text);
         if (formData.isOnlyBroadcast()) {

@@ -5,6 +5,7 @@ import lexek.wschat.chat.Room;
 import lexek.wschat.chat.RoomManager;
 import lexek.wschat.db.model.UserDto;
 import lexek.wschat.db.model.form.RoomForm;
+import lexek.wschat.db.model.rest.ErrorModel;
 import lexek.wschat.db.model.rest.RoomRestModel;
 import lexek.wschat.security.jersey.Auth;
 import lexek.wschat.security.jersey.RequiredRole;
@@ -14,6 +15,7 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -32,7 +34,7 @@ public class RoomResource {
     public RoomRestModel getRoom(@PathParam("roomId") @Min(0) long roomId) {
         Room room = roomManager.getRoomInstance(roomId);
         if (room == null) {
-            throw new WebApplicationException(400);
+            throw new WebApplicationException(Response.status(400).entity(new ErrorModel("Unknown room.")).build());
         }
         return new RoomRestModel(room.getId(), room.getName(), room.getTopic(), room.getOnline());
     }
@@ -75,7 +77,7 @@ public class RoomResource {
     ) {
         Room room = roomManager.getRoomInstance(roomId);
         if (room == null) {
-            throw new WebApplicationException(400);
+            throw new WebApplicationException(Response.status(400).entity(new ErrorModel("Unknown room.")).build());
         }
         roomManager.deleteRoom(room, admin);
     }

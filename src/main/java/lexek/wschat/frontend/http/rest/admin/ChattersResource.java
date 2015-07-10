@@ -9,12 +9,14 @@ import lexek.wschat.db.dao.ChatterDao;
 import lexek.wschat.db.model.ChatterData;
 import lexek.wschat.db.model.DataPage;
 import lexek.wschat.db.model.rest.ChatterRestModel;
+import lexek.wschat.db.model.rest.ErrorModel;
 import lexek.wschat.security.jersey.RequiredRole;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.Size;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -41,7 +43,10 @@ public class ChattersResource {
     ) {
         Room room = roomManager.getRoomInstance(roomName);
         if (room == null) {
-            throw new WebApplicationException(400);
+            throw new WebApplicationException(Response
+                .status(404)
+                .entity(new ErrorModel("Unknown room."))
+                .build());
         }
         return room.getChatters()
             .stream()
@@ -82,7 +87,10 @@ public class ChattersResource {
     public List<ChatterRestModel> getOnlineChatters(@Min(0) @PathParam("roomId") long roomId) {
         Room room = roomManager.getRoomInstance(roomId);
         if (room == null) {
-            throw new WebApplicationException(400);
+            throw new WebApplicationException(Response
+                .status(404)
+                .entity(new ErrorModel("Unknown room."))
+                .build());
         }
         return room.getChatters()
             .stream()
