@@ -15,6 +15,7 @@ import io.netty.handler.codec.string.StringEncoder;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.timeout.IdleStateHandler;
 import lexek.wschat.services.AbstractService;
+import lexek.wschat.util.ExceptionLogger;
 
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
@@ -40,6 +41,7 @@ public class IrcServer extends AbstractService<Integer> {
         final ChannelHandler stringEncoder = new StringEncoder(StandardCharsets.UTF_8);
         this.bootstrap.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
         this.bootstrap.childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
+        final ExceptionLogger exceptionLogger = new ExceptionLogger();
         bootstrap.childHandler(new ChannelInitializer<SocketChannel>() {
             @Override
             public void initChannel(SocketChannel channel) throws Exception {
@@ -50,6 +52,7 @@ public class IrcServer extends AbstractService<Integer> {
                 pipeline.addLast(new IdleStateHandler(120, 0, 140, TimeUnit.SECONDS));
                 pipeline.addLast(stringEncoder);
                 pipeline.addLast(handler);
+                pipeline.addLast(exceptionLogger);
             }
         });
     }

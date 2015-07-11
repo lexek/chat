@@ -14,6 +14,7 @@ import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.timeout.IdleStateHandler;
 import lexek.wschat.services.AbstractService;
+import lexek.wschat.util.ExceptionLogger;
 
 import java.util.concurrent.TimeUnit;
 
@@ -28,6 +29,7 @@ public class WebSocketChatServer extends AbstractService<Integer> {
         this.stateData = port;
         this.port = port;
         final ChannelHandler flashPolicyHandler = new FlashPolicyFileHandler(port);
+        final ExceptionLogger exceptionLogger = new ExceptionLogger();
         this.bootstrap = new ServerBootstrap();
         this.bootstrap.group(bossGroup, childGroup);
 
@@ -49,6 +51,7 @@ public class WebSocketChatServer extends AbstractService<Integer> {
                 pipeline.addLast(new WebSocketServerProtocolHandler("/", ""));
                 pipeline.addLast(new IdleStateHandler(120, 0, 140, TimeUnit.SECONDS));
                 pipeline.addLast(handler);
+                pipeline.addLast(exceptionLogger);
             }
         });
     }

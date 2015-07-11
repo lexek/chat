@@ -57,11 +57,6 @@ public class IrcServerHandler extends ChannelInboundHandlerAdapter implements Au
         onMessage(connection, (String) message);
     }
 
-    @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-        logger.warn("Exception: ", cause);
-    }
-
     public void onMessage(final IrcConnection connection, String message) {
         if (connection.getState() == ConnectionState.AUTHENTICATED) {
             InboundMessage msg = connection.getCodec().decode(message);
