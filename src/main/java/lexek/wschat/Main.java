@@ -149,10 +149,12 @@ public class Main {
             }
         });
         roomJoinNotificationService.registerListener((connection, chatter, room) -> {
-            List<Ticket> tickets = ticketService.getUnreadTickets(connection.getUser().getWrappedObject());
-            tickets.forEach(ticket -> connection.send(Message.infoMessage(
-                "Your ticket \"" + ticket.getText() + "\" is closed with comment: \"" + ticket.getAdminReply() + "\"."
-            )));
+            if (connection.getUser().hasRole(GlobalRole.USER)) {
+                List<Ticket> tickets = ticketService.getUnreadTickets(connection.getUser().getWrappedObject());
+                tickets.forEach(ticket -> connection.send(Message.infoMessage(
+                    "Your ticket \"" + ticket.getText() + "\" is closed with comment: \"" + ticket.getAdminReply() + "\"."
+                )));
+            }
         });
 
         Set<String> bannedIps = new CopyOnWriteArraySet<>();
