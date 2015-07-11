@@ -18,6 +18,7 @@ import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.ssl.SslContext;
 import lexek.httpserver.RequestDispatcher;
 import lexek.wschat.services.AbstractService;
+import lexek.wschat.util.ExceptionLogger;
 
 import javax.net.ssl.SSLException;
 import java.io.FileNotFoundException;
@@ -56,6 +57,7 @@ public class HttpServer extends AbstractService<Integer> {
         }
         this.bootstrap.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
         this.bootstrap.childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
+        ExceptionLogger exceptionLogger = new ExceptionLogger();
         this.bootstrap.childHandler(new ChannelInitializer<Channel>() {
             @Override
             protected void initChannel(Channel ch) throws Exception {
@@ -66,6 +68,7 @@ public class HttpServer extends AbstractService<Integer> {
                 pipeline.addLast("aggregator", new HttpObjectAggregator(65536));
                 pipeline.addLast("compressor", new HttpContentCompressor());
                 pipeline.addLast("handler", requestDispatcher);
+                pipeline.addLast(exceptionLogger);
             }
         });
     }
