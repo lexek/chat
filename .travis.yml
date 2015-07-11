@@ -10,3 +10,9 @@ install:
   - mvn install -DskipTests
 script:
   - mvn surefire:test
+notifications:
+  email:
+    recipients:
+      - lexek-92@ya.ru
+    on_success: always
+    on_failure: always
