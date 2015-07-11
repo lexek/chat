@@ -177,6 +177,7 @@ public class Main {
         serviceManager.registerService(messageBroadcaster);
         serviceManager.registerService(messageReactor);
         serviceManager.registerService(authenticationService);
+        serviceManager.registerService(roomJoinNotificationService);
 
         ChatProxyFactory chatProxyFactory = new ChatProxyFactory(connectionManager, messageId, authenticationManager,
             roomManager, messageBroadcaster, metricRegistry);
@@ -285,7 +286,6 @@ public class Main {
         serviceManager.registerService(webSocketChatServer);
         serviceManager.registerService(ircServer);
         serviceManager.registerService(httpServer);
-        serviceManager.registerService(roomJoinNotificationService);
 
         serviceManager.startAll();
 
