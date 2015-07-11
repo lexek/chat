@@ -1,10 +1,11 @@
-package lexek.wschat.services;
+package lexek.wschat.services.poll;
 
 import com.google.common.collect.ImmutableList;
 import io.netty.util.internal.chmv8.ConcurrentHashMapV8;
 import lexek.wschat.chat.*;
 import lexek.wschat.db.dao.PollDao;
 import lexek.wschat.db.model.UserDto;
+import lexek.wschat.services.JournalService;
 
 import java.util.List;
 import java.util.Map;

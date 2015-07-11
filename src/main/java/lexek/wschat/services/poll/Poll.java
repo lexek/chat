@@ -1,4 +1,4 @@
-package lexek.wschat.services;
+package lexek.wschat.services.poll;
 
 import com.google.common.collect.ImmutableList;
 

@@ -1,4 +1,4 @@
-package lexek.wschat.services;
+package lexek.wschat.services.poll;
 
 public class PollOption {
     private final int optionId;
