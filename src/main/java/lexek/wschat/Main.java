@@ -48,6 +48,7 @@ import org.glassfish.jersey.server.spi.internal.ValueFactoryProvider;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Singleton;
+import javax.mail.internet.InternetAddress;
 import javax.sql.DataSource;
 import java.io.File;
 import java.nio.file.Files;
@@ -89,13 +90,20 @@ public class Main {
         config.setConnectionTimeout(TimeUnit.SECONDS.toMillis(10));
         DataSource dataSource = new HikariDataSource(config);
 
+        EmailService emailService = new EmailService(
+            settings.getEmail().getSmtpHost(),
+            settings.getEmail().getSmtpPort(),
+            new InternetAddress(settings.getEmail().getEmail()),
+            settings.getEmail().getPassword()
+        );
+
         UserDao userDao = new UserDao(dataSource);
         ChatterDao chatterDao = new ChatterDao(dataSource);
         EmoticonDao emoticonDao = new EmoticonDao(dataSource);
         RoomDao roomDao = new RoomDao(dataSource);
         JournalDao journalDao = new JournalDao(dataSource);
         JournalService journalService = new JournalService(journalDao);
-        AuthenticationManager authenticationManager = new AuthenticationManager(ircHost, dataSource, settings.getEmail());
+        AuthenticationManager authenticationManager = new AuthenticationManager(ircHost, dataSource, emailService);
         CaptchaService captchaService = new CaptchaService();
         HistoryDao historyDao = new HistoryDao(dataSource);
 

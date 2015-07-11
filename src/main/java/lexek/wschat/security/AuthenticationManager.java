@@ -3,13 +3,14 @@ package lexek.wschat.security;
 import com.google.common.io.BaseEncoding;
 import io.netty.util.internal.chmv8.ConcurrentHashMapV8;
 import lexek.httpserver.Request;
-import lexek.wschat.EmailConfiguration;
 import lexek.wschat.chat.GlobalRole;
 import lexek.wschat.db.jooq.tables.pojos.PendingConfirmation;
+import lexek.wschat.db.model.Email;
 import lexek.wschat.db.model.SessionDto;
 import lexek.wschat.db.model.UserAuthDto;
 import lexek.wschat.db.model.UserDto;
 import lexek.wschat.security.social.SocialAuthProfile;
+import lexek.wschat.services.EmailService;
 import lexek.wschat.util.Colors;
 import org.apache.http.HttpHeaders;
 import org.jooq.DSLContext;
@@ -20,11 +21,8 @@ import org.mindrot.jbcrypt.BCrypt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.mail.*;
+import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeBodyPart;
-import javax.mail.internet.MimeMessage;
-import javax.mail.internet.MimeMultipart;
 import javax.sql.DataSource;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -46,12 +44,12 @@ public class AuthenticationManager {
     private final SecureRandom secureRandom = new SecureRandom();
     private final String host;
     private final DataSource dataSource;
-    private final EmailConfiguration emailConfig;
+    private final EmailService emailService;
 
-    public AuthenticationManager(String host, DataSource dataSource, EmailConfiguration emailConfig) {
+    public AuthenticationManager(String host, DataSource dataSource, EmailService emailService) {
         this.host = host;
         this.dataSource = dataSource;
-        this.emailConfig = emailConfig;
+        this.emailService = emailService;
     }
 
     public UserAuthDto fastAuth(String name, String password, String ip) {
@@ -177,20 +175,6 @@ public class AuthenticationManager {
         return auth;
     }
 
-    public void addAuth(UserDto user, SocialAuthProfile profile) {
-        try (Connection connection = dataSource.getConnection()) {
-            DSL.using(connection).transaction(conf ->
-                DSL.using(conf)
-                    .insertInto(USERAUTH, USERAUTH.AUTH_NAME, USERAUTH.AUTH_ID, USERAUTH.AUTH_KEY, USERAUTH.SERVICE, USERAUTH.USER_ID)
-                    .values(profile.getName(), String.valueOf(profile.getId()), profile.getToken(), profile.getService(), user.getId())
-                    .onDuplicateKeyUpdate()
-                    .set(USERAUTH.USER_ID, USERAUTH.USER_ID.nvl(user.getId()))
-                    .execute());
-        } catch (DataAccessException | SQLException e) {
-            logger.error(e.getMessage());
-        }
-    }
-
     public boolean tieUserWithExistingAuth(UserDto userDto, UserAuthDto userAuthDto) {
         boolean success = false;
         try (Connection connection = dataSource.getConnection()) {
@@ -267,33 +251,6 @@ public class AuthenticationManager {
         return BaseEncoding.base32Hex().encode(bytes);
     }
 
-    private void sendConfirmationEmail(String email, String code) {
-        Session session = Session.getInstance(System.getProperties(), null);
-        MimeMessage message = new MimeMessage(session);
-
-        try {
-            InternetAddress from = new InternetAddress(emailConfig.getEmail());
-            message.setSubject("Confirm your email.");
-            message.setFrom(from);
-            message.addRecipients(Message.RecipientType.TO, InternetAddress.parse(email));
-
-            Multipart multipart = new MimeMultipart("alternative");
-            BodyPart messageBodyPart = new MimeBodyPart();
-            String link = "https://" + host + ":1337/confirm_email?code=" + URLEncoder.encode(code, "utf-8");
-            messageBodyPart.setText(link);
-            multipart.addBodyPart(messageBodyPart);
-
-            message.setContent(multipart);
-            Transport transport = session.getTransport("smtps");
-            transport.connect(emailConfig.getSmtpHost(), emailConfig.getSmtpPort(), emailConfig.getEmail(), emailConfig.getPassword());
-            transport.sendMessage(message, message.getAllRecipients());
-            transport.close();
-        } catch (MessagingException | UnsupportedEncodingException e) {
-            logger.error("exception", e);
-        }
-    }
-
-
     public boolean registerWithPassword(final String name, final String password, final String email) {
         boolean success = false;
         final String color = Colors.generateColor(name);
@@ -321,9 +278,13 @@ public class AuthenticationManager {
             });
             success = confirmationCode != null;
             if (success) {
-                sendConfirmationEmail(email, confirmationCode);
+                emailService.sendEmail(new Email(
+                    new InternetAddress(email),
+                    "Confirm your email.",
+                    "https://" + host + ":1337/confirm_email?code=" + URLEncoder.encode(confirmationCode, "utf-8")
+                ));
             }
-        } catch (DataAccessException | SQLException e) {
+        } catch (DataAccessException | SQLException | AddressException | UnsupportedEncodingException e) {
             logger.error(e.getMessage());
         }
         return success;
