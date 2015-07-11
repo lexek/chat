@@ -3,9 +3,12 @@ package lexek.httpserver;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.channel.*;
 import io.netty.handler.codec.http.*;
+import lexek.wschat.security.AuthenticationManager;
+import org.glassfish.jersey.server.ApplicationHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.ws.rs.core.Application;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -19,10 +22,15 @@ public class RequestDispatcher extends SimpleChannelInboundHandler<FullHttpReque
     private final List<MatcherEntry> matcherEntries = new ArrayList<>();
     private final ServerMessageHandler serverMessageHandler;
     private final ViewResolvers viewResolvers;
+    private final ApplicationHandler applicationHandler;
+    private final JerseyContainer jerseyContainer;
 
-    public RequestDispatcher(ServerMessageHandler serverMessageHandler, ViewResolvers viewResolvers) {
+    public RequestDispatcher(ServerMessageHandler serverMessageHandler, ViewResolvers viewResolvers, AuthenticationManager authenticationManager, Application resourceConfig) {
         this.serverMessageHandler = serverMessageHandler;
         this.viewResolvers = viewResolvers;
+        this.applicationHandler = new ApplicationHandler(resourceConfig);
+        this.jerseyContainer = new JerseyContainer(authenticationManager, applicationHandler);
+        matcherEntries.add(new MatcherEntry(Pattern.compile("/rest/.*"), jerseyContainer));
     }
 
     @Override

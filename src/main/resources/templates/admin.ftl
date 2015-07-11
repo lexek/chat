@@ -18,6 +18,7 @@
 
     <script src="//code.jquery.com/jquery-2.1.0.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js" charset="utf-8"></script>
+    <script src="/vendor/js/stringformatter.js"></script>
     <script src="/vendor/js/cal-heatmap.js"></script>
     <script src="/vendor/js/twemoji.js"></script>
     <script src="/vendor/js/angular.js"></script>
@@ -396,7 +397,7 @@
                 </h4>
             </div>
             <div class="panel-body">
-                <form action="/admin/api/emoticons" method="post" enctype="multipart/form-data" role="form" acceptcharset="UTF-8">
+                <form action="/rest/emoticons/add" method="post" enctype="multipart/form-data" role="form" acceptcharset="UTF-8">
                     <div class="form-group">
                         <label>Emoticon code</label>
                         <input type="text" name="code" placeholder="enter emoticon code" class="form-control"/>
@@ -1452,6 +1453,15 @@
                             ng-model="input.text"
                             required
                             />
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-offset-3 col-sm-9">
+                    <div class="checkbox">
+                        <label>
+                            <input type="checkbox" ng-model="input.onlyBroadcast"> only broadcast
+                        </label>
+                    </div>
                 </div>
             </div>
         </div>

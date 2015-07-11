@@ -21,17 +21,15 @@ usersModule.filter("mods", function() {
 usersModule.controller("UsersController", ["$scope", "$http", "chatService", function($scope, $http, chat) {
     $scope.users = [];
 
-    $http({method: "GET", url: "/api/chatters?room=" + encodeURIComponent(chat.activeRoom)})
-        .success(function (d, status, headers, config) {
-            angular.forEach(d, function(e) {
-                e.role = levels[e.role];
-                e.globalRole = globalLevels[e.globalRole];
-            });
-            $scope.users = d;
-        })
-        .error(function (data, status, headers, config) {
-            //alert.alert("danger", data);
+    $http({method: "GET",
+        url: "/rest/rooms/" + encodeURIComponent(chat.activeRoom) + "/chatters/publicList"
+    }).success(function (d) {
+        angular.forEach(d, function(e) {
+            e.role = levels[e.role];
+            e.globalRole = globalLevels[e.globalRole];
         });
+        $scope.users = d;
+    });
 
     $scope.$on('$viewContentLoaded', function() {
         $('#onlineList').TrackpadScrollEmulator({ wrapContent: false, autoHide: false });

@@ -4,10 +4,11 @@ import lexek.wschat.chat.GlobalRole;
 import org.jooq.Record;
 
 import java.io.Serializable;
+import java.security.Principal;
 
 import static lexek.wschat.db.jooq.tables.User.USER;
 
-public class UserDto implements Serializable {
+public class UserDto implements Serializable, Principal {
     private Long id;
     private String name;
     private GlobalRole role;

@@ -53,6 +53,19 @@ public class RoomDao {
         return result;
     }
 
+    public void delete(long id) {
+        try (Connection connection = dataSource.getConnection()) {
+            DSLContext ctx = DSL.using(connection);
+            ctx
+                .delete(ROOM)
+                .where(ROOM.ID.equal(id))
+                .execute();
+        } catch (DataAccessException | SQLException e) {
+            logger.error("sql exception", e);
+        }
+    }
+
+    @Deprecated
     public void delete(String name) {
         try (Connection connection = dataSource.getConnection()) {
             DSLContext ctx = DSL.using(connection);

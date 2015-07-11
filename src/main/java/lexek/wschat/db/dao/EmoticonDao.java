@@ -1,5 +1,6 @@
 package lexek.wschat.db.dao;
 
+import lexek.wschat.db.DataException;
 import lexek.wschat.db.jooq.tables.pojos.Emoticon;
 import org.jooq.DSLContext;
 import org.jooq.exception.DataAccessException;
@@ -43,7 +44,7 @@ public class EmoticonDao {
                 .values(emoticon.getCode(), emoticon.getFileName(), emoticon.getWidth(), emoticon.getHeight())
                 .execute();
         } catch (DataAccessException | SQLException e) {
-            logger.error("sql exception", e);
+            throw new DataException(e);
         }
     }
 

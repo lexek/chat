@@ -7,13 +7,10 @@ import lexek.wschat.chat.ConnectionManager;
 import lexek.wschat.chat.GlobalRole;
 import lexek.wschat.chat.User;
 import lexek.wschat.db.dao.UserDao;
-import lexek.wschat.db.jooq.tables.records.UserRecord;
 import lexek.wschat.db.model.DataPage;
 import lexek.wschat.db.model.UserData;
 import lexek.wschat.db.model.UserDto;
-import org.jooq.TableField;
-
-import java.util.Map;
+import lexek.wschat.db.model.form.UserChangeSet;
 
 public class UserService {
     private final Cache<String, User> userCache = CacheBuilder.newBuilder().weakValues().build();
@@ -31,12 +28,13 @@ public class UserService {
         return userDao.getById(id);
     }
 
-    public void update(UserDto user, UserDto admin, Map<TableField<UserRecord, ?>, Object> values) {
-        if (userDao.setFields(values, user.getId())) {
+    public void update(UserDto user, UserDto admin, UserChangeSet changeSet) {
+        UserDto updatedUser = userDao.update(user.getId(), changeSet);
+        if (updatedUser != null) {
             invalidate(user.getName());
             //close all connection authenticated with that user account
             connectionManager.forEach(connection -> user.getId().equals(connection.getUser().getId()), Connection::close);
-            journalService.userUpdated(user, admin, values);
+            journalService.userUpdated(user, admin, changeSet);
         }
     }
 

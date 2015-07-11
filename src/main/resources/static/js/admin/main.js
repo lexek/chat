@@ -42,13 +42,12 @@ var TicketCountServiceFactory = function($http) {
         this.count = "0";
 
         var self = this;
-        $http({method: "GET", url: "/admin/api/ticket_count"})
-            .success(function (d, status, headers, config) {
-                self.count = d;
-            })
-            .error(function (data, status, headers, config) {
-                //alert.alert("danger", data);
-            });
+        $http({
+            method: "GET",
+            url: "/rest/tickets/open/count"
+        }).success(function (d) {
+            self.count = d["count"];
+        });
     };
 
     TicketCountService.prototype.setCount = function(newCount) {
@@ -61,7 +60,7 @@ var TicketCountServiceFactory = function($http) {
 var MessageFilter = function($http, $sce) {
     var emoticons = {};
     var emoticonRegExp = null;
-    $http({method: 'GET', url: '/admin/api/emoticons'})
+    $http({method: 'GET', url: '/rest/emoticons/all'})
         .success(function(d, status, headers, config) {
             var data = d["records"];
             var emoticonCodeList = [];
@@ -196,7 +195,7 @@ AdminApplication.controller("AnnouncementsWidgetController", AnnouncementsWidget
 
 var DashboardController = function($scope, $http, alert) {
     var loadMetrics = function () {
-        $http({method: "GET", url: "/admin/api/metrics"})
+        $http({method: "GET", url: "/rest/stats/global/metrics"})
             .success(function (d, status, headers, config) {
                 var data = d["metrics"];
                 var streams = d["streams"];
@@ -343,40 +342,35 @@ var DashboardController = function($scope, $http, alert) {
     $scope.filter = "";
 
     var loadRooms = function() {
-        var url = "/admin/api/rooms";
-        $http({method: "GET", url: url})
-            .success(function (d, status, headers, config) {
-                $scope.entries = d;
-            })
-            .error(function (data, status, headers, config) {
-                alert.alert("danger", data);
-                $scope.entries.length = 0;
-            });
+        $http({
+            method: "GET",
+            url: "/rest/rooms/all"
+        }).success(function (d) {
+            $scope.entries = d;
+        });
     };
 
     $scope.add = function() {
         var data = $scope.input;
-        data["action"] = "ADD";
+        data["topic"] = "";
         $scope.input = {};
-        $http({method: "POST", data: $.param(data), url: "/admin/api/room"})
-            .success(function (data, status, headers, config) {
-                loadPage();
-            })
-            .error(function (data, status, headers, config) {
-            });
+        $http({
+            method: "POST",
+            data: data,
+            url: "/rest/rooms/new"
+        }).success(function () {
+            loadRooms();
+        });
     };
 
-    $scope.remove = function(name) {
-        var data = {
-            "action": "DELETE",
-            "NAME": name
-        };
-        $http({method: "POST", data: $.param(data), url: "/admin/api/rooms"})
-            .success(function (data, status, headers, config) {
-                loadPage();
-            })
-            .error(function (data, status, headers, config) {
-            });
+    $scope.remove = function(id) {
+        $http({
+            method: "DELETE",
+            data: data,
+            url: "/rest/rooms/" + id
+        }).success(function () {
+            loadRooms();
+        });
     };
 
     loadRooms();
@@ -391,7 +385,7 @@ var EmoticonsController = function($scope, $http, alert) {
 
     var loadEmoticons = function() {
         $scope.emoticons.length = 0;
-        $http({method: "GET", url: "/admin/api/emoticons"})
+        $http({method: "GET", url: "/rest/emoticons/all"})
             .success(function (d, status, headers, config) {
                 var data = d["records"];
                 angular.forEach(data, function (e) {
@@ -410,7 +404,7 @@ var EmoticonsController = function($scope, $http, alert) {
     };
 
     $scope.requestDelete = function(id) {
-        $http({method: "POST", url: "/admin/api/emoticons?delete="+id})
+        $http({method: "DELETE", url: "/rest/emoticons/"+id})
             .success(function(data, status, headers, config) {
                 loadEmoticons();
             })
@@ -422,7 +416,7 @@ var EmoticonsController = function($scope, $http, alert) {
     $scope.submitForm = function() {
         $http({
             method  : "POST",
-            url     : "/admin/api/emoticons",
+            url     : "/rest/emoticons/add",
             data    : $scope.formData,
             headers : { "Content-Type": "multipart/form-data" }
         })
@@ -461,36 +455,25 @@ var UsersController = function($scope, $location, $http, alert, title) {
     $scope.user = null;
 
     var loadPage = function() {
-        var order = $scope.order;
-        var orderDesc = $scope.orderDesc;
-        var url = "/admin/api/users?page=" + $scope.page;
-        if (order && order !== "") {
-            url += "&orderBy=" + order;
-            if (orderDesc) {
-                url += "&orderDesc=true";
+        $http({
+            method: "GET",
+            url: "/rest/users/all",
+            params: {
+                search: $scope.search,
+                page: $scope.page
             }
-        }
-        if ($scope.search) {
-            url += "&search=" + encodeURI($scope.search);
-        }
-        $http({method: "GET", url: url})
-            .success(function (d, status, headers, config) {
-                $scope.users = [];
-                angular.forEach(d["data"], function(e) {
-                    var u = e.user;
-                    u.authServices = e.authServices;
-                    u.authNames = e.authNames;
-                    $scope.users.push(u);
-                });
-                $scope.totalPages = d["pageCount"];
-                title.secondary = "page " + ($scope.page+1) + "/" + ($scope.totalPages);
-                $scope.user = null;
-            })
-            .error(function (data, status, headers, config) {
-                alert.alert("danger", data);
-                $scope.users.length = 0;
-                $scope.user = null;
+        }).success(function (d) {
+            $scope.users = [];
+            angular.forEach(d["data"], function(e) {
+                var u = e.user;
+                u.authServices = e.authServices;
+                u.authNames = e.authNames;
+                $scope.users.push(u);
             });
+            $scope.totalPages = d["pageCount"];
+            title.secondary = "page " + ($scope.page+1) + "/" + ($scope.totalPages);
+            $scope.user = null;
+        });
     };
 
     $scope.selectUser = function(u) {
@@ -585,7 +568,7 @@ var OnlineController = function($scope, $http, $modal, alert, title) {
 
     var loadOnline = function() {
         $scope.connections.length = 0;
-        $http({method: "GET", url: "/admin/api/online"})
+        $http({method: "GET", url: "/rest/users/online"})
             .success(function (data, status, headers, config) {
                 $scope.connections = data;
                 title.secondary = $scope.connections.length;
@@ -597,7 +580,7 @@ var OnlineController = function($scope, $http, $modal, alert, title) {
 
     var loadBlockedIps = function() {
         $scope.connections.length = 0;
-        $http({method: "GET", url: "/admin/api/blockedip"})
+        $http({method: "GET", url: "/rest/security/ip-block"})
             .success(function (data, status, headers, config) {
                 $scope.blockedIps = data;
             })
@@ -628,7 +611,7 @@ var OnlineController = function($scope, $http, $modal, alert, title) {
     };
 
     $scope.blockIp = function(ip) {
-        $http({method: "POST", url: "/admin/api/blockedip?add="+ip})
+        $http({method: "POST", url: "/rest/security/ip-block", params: {ip: ip}})
             .success(function (data, status, headers, config) {
                 $scope.blockedIps = data;
             })
@@ -637,7 +620,7 @@ var OnlineController = function($scope, $http, $modal, alert, title) {
     };
 
     $scope.unblockIp = function(ip) {
-        $http({method: "POST", url: "/admin/api/blockedip?remove="+ip})
+        $http({method: "DELETE", url: "/rest/security/ip-block", params: {ip: ip}})
             .success(function (data, status, headers, config) {
                 $scope.blockedIps = data;
             })
@@ -675,7 +658,7 @@ var OnlineController = function($scope, $http, $modal, alert, title) {
 
 var UserActivityController = function($scope, $http, $modal, user) {
     $scope.user = user;
-    $http({method: "GET", params: {"userId": user.id},  url: "/admin/api/activity"})
+    $http({method: "GET", url: "/rest/stats/user/" + user.id + "/activity"})
         .success(function(data, status, headers, config) {
             var activity = {};
             angular.forEach(data, function(v, k) {
@@ -725,69 +708,55 @@ var UserController = function($scope, $route, $http, $modal, alert, id) {
     };
 
     $scope.saveRenameAvailable = function() {
-        var data = {
-            action: "UPDATE",
-            id: $scope.user.id,
-            rename: $scope.input.renameAvailable
-        };
-        $http({method: "POST", data: $.param(data),  url: "/admin/api/user"})
-            .success(function(data, status, headers, config) {
-                $scope.user.renameAvailable = $scope.input.renameAvailable;
-            })
-            .error(function(data, status, headers, config) {
-                alert.alert("danger", data);
-            });
+        $http({
+            method: "PUT",
+            data: {
+                rename: $scope.input.renameAvailable
+            },
+            url: "/rest/users/" + $scope.user.id
+        }).success(function() {
+            $scope.user.renameAvailable = $scope.input.renameAvailable;
+        });
     };
 
     $scope.saveBanned = function() {
-        var data = {
-            action: "UPDATE",
-            id: $scope.user.id,
-            banned: $scope.input.banned
-        };
-        $http({method: "POST", data: $.param(data), url: "/admin/api/user"})
-            .success(function(data, status, headers, config) {
-                $scope.user.banned = $scope.input.banned;
-            })
-            .error(function(data, status, headers, config) {
-                alert.alert("danger", data);
-            });
+        $http({
+            method: "PUT",
+            data: {
+                banned: $scope.input.banned
+            },
+            url: "/rest/users/" + $scope.user.id
+        }).success(function() {
+            $scope.user.banned = $scope.input.banned;
+        });
     };
 
     $scope.saveRole = function() {
-        var data = {
-            action: "UPDATE",
-            id: $scope.user.id,
-            role: $scope.input.role
-        };
         if ($scope.input.role === "USER" || $scope.input.role === "MOD" || $scope.input.role === "ADMIN") {
-            $http({method: "POST", data: $.param(data), url: "/admin/api/user"})
-                .success(function (data, status, headers, config) {
-                    $scope.user.role = $scope.input.role;
-                    $scope.edit("");
-                })
-                .error(function (data, status, headers, config) {
-                    $scope.edit("");
-                    alert.alert("danger", data);
-                });
+            $http({
+                method: "PUT",
+                data: {
+                    role: $scope.input.role
+                },
+                url: "/rest/users/" + $scope.user.id
+            }).success(function () {
+                $scope.user.role = $scope.input.role;
+                $scope.edit("");
+            });
         }
     };
 
     $scope.saveName = function() {
-        var data = {
-            action: "UPDATE",
-            id: $scope.user.id,
-            name: $scope.input.name
-        };
-        $http({method: "POST", data: $.param(data), url: "/admin/api/user"})
-            .success(function (data, status, headers, config) {
-                $scope.user.name = $scope.input.name;
-                $scope.edit("");
-            })
-            .error(function (data, status, headers, config) {
-                $scope.edit("");
-                alert.alert("danger", data);
-            });
+        $http({
+            method: "PUT",
+            data: {
+                name: $scope.input.name
+            },
+            url: "/rest/users/" + $scope.user.id
+        }).success(function () {
+            $scope.user.name = $scope.input.name;
+            $scope.edit("");
+        });
     };
 
     $scope.editing = function(variable) {
@@ -814,18 +783,13 @@ var UserController = function($scope, $route, $http, $modal, alert, id) {
     };
 
     $scope.requestDelete = function() {
-        var data = {
-            action: "DELETE",
-            id: $scope.user.id
-        };
         if (confirm("You sure that you want to delete user \"" + $scope.user.name + "\"?")) {
-            $http({method: "POST", data: $.param(data), url: "/admin/api/users"})
-                .success(function(data, status, headers, config) {
-                    $route.reload();
-                })
-                .error(function(data, status, headers, config) {
-                    alert.alert("danger", data);
-                });
+            $http({
+                method: "POST",
+                url: "/rest/users/" + $scope.user.id
+            }).success(function() {
+                $route.reload();
+            });
         }
     };
 
@@ -883,23 +847,22 @@ var UserModalController = function($scope, $http, $modal, $modalInstance, id) {
     }
 
     var loadPage = function() {
-        var url = "/admin/api/user?id=" + id;
-        $http({method: "GET", url: url})
-            .success(function (d, status, headers, config) {
-                $scope.user = d.user;
-                $scope.input.name = $scope.user.name;
-                $scope.input.role = $scope.user.role;
-                $scope.input.banned = $scope.user.banned;
-                $scope.input.renameAvailable = $scope.user.renameAvailable;
-                if (d.authServices) {
-                    var namesArray = d.authNames.split(",");
-                    angular.forEach(d.authServices.split(","), function(e, i) {
-                        $scope.auth[e] = namesArray[i];
-                    });
-                }
-            })
-            .error(function (data, status, headers, config) {
-            });
+        $http({
+            method: "GET",
+            url: StringFormatter.format("/rest/users/{number}", id)
+        }).success(function (d) {
+            $scope.user = d.user;
+            $scope.input.name = $scope.user.name;
+            $scope.input.role = $scope.user.role;
+            $scope.input.banned = $scope.user.banned;
+            $scope.input.renameAvailable = $scope.user.renameAvailable;
+            if (d.authServices) {
+                var namesArray = d.authNames.split(",");
+                angular.forEach(d.authServices.split(","), function(e, i) {
+                    $scope.auth[e] = namesArray[i];
+                });
+            }
+        });
     };
 
     $scope.isUser = function() {
@@ -907,69 +870,55 @@ var UserModalController = function($scope, $http, $modal, $modalInstance, id) {
     };
 
     $scope.saveRenameAvailable = function() {
-        var data = {
-            action: "UPDATE",
-            id: $scope.user.id,
-            rename: $scope.input.renameAvailable
-        };
-        $http({method: "POST", data: $.param(data),  url: "/admin/api/user"})
-            .success(function(data, status, headers, config) {
-                $scope.user.renameAvailable = $scope.input.renameAvailable;
-            })
-            .error(function(data, status, headers, config) {
-                alert.alert("danger", data);
-            });
+        $http({
+            method: "PUT",
+            data: {
+                rename: $scope.input.renameAvailable
+            },
+            url: "/rest/users/" + $scope.user.id
+        }).success(function() {
+            $scope.user.renameAvailable = $scope.input.renameAvailable;
+        });
     };
 
     $scope.saveBanned = function() {
-        var data = {
-            action: "UPDATE",
-            id: $scope.user.id,
-            banned: $scope.input.banned
-        };
-        $http({method: "POST", data: $.param(data), url: "/admin/api/user"})
-            .success(function(data, status, headers, config) {
-                $scope.user.banned = $scope.input.banned;
-            })
-            .error(function(data, status, headers, config) {
-                alert.alert("danger", data);
-            });
+        $http({
+            method: "PUT",
+            data: {
+                banned: $scope.input.banned
+            },
+            url: "/rest/users/" + $scope.user.id
+        }).success(function() {
+            $scope.user.banned = $scope.input.banned;
+        });
     };
 
     $scope.saveRole = function() {
-        var data = {
-            action: "UPDATE",
-            id: $scope.user.id,
-            role: $scope.input.role
-        };
         if ($scope.input.role === "USER" || $scope.input.role === "MOD" || $scope.input.role === "ADMIN") {
-            $http({method: "POST", data: $.param(data), url: "/admin/api/user"})
-                .success(function (data, status, headers, config) {
-                    $scope.user.role = $scope.input.role;
-                    $scope.edit("");
-                })
-                .error(function (data, status, headers, config) {
-                    $scope.edit("");
-                    alert.alert("danger", data);
-                });
+            $http({
+                method: "PUT",
+                data: {
+                    role: $scope.input.role
+                },
+                url: "/rest/users/" + $scope.user.id
+            }).success(function () {
+                $scope.user.role = $scope.input.role;
+                $scope.edit("");
+            });
         }
     };
 
     $scope.saveName = function() {
-        var data = {
-            action: "UPDATE",
-            id: $scope.user.id,
-            name: $scope.input.name
-        };
-        $http({method: "POST", data: $.param(data), url: "/admin/api/user"})
-            .success(function (data, status, headers, config) {
-                $scope.user.name = $scope.input.name;
-                $scope.edit("");
-            })
-            .error(function (data, status, headers, config) {
-                $scope.edit("");
-                alert.alert("danger", data);
-            });
+        $http({
+            method: "PUT",
+            data: {
+                name: $scope.input.name
+            },
+            url: "/rest/users/" + $scope.user.id
+        }).success(function () {
+            $scope.user.name = $scope.input.name;
+            $scope.edit("");
+        });
     };
 
     $scope.editing = function(variable) {
@@ -996,18 +945,13 @@ var UserModalController = function($scope, $http, $modal, $modalInstance, id) {
     };
 
     $scope.requestDelete = function() {
-        var data = {
-            action: "DELETE",
-            id: $scope.user.id
-        };
         if (confirm("You sure that you want to delete user \"" + $scope.user.name + "\"?")) {
-            $http({method: "POST", data: $.param(data), url: "/admin/api/users"})
-                .success(function(data, status, headers, config) {
-                    $route.reload();
-                })
-                .error(function(data, status, headers, config) {
-                    alert.alert("danger", data);
-                });
+            $http({
+                method: "DELETE",
+                url: "/rest/users/" + $scope.user.id
+            }).success(function() {
+                $route.reload();
+            });
         }
     };
 
@@ -1040,17 +984,11 @@ var JournalController = function($scope, $location, $http, $modal, alert, title)
     $scope.secondaryTitle = $scope.page;
 
     var loadPage = function() {
-        var url = "/admin/api/journal?page=" + $scope.page;
-        $http({method: "GET", url: url})
+        $http({method: "GET", url: "/rest/journal/global", params: {page: $scope.page}})
             .success(function (d, status, headers, config) {
                 $scope.entries = d["data"];
                 $scope.totalPages = d["pageCount"];
                 title.secondary = "page " + ($scope.page+1) + "/" + ($scope.totalPages);
-                angular.forEach($scope.entries, function (e) {
-                    if (e.actionDescription) {
-                        e.actionDescription = angular.fromJson(e.actionDescription);
-                    }
-                });
             })
             .error(function (data, status, headers, config) {
                 alert.alert("danger", data);
@@ -1123,11 +1061,14 @@ var RoomJournalModalController = function($scope, $http, $modal, room) {
     $scope.page = 0;
 
     var loadPage = function() {
-        $http({method: "GET", url: "/admin/api/journal", params: {page: $scope.page, room: room.id}})
-            .success(function (d, status, headers, config) {
-                $scope.journal = d["data"];
-                $scope.totalPages = d["pageCount"];
-            });
+        $http({
+            method: "GET",
+            url: StringFormatter.format("/rest/journal/room/{number}", room.id),
+            params: {page: $scope.page}
+        }).success(function (d, status, headers, config) {
+            $scope.journal = d["data"];
+            $scope.totalPages = d["pageCount"];
+        });
     };
 
     $scope.previousPage = function() {
@@ -1212,20 +1153,17 @@ var TicketsController = function($scope, $location, $http, $modal, alert, title)
     $scope.opened = true;
 
     var loadPage = function() {
-        var url = "/admin/api/tickets?page=" + $scope.page;
-        if (!$scope.opened) {
-            url = url + "&open=false";
-        }
-        $http({method: "GET", url: url})
-            .success(function (d, status, headers, config) {
-                $scope.entries = d["data"];
-                $scope.totalPages = d["pageCount"];
-                title.secondary = ($scope.opened ? "opened" : "closed") + ", page " + ($scope.page+1) + "/" + ($scope.totalPages+1);
-            })
-            .error(function (data, status, headers, config) {
-                alert.alert("danger", data);
-                $scope.entries.length = 0;
-            });
+        $http({
+            method: "GET",
+            url: StringFormatter.format("/rest/tickets/{string}/all", $scope.opened ? "open" : "closed"),
+            params: {
+                page: $scope.page
+            }
+        }).success(function (d) {
+            $scope.entries = d["data"];
+            $scope.totalPages = d["pageCount"];
+            title.secondary = ($scope.opened ? "opened" : "closed") + ", page " + ($scope.page+1) + "/" + ($scope.totalPages+1);
+        });
     };
 
     $scope.previousPage = function() {
@@ -1254,16 +1192,15 @@ var TicketsController = function($scope, $location, $http, $modal, alert, title)
         var comment = prompt("Type in closing comment.");
         if (comment != null) {
             var data = {
-                "id": id,
                 "comment": comment
             };
-            $http({method: "POST", url: "/admin/api/tickets", data: $.param(data), headers: {"Content-Type": "application/x-www-form-urlencoded"}})
-                .success(function(data, status, headers, config) {
-                    loadPage();
-                })
-                .error(function(data, status, headers, config) {
-                    alert.alert("danger", data);
-                });
+            $http({
+                method: "POST",
+                url: "/rest/tickets/ticket/"+id+"/close",
+                data: data
+            }).success(function() {
+                loadPage();
+            });
         }
     };
 
@@ -1320,8 +1257,7 @@ var HistoryController = function($scope, $http, title, options) {
 
     var loadPage = function() {
         var params = {
-            "page": $scope.page,
-            "room": $scope.room.id
+            "page": $scope.page
         };
         if ($scope.users) {
             params["user"] = $scope.users;
@@ -1332,13 +1268,10 @@ var HistoryController = function($scope, $http, title, options) {
         if ($scope.until) {
             params["until"] = $scope.until;
         }
-        $http({method: "GET", url: "/admin/api/history", params: params})
-            .success(function (d, status, headers, config) {
+        $http({method: "GET", url: StringFormatter.format("/rest/rooms/{number}/history/all", $scope.room.id), params: params})
+            .success(function (d) {
                 $scope.entries = d["data"];
                 $scope.totalPages = d["pageCount"];
-            })
-            .error(function (data, status, headers, config) {
-                $scope.entries.length = 0;
             });
     };
 
@@ -1382,17 +1315,15 @@ var PollsController = function($scope, $http, room) {
 
     var loadPage = function() {
         $scope.polls.length = 0;
-        var url = "/admin/api/polls?room=" + room.id;
-        $http({method: "GET", url: url})
-            .success(function (d, status, headers, config) {
-                $scope.polls = d;
-                angular.forEach($scope.polls, function(e) {
-                    e.maxPollVotes = Math.max.apply(null, e.votes)
-                });
-            })
-            .error(function (data, status, headers, config) {
-                alert.alert("danger", data);
+        $http({
+            method: "GET",
+            url: StringFormatter.format("/rest/rooms/{number}/polls/all", room.id)
+        }).success(function (d) {
+            $scope.polls = d;
+            angular.forEach($scope.polls, function(e) {
+                e.maxPollVotes = Math.max.apply(null, e.votes)
             });
+        });
     };
 
     loadPage();
@@ -1411,20 +1342,17 @@ var ComposePollController = function($scope, $modalInstance, $http, roomId) {
     $scope.submit = function() {
         $scope.busy = true;
         var data = {
-            "action": "CREATE",
-            "room": roomId,
             "question": $scope.input.question,
-            "option": $.map($scope.input.option, function(e) {return e.value})
+            "options": $.map($scope.input.option, function(e) {return e.value})
         };
-        $http({method: "POST", url: "/admin/api/poll", data: $.param(data, true), headers: {"Content-Type": "application/x-www-form-urlencoded"}})
-            .success(function(data, status, headers, config) {
-                $modalInstance.close();
-                $scope.busy = false;
-            })
-            .error(function(data, status, headers, config) {
-                $scope.error = data;
-                $scope.busy = false;
-            });
+        $http({
+            method: "POST",
+            url: StringFormatter.format("/rest/rooms/{number}/polls/current", roomId),
+            data: data
+        }).success(function(data) {
+            $modalInstance.close(data);
+            $scope.busy = false;
+        });
     };
 
     $scope.addOption = function() {
@@ -1453,13 +1381,11 @@ var ChattersController = function($scope, $location, $http, $modal, room) {
 
     var loadPage = function() {
         $scope.users.length = 0;
-        var order = $scope.order;
-        var orderDesc = $scope.orderDesc;
-        var url = "/admin/api/chatters?page=" + $scope.page + "&room=" + $scope.room.id;
-        if ($scope.search) {
-            url += "&search=" + encodeURI($scope.search);
-        }
-        $http({method: "GET", url: url})
+        var params = {
+            page: $scope.page,
+            search: $scope.search
+        };
+        $http({method: "GET", url: StringFormatter.format("/rest/rooms/{number}/chatters/all", room.id), params: params})
             .success(function (d, status, headers, config) {
                 $scope.users = d["data"];
                 $scope.totalPages = d["pageCount"];
@@ -1524,7 +1450,7 @@ var TopChattersController = function($scope, $http, $modal, room) {
     $scope.room = room;
     $scope.entries = [];
 
-    $http({method: "GET", params: {"roomId": room.id},  url: "/admin/api/activity"})
+    $http({method: "GET", url: StringFormatter.format("/rest/stats/room/{number}/topChatters", room.id)})
         .success(function(data) {
             $scope.entries = data;
         });
@@ -1554,33 +1480,33 @@ var RoomController = function($scope, $location, $http, $sce, $modal, alert, tit
 
     var loadPage = function() {
         $scope.messages.length = 0;
-        $http({method: "GET", url: "/admin/api/room", params: {id: $scope.roomId}})
-            .success(function (d, status, headers, config) {
-                $scope.chatterOffset = 0;
-                $scope.messages = d["history"];
-                $scope.chatters = d["chatters"];
-                $scope.roomData = d["room"];
-                $scope.announcements = d["announcements"];
+        $http({method: "GET", url: StringFormatter.format("/rest/rooms/{number}/history/peek", $scope.roomId)})
+            .success(function (data) {
+                $scope.messages = data;
+            });
+        $http({method: "GET", url: StringFormatter.format("/rest/rooms/{number}/announcements/all", $scope.roomId)})
+            .success(function (data) {
+                $scope.announcements = data;
+            });
+        $http({method: "GET", url: StringFormatter.format("/rest/rooms/{number}/info", $scope.roomId)})
+            .success(function (data) {
+                $scope.roomData = data;
                 title.title = $scope.roomData.name;
+            });
+        $http({method: "GET", url: StringFormatter.format("/rest/rooms/{number}/chatters/online", $scope.roomId)})
+            .success(function (data) {
+                $scope.chatterOffset = 0;
+                $scope.chatters = data;
                 title.secondary = $scope.chatters.length + " online"
-            })
-            .error(function (data, status, headers, config) {
-                alert.alert("danger", data);
             });
-        $http({method: "GET", url: "/admin/api/poll", params: {room: $scope.roomId}})
-            .success(function (d, status, headers, config) {
-                $scope.poll = d;
+        $http({method: "GET", url: StringFormatter.format("/rest/rooms/{number}/polls/current", $scope.roomId)})
+            .success(function (data) {
+                $scope.poll = data;
                 $scope.maxPollVotes = Math.max.apply(null, $scope.poll.votes);
-            })
-            .error(function (data, status, headers, config) {
-                alert.alert("danger", data);
             });
-        $http({method: "GET", url: "/admin/api/journal", params: {room: $scope.roomId, peek: "true"}})
-            .success(function (d, status, headers, config) {
+        $http({method: "GET", url: "/rest/journal/room/" + $scope.roomId + "/peek"})
+            .success(function (d) {
                 $scope.journal = d.data;
-            })
-            .error(function (data, status, headers, config) {
-                alert.alert("danger", data);
             });
     };
 
@@ -1651,17 +1577,12 @@ var RoomController = function($scope, $location, $http, $sce, $modal, alert, tit
 
     $scope.closePoll = function() {
         if ($scope.poll.poll) {
-            var data = {
-                "action": "CLOSE",
-                "room": $scope.roomData.id
-            };
-            $http({method: "POST", url: "/admin/api/poll", data: $.param(data), headers: {"Content-Type": "application/x-www-form-urlencoded"}})
-                .success(function(data, status, headers, config) {
-                    loadPage();
-                })
-                .error(function(data, status, headers, config) {
-                    alert.alert("danger", data);
-                });
+            $http({
+                method: "DELETE",
+                url: StringFormatter.format("/rest/rooms/{number}/polls/current", $scope.roomData.id)
+            }).success(function() {
+                $scope.poll = null;
+            });
         }
     };
 
@@ -1676,8 +1597,10 @@ var RoomController = function($scope, $location, $http, $sce, $modal, alert, tit
                 }
             }
         });
-        modalInstance.result.then(function () {
-            loadPage();
+        modalInstance.result.then(function (data) {
+            if (data) {
+                $scope.poll = data;
+            }
         });
     };
 
@@ -1710,24 +1633,23 @@ var RoomController = function($scope, $location, $http, $sce, $modal, alert, tit
                     return $scope.roomData;
                 }
             }
-        }).result.then(function () {
-            loadPage();
+        }).result.then(function (data) {
+            if (data) {
+                $scope.announcements.push(data);
+            }
         });
     };
 
     $scope.setAnnouncementInactive = function(id) {
-        var data = {
-            "action": "DELETE",
-            "id": id
-        };
-
-        $http({method: "POST", data: $.param(data), url: "/admin/api/announcement"})
-            .success(function(data, status, headers, config) {
-                loadPage();
-            })
-            .error(function(data, status, headers, config) {
-                alert.alert("danger", data);
+        $http({
+            method: "DELETE",
+            url: StringFormatter.format("/rest/rooms/{number}/announcements/{number}", $scope.roomId, id)
+        }).success(function() {
+            var object = null;
+            $scope.announcements = $scope.announcements.filter(function(e) {
+                return e.id !== id;
             });
+        });
     };
 
     var classMap = {
@@ -1769,7 +1691,7 @@ var RoomController = function($scope, $location, $http, $sce, $modal, alert, tit
                 }
             }
         });
-    }
+    };
 
     {
         var locationSearch = $location.search();
@@ -1785,14 +1707,12 @@ var ServicesController = function($scope, $location, $http, alert) {
 
     var loadPage = function() {
         $scope.entries.length = 0;
-        var url = "/admin/api/services";
-        $http({method: "GET", url: url})
-            .success(function (d, status, headers, config) {
-                $scope.entries = d;
-            })
-            .error(function (data, status, headers, config) {
-                alert.alert("danger", data);
-            });
+        $http({
+            method: "GET",
+            url: "/rest/services/all"
+        }).success(function (d, status, headers, config) {
+            $scope.entries = d;
+        });
     };
 
     $scope.getLabelClass = function(state) {
@@ -1815,29 +1735,25 @@ var ComposeAnnouncementController = function($scope, $http, $modalInstance, room
     $scope.room = room;
 
     $scope.input = {
-        until: $scope.today,
-        text: ""
+        text: "",
+        onlyBroadcast: false
     };
 
     $scope.submitForm = function() {
         var data = {
-            "action": "ADD",
-            "room": room.id,
-            "text": $scope.input.text
+            "text": $scope.input.text,
+            "onlyBroadcast": $scope.input.onlyBroadcast
         };
-        $http({method: "POST", url: "/admin/api/announcement", data: $.param(data), headers: {"Content-Type": "application/x-www-form-urlencoded"}})
-            .success(function(data, status, headers, config) {
-                $modalInstance.close();
-            })
-            .error(function(data, status, headers, config) {
-                $scope.error = data;
+        $http({method: "POST", url: StringFormatter.format("/rest/rooms/{number}/announcements", room.id), data: data})
+            .success(function(data) {
+                $modalInstance.close(data);
             });
     };
 
     $scope.close = function() {
         $modalInstance.dismiss('cancel');
     };
-}
+};
 
 AdminApplication.config(["$routeProvider", "$locationProvider", function($routeProvider, $locationProvider) {
     $locationProvider.html5Mode(true);

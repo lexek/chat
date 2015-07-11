@@ -32,8 +32,8 @@ function($modal, settings, $translate, $http, $timeout, notificationService, msg
 
         var c = this;
 
-        $http({method: 'GET', url: '/admin/api/emoticons'})
-            .success(function(d, status) {
+        $http({method: 'GET', url: '/rest/emoticons/all'})
+            .success(function(d, status, headers, config) {
                 if (status == 200) {
                     var data = d["records"];
                     if (data) {

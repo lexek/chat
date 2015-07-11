@@ -2,8 +2,8 @@ package lexek.wschat.db.dao;
 
 import lexek.wschat.db.jooq.tables.pojos.Ticket;
 import lexek.wschat.db.model.DataPage;
-import lexek.wschat.db.model.TicketData;
 import lexek.wschat.db.model.UserDto;
+import lexek.wschat.db.model.rest.TicketRestModel;
 import org.jooq.DSLContext;
 import org.jooq.exception.DataAccessException;
 import org.jooq.impl.DSL;
@@ -72,11 +72,11 @@ public class TicketDao {
         }
     }
 
-    public DataPage<TicketData> getAll(boolean isOpen, int page, int pageLength) {
-        DataPage<TicketData> result = null;
+    public DataPage<TicketRestModel> getAll(boolean isOpen, int page, int pageLength) {
+        DataPage<TicketRestModel> result = null;
         try (Connection connection = dataSource.getConnection()) {
             DSLContext ctx = DSL.using(connection);
-            List<TicketData> data = ctx
+            List<TicketRestModel> data = ctx
                 .select()
                 .from(TICKET)
                 .join(USER.as("user")).on(TICKET.USER.equal(USER.as("user").ID))
@@ -86,7 +86,7 @@ public class TicketDao {
                 .limit(page * pageLength, pageLength)
                 .fetch()
                 .stream()
-                .map(record -> new TicketData(
+                .map(record -> new TicketRestModel(
                     UserDto.fromRecord(record.into(USER.as("user"))),
                     record.into(TICKET).into(Ticket.class),
                     record.getValue(USER.as("closedBy").NAME)))
