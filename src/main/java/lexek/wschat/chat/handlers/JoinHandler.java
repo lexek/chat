@@ -3,27 +3,22 @@ package lexek.wschat.chat.handlers;
 import com.google.common.collect.ImmutableList;
 import lexek.wschat.chat.*;
 import lexek.wschat.db.model.Chatter;
-import lexek.wschat.services.AnnouncementService;
-import lexek.wschat.services.PollService;
-import lexek.wschat.services.PollState;
+import lexek.wschat.services.RoomJoinNotificationService;
 
 import java.util.List;
 
 public class JoinHandler extends AbstractMessageHandler {
+    private final RoomJoinNotificationService notificationService;
     private final RoomManager roomManager;
-    private final AnnouncementService announcementService;
     private final MessageBroadcaster messageBroadcaster;
-    private final PollService pollService;
 
-    public JoinHandler(RoomManager roomManager,
-                       AnnouncementService announcementService,
-                       MessageBroadcaster messageBroadcaster,
-                       PollService pollService) {
+    public JoinHandler(RoomJoinNotificationService notificationService,
+                       RoomManager roomManager,
+                       MessageBroadcaster messageBroadcaster) {
         super(MessageType.JOIN, GlobalRole.UNAUTHENTICATED, 1, false, true);
+        this.notificationService = notificationService;
         this.roomManager = roomManager;
-        this.announcementService = announcementService;
         this.messageBroadcaster = messageBroadcaster;
-        this.pollService = pollService;
     }
 
     @Override
@@ -42,21 +37,7 @@ public class JoinHandler extends AbstractMessageHandler {
                     messageBroadcaster.submitMessage(joinMessage, connection, room.FILTER);
                 }
             }
-            if (connection.isNeedNames()) {
-                ImmutableList.Builder<Chatter> users = ImmutableList.builder();
-                room.getChatters().stream().filter(c -> c.hasRole(LocalRole.USER)).forEach(users::add);
-                connection.send(Message.namesMessage(room.getName(), users.build()));
-            }
-
-            announcementService.sendAnnouncements(connection, room);
-
-            PollState activePoll = pollService.getActivePoll(room);
-            if (activePoll != null) {
-                connection.send(Message.pollMessage(MessageType.POLL, room.getName(), activePoll));
-                if (activePoll.getVoted().contains(user.getId())) {
-                    connection.send(Message.pollVotedMessage(room.getName()));
-                }
-            }
+            notificationService.joinedRoom(connection, chatter, room);
         } else {
             if (room == null) {
                 connection.send(Message.errorMessage("ROOM_NOT_FOUND", ImmutableList.of(args.get(0))));

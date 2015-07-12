@@ -169,30 +169,6 @@ var TitleController = function($scope, title) {
 
 AdminApplication.controller("TitleController", TitleController);
 
-var AnnouncementsWidgetController = function($scope, $http, $sce, alert) {
-    $scope.announcements = [];
-    $scope.show = false;
-
-    var load = function() {
-        $scope.announcements.length = 0;
-        var url = "/admin/api/announcements";
-        $http({method: "GET", url: url})
-            .success(function (d, status, headers, config) {
-                $scope.announcements = d;
-                angular.forEach($scope.announcements, function(e) {
-                    e.text = $sce.trustAsHtml(e.text);
-                });
-            })
-            .error(function (data, status, headers, config) {
-                alert.alert("danger", data);
-            });
-    };
-
-    load();
-};
-
-AdminApplication.controller("AnnouncementsWidgetController", AnnouncementsWidgetController);
-
 var DashboardController = function($scope, $http, alert) {
     var loadMetrics = function () {
         $http({method: "GET", url: "/rest/stats/global/metrics"})
@@ -1744,7 +1720,7 @@ var ComposeAnnouncementController = function($scope, $http, $modalInstance, room
             "text": $scope.input.text,
             "onlyBroadcast": $scope.input.onlyBroadcast
         };
-        $http({method: "POST", url: StringFormatter.format("/rest/rooms/{number}/announcements", room.id), data: data})
+        $http({method: "POST", url: StringFormatter.format("/rest/rooms/{number}/announcements/new", room.id), data: data})
             .success(function(data) {
                 $modalInstance.close(data);
             });

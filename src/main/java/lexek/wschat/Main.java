@@ -3,6 +3,7 @@ package lexek.wschat;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.joran.JoranConfigurator;
 import com.codahale.metrics.MetricRegistry;
+import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.gson.Gson;
 import com.zaxxer.hikari.HikariConfig;
@@ -18,6 +19,8 @@ import lexek.httpserver.*;
 import lexek.wschat.chat.*;
 import lexek.wschat.chat.handlers.*;
 import lexek.wschat.db.dao.*;
+import lexek.wschat.db.jooq.tables.pojos.Ticket;
+import lexek.wschat.db.model.Chatter;
 import lexek.wschat.frontend.http.*;
 import lexek.wschat.frontend.http.admin.AdminPageHandler;
 import lexek.wschat.frontend.http.rest.admin.*;
@@ -37,6 +40,8 @@ import lexek.wschat.security.jersey.SecurityFeature;
 import lexek.wschat.security.jersey.UserParamValueFactoryProvider;
 import lexek.wschat.security.social.TwitchTvSocialAuthService;
 import lexek.wschat.services.*;
+import lexek.wschat.services.poll.PollService;
+import lexek.wschat.services.poll.PollState;
 import org.glassfish.hk2.api.InjectionResolver;
 import org.glassfish.hk2.api.TypeLiteral;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
@@ -53,6 +58,7 @@ import javax.sql.DataSource;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
@@ -120,14 +126,42 @@ public class Main {
         AnnouncementService announcementService = new AnnouncementService(new AnnouncementDao(dataSource), journalService, roomManager, messageBroadcaster, scheduledExecutorService);
         PollService pollService = new PollService(new PollDao(dataSource), messageBroadcaster, roomManager, journalService);
         AuthenticationService authenticationService = new AuthenticationService(authenticationManager, userService, captchaService);
-        TicketService ticketService = new TicketService(new TicketDao(dataSource), messageBroadcaster);
+        TicketService ticketService = new TicketService(userService, emailService, new TicketDao(dataSource), messageBroadcaster);
         EmoticonService emoticonService = new EmoticonService(emoticonDao, journalService);
+
+        RoomJoinNotificationService roomJoinNotificationService = new RoomJoinNotificationService();
+        roomJoinNotificationService.registerListener((connection, chatter, room) -> {
+            PollState activePoll = pollService.getActivePoll(room);
+            if (activePoll != null) {
+                connection.send(Message.pollMessage(MessageType.POLL, room.getName(), activePoll));
+                if (activePoll.getVoted().contains(connection.getUser().getId())) {
+                    connection.send(Message.pollVotedMessage(room.getName()));
+                }
+            }
+        });
+        roomJoinNotificationService.registerListener((connection, chatter, room) ->
+            announcementService.sendAnnouncements(connection, room));
+        roomJoinNotificationService.registerListener((connection, chatter, room) -> {
+            if (connection.isNeedNames()) {
+                ImmutableList.Builder<Chatter> users = ImmutableList.builder();
+                room.getChatters().stream().filter(c -> c.hasRole(LocalRole.USER)).forEach(users::add);
+                connection.send(Message.namesMessage(room.getName(), users.build()));
+            }
+        });
+        roomJoinNotificationService.registerListener((connection, chatter, room) -> {
+            if (connection.getUser().hasRole(GlobalRole.USER)) {
+                List<Ticket> tickets = ticketService.getUnreadTickets(connection.getUser().getWrappedObject());
+                tickets.forEach(ticket -> connection.send(Message.infoMessage(
+                    "Your ticket \"" + ticket.getText() + "\" is closed with comment: \"" + ticket.getAdminReply() + "\"."
+                )));
+            }
+        });
 
         Set<String> bannedIps = new CopyOnWriteArraySet<>();
         messageReactor.registerHandler(new BanHandler(messageBroadcaster, roomManager));
         messageReactor.registerHandler(new ClearUserHandler(messageBroadcaster, roomManager));
         messageReactor.registerHandler(new ColorHandler(userDao));
-        messageReactor.registerHandler(new JoinHandler(roomManager, announcementService, messageBroadcaster, pollService));
+        messageReactor.registerHandler(new JoinHandler(roomJoinNotificationService, roomManager, messageBroadcaster));
         messageReactor.registerHandler(new RestrictionFilter(captchaService,
             new MsgHandler(messageId, messageBroadcaster, roomManager), bannedIps));
         messageReactor.registerHandler(new RestrictionFilter(captchaService,
@@ -145,6 +179,7 @@ public class Main {
         serviceManager.registerService(messageBroadcaster);
         serviceManager.registerService(messageReactor);
         serviceManager.registerService(authenticationService);
+        serviceManager.registerService(roomJoinNotificationService);
 
         ChatProxyFactory chatProxyFactory = new ChatProxyFactory(connectionManager, messageId, authenticationManager,
             roomManager, messageBroadcaster, metricRegistry);

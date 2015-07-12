@@ -10,6 +10,7 @@ import lexek.wschat.db.jooq.tables.pojos.Emoticon;
 import lexek.wschat.db.model.JournalEntry;
 import lexek.wschat.db.model.UserDto;
 import lexek.wschat.db.model.form.UserChangeSet;
+import lexek.wschat.services.poll.Poll;
 
 public class JournalService {
     private final Gson gson = new Gson();
@@ -43,19 +44,19 @@ public class JournalService {
     }
 
     public void newRoom(UserDto admin, Room room) {
-        journalDao.add(new JournalEntry(null, admin, "NEW_ROOM", room.getName(), now(), room.getId()));
+        journalDao.add(new JournalEntry(null, admin, "NEW_ROOM", gson.toJson(room.getName()), now(), room.getId()));
     }
 
     public void deletedRoom(UserDto admin, Room room) {
-        journalDao.add(new JournalEntry(null, admin, "DELETED_ROOM", room.getName(), now(), room.getId()));
+        journalDao.add(new JournalEntry(null, admin, "DELETED_ROOM", gson.toJson(room.getName()), now(), room.getId()));
     }
 
     public void newPoll(UserDto admin, Room room, Poll poll) {
-        journalDao.add(new JournalEntry(null, admin, "NEW_POLL", poll.getQuestion(), now(), room.getId()));
+        journalDao.add(new JournalEntry(null, admin, "NEW_POLL", gson.toJson(poll.getQuestion()), now(), room.getId()));
     }
 
     public void closedPoll(UserDto admin, Room room, Poll poll) {
-        journalDao.add(new JournalEntry(null, admin, "CLOSE_POLL", poll.getQuestion(), now(), room.getId()));
+        journalDao.add(new JournalEntry(null, admin, "CLOSE_POLL", gson.toJson(poll.getQuestion()), now(), room.getId()));
     }
 
     public void roomBan(UserDto user, UserDto admin, Room room) {
@@ -67,15 +68,15 @@ public class JournalService {
     }
 
     public void roomRole(UserDto user, UserDto admin, Room room, LocalRole role) {
-        journalDao.add(new JournalEntry(user, admin, "ROOM_ROLE", role.toString(), now(), room.getId()));
+        journalDao.add(new JournalEntry(user, admin, "ROOM_ROLE", gson.toJson(role.toString()), now(), room.getId()));
     }
 
     public void newAnnouncement(UserDto admin, Room room, Announcement announcement) {
-        journalDao.add(new JournalEntry(null, admin, "NEW_ANNOUNCEMENT", announcement.getText(), now(), room.getId()));
+        journalDao.add(new JournalEntry(null, admin, "NEW_ANNOUNCEMENT", gson.toJson(announcement.getText()), now(), room.getId()));
     }
 
     public void inactiveAnnouncement(UserDto admin, Room room, Announcement announcement) {
-        journalDao.add(new JournalEntry(null, admin, "INACTIVE_ANNOUNCEMENT", announcement.getText(), now(), room.getId()));
+        journalDao.add(new JournalEntry(null, admin, "INACTIVE_ANNOUNCEMENT", gson.toJson(announcement.getText()), now(), room.getId()));
     }
 
     private long now() {

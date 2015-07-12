@@ -2,7 +2,7 @@ package lexek.wschat.chat.handlers;
 
 import com.google.common.primitives.Ints;
 import lexek.wschat.chat.*;
-import lexek.wschat.services.PollService;
+import lexek.wschat.services.poll.PollService;
 
 import java.util.List;
 

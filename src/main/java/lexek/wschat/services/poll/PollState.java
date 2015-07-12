@@ -1,4 +1,4 @@
-package lexek.wschat.services;
+package lexek.wschat.services.poll;
 
 import java.util.Arrays;
 import java.util.HashSet;

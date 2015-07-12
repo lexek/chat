@@ -8,8 +8,8 @@ import lexek.wschat.db.model.form.PollForm;
 import lexek.wschat.db.model.rest.ErrorModel;
 import lexek.wschat.security.jersey.Auth;
 import lexek.wschat.security.jersey.RequiredRole;
-import lexek.wschat.services.PollService;
-import lexek.wschat.services.PollState;
+import lexek.wschat.services.poll.PollService;
+import lexek.wschat.services.poll.PollState;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Min;

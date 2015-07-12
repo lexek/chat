@@ -3,7 +3,7 @@ package lexek.wschat.chat.handlers;
 import com.google.common.collect.ImmutableList;
 import lexek.wschat.chat.*;
 import lexek.wschat.db.model.UserDto;
-import lexek.wschat.services.PollService;
+import lexek.wschat.services.poll.PollService;
 import org.junit.Before;
 import org.junit.Test;
 
