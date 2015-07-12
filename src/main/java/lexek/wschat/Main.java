@@ -2,6 +2,7 @@ package lexek.wschat;
 
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.joran.JoranConfigurator;
+import com.codahale.metrics.Gauge;
 import com.codahale.metrics.JvmAttributeGaugeSet;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.health.HealthCheckRegistry;
@@ -18,6 +19,7 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.epoll.Epoll;
 import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.handler.ssl.OpenSsl;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import lexek.httpserver.*;
@@ -84,6 +86,10 @@ public class Main {
             ex.printStackTrace();
         }
 
+        SslContext sslContext = SslContextBuilder
+            .forServer(new File("./cert.pem"), new File("./key.pk8"))
+            .build();
+
         Gson gson = new Gson();
         Configuration settings = gson.fromJson(new String(Files.readAllBytes(Paths.get("./settings.json"))), Configuration.class);
 
@@ -101,6 +107,9 @@ public class Main {
         runtimeMetricRegistry.registerAll(new GarbageCollectorMetricSet());
         runtimeMetricRegistry.registerAll(new JvmAttributeGaugeSet());
         runtimeMetricRegistry.registerAll(new MemoryUsageGaugeSet());
+        runtimeMetricRegistry.register("socket.implementation", (Gauge<String>) () -> Epoll.isAvailable() ? "epoll" : "nio");
+        runtimeMetricRegistry.register("ssl.implementation", (Gauge<String>) () -> OpenSsl.isAvailable() ? "openssl" : "java");
+        runtimeMetricRegistry.register("ssl.cipherSuites", (Gauge<List<String>>) sslContext::cipherSuites);
 
         HikariConfig config = new HikariConfig();
         config.setPoolName("connection-pool");
@@ -203,10 +212,6 @@ public class Main {
         for (ProxyConfiguration proxyConfiguration : settings.getProxy()) {
             serviceManager.registerService(chatProxyFactory.newInstance(proxyConfiguration));
         }
-
-        SslContext sslContext = SslContextBuilder
-            .forServer(new File("./cert.pem"), new File("./key.pk8"))
-            .build();
 
         EventLoopGroup bossGroup;
         EventLoopGroup childGroup;
