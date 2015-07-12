@@ -2,6 +2,8 @@ package lexek.wschat.proxy.twitch;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.handler.codec.http.websocketx.PingWebSocketFrame;
+import io.netty.handler.timeout.IdleState;
 
 public class TwitchMessageHandler extends SimpleChannelInboundHandler<TwitchEventMessage> {
     private final JTVEventListener eventListener;
@@ -34,6 +36,15 @@ public class TwitchMessageHandler extends SimpleChannelInboundHandler<TwitchEven
             eventListener.onClear(msg.getData());
         } else if (msg.getType() == TwitchEventMessage.Type.MSG && msg instanceof TwitchUserMessage) {
             eventListener.onMessage(((TwitchUserMessage) msg).getUser(), msg.getData());
+        }
+    }
+
+    @Override
+    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+        if (evt == IdleState.READER_IDLE) {
+            ctx.writeAndFlush("PING\r\n");
+        } else if (evt == IdleState.WRITER_IDLE) {
+            ctx.close();
         }
     }
 }

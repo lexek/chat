@@ -15,6 +15,7 @@ import io.netty.handler.codec.DelimiterBasedFrameDecoder;
 import io.netty.handler.codec.Delimiters;
 import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
+import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.CharsetUtil;
 import io.netty.util.internal.chmv8.ConcurrentHashMapV8;
 import lexek.wschat.chat.*;
@@ -23,6 +24,7 @@ import lexek.wschat.services.AbstractService;
 import lexek.wschat.util.Colors;
 
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class TwitchTvChatProxy extends AbstractService {
@@ -70,6 +72,7 @@ public class TwitchTvChatProxy extends AbstractService {
                 pipeline.addLast(new DelimiterBasedFrameDecoder(8192, Delimiters.lineDelimiter()));
                 pipeline.addLast(stringEncoder);
                 pipeline.addLast(stringDecoder);
+                pipeline.addLast(new IdleStateHandler(120, 0, 140, TimeUnit.SECONDS));
                 pipeline.addLast(new TwitchTvMessageDecoder());
                 pipeline.addLast(new TwitchMessageHandler(eventListener, channel));
             }
