@@ -2,7 +2,12 @@ package lexek.wschat;
 
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.joran.JoranConfigurator;
+import com.codahale.metrics.JvmAttributeGaugeSet;
 import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.health.HealthCheckRegistry;
+import com.codahale.metrics.jvm.BufferPoolMetricSet;
+import com.codahale.metrics.jvm.GarbageCollectorMetricSet;
+import com.codahale.metrics.jvm.MemoryUsageGaugeSet;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.gson.Gson;
@@ -56,6 +61,7 @@ import javax.inject.Singleton;
 import javax.mail.internet.InternetAddress;
 import javax.sql.DataSource;
 import java.io.File;
+import java.lang.management.ManagementFactory;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
@@ -85,16 +91,26 @@ public class Main {
         String ircHost = settings.getCore().getHost();
         File dataDir = new File(settings.getCore().getDataDir());
 
-        ServiceManager serviceManager = new ServiceManager();
         MetricRegistry metricRegistry = new MetricRegistry();
+        MetricRegistry runtimeMetricRegistry = new MetricRegistry();
+        HealthCheckRegistry healthCheckRegistry = new HealthCheckRegistry();
+
+        ServiceManager serviceManager = new ServiceManager(healthCheckRegistry, runtimeMetricRegistry);
+
+        runtimeMetricRegistry.registerAll(new BufferPoolMetricSet(ManagementFactory.getPlatformMBeanServer()));
+        runtimeMetricRegistry.registerAll(new GarbageCollectorMetricSet());
+        runtimeMetricRegistry.registerAll(new JvmAttributeGaugeSet());
+        runtimeMetricRegistry.registerAll(new MemoryUsageGaugeSet());
 
         HikariConfig config = new HikariConfig();
+        config.setPoolName("connection-pool");
         config.setJdbcUrl(settings.getDb().getUri());
         config.setUsername(settings.getDb().getUsername());
         config.setPassword(settings.getDb().getPassword());
         config.setMaximumPoolSize(settings.getCore().getPoolSize());
         config.setConnectionTimeout(TimeUnit.SECONDS.toMillis(10));
-        config.setMetricRegistry(metricRegistry);
+        config.setMetricRegistry(runtimeMetricRegistry);
+        config.setHealthCheckRegistry(healthCheckRegistry);
         DataSource dataSource = new HikariDataSource(config);
 
         EmailService emailService = new EmailService(
@@ -232,6 +248,7 @@ public class Main {
             {
                 property(ServerProperties.WADL_FEATURE_DISABLE, Boolean.TRUE);
                 //property(ServerProperties.TRACING, "ALL");
+                register(ObjectMapperProvider.class);
                 register(new Slf4jLoggingFilter());
                 register(JerseyExceptionMapper.class);
                 register(JacksonFeature.class);
@@ -247,7 +264,7 @@ public class Main {
                     }
                 });
                 registerInstances(
-                    new StatisticsResource(new StatisticsDao(dataSource)),
+                    new StatisticsResource(new StatisticsDao(dataSource), runtimeMetricRegistry, healthCheckRegistry),
                     new AnnouncementResource(announcementService, roomManager),
                     new ChattersResource(chatterDao, roomManager),
                     new EmoticonsResource(dataDir, emoticonService),

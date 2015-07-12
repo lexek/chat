@@ -1,13 +1,12 @@
 package lexek.wschat.services;
 
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.health.HealthCheck;
+
 import java.util.List;
 
 public interface Service<T> {
     String getName();
-
-    ServiceState getState();
-
-    T getStateData();
 
     List<String> getAvailableActions();
 
@@ -16,4 +15,8 @@ public interface Service<T> {
     void start() throws Exception;
 
     void stop();
+
+    void registerMetrics(MetricRegistry metricRegistry);
+
+    HealthCheck getHealthCheck();
 }

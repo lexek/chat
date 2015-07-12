@@ -1,5 +1,8 @@
 package lexek.wschat.services;
 
+import com.codahale.metrics.Gauge;
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.health.HealthCheck;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimap;
@@ -22,6 +25,7 @@ public class AnnouncementService extends AbstractService {
     private final Multimap<Room, Announcement> roomAnnouncements = HashMultimap.create();
     private final RoomManager roomManager;
     private final Runnable task;
+    private long lastBroadcast;
 
     public AnnouncementService(AnnouncementDao announcementDao,
                                JournalService journalService, RoomManager roomManager,
@@ -33,7 +37,7 @@ public class AnnouncementService extends AbstractService {
         this.scheduledExecutor = scheduledExecutor;
         this.roomManager = roomManager;
         this.announcementDao = announcementDao;
-        stateData = System.currentTimeMillis();
+        this.lastBroadcast = System.currentTimeMillis();
         List<Announcement> announcements = announcementDao.getAll();
         for (Announcement announcement : announcements) {
             Room room = roomManager.getRoomInstance(announcement.getRoomId());
@@ -44,7 +48,7 @@ public class AnnouncementService extends AbstractService {
         task = new Runnable() {
             @Override
             public void run() {
-                stateData = System.currentTimeMillis();
+                lastBroadcast = System.currentTimeMillis();
                 try {
                     for (Map.Entry<Room, Announcement> entry : roomAnnouncements.entries()) {
                         messageBroadcaster.submitMessage(
@@ -124,4 +128,22 @@ public class AnnouncementService extends AbstractService {
     public void stop() {
         scheduledExecutor.shutdownNow();
     }
+
+    @Override
+    public HealthCheck getHealthCheck() {
+        return new HealthCheck() {
+            @Override
+            protected Result check() throws Exception {
+                return scheduledExecutor.isShutdown() || scheduledExecutor.isTerminated() ?
+                    Result.unhealthy("executor is terminated") :
+                    Result.healthy();
+            }
+        };
+    }
+
+    @Override
+    public void registerMetrics(MetricRegistry metricRegistry) {
+        metricRegistry.register(this.getName() + ".lastBroadcast", (Gauge<Long>) () -> lastBroadcast);
+    }
+
 }

@@ -31,8 +31,6 @@ public class ServicesResource {
             .map(service -> (Service<Object>) service)
             .map(service -> new ServiceRestModel(
                 service.getName(),
-                service.getState(),
-                service.getStateData(),
                 service.getAvailableActions()
             ))
             .collect(Collectors.toList());

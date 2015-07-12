@@ -1,5 +1,6 @@
 package lexek.wschat.proxy.goodgame;
 
+import com.codahale.metrics.health.HealthCheck;
 import com.google.common.collect.ImmutableList;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
@@ -24,7 +25,7 @@ import java.net.URISyntaxException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class GoodGameChatProxy extends AbstractService<Void> {
+public class GoodGameChatProxy extends AbstractService {
     private final String channel;
     private final MessageBroadcaster messageBroadcaster;
     private final EventLoopGroup eventLoopGroup;
@@ -89,6 +90,16 @@ public class GoodGameChatProxy extends AbstractService<Void> {
     @Override
     public void stop() {
         //TODO
+    }
+
+    @Override
+    public HealthCheck getHealthCheck() {
+        return new HealthCheck() {
+            @Override
+            protected Result check() throws Exception {
+                return Result.healthy();
+            }
+        };
     }
 
     @ChannelHandler.Sharable

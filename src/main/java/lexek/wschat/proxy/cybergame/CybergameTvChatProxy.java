@@ -1,5 +1,6 @@
 package lexek.wschat.proxy.cybergame;
 
+import com.codahale.metrics.health.HealthCheck;
 import com.google.common.collect.ImmutableList;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
@@ -25,7 +26,7 @@ import java.net.URISyntaxException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class CybergameTvChatProxy extends AbstractService<Void> {
+public class CybergameTvChatProxy extends AbstractService {
     private final String channel;
     private final MessageBroadcaster messageBroadcaster;
     private final EventLoopGroup eventLoopGroup;
@@ -88,6 +89,16 @@ public class CybergameTvChatProxy extends AbstractService<Void> {
 
     @Override
     public void stop() {
+    }
+
+    @Override
+    public HealthCheck getHealthCheck() {
+        return new HealthCheck() {
+            @Override
+            protected Result check() throws Exception {
+                return Result.healthy();
+            }
+        };
     }
 
     @Sharable

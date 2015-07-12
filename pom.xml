@@ -17,6 +17,7 @@
         <jooq.version>3.6.1</jooq.version>
         <netty.version>4.0.29.Final</netty.version>
         <jersey.version>2.19</jersey.version>
+        <metrics.version>3.1.0</metrics.version>
     </properties>
 
     <profiles>
@@ -261,7 +262,25 @@
         <dependency>
             <groupId>io.dropwizard.metrics</groupId>
             <artifactId>metrics-core</artifactId>
-            <version>3.1.0</version>
+            <version>${metrics.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.dropwizard.metrics</groupId>
+            <artifactId>metrics-json</artifactId>
+            <version>${metrics.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.dropwizard.metrics</groupId>
+            <artifactId>metrics-jvm</artifactId>
+            <version>${metrics.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.dropwizard.metrics</groupId>
+            <artifactId>metrics-healthchecks</artifactId>
+            <version>${metrics.version}</version>
         </dependency>
 
         <dependency>

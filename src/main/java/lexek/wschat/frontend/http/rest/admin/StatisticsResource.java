@@ -1,5 +1,7 @@
 package lexek.wschat.frontend.http.rest.admin;
 
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.health.HealthCheckRegistry;
 import com.google.common.collect.ImmutableMap;
 import lexek.wschat.chat.GlobalRole;
 import lexek.wschat.db.dao.StatisticsDao;
@@ -19,9 +21,13 @@ import java.util.concurrent.TimeUnit;
 @RequiredRole(GlobalRole.ADMIN)
 public class StatisticsResource {
     private final StatisticsDao statisticsDao;
+    private final MetricRegistry metricRegistry;
+    private final HealthCheckRegistry healthCheckRegistry;
 
-    public StatisticsResource(StatisticsDao statisticsDao) {
+    public StatisticsResource(StatisticsDao statisticsDao, MetricRegistry metricRegistry, HealthCheckRegistry healthCheckRegistry) {
         this.statisticsDao = statisticsDao;
+        this.metricRegistry = metricRegistry;
+        this.healthCheckRegistry = healthCheckRegistry;
     }
 
     @Path("/user/{userId}/activity")
@@ -46,6 +52,17 @@ public class StatisticsResource {
         return ImmutableMap.of(
             "metrics", statisticsDao.getMetrics(since),
             "streams", statisticsDao.getStreams(since)
+        );
+    }
+
+    @Path("/global/runtime")
+    @RequiredRole(GlobalRole.SUPERADMIN)
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public Map getRuntimeMetrics() {
+        return ImmutableMap.of(
+            "metrics", metricRegistry.getMetrics(),
+            "healthChecks", healthCheckRegistry.runHealthChecks()
         );
     }
 }

@@ -1,5 +1,8 @@
 package lexek.wschat.services;
 
+import com.codahale.metrics.Gauge;
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.health.HealthCheck;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.lmax.disruptor.BlockingWaitStrategy;
@@ -18,7 +21,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 
-public class RoomJoinNotificationService extends AbstractService<Void> {
+public class RoomJoinNotificationService extends AbstractService {
     private final Disruptor<JoinedRoomEvent> disruptor;
     private final RingBuffer<JoinedRoomEvent> ringBuffer;
     private final List<RoomJoinedEventListener> listeners = new CopyOnWriteArrayList<>();
@@ -51,6 +54,22 @@ public class RoomJoinNotificationService extends AbstractService<Void> {
     @Override
     public void stop() {
         this.disruptor.shutdown();
+    }
+
+    @Override
+    public HealthCheck getHealthCheck() {
+        return new HealthCheck() {
+            @Override
+            protected Result check() throws Exception {
+                return Result.healthy();
+            }
+        };
+    }
+
+    @Override
+    public void registerMetrics(MetricRegistry metricRegistry) {
+        metricRegistry.register(this.getName() + ".queue.remainingCapacity", (Gauge<Long>) ringBuffer::remainingCapacity);
+        metricRegistry.register(this.getName() + ".queue.bufferSize", (Gauge<Integer>) ringBuffer::getBufferSize);
     }
 
     public void registerListener(RoomJoinedEventListener listener) {

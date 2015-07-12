@@ -1,5 +1,8 @@
 package lexek.wschat.chat;
 
+import com.codahale.metrics.Gauge;
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.health.HealthCheck;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.lmax.disruptor.BlockingWaitStrategy;
@@ -14,7 +17,7 @@ import lexek.wschat.util.LoggingExceptionHandler;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 
-public class MessageBroadcaster extends AbstractService<Void> {
+public class MessageBroadcaster extends AbstractService {
     private final Disruptor<MessageEvent> disruptor;
     private final RingBuffer<MessageEvent> ringBuffer;
 
@@ -60,5 +63,21 @@ public class MessageBroadcaster extends AbstractService<Void> {
     @Override
     public void stop() {
         disruptor.shutdown();
+    }
+
+    @Override
+    public HealthCheck getHealthCheck() {
+        return new HealthCheck() {
+            @Override
+            protected Result check() throws Exception {
+                return Result.healthy();
+            }
+        };
+    }
+
+    @Override
+    public void registerMetrics(MetricRegistry metricRegistry) {
+        metricRegistry.register(this.getName() + ".queue.remainingCapacity", (Gauge<Long>) ringBuffer::remainingCapacity);
+        metricRegistry.register(this.getName() + ".queue.bufferSize", (Gauge<Integer>) ringBuffer::getBufferSize);
     }
 }

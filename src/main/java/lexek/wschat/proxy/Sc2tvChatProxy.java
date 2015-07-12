@@ -1,5 +1,6 @@
 package lexek.wschat.proxy;
 
+import com.codahale.metrics.health.HealthCheck;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.primitives.Longs;
@@ -25,7 +26,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class Sc2tvChatProxy extends AbstractService<Void> {
+public class Sc2tvChatProxy extends AbstractService {
     private final JsonParser jsonParser = new JsonParser();
     private final String channel;
     private final MessageBroadcaster messageBroadcaster;
@@ -76,6 +77,16 @@ public class Sc2tvChatProxy extends AbstractService<Void> {
 
     @Override
     public void stop() {
+    }
+
+    @Override
+    public HealthCheck getHealthCheck() {
+        return new HealthCheck() {
+            @Override
+            protected Result check() throws Exception {
+                return Result.healthy();
+            }
+        };
     }
 
     @Sharable

@@ -1677,30 +1677,41 @@ var RoomController = function($scope, $location, $http, $sce, $modal, alert, tit
 };
 
 
-var ServicesController = function($scope, $location, $http, alert) {
-    $scope.entries = [];
-    $scope.input = {};
+var ServicesController = function($scope, $location, $http) {
+    $scope.data = null;
 
     var loadPage = function() {
-        $scope.entries.length = 0;
         $http({
             method: "GET",
-            url: "/rest/services/all"
-        }).success(function (d, status, headers, config) {
-            $scope.entries = d;
+            url: "/rest/stats/global/runtime"
+        }).success(function (d) {
+            $scope.data = d;
         });
     };
 
-    $scope.getLabelClass = function(state) {
-        if (state === "RUNNING") {
-            return "success";
-        } else if (state === "NEW") {
-            return "info"
-        } else if (state === "STARTING") {
-            return "primary"
-        } else if (state === "STOPPED") {
-            return "default";
-        }
+    $scope.getMetricValueByName = function(name) {
+        return $scope.data["metrics"][name]["value"];
+    };
+
+    $scope.getMetricByName = function(name) {
+        return $scope.data["metrics"][name];
+    };
+
+    $scope.getUptime = function() {
+        var uptime = $scope.getMetricValueByName("uptime");
+        return new Date().getTime() - uptime;
+    };
+
+    $scope.isHealthy = function(service) {
+        return $scope.data["healthChecks"][service]["healthy"];
+    };
+
+    $scope.getQueueSize = function(service) {
+        return $scope.getMetricValueByName(service + ".queue.bufferSize");
+    };
+
+    $scope.getQueueLoad = function(service) {
+        return $scope.getQueueSize(service) - $scope.getMetricValueByName(service + ".queue.remainingCapacity");
     };
 
     loadPage();

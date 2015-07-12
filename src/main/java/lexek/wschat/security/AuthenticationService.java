@@ -1,5 +1,8 @@
 package lexek.wschat.security;
 
+import com.codahale.metrics.Gauge;
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.health.HealthCheck;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.lmax.disruptor.BlockingWaitStrategy;
@@ -20,7 +23,7 @@ import lexek.wschat.util.LoggingExceptionHandler;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 
-public class AuthenticationService extends AbstractService<Void> {
+public class AuthenticationService extends AbstractService {
     private final Disruptor<AuthenticationEvent> disruptor;
     private final RingBuffer<AuthenticationEvent> ringBuffer;
     private final AuthenticationManager authenticationManager;
@@ -59,6 +62,22 @@ public class AuthenticationService extends AbstractService<Void> {
     @Override
     public void stop() {
         this.disruptor.shutdown();
+    }
+
+    @Override
+    public HealthCheck getHealthCheck() {
+        return new HealthCheck() {
+            @Override
+            protected Result check() throws Exception {
+                return Result.healthy();
+            }
+        };
+    }
+
+    @Override
+    public void registerMetrics(MetricRegistry metricRegistry) {
+        metricRegistry.register(this.getName() + ".queue.remainingCapacity", (Gauge<Long>) ringBuffer::remainingCapacity);
+        metricRegistry.register(this.getName() + ".queue.bufferSize", (Gauge<Integer>) ringBuffer::getBufferSize);
     }
 
     public void invalidate(String sid) {

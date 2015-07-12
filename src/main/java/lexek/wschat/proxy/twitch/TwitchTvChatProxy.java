@@ -1,5 +1,8 @@
 package lexek.wschat.proxy.twitch;
 
+import com.codahale.metrics.Gauge;
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.health.HealthCheck;
 import com.google.common.collect.ImmutableList;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
@@ -19,11 +22,10 @@ import lexek.wschat.security.AuthenticationManager;
 import lexek.wschat.services.AbstractService;
 import lexek.wschat.util.Colors;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class TwitchTvChatProxy extends AbstractService<Map<String, Object>> {
+public class TwitchTvChatProxy extends AbstractService {
     private final String channel;
     private final ConnectionManager connectionManager;
     private final AtomicLong messageId;
@@ -47,8 +49,7 @@ public class TwitchTvChatProxy extends AbstractService<Map<String, Object>> {
         this.messageId = messageId;
         this.messageBroadcaster = messageBroadcaster;
         this.room = room;
-        this.stateData = new HashMap<>();
-        outboundHandler = new OutboundMessageHandler(connections, channel, authenticationManager, eventLoopGroup, room);
+        this.outboundHandler = new OutboundMessageHandler(connections, channel, authenticationManager, eventLoopGroup, room);
 
         this.inboundBootstrap = new Bootstrap();
         this.inboundBootstrap.group(eventLoopGroup);
@@ -82,10 +83,22 @@ public class TwitchTvChatProxy extends AbstractService<Map<String, Object>> {
     }
 
     @Override
-    public Map<String, Object> getStateData() {
-        stateData.put("activeOutboundConnections", outboundHandler.getConnectionCount());
-        stateData.put("receiverConnected", this.activeInboundChannel != null && this.activeInboundChannel.isActive());
-        return stateData;
+    public void registerMetrics(MetricRegistry metricRegistry) {
+        metricRegistry.register(getName() + ".activeOutboundConnections",
+            (Gauge<Integer>) outboundHandler::getConnectionCount);
+    }
+
+    @Override
+    public HealthCheck getHealthCheck() {
+        return new HealthCheck() {
+            @Override
+            protected Result check() throws Exception {
+                if (activeInboundChannel == null || !activeInboundChannel.isActive()) {
+                    return Result.unhealthy("inbound channel issue");
+                }
+                return Result.healthy();
+            }
+        };
     }
 
     @Override
