@@ -48,7 +48,7 @@ public class GoodGameCodec extends MessageToMessageCodec<JsonElement, GoodGameEv
                 break;
             }
             default: {
-                logger.debug("unsupported message type {}", type);
+                logger.debug("unsupported message type {}: {}", type, data);
             }
         }
     }
