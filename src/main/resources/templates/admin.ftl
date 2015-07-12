@@ -658,6 +658,34 @@
                             </td>
                         </tr>
                         <tr>
+                            <td class="col-xs-2">
+                                Socket implementation
+                            </td>
+                            <td class="col-xs-10" ng-bind="getMetricValueByName('socket.implementation')">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="col-xs-2">
+                                SSL implementation
+                            </td>
+                            <td class="col-xs-10" ng-bind="getMetricValueByName('ssl.implementation')">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="col-xs-2">
+                                SSL ciphersuites
+                            </td>
+                            <td class="col-xs-10">
+                                <table class="table">
+                                    <tr ng-repeat="cipher in getMetricValueByName('ssl.cipherSuites')">
+                                        <td ng-bind="cipher">
+
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                        <tr>
                             <td>
                                 Running since
                             </td>
