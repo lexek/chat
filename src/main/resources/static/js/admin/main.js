@@ -1065,7 +1065,7 @@ var RoomJournalModalController = function($scope, $http, $modal, room) {
         return ($scope.page+1) < $scope.totalPages
     };
 
-    $scope.userModal = function(id) {
+    $scope.showUser = function(id) {
         $modal.open({
             templateUrl: "user.html",
             controller: UserModalController,
