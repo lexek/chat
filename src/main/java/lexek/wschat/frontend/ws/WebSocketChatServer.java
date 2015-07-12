@@ -1,5 +1,8 @@
 package lexek.wschat.frontend.ws;
 
+import com.codahale.metrics.Gauge;
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.health.HealthCheck;
 import com.google.common.collect.ImmutableList;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.ByteBufAllocator;
@@ -18,7 +21,7 @@ import lexek.wschat.util.ExceptionLogger;
 
 import java.util.concurrent.TimeUnit;
 
-public class WebSocketChatServer extends AbstractService<Integer> {
+public class WebSocketChatServer extends AbstractService {
     private final ServerBootstrap bootstrap;
     private final int port;
     private Channel channel;
@@ -26,7 +29,6 @@ public class WebSocketChatServer extends AbstractService<Integer> {
     public WebSocketChatServer(final int port, final WebSocketChatHandler handler, EventLoopGroup bossGroup,
                                EventLoopGroup childGroup, final SslContext sslContext) {
         super("websocketServer", ImmutableList.<String>of());
-        this.stateData = port;
         this.port = port;
         final ChannelHandler flashPolicyHandler = new FlashPolicyFileHandler(port);
         final ExceptionLogger exceptionLogger = new ExceptionLogger();
@@ -67,6 +69,25 @@ public class WebSocketChatServer extends AbstractService<Integer> {
         } else {
             throw new IllegalStateException();
         }
+    }
+
+    @Override
+    public HealthCheck getHealthCheck() {
+        return new HealthCheck() {
+            @Override
+            protected Result check() throws Exception {
+                if (channel.isActive()) {
+                    return Result.healthy();
+                } else {
+                    return Result.unhealthy("Channel is inactive");
+                }
+            }
+        };
+    }
+
+    @Override
+    public void registerMetrics(MetricRegistry metricRegistry) {
+        metricRegistry.register(getName() + ".port", (Gauge<Integer>) () -> port);
     }
 
     @Override

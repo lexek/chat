@@ -1,5 +1,8 @@
 package lexek.wschat.frontend.irc;
 
+import com.codahale.metrics.Gauge;
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.health.HealthCheck;
 import com.google.common.collect.ImmutableList;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
@@ -21,14 +24,13 @@ import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 
-public class IrcServer extends AbstractService<Integer> {
+public class IrcServer extends AbstractService {
     private static final int PORT = 6667;
     private final ServerBootstrap bootstrap;
     private Channel channel;
 
     public IrcServer(final IrcServerHandler handler, EventLoopGroup bossGroup, EventLoopGroup childGroup, final SslContext sslContext) {
         super("ircServer", ImmutableList.<String>of());
-        this.stateData = PORT;
 
         bootstrap = new ServerBootstrap();
         bootstrap.group(bossGroup, childGroup);
@@ -68,6 +70,25 @@ public class IrcServer extends AbstractService<Integer> {
         } else {
             throw new IllegalStateException();
         }
+    }
+
+    @Override
+    public HealthCheck getHealthCheck() {
+        return new HealthCheck() {
+            @Override
+            protected Result check() throws Exception {
+                if (channel.isActive()) {
+                    return Result.healthy();
+                } else {
+                    return Result.unhealthy("Channel is inactive");
+                }
+            }
+        };
+    }
+
+    @Override
+    public void registerMetrics(MetricRegistry metricRegistry) {
+        metricRegistry.register(getName() + ".port", (Gauge<Integer>) () -> PORT);
     }
 
     @Override
