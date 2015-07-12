@@ -94,6 +94,7 @@ public class Main {
         config.setPassword(settings.getDb().getPassword());
         config.setMaximumPoolSize(settings.getCore().getPoolSize());
         config.setConnectionTimeout(TimeUnit.SECONDS.toMillis(10));
+        config.setMetricRegistry(metricRegistry);
         DataSource dataSource = new HikariDataSource(config);
 
         EmailService emailService = new EmailService(
