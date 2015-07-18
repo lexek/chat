@@ -29,6 +29,7 @@
     <script src="/vendor/js/angular-relative-date.js"></script>
     <script src="/vendor/js/angular-datetimepicker.js"></script>
     <script src="/vendor/js/highcharts.js"></script>
+    <script src="/vendor/js/highcharts-ng.js"></script>
     <script src="/js/admin/main.js"></script>
 
     <style>
@@ -1462,15 +1463,28 @@
     </div>
     <div class="modal-body">
         <div class="list-group">
-            <div ng-repeat="poll in polls" class="list-group-item">
+            <div ng-repeat="poll in polls" class="list-group-item" ng-controller="PollController">
                 <h4 class="list-group-item-heading">{{poll.poll.question}}</h4>
-                <p class="list-group-item-text">
-                    <div ng-repeat="option in poll.poll.options">
-                        <small>{{option.text}}</small>
-                        <progressbar value="poll.votes[option.optionId]" max="poll.maxPollVotes" type="success">{{poll.votes[option.optionId]}}</progressbar>
+                <div class="list-group-item-text">
+                    <div class="row">
+                        <div class="col-xs-6">
+                            <div ng-repeat="option in poll.poll.options">
+                                <small>{{option.text}}</small>
+                                <progressbar value="poll.votes[option.optionId]" max="poll.maxPollVotes" type="success">{{poll.votes[option.optionId]}}</progressbar>
+                            </div>
+                        </div>
+                        <div class="col-xs-6">
+                            <highchart config="chartConfig"></highchart>
+                        </div>
                     </div>
-                </p>
+                </div>
             </div>
+        </div>
+        <div class="modal-footer" ng-if="(page !== 0) || hasNextPage()">
+            <ul class="pager">
+                <li class="previous" ng-if="page !== 0" ng-click="previousPage()"><a href="">&larr; Previous page</a></li>
+                <li class="next" ng-if="hasNextPage()" ng-click="nextPage()"><a href="">Next page &rarr;</a></li>
+            </ul>
         </div>
     </div>
 </script>

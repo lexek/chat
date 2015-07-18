@@ -335,7 +335,7 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
                 break;
             case 'ERROR':
                 chat.lastChatter(ctx.room, null);
-                chat.addMessage(new Message(message.type, $translate.instant("ERROR_"+text,
+                chat.addMessage(new Message(message.type, $translate.instant("ERROR_"+message.text,
                     {
                         "args": m["errorData"]
                     }
