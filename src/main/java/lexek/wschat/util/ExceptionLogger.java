@@ -3,6 +3,7 @@ package lexek.wschat.util;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.handler.codec.CodecException;
 import io.netty.util.ReferenceCountUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,6 +18,8 @@ public class ExceptionLogger extends ChannelInboundHandlerAdapter {
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         if (cause instanceof IOException) {
             logger.debug("io exception on {}", ctx.channel().remoteAddress(), cause);
+        } else if (cause instanceof CodecException) {
+            logger.debug("codec exception on {}", ctx.channel().remoteAddress(), cause);
         } else {
             logger.warn("exception on {}", ctx.channel().remoteAddress(), cause);
         }
