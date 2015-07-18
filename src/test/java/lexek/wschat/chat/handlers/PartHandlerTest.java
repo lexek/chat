@@ -85,6 +85,32 @@ public class PartHandlerTest {
     }
 
     @Test
+    public void shouldNotBroadcastMessageWhenRoleLowerThanUser() {
+        RoomManager roomManager = mock(RoomManager.class);
+        Room room = mock(Room.class);
+        when(roomManager.getRoomInstance("#main")).thenReturn(room);
+        when(roomManager.getRoomInstance(0L)).thenReturn(room);
+        MessageBroadcaster messageBroadcaster = mock(MessageBroadcaster.class);
+        PartHandler handler = new PartHandler(messageBroadcaster, roomManager);
+
+        UserDto userDto = new UserDto(0L, "user", GlobalRole.UNAUTHENTICATED, "#ffffff", false, false, null);
+        User user = new User(userDto);
+        Connection connection = spy(new TestConnection(user));
+        Chatter chatter = new Chatter(0L, LocalRole.GUEST, false, null, user);
+
+        when(room.contains(connection)).thenReturn(true);
+        when(room.getChatter(user.getName())).thenReturn(chatter);
+        when(room.getChatter(user.getId())).thenReturn(chatter);
+        when(room.part(connection)).thenReturn(true);
+        when(room.getName()).thenReturn("#main");
+
+        handler.handle(ImmutableList.of("#main"), connection);
+
+        verify(room).part(connection);
+        verify(messageBroadcaster, never()).submitMessage(any(Message.class), any(Connection.class), any(BroadcastFilter.class));
+    }
+
+    @Test
     public void shouldReturnErrorIfNotInRoom() {
         RoomManager roomManager = mock(RoomManager.class);
         Room room = mock(Room.class);

@@ -86,6 +86,34 @@ public class JoinHandlerTest {
     }
 
     @Test
+    public void shouldNotBroadcastMessageWhenRoleLowerThanUser() {
+        RoomJoinNotificationService roomJoinNotificationService = mock(RoomJoinNotificationService.class);
+        RoomManager roomManager = mock(RoomManager.class);
+        Room room = mock(Room.class);
+        when(roomManager.getRoomInstance("#main")).thenReturn(room);
+        when(roomManager.getRoomInstance(0L)).thenReturn(room);
+        MessageBroadcaster messageBroadcaster = mock(MessageBroadcaster.class);
+        JoinHandler handler = new JoinHandler(roomJoinNotificationService, roomManager, messageBroadcaster);
+
+        UserDto userDto = new UserDto(0L, "user", GlobalRole.UNAUTHENTICATED, "#ffffff", false, false, null);
+        User user = new User(userDto);
+        Connection connection = spy(new TestConnection(user));
+        Chatter chatter = new Chatter(0L, LocalRole.GUEST, false, null, user);
+
+        when(room.contains(connection)).thenReturn(false);
+        when(room.join(connection)).thenReturn(chatter);
+        when(room.getName()).thenReturn("#main");
+        when(room.hasUser(user)).thenReturn(false);
+
+        handler.handle(ImmutableList.of("#main"), connection);
+
+        verify(room).join(connection);
+        verify(messageBroadcaster, never()).submitMessage(any(Message.class), any(Connection.class), any(BroadcastFilter.class));
+        verify(connection).send(eq(Message.selfJoinMessage("#main", chatter)));
+        verify(roomJoinNotificationService).joinedRoom(eq(connection), eq(chatter), eq(room));
+    }
+
+    @Test
     public void shouldReturnErrorIfAlreadyInRoom() {
         RoomJoinNotificationService roomJoinNotificationService = mock(RoomJoinNotificationService.class);
         RoomManager roomManager = mock(RoomManager.class);
