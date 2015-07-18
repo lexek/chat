@@ -124,7 +124,7 @@ AdminServices.factory("title", TitleServiceFactory);
 AdminServices.factory("tickets", TicketCountServiceFactory);
 
 var AdminApplication = angular.module("AdminApplication", ["ngRoute", "ngAnimate", "AdminServices", "relativeDate",
-    "ui.inflector", "ui.bootstrap", "ui.bootstrap.datetimepicker"]);
+    "ui.inflector", "ui.bootstrap", "ui.bootstrap.datetimepicker", "highcharts-ng"]);
 
 Role = function(title, value) {
     this.title = title;
@@ -1288,22 +1288,97 @@ var HistoryController = function($scope, $http, title, options) {
 
 var PollsController = function($scope, $http, room) {
     $scope.polls = [];
+    $scope.page = 0;
 
     var loadPage = function() {
         $scope.polls.length = 0;
         $http({
             method: "GET",
-            url: StringFormatter.format("/rest/rooms/{number}/polls/all", room.id)
+            url: StringFormatter.format("/rest/rooms/{number}/polls/all", room.id),
+            params: {
+                page: $scope.page
+            }
         }).success(function (d) {
-            $scope.polls = d;
+            $scope.polls = d["data"];
+            $scope.totalPages = d["pageCount"];
             angular.forEach($scope.polls, function(e) {
-                e.maxPollVotes = Math.max.apply(null, e.votes)
+                e.maxPollVotes = Math.max.apply(null, e.votes);
             });
         });
     };
 
+    $scope.previousPage = function() {
+        if ($scope.page !== 0) {
+            $scope.page = $scope.page - 1;
+            loadPage();
+        }
+    };
+
+    $scope.nextPage = function() {
+        if (($scope.page+1) < $scope.totalPages) {
+            $scope.page = $scope.page + 1;
+            loadPage();
+        }
+    };
+
+    $scope.hasNextPage = function() {
+        return ($scope.page+1) < $scope.totalPages
+    };
+
     loadPage();
 };
+
+AdminApplication.controller("PollController", ["$scope", function($scope) {
+    var series = [];
+    {
+        var max = $scope.poll.maxPollVotes;
+        angular.forEach($scope.poll.poll.options, function(option) {
+            series.push({
+                "name": option.text,
+                "y": $scope.poll.votes[option["optionId"]]/max
+            });
+        });
+        console.log($scope.poll)
+    }
+
+    $scope.chartConfig = {
+        options: {
+            chart: {
+                plotBackgroundColor: null,
+                plotBorderWidth: null,
+                plotShadow: false,
+                type: 'pie'
+            },
+            tooltip: {
+                pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+            },
+            plotOptions: {
+                pie: {
+                    allowPointSelect: true,
+                    cursor: 'pointer',
+                    dataLabels: {
+                        enabled: false
+                    },
+                    showInLegend: false
+                }
+            }
+        },
+        title: {
+            text: '',
+            style: {
+                display: 'none'
+            }
+        },
+        size: {
+            height: 150
+        },
+        series: [{
+            name: "Options",
+            colorByPoint: true,
+            data: series
+        }]
+    }
+}]);
 
 var ComposePollController = function($scope, $modalInstance, $http, roomId) {
     $scope.input = {
@@ -1530,7 +1605,6 @@ var RoomController = function($scope, $location, $http, $sce, $modal, alert, tit
         $modal.open({
             templateUrl: 'polls.html',
             controller: PollsController,
-            size: "sm",
             resolve: {
                 room: function () {
                     return $scope.roomData;

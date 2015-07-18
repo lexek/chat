@@ -3,6 +3,7 @@ package lexek.wschat.frontend.http.rest.admin;
 import lexek.wschat.chat.GlobalRole;
 import lexek.wschat.chat.Room;
 import lexek.wschat.chat.RoomManager;
+import lexek.wschat.db.model.DataPage;
 import lexek.wschat.db.model.UserDto;
 import lexek.wschat.db.model.form.PollForm;
 import lexek.wschat.db.model.rest.ErrorModel;
@@ -16,7 +17,6 @@ import javax.validation.constraints.Min;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.List;
 
 @Path("/rooms/{roomId}/polls")
 @RequiredRole(GlobalRole.ADMIN)
@@ -43,12 +43,15 @@ public class PollResource {
     @Path("/all")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public List<PollState> getOldPolls(@PathParam("roomId") @Min(0) long roomId) {
+    public DataPage<PollState> getOldPolls(
+        @PathParam("roomId") @Min(0) long roomId,
+        @QueryParam("page") @Min(0) int page
+    ) {
         Room room = roomManager.getRoomInstance(roomId);
         if (room == null) {
             throw new WebApplicationException(Response.status(400).entity(new ErrorModel("Unknown room.")).build());
         }
-        return pollService.getOldPolls(room);
+        return pollService.getOldPolls(room, page);
     }
 
     @Path("/current")

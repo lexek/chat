@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import io.netty.util.internal.chmv8.ConcurrentHashMapV8;
 import lexek.wschat.chat.*;
 import lexek.wschat.db.dao.PollDao;
+import lexek.wschat.db.model.DataPage;
 import lexek.wschat.db.model.UserDto;
 import lexek.wschat.services.JournalService;
 
@@ -78,7 +79,7 @@ public class PollService {
         return this.activePolls.get(room);
     }
 
-    public List<PollState> getOldPolls(Room room) {
-        return pollDao.getOldPolls(room.getId());
+    public DataPage<PollState> getOldPolls(Room room, int page) {
+        return pollDao.getOldPolls(room.getId(), page);
     }
 }

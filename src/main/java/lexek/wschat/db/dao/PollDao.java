@@ -4,9 +4,11 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
 import lexek.wschat.db.jooq.tables.records.PollOptionRecord;
 import lexek.wschat.db.jooq.tables.records.PollRecord;
+import lexek.wschat.db.model.DataPage;
 import lexek.wschat.services.poll.Poll;
 import lexek.wschat.services.poll.PollOption;
 import lexek.wschat.services.poll.PollState;
+import lexek.wschat.util.Pages;
 import org.jooq.Record;
 import org.jooq.Result;
 import org.jooq.exception.DataAccessException;
@@ -132,13 +134,16 @@ public class PollDao {
         return polls;
     }
 
-    public List<PollState> getOldPolls(long roomId) {
-        List<PollState> polls = new ArrayList<>();
+    public DataPage<PollState> getOldPolls(long roomId, int page) {
+        DataPage<PollState> result = null;
         try (Connection connection = dataSource.getConnection()) {
+            List<PollState> polls = new ArrayList<>();
+            int count = DSL.using(connection).fetchCount(POLL, POLL.OPEN.isFalse().and(POLL.ROOM_ID.equal(roomId)));
             Result<PollRecord> r = DSL.using(connection)
                 .select(POLL.ID, POLL.OPEN, POLL.QUESTION)
                 .from(POLL)
                 .where(POLL.OPEN.isFalse().and(POLL.ROOM_ID.equal(roomId)))
+                .limit(page * 5, 5)
                 .fetchInto(POLL);
             if (r != null) {
                 for (PollRecord record : r) {
@@ -163,9 +168,10 @@ public class PollDao {
                     }
                 }
             }
+            result = new DataPage<>(polls, page, Pages.pageCount(5, count));
         } catch (DataAccessException | SQLException e) {
             logger.error("sql exception", e);
         }
-        return polls;
+        return result;
     }
 }
