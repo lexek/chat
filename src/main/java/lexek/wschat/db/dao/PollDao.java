@@ -143,6 +143,7 @@ public class PollDao {
                 .select(POLL.ID, POLL.OPEN, POLL.QUESTION)
                 .from(POLL)
                 .where(POLL.OPEN.isFalse().and(POLL.ROOM_ID.equal(roomId)))
+                .orderBy(POLL.ID.desc())
                 .limit(page * 5, 5)
                 .fetchInto(POLL);
             if (r != null) {
