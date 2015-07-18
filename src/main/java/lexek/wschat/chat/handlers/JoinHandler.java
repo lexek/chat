@@ -31,7 +31,6 @@ public class JoinHandler extends AbstractMessageHandler {
 
             Message joinMessage = Message.joinMessage(room.getName(), user.getWrappedObject());
             connection.send(Message.selfJoinMessage(room.getName(), chatter));
-            connection.send(Message.historyMessage(room.getHistory()));
             if (sendJoin) {
                 if (chatter.hasRole(LocalRole.USER)) {
                     messageBroadcaster.submitMessage(joinMessage, connection, room.FILTER);
