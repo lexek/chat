@@ -16,6 +16,7 @@ import io.netty.handler.codec.http.websocketx.PingWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketClientProtocolHandler;
 import io.netty.handler.codec.http.websocketx.WebSocketVersion;
 import io.netty.handler.timeout.IdleState;
+import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.handler.timeout.IdleStateHandler;
 import lexek.wschat.chat.*;
 import lexek.wschat.services.AbstractService;
@@ -135,10 +136,13 @@ public class CybergameTvChatProxy extends AbstractService {
 
         @Override
         public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
-            if (evt == IdleState.READER_IDLE) {
-                ctx.writeAndFlush(new PingWebSocketFrame());
-            } else if (evt == IdleState.WRITER_IDLE) {
-                ctx.close();
+            if (evt instanceof IdleStateEvent) {
+                IdleStateEvent e = (IdleStateEvent) evt;
+                if (e.state() == IdleState.READER_IDLE) {
+                    ctx.writeAndFlush(new PingWebSocketFrame());
+                } else if (e.state() == IdleState.ALL_IDLE) {
+                    ctx.close();
+                }
             }
         }
     }
