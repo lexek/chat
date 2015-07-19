@@ -9,12 +9,14 @@
         <js>/vendor/js/swfobject.js</js>
         <js>/vendor/js/web_socket.js</js>
         <js>/vendor/js/angular.js</js>
+        <js>/vendor/js/angular-sanitize.js</js>
         <js>/vendor/js/bindonce.js</js>
         <js>/vendor/js/angular-ui-utils.js</js>
         <js>/vendor/js/angular-animate.2.js</js>
         <js>/vendor/js/angular-ui-bootstrap.js</js>
         <js>/vendor/js/angular-cookies.js</js>
         <js>/vendor/js/angular-translate.js</js>
+        <js>/vendor/js/angular-translate-storage-cookie.js</js>
         <js>/vendor/js/angular-textcomplete.js</js>
         <js>/vendor/js/angular-relative-date.js</js>
         <js>/vendor/js/angular-recaptcha.js</js>

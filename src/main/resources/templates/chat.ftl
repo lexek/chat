@@ -408,17 +408,13 @@
     </div>
 </script>
 
-<script type="text/ng-template" id="likedTemplate_.html">
-    <ul class="list-unstyled">
-        <li ng-repeat="user in $parent.$parent.message.messages[0].likes | limitTo:3">{{user}}</li>
-        <li ng-if="$parent.$parent.message.messages[0].likes.length > 3">{{'CHAT_AND_X_OTHERS' | translate:{'count': ($parent.$parent.$parent.message.messages[0].likes.length - 3)} }}</li>
-    </ul>
-</script>
-
 <script type="text/ng-template" id="likedTemplate.html">
-    <ul class="list-unstyled">
-        <li ng-repeat="user in $parent.$parent.msg.likes | limitTo:3">{{user}}</li>
-        <li ng-if="$parent.$parent.msg.likes.length > 3">{{'CHAT_AND_X_OTHERS' | translate:{'count': ($parent.$parent.$parent.msg.likes.length - 3)} }}</li>
+    <div ng-if="msg.likes.length === 0">
+        {{'CHAT_NO_LIKES' | translate}}
+    </div>
+    <ul ng-if="msg.likes.length > 0" class="list-unstyled">
+        <li ng-repeat="user in msg.likes | limitTo:3">{{user}}</li>
+        <li ng-if="msg.likes.length > 3">{{'CHAT_AND_X_OTHERS' | translate:{'count': (msg.likes.length - 3)} }}</li>
     </ul>
 </script>
 
@@ -523,7 +519,7 @@
                             <span class="userMessageContainer" ng-repeat="msg in message.messages track by $index">
                                 <br bo-if="!$first"/>
                                 <#if like>
-                                    <span class="like" popover-append-to-body="true" popover="likedTemplate.html" popover-title="Liked this:" popover-trigger="mouseenter" popover-placement="left">
+                                    <span class="like" popover-append-to-body="true" popover-template="'likedTemplate.html'" popover-title="Liked this:" popover-trigger="mouseenter" popover-placement="left">
                                         <span class="likeButton btn btn-link btn-xs" ng-click="like(msg.id_)" ng-class="{likedButton: msg.likes.length &gt; 0}">
                                             <span class="fa fa-heart"></span><!--
                                             --><span class="likeCount" ng-if="msg.likes.length &gt; 0">&nbsp;{{msg.likes.length}}</span>
@@ -546,7 +542,7 @@
                                     --><span ng-if="isAdmin()" class="admin">A</span><!--
                                     --><span ng-if="message.ext" class="ext" tooltip="{{message.extOriginRes}}"
                                              tooltip-trigger="mouseenter" tooltip-placement="right"><span class="fa fa-twitch" style="color: #6441A5"></span></span><!--
-                                --><#if like><span class="like" popover-append-to-body="true" popover="likedTemplate.html" popover-title="Liked this:" popover-trigger="mouseenter" popover-placement="left">
+                                --><#if like><span class="like" popover-append-to-body="true" popover-template="'likedTemplate.html'" popover-title="Liked this:" popover-trigger="mouseenter" popover-placement="left">
                                     <span class="likeButton btn btn-link btn-xs" ng-click="like(message.id_)" ng-class="{likedButton: message.likes.length &gt; 0}">
                                         <span class="fa fa-heart"></span><!--
                                         --><span class="likeCount" ng-if="message.likes.length &gt; 0">&nbsp;{{message.likes.length}}</span>
@@ -583,7 +579,7 @@
                             </div>
                             <div class="userMessageContainer" ng-repeat="msg in message.messages track by $index">
                                 <div class="time" bo-bind="msg.time | date:'HH:mm'"></div>
-                                <#if like><div class="like" popover-append-to-body="true" popover="likedTemplate.html" popover-title="Liked this:" popover-trigger="mouseenter" popover-placement="left">
+                                <#if like><div class="like" popover-append-to-body="true" popover-template="'likedTemplate.html'" popover-title="Liked this:" popover-trigger="mouseenter" popover-placement="left">
                                         <span class="likeButton btn btn-link btn-xs" ng-click="like(msg.id_)" ng-class="{likedButton: msg.likes.length &gt; 0}">
                                             <span class="fa fa-heart"></span><!--
                                             --><span class="likeCount" ng-if="msg.likes.length &gt; 0">&nbsp;{{msg.likes.length}}</span>
@@ -595,7 +591,7 @@
                         </div>
                         <div class="message meMessage" bo-if="(message.type == 'ME')" bo-style="{'color': message.user.color, 'border-color': message.user.color}">
                             <div class="time" bo-bind="message.time | date:'HH:mm'"></div>
-                            <#if like><div class="like" popover-append-to-body="true" popover="likedTemplate.html" popover-title="Liked this:" popover-trigger="mouseenter" popover-placement="left">
+                            <#if like><div class="like" popover-append-to-body="true" popover-template="'likedTemplate.html'" popover-title="Liked this:" popover-trigger="mouseenter" popover-placement="left">
                                     <span class="likeButton btn btn-link btn-xs" ng-click="like(message.id_)" ng-class="{likedButton: message.likes.length &gt; 0}">
                                         <span class="fa fa-heart"></span><!--
                                         --><span class="likeCount" ng-if="message.likes.length &gt; 0">&nbsp;{{message.likes.length}}</span>
