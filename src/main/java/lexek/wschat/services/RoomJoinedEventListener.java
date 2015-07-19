@@ -2,7 +2,7 @@ package lexek.wschat.services;
 
 import lexek.wschat.chat.Connection;
 import lexek.wschat.chat.Room;
-import lexek.wschat.db.model.Chatter;
+import lexek.wschat.chat.Chatter;
 
 @FunctionalInterface
 public interface RoomJoinedEventListener {

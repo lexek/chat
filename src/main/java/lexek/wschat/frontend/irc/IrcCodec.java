@@ -1,7 +1,7 @@
 package lexek.wschat.frontend.irc;
 
 import lexek.wschat.chat.*;
-import lexek.wschat.db.model.Chatter;
+import lexek.wschat.chat.Chatter;
 import lexek.wschat.frontend.Codec;
 
 import java.util.Arrays;

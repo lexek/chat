@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.LinkedHashMultiset;
 import com.google.common.collect.Multiset;
 import io.netty.util.internal.chmv8.ConcurrentHashMapV8;
-import lexek.wschat.db.model.Chatter;
 import lexek.wschat.services.ChatterService;
 import lexek.wschat.services.UserService;
 

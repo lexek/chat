@@ -1,7 +1,7 @@
 package lexek.wschat.chat.handlers;
 
 import lexek.wschat.chat.*;
-import lexek.wschat.db.model.Chatter;
+import lexek.wschat.chat.Chatter;
 
 import java.util.List;
 
@@ -11,19 +11,14 @@ public class SetRoleHandler extends AbstractMsgHandler {
         super(MessageType.ROLE, 3, false, roomManager);
     }
 
-    private static boolean canChangeRole(Chatter modChatter, Chatter userChatter, LocalRole newRole) {
+    private static boolean canChangeRole(Chatter modChatter, Chatter userChatter) {
         User user = userChatter.getUser();
         User modUser = modChatter.getUser();
-        return newRole != LocalRole.GUEST &&
+        return
+            modChatter.hasRole(LocalRole.ADMIN) &&
             (
-                (
-                    modChatter.hasRole(LocalRole.ADMIN) &&
-                        modChatter.hasGreaterRole(userChatter.getRole())
-                ) || (
-                    user != null &&
-                        modUser.hasRole(GlobalRole.ADMIN) &&
-                        modUser.hasGreaterRole(user.getRole())
-                )
+                modChatter.hasGreaterRole(userChatter.getRole()) ||
+                modUser.hasGreaterRole(user.getRole())
             );
     }
 
@@ -36,11 +31,10 @@ public class SetRoleHandler extends AbstractMsgHandler {
             connection.send(Message.errorMessage("UNKNOWN_ROLE"));
             return;
         }
-        User mod = connection.getUser();
-        if (modChatter.hasRole(LocalRole.ADMIN) || mod.hasRole(GlobalRole.ADMIN)) {
+        if (modChatter.hasRole(LocalRole.ADMIN)) {
             Chatter userChatter = room.fetchChatter(args.get(1));
             if (userChatter != null && userChatter.getId() != null) {
-                if (canChangeRole(modChatter, userChatter, newRole)) {
+                if (canChangeRole(modChatter, userChatter)) {
                     if (room.setRole(userChatter, modChatter, newRole)) {
                         connection.send(Message.infoMessage("OK"));
                     } else {

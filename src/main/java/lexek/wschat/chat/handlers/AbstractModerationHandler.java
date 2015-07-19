@@ -1,7 +1,7 @@
 package lexek.wschat.chat.handlers;
 
 import lexek.wschat.chat.*;
-import lexek.wschat.db.model.Chatter;
+import lexek.wschat.chat.Chatter;
 
 import java.util.List;
 
@@ -23,22 +23,15 @@ public abstract class AbstractModerationHandler extends AbstractMsgHandler {
         User modUser = modChatter.getUser();
         return !userChatter.hasRole(LocalRole.MOD) &&
             (
-                (
-                    modChatter.hasRole(LocalRole.MOD) &&
-                        modChatter.hasGreaterRole(userChatter.getRole()) &&
-                        modUser.hasGreaterRole(user.getRole())
-                ) || (
-                    user != null &&
-                        modUser.hasRole(GlobalRole.MOD) &&
-                        modUser.hasGreaterRole(user.getRole())
-                )
+                modChatter.hasRole(LocalRole.MOD) &&
+                modChatter.hasGreaterRole(userChatter.getRole()) &&
+                modUser.hasGreaterRole(user.getRole())
             );
     }
 
     @Override
     final protected void handle(Connection connection, Room room, Chatter modChatter, List<String> args) {
-        User mod = connection.getUser();
-        if (modChatter.hasRole(LocalRole.MOD) || mod.hasRole(GlobalRole.MOD)) {
+        if (modChatter.hasRole(LocalRole.MOD)) {
             Chatter userChatter;
             if (fetchChatterIfOffline) {
                 userChatter = room.fetchChatter(args.get(1));

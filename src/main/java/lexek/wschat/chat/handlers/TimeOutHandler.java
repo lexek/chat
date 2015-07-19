@@ -1,7 +1,7 @@
 package lexek.wschat.chat.handlers;
 
 import lexek.wschat.chat.*;
-import lexek.wschat.db.model.Chatter;
+import lexek.wschat.chat.Chatter;
 
 import java.util.concurrent.TimeUnit;
 

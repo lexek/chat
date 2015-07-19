@@ -2,7 +2,7 @@ package lexek.wschat.chat.handlers;
 
 import com.google.common.collect.ImmutableList;
 import lexek.wschat.chat.*;
-import lexek.wschat.db.model.Chatter;
+import lexek.wschat.chat.Chatter;
 
 import java.util.List;
 
@@ -22,7 +22,7 @@ abstract class AbstractMsgHandler extends AbstractMessageHandler {
             if (room.inRoom(connection)) {
                 Chatter chatter = room.getChatter(connection.getUser().getId());
                 if (!(chatter.getUser().hasRole(GlobalRole.MOD) || chatter.hasRole(LocalRole.MOD))) {
-                    if (chatter.isBanned()) {
+                    if (chatter.isBanned() || connection.getUser().isBanned()) {
                         connection.send(Message.errorMessage("BAN"));
                         return;
                     } else if (chatter.getTimeout() != null) {

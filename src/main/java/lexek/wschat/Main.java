@@ -27,7 +27,7 @@ import lexek.wschat.chat.*;
 import lexek.wschat.chat.handlers.*;
 import lexek.wschat.db.dao.*;
 import lexek.wschat.db.jooq.tables.pojos.Ticket;
-import lexek.wschat.db.model.Chatter;
+import lexek.wschat.chat.Chatter;
 import lexek.wschat.frontend.http.*;
 import lexek.wschat.frontend.http.admin.AdminPageHandler;
 import lexek.wschat.frontend.http.rest.admin.*;

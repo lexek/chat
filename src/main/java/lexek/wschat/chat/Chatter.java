@@ -1,7 +1,5 @@
-package lexek.wschat.db.model;
+package lexek.wschat.chat;
 
-import lexek.wschat.chat.LocalRole;
-import lexek.wschat.chat.User;
 import org.jooq.Record;
 
 import static lexek.wschat.db.jooq.tables.Chatter.CHATTER;
@@ -47,6 +45,11 @@ public class Chatter {
     }
 
     public LocalRole getRole() {
+        if (user.hasRole(GlobalRole.ADMIN)) {
+            return LocalRole.ADMIN;
+        } else if (user.hasRole(GlobalRole.MOD)) {
+            return LocalRole.MOD;
+        }
         return role;
     }
 

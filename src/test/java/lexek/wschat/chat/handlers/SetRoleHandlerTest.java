@@ -2,7 +2,7 @@ package lexek.wschat.chat.handlers;
 
 import com.google.common.collect.ImmutableList;
 import lexek.wschat.chat.*;
-import lexek.wschat.db.model.Chatter;
+import lexek.wschat.chat.Chatter;
 import lexek.wschat.db.model.UserDto;
 import org.junit.Before;
 import org.junit.Test;
@@ -40,7 +40,11 @@ public class SetRoleHandlerTest {
     }
 
     @Test
-    public void testExistingUserWithGoodRole() {
+    public void shouldSuccessWithHigherLocalRole() {
+        UserDto userDto = new UserDto(0L, "user", GlobalRole.USER, "#000000", false, false, null);
+        User user = new User(userDto);
+        Chatter chatter = new Chatter(0L, LocalRole.ADMIN, false, null, user);
+        Connection connection = spy(new TestConnection(user));
         UserDto otherUserDto = new UserDto(1L, "user", GlobalRole.USER, "#000000", false, false, null);
         User otherUser = new User(otherUserDto);
         Chatter otherChatter = new Chatter(1L, LocalRole.USER, false, null, otherUser);
@@ -53,6 +57,70 @@ public class SetRoleHandlerTest {
         handler.handle(ImmutableList.of("#main", "username", "MOD"), connection);
         verify(room).setRole(otherChatter, chatter, LocalRole.MOD);
         verify(connection).send(Message.infoMessage("OK"));
+    }
+
+    @Test
+    public void shouldSuccessWithHigherGlobalRole() {
+        UserDto userDto = new UserDto(0L, "user", GlobalRole.ADMIN, "#000000", false, false, null);
+        User user = new User(userDto);
+        Chatter chatter = new Chatter(0L, LocalRole.USER, false, null, user);
+        Connection connection = spy(new TestConnection(user));
+        UserDto otherUserDto = new UserDto(1L, "user", GlobalRole.USER, "#000000", false, false, null);
+        User otherUser = new User(otherUserDto);
+        Chatter otherChatter = new Chatter(1L, LocalRole.USER, false, null, otherUser);
+        when(roomManager.getRoomInstance("#main")).thenReturn(room);
+        when(room.inRoom(connection)).thenReturn(true);
+        when(room.getChatter(0L)).thenReturn(chatter);
+        when(room.fetchChatter("username")).thenReturn(otherChatter);
+        when(room.getName()).thenReturn("#main");
+        when(room.setRole(otherChatter, chatter, LocalRole.MOD)).thenReturn(true);
+        handler.handle(ImmutableList.of("#main", "username", "MOD"), connection);
+        verify(room).setRole(otherChatter, chatter, LocalRole.MOD);
+        verify(connection).send(Message.infoMessage("OK"));
+    }
+
+    @Test
+    public void shouldFailIfOtherUserHasHigherGlobalRole() {
+        UserDto userDto = new UserDto(0L, "user", GlobalRole.ADMIN, "#000000", false, false, null);
+        User user = new User(userDto);
+        Chatter chatter = new Chatter(0L, LocalRole.USER, false, null, user);
+        Connection connection = spy(new TestConnection(user));
+        UserDto otherUserDto = new UserDto(1L, "user", GlobalRole.SUPERADMIN, "#000000", false, false, null);
+        User otherUser = new User(otherUserDto);
+        Chatter otherChatter = new Chatter(1L, LocalRole.USER, false, null, otherUser);
+        when(roomManager.getRoomInstance("#main")).thenReturn(room);
+        when(room.inRoom(connection)).thenReturn(true);
+        when(room.getChatter(0L)).thenReturn(chatter);
+        when(room.fetchChatter("username")).thenReturn(otherChatter);
+        when(room.getName()).thenReturn("#main");
+        when(room.setRole(otherChatter, chatter, LocalRole.MOD)).thenReturn(true);
+
+        handler.handle(ImmutableList.of("#main", "username", "MOD"), connection);
+
+        verify(room, never()).setRole(otherChatter, chatter, LocalRole.MOD);
+        verify(connection).send(Message.errorMessage("BAN_DENIED"));
+    }
+
+    @Test
+    public void shouldFailIfOtherUserHasAdminLocalRole() {
+        UserDto userDto = new UserDto(0L, "user", GlobalRole.USER, "#000000", false, false, null);
+        User user = new User(userDto);
+        Chatter chatter = new Chatter(0L, LocalRole.ADMIN, false, null, user);
+        Connection connection = spy(new TestConnection(user));
+        UserDto otherUserDto = new UserDto(1L, "user", GlobalRole.SUPERADMIN, "#000000", false, false, null);
+        User otherUser = new User(otherUserDto);
+        Chatter otherChatter = new Chatter(1L, LocalRole.ADMIN, false, null, otherUser);
+        when(roomManager.getRoomInstance("#main")).thenReturn(room);
+        when(room.inRoom(connection)).thenReturn(true);
+        when(room.getChatter(0L)).thenReturn(chatter);
+        when(room.fetchChatter("username")).thenReturn(otherChatter);
+        when(room.getName()).thenReturn("#main");
+        when(room.setRole(otherChatter, chatter, LocalRole.MOD)).thenReturn(true);
+
+        handler.handle(ImmutableList.of("#main", "username", "MOD"), connection);
+
+        verify(room, never()).setRole(otherChatter, chatter, LocalRole.MOD);
+        verify(connection).send(Message.errorMessage("BAN_DENIED"));
     }
 
     @Test
@@ -119,7 +187,7 @@ public class SetRoleHandlerTest {
     }
 
     @Test
-    public void testWithBadRole() {
+    public void shouldFailForUserLocalRole() {
         UserDto userDto = new UserDto(0L, "user", GlobalRole.USER, "#000000", false, false, null);
         User user = new User(userDto);
         Chatter chatter = new Chatter(0L, LocalRole.USER, false, null, user);
