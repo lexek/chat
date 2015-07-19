@@ -1,37 +1,36 @@
 package lexek.wschat.util;
 
-import com.google.common.collect.Lists;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 public class Colors {
     private static final Pattern pattern = Pattern.compile("#[a-zA-Z0-9]{6}");
-    private static final HashMap<String, String> colors = new HashMap<>(20);
-    private static final ArrayList<String> colorList = Lists.newArrayList(colors.values().iterator());
-
-    static {
-        colors.put("red", "#FF0000");
-        colors.put("blue", "#005dff");
-        colors.put("green", "#008000");
-        colors.put("firebrick", "#B22222");
-        colors.put("coral", "#FF7F50");
-        colors.put("yellowgreen", "#9ACD32");
-        colors.put("orangered", "#FF4500");
-        colors.put("seagreen", "#2E8B57");
-        colors.put("goldenrod", "#DAA520");
-        colors.put("chocolate", "#D2691E");
-        colors.put("cadetblue", "#5F9EA0");
-        colors.put("dodgerblue", "#1E90FF");
-        colors.put("hotpink", "#FF69B4");
-        colors.put("blueviolet", "#8A2BE2");
-        colors.put("springgreen", "#00BA5D");
-        colors.put("gray", "#808080");
-        colors.put("deeppink", "#FF1493");
-    }
-
+    private static final Map<String, String> colors = ImmutableMap
+        .<String, String>builder()
+        .put("red", "#FF0000")
+        .put("blue", "#005dff")
+        .put("green", "#008000")
+        .put("firebrick", "#B22222")
+        .put("coral", "#FF7F50")
+        .put("yellowgreen", "#9ACD32")
+        .put("orangered", "#FF4500")
+        .put("seagreen", "#2E8B57")
+        .put("goldenrod", "#DAA520")
+        .put("chocolate", "#D2691E")
+        .put("cadetblue", "#5F9EA0")
+        .put("dodgerblue", "#1E90FF")
+        .put("hotpink", "#FF69B4")
+        .put("blueviolet", "#8A2BE2")
+        .put("springgreen", "#00BA5D")
+        .put("gray", "#808080")
+        .put("deeppink", "#FF1493")
+        .build();
+    private static final List<String> colorList = ImmutableList.copyOf(colors.values());
 
     private Colors() {
     }
