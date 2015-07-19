@@ -18,6 +18,23 @@ public abstract class AbstractModerationHandler extends AbstractMsgHandler {
         this.deniedErrorName = deniedErrorName;
     }
 
+    private static boolean canBan(Chatter modChatter, Chatter userChatter) {
+        User user = userChatter.getUser();
+        User modUser = modChatter.getUser();
+        return !userChatter.hasRole(LocalRole.MOD) &&
+            (
+                (
+                    modChatter.hasRole(LocalRole.MOD) &&
+                        modChatter.hasGreaterRole(userChatter.getRole()) &&
+                        modUser.hasGreaterRole(user.getRole())
+                ) || (
+                    user != null &&
+                        modUser.hasRole(GlobalRole.MOD) &&
+                        modUser.hasGreaterRole(user.getRole())
+                )
+            );
+    }
+
     @Override
     final protected void handle(Connection connection, Room room, Chatter modChatter, List<String> args) {
         User mod = connection.getUser();
@@ -29,7 +46,7 @@ public abstract class AbstractModerationHandler extends AbstractMsgHandler {
                 userChatter = room.getChatter(args.get(1));
             }
             if (userChatter != null && userChatter.getId() != null) {
-                if (Room.canBan(modChatter, userChatter)) {
+                if (canBan(modChatter, userChatter)) {
                     if (performOperation(room, modChatter, userChatter)) {
                         success(connection, room, modChatter, userChatter);
                     } else {

@@ -48,7 +48,7 @@ public class ChattersResource {
                 .entity(new ErrorModel("Unknown room."))
                 .build());
         }
-        return room.getChatters()
+        return room.getOnlineChatters()
             .stream()
             .filter(chatter -> chatter.hasRole(LocalRole.USER))
             .map(chatter -> ImmutableMap.of(
@@ -92,7 +92,7 @@ public class ChattersResource {
                 .entity(new ErrorModel("Unknown room."))
                 .build());
         }
-        return room.getChatters()
+        return room.getOnlineChatters()
             .stream()
             .filter(chatter -> chatter.hasRole(LocalRole.USER))
             .map(chatter -> new ChatterRestModel(

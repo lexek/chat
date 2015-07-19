@@ -21,7 +21,7 @@ public class VoteHandler extends AbstractMessageHandler {
         Room room = roomManager.getRoomInstance(args.get(0));
         User user = connection.getUser();
         if (room != null) {
-            if (room.contains(connection)) {
+            if (room.inRoom(connection)) {
                 Integer option = Ints.tryParse(args.get(1));
                 if (option != null && option >= 0) {
                     pollService.vote(room, user, option);

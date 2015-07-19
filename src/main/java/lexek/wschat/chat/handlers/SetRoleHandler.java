@@ -11,6 +11,22 @@ public class SetRoleHandler extends AbstractMsgHandler {
         super(MessageType.ROLE, 3, false, roomManager);
     }
 
+    private static boolean canChangeRole(Chatter modChatter, Chatter userChatter, LocalRole newRole) {
+        User user = userChatter.getUser();
+        User modUser = modChatter.getUser();
+        return newRole != LocalRole.GUEST &&
+            (
+                (
+                    modChatter.hasRole(LocalRole.ADMIN) &&
+                        modChatter.hasGreaterRole(userChatter.getRole())
+                ) || (
+                    user != null &&
+                        modUser.hasRole(GlobalRole.ADMIN) &&
+                        modUser.hasGreaterRole(user.getRole())
+                )
+            );
+    }
+
     @Override
     protected void handle(Connection connection, Room room, Chatter modChatter, List<String> args) {
         LocalRole newRole;
@@ -24,7 +40,7 @@ public class SetRoleHandler extends AbstractMsgHandler {
         if (modChatter.hasRole(LocalRole.ADMIN) || mod.hasRole(GlobalRole.ADMIN)) {
             Chatter userChatter = room.fetchChatter(args.get(1));
             if (userChatter != null && userChatter.getId() != null) {
-                if (Room.canChangeRole(modChatter, userChatter, newRole)) {
+                if (canChangeRole(modChatter, userChatter, newRole)) {
                     if (room.setRole(userChatter, modChatter, newRole)) {
                         connection.send(Message.infoMessage("OK"));
                     } else {

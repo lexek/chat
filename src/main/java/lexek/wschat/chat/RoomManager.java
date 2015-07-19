@@ -1,9 +1,9 @@
 package lexek.wschat.chat;
 
 import io.netty.util.internal.chmv8.ConcurrentHashMapV8;
-import lexek.wschat.db.dao.ChatterDao;
 import lexek.wschat.db.dao.RoomDao;
 import lexek.wschat.db.model.UserDto;
+import lexek.wschat.services.ChatterService;
 import lexek.wschat.services.JournalService;
 import lexek.wschat.services.UserService;
 
@@ -14,21 +14,21 @@ public class RoomManager {
     private final Map<String, Room> rooms = new ConcurrentHashMapV8<>();
     private final Map<Long, Room> roomIds = new ConcurrentHashMapV8<>();
     private final MessageBroadcaster messageBroadcaster;
-    private final ChatterDao chatterDao;
+    private final ChatterService chatterService;
     private final RoomDao roomDao;
     private final UserService userService;
     private final JournalService journalService;
 
     public RoomManager(UserService userService, MessageBroadcaster messageBroadcaster, RoomDao roomDao,
-                       ChatterDao chatterDao, JournalService journalService) {
+                       ChatterService chatterService, JournalService journalService) {
         this.messageBroadcaster = messageBroadcaster;
         this.roomDao = roomDao;
         this.userService = userService;
-        this.chatterDao = chatterDao;
+        this.chatterService = chatterService;
         this.journalService = journalService;
 
         for (lexek.wschat.db.jooq.tables.pojos.Room room : roomDao.getAll()) {
-            Room instance = new Room(userService, journalService, chatterDao, room.getId(), room.getName(), room.getTopic());
+            Room instance = new Room(userService, chatterService, room.getId(), room.getName(), room.getTopic());
             rooms.put(room.getName(), instance);
             roomIds.put(room.getId(), instance);
         }
@@ -45,7 +45,7 @@ public class RoomManager {
     public void partAll(Connection connection, boolean sendPartMessage) {
         rooms.values()
             .stream()
-            .filter(room -> room.contains(connection) &&
+            .filter(room -> room.inRoom(connection) &&
                 room.part(connection) &&
                 connection.getUser().hasRole(GlobalRole.USER) &&
                 sendPartMessage)
@@ -57,7 +57,7 @@ public class RoomManager {
         if (!rooms.containsKey(name)) {
             lexek.wschat.db.jooq.tables.pojos.Room pojo = new lexek.wschat.db.jooq.tables.pojos.Room(null, name, topic);
             roomDao.add(pojo);
-            Room room = new Room(userService, journalService, chatterDao, pojo.getId(), pojo.getName(), pojo.getTopic());
+            Room room = new Room(userService, chatterService, pojo.getId(), pojo.getName(), pojo.getTopic());
             rooms.put(pojo.getName(), room);
             journalService.newRoom(admin, room);
         }
@@ -66,26 +66,6 @@ public class RoomManager {
     public void deleteRoom(Room room, UserDto admin) {
         if (!room.getName().equals("#main")) {
             roomDao.delete(room.getId());
-            roomIds.remove(room.getId());
-            journalService.deletedRoom(admin, room);
-        }
-    }
-
-    @Deprecated
-    public void createRoom(lexek.wschat.db.jooq.tables.pojos.Room roomPojo, UserDto admin) {
-        if (!rooms.containsKey(roomPojo.getName())) {
-            roomDao.add(roomPojo);
-            Room room = new Room(userService, journalService, chatterDao, roomPojo.getId(), roomPojo.getName(), roomPojo.getTopic());
-            rooms.put(roomPojo.getName(), room);
-            journalService.newRoom(admin, room);
-        }
-    }
-
-    @Deprecated
-    public void deleteRoom(String name, UserDto admin) {
-        if (!name.equals("#main")) {
-            roomDao.delete(name);
-            Room room = rooms.remove(name);
             roomIds.remove(room.getId());
             journalService.deletedRoom(admin, room);
         }

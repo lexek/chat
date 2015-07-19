@@ -19,7 +19,7 @@ public class PartHandler extends AbstractMessageHandler {
     @Override
     public void handle(List<String> args, Connection connection) {
         final Room room = roomManager.getRoomInstance(args.get(0));
-        if (room != null && room.contains(connection)) {
+        if (room != null && room.inRoom(connection)) {
             final User user = connection.getUser();
             if (room.part(connection) && user.hasRole(GlobalRole.USER)) {
                 Message message = Message.partMessage(room.getName(), user.getName());

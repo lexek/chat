@@ -47,7 +47,7 @@ public class ClearUserHandlerTest {
         User otherUser = new User(otherUserDto);
         Chatter otherChatter = new Chatter(1L, LocalRole.USER, false, null, otherUser);
         when(roomManager.getRoomInstance("#main")).thenReturn(room);
-        when(room.contains(connection)).thenReturn(true);
+        when(room.inRoom(connection)).thenReturn(true);
         when(room.getChatter(0L)).thenReturn(chatter);
         when(room.getChatter("username")).thenReturn(otherChatter);
         when(room.getName()).thenReturn("#main");
@@ -64,7 +64,7 @@ public class ClearUserHandlerTest {
         User otherUser = new User(otherUserDto);
         Chatter otherChatter = new Chatter(1L, LocalRole.ADMIN, false, null, otherUser);
         when(roomManager.getRoomInstance("#main")).thenReturn(room);
-        when(room.contains(connection)).thenReturn(true);
+        when(room.inRoom(connection)).thenReturn(true);
         when(room.getChatter(0L)).thenReturn(chatter);
         when(room.getChatter("username")).thenReturn(otherChatter);
         when(room.getName()).thenReturn("#main");
@@ -79,7 +79,7 @@ public class ClearUserHandlerTest {
         User otherUser = new User(otherUserDto);
         Chatter otherChatter = new Chatter(1L, LocalRole.USER, false, null, otherUser);
         when(roomManager.getRoomInstance("#main")).thenReturn(room);
-        when(room.contains(connection)).thenReturn(true);
+        when(room.inRoom(connection)).thenReturn(true);
         when(room.getChatter(0L)).thenReturn(chatter);
         when(room.getChatter("username")).thenReturn(otherChatter);
         when(room.getName()).thenReturn("#main");
@@ -95,7 +95,7 @@ public class ClearUserHandlerTest {
         Chatter chatter = new Chatter(0L, LocalRole.USER, false, null, user);
         Connection connection = spy(new TestConnection(user));
         when(roomManager.getRoomInstance("#main")).thenReturn(room);
-        when(room.contains(connection)).thenReturn(true);
+        when(room.inRoom(connection)).thenReturn(true);
         when(room.getChatter(0L)).thenReturn(chatter);
         when(room.getName()).thenReturn("#main");
         handler.handle(ImmutableList.of("#main", "username"), connection);
@@ -107,7 +107,7 @@ public class ClearUserHandlerTest {
     @Test
     public void testNotExistingUser() {
         when(roomManager.getRoomInstance("#main")).thenReturn(room);
-        when(room.contains(connection)).thenReturn(true);
+        when(room.inRoom(connection)).thenReturn(true);
         when(room.getChatter(0L)).thenReturn(chatter);
         when(room.getChatter("username")).thenReturn(null);
         when(room.getName()).thenReturn("#main");
@@ -119,7 +119,7 @@ public class ClearUserHandlerTest {
     @Test
     public void testNotJoined() {
         when(roomManager.getRoomInstance("#main")).thenReturn(room);
-        when(room.contains(connection)).thenReturn(false);
+        when(room.inRoom(connection)).thenReturn(false);
         handler.handle(ImmutableList.of("#main", "username"), connection);
         verifyZeroInteractions(messageBroadcaster);
         verify(connection, times(1)).send(eq(Message.errorMessage("NOT_JOINED")));

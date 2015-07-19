@@ -46,7 +46,7 @@ public class PartHandlerTest {
         Connection connection = spy(new TestConnection(user));
         Chatter chatter = new Chatter(0L, LocalRole.USER, false, null, user);
 
-        when(room.contains(connection)).thenReturn(true);
+        when(room.inRoom(connection)).thenReturn(true);
         when(room.getChatter(user.getName())).thenReturn(chatter);
         when(room.getChatter(user.getId())).thenReturn(chatter);
         when(room.part(connection)).thenReturn(true);
@@ -72,7 +72,7 @@ public class PartHandlerTest {
         Connection connection = spy(new TestConnection(user));
         Chatter chatter = new Chatter(0L, LocalRole.USER, false, null, user);
 
-        when(room.contains(connection)).thenReturn(true);
+        when(room.inRoom(connection)).thenReturn(true);
         when(room.getChatter(user.getName())).thenReturn(chatter);
         when(room.getChatter(user.getId())).thenReturn(chatter);
         when(room.part(connection)).thenReturn(false);
@@ -98,7 +98,7 @@ public class PartHandlerTest {
         Connection connection = spy(new TestConnection(user));
         Chatter chatter = new Chatter(0L, LocalRole.GUEST, false, null, user);
 
-        when(room.contains(connection)).thenReturn(true);
+        when(room.inRoom(connection)).thenReturn(true);
         when(room.getChatter(user.getName())).thenReturn(chatter);
         when(room.getChatter(user.getId())).thenReturn(chatter);
         when(room.part(connection)).thenReturn(true);
@@ -123,7 +123,7 @@ public class PartHandlerTest {
         User user = new User(userDto);
         Connection connection = spy(new TestConnection(user));
 
-        when(room.contains(connection)).thenReturn(false);
+        when(room.inRoom(connection)).thenReturn(false);
 
         handler.handle(ImmutableList.of("#main"), connection);
 

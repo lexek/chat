@@ -4,9 +4,8 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.LinkedHashMultiset;
 import com.google.common.collect.Multiset;
 import io.netty.util.internal.chmv8.ConcurrentHashMapV8;
-import lexek.wschat.db.dao.ChatterDao;
 import lexek.wschat.db.model.Chatter;
-import lexek.wschat.services.JournalService;
+import lexek.wschat.services.ChatterService;
 import lexek.wschat.services.UserService;
 
 import java.util.HashSet;
@@ -19,7 +18,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class Room {
     public final BroadcastFilter<Room> FILTER = new RoomFilter(this);
-
     private final Map<Long, Chatter> chatterCache = new ConcurrentHashMapV8<>();
     private final Multiset<User> onlineCounter = LinkedHashMultiset.create();
     private final Set<Connection> chatters = new HashSet<>();
@@ -28,16 +26,14 @@ public class Room {
     private final Lock readLock = lock.readLock();
     private final Lock writeLock = lock.writeLock();
     private final UserService userService;
-    private final ChatterDao chatterDao;
-    private final JournalService journalService;
+    private final ChatterService chatterService;
     private final long id;
     private final String name;
     private String topic;
 
-    public Room(UserService userService, JournalService journalService, ChatterDao chatterDao, long id, String name, String topic) {
+    public Room(UserService userService, ChatterService chatterService, long id, String name, String topic) {
         this.userService = userService;
-        this.journalService = journalService;
-        this.chatterDao = chatterDao;
+        this.chatterService = chatterService;
         this.id = id;
         this.name = name;
         this.topic = topic;
@@ -72,7 +68,7 @@ public class Room {
             } else {
                 chatter = chatterCache.get(user.getId());
                 if (chatter == null) {
-                    chatter = chatterDao.getChatter(user, id);
+                    chatter = chatterService.getChatter(this, user);
                     chatterCache.put(user.getId(), chatter);
                 }
             }
@@ -109,97 +105,15 @@ public class Room {
         }
         if (chatter == null) {
             if (user != null) {
-                chatter = chatterDao.getChatter(user, id);
+                chatter = chatterService.getChatter(this, user);
             } else {
-                chatter = chatterDao.getChatter(userName, id);
+                chatter = chatterService.getChatter(this, userName);
             }
         }
         return chatter;
     }
 
-    public static boolean canBan(Chatter modChatter, Chatter userChatter) {
-        User user = userChatter.getUser();
-        User modUser = modChatter.getUser();
-        return userChatter.getRole() != LocalRole.ADMIN &&
-            (
-                (
-                    modChatter.hasRole(LocalRole.MOD) &&
-                        modChatter.hasGreaterRole(userChatter.getRole()) &&
-                        modUser.hasGreaterRole(user.getRole())
-                ) || (
-                    user != null &&
-                        modUser.hasRole(GlobalRole.MOD) &&
-                        modUser.hasGreaterRole(user.getRole())
-                )
-            );
-    }
-
-    public static boolean canChangeRole(Chatter modChatter, Chatter userChatter, LocalRole newRole) {
-        User user = userChatter.getUser();
-        User modUser = modChatter.getUser();
-        return newRole != LocalRole.GUEST &&
-            (
-                (
-                    modChatter.hasRole(LocalRole.ADMIN) &&
-                        modChatter.hasGreaterRole(userChatter.getRole())
-                ) || (
-                    user != null &&
-                        modUser.hasRole(GlobalRole.ADMIN) &&
-                        modUser.hasGreaterRole(user.getRole())
-                )
-            );
-    }
-
-    public boolean banChatter(Chatter chatter, Chatter mod) {
-        boolean result = false;
-        if (chatter != null && chatter.getId() != null) {
-            result = chatterDao.banChatter(chatter.getId());
-            if (result) {
-                chatter.setBanned(true);
-                journalService.roomBan(chatter.getUser().getWrappedObject(), mod.getUser().getWrappedObject(), this);
-            }
-        }
-        return result;
-    }
-
-    public boolean unbanChatter(Chatter chatter, Chatter mod) {
-        boolean result = false;
-        if (chatter != null && chatter.getId() != null) {
-            result = chatterDao.unbanChatter(chatter.getId());
-            if (result) {
-                chatter.setBanned(false);
-                chatter.setTimeout(null);
-                journalService.roomUnban(chatter.getUser().getWrappedObject(), mod.getUser().getWrappedObject(), this);
-            }
-        }
-        return result;
-    }
-
-    public boolean timeoutChatter(Chatter chatter, long until) {
-        boolean result = false;
-        if (chatter != null && chatter.getId() != null) {
-            result = chatterDao.timeoutChatter(chatter.getId(), until);
-            if (result) {
-                chatter.setTimeout(until);
-            }
-        }
-        return result;
-    }
-
-    public boolean setRole(Chatter chatter, Chatter admin, LocalRole newRole) {
-        boolean result = false;
-        if (chatter != null && chatter.getId() != null && newRole != LocalRole.GUEST) {
-            result = chatterDao.setRole(chatter.getId(), newRole);
-            if (result) {
-                chatter.setRole(newRole);
-                journalService.roomRole(chatter.getUser().getWrappedObject(), admin.getUser().getWrappedObject(), this,
-                    newRole);
-            }
-        }
-        return result;
-    }
-
-    public boolean contains(Connection connection) {
+    public boolean inRoom(Connection connection) {
         boolean result = false;
         readLock.lock();
         try {
@@ -210,7 +124,7 @@ public class Room {
         return result;
     }
 
-    public Set<Chatter> getChatters() {
+    public Set<Chatter> getOnlineChatters() {
         Set<Chatter> result = null;
         readLock.lock();
         try {
@@ -241,11 +155,6 @@ public class Room {
         return history;
     }
 
-    public void removeTimeout(Chatter chatter) {
-        chatterDao.unbanChatter(chatter.getId());
-        chatter.setTimeout(null);
-    }
-
     public boolean hasUser(User user) {
         boolean result = false;
         readLock.lock();
@@ -270,5 +179,25 @@ public class Room {
             readLock.unlock();
         }
         return result;
+    }
+
+    public void removeTimeout(Chatter chatter) {
+        chatterService.removeTimeout(chatter);
+    }
+
+    public boolean timeoutChatter(Chatter chatter, long until) {
+        return chatterService.timeoutChatter(this, chatter, until);
+    }
+
+    public boolean banChatter(Chatter user, Chatter mod) {
+        return chatterService.banChatter(this, user, mod);
+    }
+
+    public boolean setRole(Chatter userChatter, Chatter adminChatter, LocalRole newRole) {
+        return chatterService.setRole(this, userChatter, adminChatter, newRole);
+    }
+
+    public boolean unbanChatter(Chatter user, Chatter mod) {
+        return chatterService.unbanChatter(this, user, mod);
     }
 }

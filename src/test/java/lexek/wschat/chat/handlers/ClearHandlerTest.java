@@ -47,7 +47,7 @@ public class ClearHandlerTest {
     @Test
     public void testExistingUserWithGoodRole() {
         when(roomManager.getRoomInstance("#main")).thenReturn(room);
-        when(room.contains(connection)).thenReturn(true);
+        when(room.inRoom(connection)).thenReturn(true);
         when(room.getChatter(0L)).thenReturn(chatter);
         when(room.getName()).thenReturn("#main");
         handler.handle(ImmutableList.of("#main"), connection);
@@ -64,7 +64,7 @@ public class ClearHandlerTest {
         Chatter chatter = new Chatter(0L, LocalRole.USER, false, null, user);
         Connection connection = spy(new TestConnection(user));
         when(roomManager.getRoomInstance("#main")).thenReturn(room);
-        when(room.contains(connection)).thenReturn(true);
+        when(room.inRoom(connection)).thenReturn(true);
         when(room.getChatter(0L)).thenReturn(chatter);
         when(room.getName()).thenReturn("#main");
         handler.handle(ImmutableList.of("#main", "username"), connection);
@@ -76,7 +76,7 @@ public class ClearHandlerTest {
     @Test
     public void testNotJoined() {
         when(roomManager.getRoomInstance("#main")).thenReturn(room);
-        when(room.contains(connection)).thenReturn(false);
+        when(room.inRoom(connection)).thenReturn(false);
         handler.handle(ImmutableList.of("#main"), connection);
         verifyZeroInteractions(messageBroadcaster);
         verify(connection, times(1)).send(eq(Message.errorMessage("NOT_JOINED")));

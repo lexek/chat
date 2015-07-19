@@ -39,20 +39,24 @@ public class TwitchUser {
         return mod;
     }
 
-    public String getNick() {
-        return nick;
-    }
-
     public void setMod(boolean mod) {
         this.mod = mod;
     }
 
-    public void setEmoticonSets(int[] emoticonSets) {
-        this.emoticonSets = emoticonSets;
+    public String getNick() {
+        return nick;
+    }
+
+    public void setNick(String nick) {
+        this.nick = nick;
     }
 
     public int[] getEmoticonSets() {
         return emoticonSets;
+    }
+
+    public void setEmoticonSets(int[] emoticonSets) {
+        this.emoticonSets = emoticonSets;
     }
 
     public String getColor() {
@@ -61,10 +65,6 @@ public class TwitchUser {
 
     public void setColor(String color) {
         this.color = color;
-    }
-
-    public void setNick(String nick) {
-        this.nick = nick;
     }
 
     @Override

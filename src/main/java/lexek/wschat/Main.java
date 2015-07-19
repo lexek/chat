@@ -142,13 +142,14 @@ public class Main {
         ConnectionManager connectionManager = new ConnectionManager(metricRegistry);
         MessageReactor messageReactor = new DefaultMessageReactor(metricRegistry);
         UserService userService = new UserService(connectionManager, userDao, journalService);
+        ChatterService chatterService = new ChatterService(chatterDao, journalService);
 
         ThreadFactory scheduledThreadFactory = new ThreadFactoryBuilder().setNameFormat("ANNOUNCEMENT_SCHEDULER_%d").build();
         ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(scheduledThreadFactory);
         AtomicLong messageId = new AtomicLong(0);
         HistoryService historyService = new HistoryService(20, historyDao);
         MessageBroadcaster messageBroadcaster = new MessageBroadcaster(historyService, connectionManager);
-        RoomManager roomManager = new RoomManager(userService, messageBroadcaster, roomDao, chatterDao, journalService);
+        RoomManager roomManager = new RoomManager(userService, messageBroadcaster, roomDao, chatterService, journalService);
         AnnouncementService announcementService = new AnnouncementService(new AnnouncementDao(dataSource), journalService, roomManager, messageBroadcaster, scheduledExecutorService);
         PollService pollService = new PollService(new PollDao(dataSource), messageBroadcaster, roomManager, journalService);
         AuthenticationService authenticationService = new AuthenticationService(authenticationManager, userService, captchaService);
@@ -170,7 +171,7 @@ public class Main {
         roomJoinNotificationService.registerListener((connection, chatter, room) -> {
             if (connection.isNeedNames()) {
                 ImmutableList.Builder<Chatter> users = ImmutableList.builder();
-                room.getChatters().stream().filter(c -> c.hasRole(LocalRole.USER)).forEach(users::add);
+                room.getOnlineChatters().stream().filter(c -> c.hasRole(LocalRole.USER)).forEach(users::add);
                 connection.send(Message.namesMessage(room.getName(), users.build()));
             }
         });

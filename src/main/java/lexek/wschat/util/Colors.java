@@ -10,6 +10,7 @@ import java.util.regex.Pattern;
 public class Colors {
     private static final Pattern pattern = Pattern.compile("#[a-zA-Z0-9]{6}");
     private static final HashMap<String, String> colors = new HashMap<>(20);
+    private static final ArrayList<String> colorList = Lists.newArrayList(colors.values().iterator());
 
     static {
         colors.put("red", "#FF0000");
@@ -30,8 +31,6 @@ public class Colors {
         colors.put("gray", "#808080");
         colors.put("deeppink", "#FF1493");
     }
-
-    private static final ArrayList<String> colorList = Lists.newArrayList(colors.values().iterator());
 
 
     private Colors() {

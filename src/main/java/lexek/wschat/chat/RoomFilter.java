@@ -22,6 +22,6 @@ public class RoomFilter implements BroadcastFilter<Room> {
 
     @Override
     public boolean test(Connection input) {
-        return room.contains(input);
+        return room.inRoom(input);
     }
 }

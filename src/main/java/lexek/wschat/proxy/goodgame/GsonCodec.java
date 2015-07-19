@@ -14,9 +14,9 @@ import java.util.List;
 
 @ChannelHandler.Sharable
 public class GsonCodec extends MessageToMessageCodec<TextWebSocketFrame, JsonElement> {
-    Logger logger = LoggerFactory.getLogger(GsonCodec.class);
     private final Gson gson = new Gson();
     private final JsonParser jsonParser = new JsonParser();
+    Logger logger = LoggerFactory.getLogger(GsonCodec.class);
 
     @Override
     protected void encode(ChannelHandlerContext ctx, JsonElement msg, List<Object> out) throws Exception {

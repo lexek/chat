@@ -106,7 +106,7 @@ public class ChatterDao {
         return result;
     }
 
-    public boolean timeoutChatter(long chatterId, long until) {
+    public boolean setTimeout(long chatterId, Long until) {
         boolean result = false;
         try (Connection connection = dataSource.getConnection()) {
             DSLContext ctx = DSL.using(connection);

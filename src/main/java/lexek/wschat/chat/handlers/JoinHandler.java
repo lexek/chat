@@ -24,7 +24,7 @@ public class JoinHandler extends AbstractMessageHandler {
     @Override
     public void handle(List<String> args, Connection connection) {
         final Room room = roomManager.getRoomInstance(args.get(0));
-        if (room != null && !room.contains(connection)) {
+        if (room != null && !room.inRoom(connection)) {
             User user = connection.getUser();
             boolean sendJoin = !room.hasUser(user);
             Chatter chatter = room.join(connection);

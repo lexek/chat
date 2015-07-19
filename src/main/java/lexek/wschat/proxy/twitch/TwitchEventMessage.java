@@ -1,14 +1,8 @@
 package lexek.wschat.proxy.twitch;
 
 public class TwitchEventMessage {
-    public enum Type {
-        MSG,
-        CLEAR
-    }
-
     private final Type type;
     private final String data;
-
     public TwitchEventMessage(Type type, String data) {
         this.type = type;
         this.data = data;
@@ -28,5 +22,10 @@ public class TwitchEventMessage {
             "type=" + type +
             ", data='" + data + '\'' +
             '}';
+    }
+
+    public enum Type {
+        MSG,
+        CLEAR
     }
 }

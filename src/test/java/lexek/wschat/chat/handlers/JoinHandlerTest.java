@@ -44,7 +44,7 @@ public class JoinHandlerTest {
         Connection connection = spy(new TestConnection(user));
         Chatter chatter = new Chatter(0L, LocalRole.USER, false, null, user);
 
-        when(room.contains(connection)).thenReturn(false);
+        when(room.inRoom(connection)).thenReturn(false);
         when(room.join(connection)).thenReturn(chatter);
         when(room.getName()).thenReturn("#main");
         when(room.hasUser(user)).thenReturn(false);
@@ -72,7 +72,7 @@ public class JoinHandlerTest {
         Connection connection = spy(new TestConnection(user));
         Chatter chatter = new Chatter(0L, LocalRole.USER, false, null, user);
 
-        when(room.contains(connection)).thenReturn(false);
+        when(room.inRoom(connection)).thenReturn(false);
         when(room.join(connection)).thenReturn(chatter);
         when(room.getName()).thenReturn("#main");
         when(room.hasUser(user)).thenReturn(true);
@@ -100,7 +100,7 @@ public class JoinHandlerTest {
         Connection connection = spy(new TestConnection(user));
         Chatter chatter = new Chatter(0L, LocalRole.GUEST, false, null, user);
 
-        when(room.contains(connection)).thenReturn(false);
+        when(room.inRoom(connection)).thenReturn(false);
         when(room.join(connection)).thenReturn(chatter);
         when(room.getName()).thenReturn("#main");
         when(room.hasUser(user)).thenReturn(false);
@@ -128,7 +128,7 @@ public class JoinHandlerTest {
         Connection connection = spy(new TestConnection(user));
         Chatter chatter = new Chatter(0L, LocalRole.USER, false, null, user);
 
-        when(room.contains(connection)).thenReturn(true);
+        when(room.inRoom(connection)).thenReturn(true);
         when(room.join(connection)).thenReturn(chatter);
         when(room.getName()).thenReturn("#main");
         when(room.hasUser(user)).thenReturn(true);

@@ -17,11 +17,9 @@ import java.security.Principal;
 
 @Singleton
 public class UserParamValueFactoryProvider extends AbstractValueFactoryProvider {
-    @Singleton
-    public static final class InjectionResolver extends ParamInjectionResolver<Auth> {
-        public InjectionResolver() {
-            super(UserParamValueFactoryProvider.class);
-        }
+    @Inject
+    public UserParamValueFactoryProvider(MultivaluedParameterExtractorProvider mpep, ServiceLocator injector) {
+        super(mpep, injector, Parameter.Source.UNKNOWN);
     }
 
     @Override
@@ -30,6 +28,13 @@ public class UserParamValueFactoryProvider extends AbstractValueFactoryProvider 
             return new UserParamValueFactory();
         } else {
             return null;
+        }
+    }
+
+    @Singleton
+    public static final class InjectionResolver extends ParamInjectionResolver<Auth> {
+        public InjectionResolver() {
+            super(UserParamValueFactoryProvider.class);
         }
     }
 
@@ -46,10 +51,5 @@ public class UserParamValueFactoryProvider extends AbstractValueFactoryProvider 
             }
             return null;
         }
-    }
-
-    @Inject
-    public UserParamValueFactoryProvider(MultivaluedParameterExtractorProvider mpep, ServiceLocator injector) {
-        super(mpep, injector, Parameter.Source.UNKNOWN);
     }
 }

@@ -24,6 +24,20 @@ public class Chatter {
         this.user = user;
     }
 
+    public static Chatter fromRecord(Record record, User user) {
+        if (record != null && record.getValue(CHATTER.ID) != null) {
+            return new Chatter(
+                record.getValue(CHATTER.ID),
+                LocalRole.valueOf(record.getValue(CHATTER.ROLE)),
+                record.getValue(CHATTER.BANNED),
+                record.getValue(CHATTER.TIMEOUT),
+                user
+            );
+        } else {
+            return null;
+        }
+    }
+
     public Long getId() {
         return id;
     }
@@ -70,19 +84,5 @@ public class Chatter {
 
     public boolean hasGreaterRole(LocalRole other) {
         return this.getRole().compareTo(other) > 0;
-    }
-
-    public static Chatter fromRecord(Record record, User user) {
-        if (record != null && record.getValue(CHATTER.ID) != null) {
-            return new Chatter(
-                record.getValue(CHATTER.ID),
-                LocalRole.valueOf(record.getValue(CHATTER.ROLE)),
-                record.getValue(CHATTER.BANNED),
-                record.getValue(CHATTER.TIMEOUT),
-                user
-            );
-        } else {
-            return null;
-        }
     }
 }

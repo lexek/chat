@@ -47,7 +47,7 @@ public class MeHandlerTest {
         Connection connection = spy(new TestConnection(user));
         Chatter chatter = new Chatter(0L, LocalRole.USER, false, null, user);
 
-        when(room.contains(connection)).thenReturn(true);
+        when(room.inRoom(connection)).thenReturn(true);
         when(room.join(connection)).thenReturn(chatter);
         when(room.getName()).thenReturn("#main");
         when(room.getChatter(user.getId())).thenReturn(chatter);
@@ -83,7 +83,7 @@ public class MeHandlerTest {
         Connection connection = spy(new TestConnection(user));
         Chatter chatter = new Chatter(0L, LocalRole.USER, false, null, user);
 
-        when(room.contains(connection)).thenReturn(true);
+        when(room.inRoom(connection)).thenReturn(true);
         when(room.join(connection)).thenReturn(chatter);
         when(room.getName()).thenReturn("#main");
         when(room.getChatter(user.getId())).thenReturn(chatter);
@@ -115,7 +115,7 @@ public class MeHandlerTest {
         Connection connection = spy(new TestConnection(user));
         Chatter chatter = new Chatter(0L, LocalRole.USER, false, null, user);
 
-        when(room.contains(connection)).thenReturn(true);
+        when(room.inRoom(connection)).thenReturn(true);
         when(room.join(connection)).thenReturn(chatter);
         when(room.getName()).thenReturn("#main");
         when(room.getChatter(user.getId())).thenReturn(chatter);
@@ -154,7 +154,7 @@ public class MeHandlerTest {
         Connection connection = spy(new TestConnection(user));
         Chatter chatter = new Chatter(0L, LocalRole.USER, false, null, user);
 
-        when(room.contains(connection)).thenReturn(true);
+        when(room.inRoom(connection)).thenReturn(true);
         when(room.join(connection)).thenReturn(chatter);
         when(room.getName()).thenReturn("#main");
         when(room.getChatter(user.getId())).thenReturn(chatter);
@@ -183,7 +183,7 @@ public class MeHandlerTest {
         Connection connection = spy(new TestConnection(user));
         Chatter chatter = new Chatter(0L, LocalRole.USER, false, null, user);
 
-        when(room.contains(connection)).thenReturn(true);
+        when(room.inRoom(connection)).thenReturn(true);
         when(room.join(connection)).thenReturn(chatter);
         when(room.getName()).thenReturn("#main");
         when(room.getChatter(user.getId())).thenReturn(chatter);

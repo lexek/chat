@@ -54,7 +54,7 @@ public class VoteHandlerTest {
     @Test
     public void testGoodScenario() {
         when(roomManager.getRoomInstance("#main")).thenReturn(room);
-        when(room.contains(connection)).thenReturn(true);
+        when(room.inRoom(connection)).thenReturn(true);
         when(room.getName()).thenReturn("#main");
         when(pollService.vote(room, user, 0)).thenReturn(true);
         handler.handle(ImmutableList.of("#main", "0"), connection);
@@ -66,7 +66,7 @@ public class VoteHandlerTest {
     @Test
     public void testBadOption() {
         when(roomManager.getRoomInstance("#main")).thenReturn(room);
-        when(room.contains(connection)).thenReturn(true);
+        when(room.inRoom(connection)).thenReturn(true);
         when(room.getName()).thenReturn("#main");
         when(pollService.vote(room, user, 0)).thenReturn(true);
         handler.handle(ImmutableList.of("#main", "-1"), connection);
@@ -78,7 +78,7 @@ public class VoteHandlerTest {
     @Test
     public void testNotJoined() {
         when(roomManager.getRoomInstance("#main")).thenReturn(room);
-        when(room.contains(connection)).thenReturn(false);
+        when(room.inRoom(connection)).thenReturn(false);
         handler.handle(ImmutableList.of("#main", "username"), connection);
         verifyZeroInteractions(pollService);
         verify(connection, times(1)).send(eq(Message.errorMessage("NOT_JOINED")));
