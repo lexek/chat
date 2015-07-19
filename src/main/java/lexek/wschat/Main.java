@@ -182,7 +182,8 @@ public class Main {
                 )));
             }
         });
-
+        roomJoinNotificationService.registerListener(((connection, chatter, room) ->
+            connection.send(Message.historyMessage(room.getHistory()))));
         Set<String> bannedIps = new CopyOnWriteArraySet<>();
         messageReactor.registerHandler(new BanHandler(messageBroadcaster, roomManager));
         messageReactor.registerHandler(new ClearUserHandler(messageBroadcaster, roomManager));

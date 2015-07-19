@@ -22,7 +22,7 @@ public class MeHandler extends AbstractMsgHandler {
         String msg = args.get(1).trim();
         if (msg.length() == 0) {
             connection.send(Message.errorMessage("EMPTY_MESSAGE"));
-        } else if ((chatter.hasRole(LocalRole.MOD) || connection.getUser().hasRole(GlobalRole.MOD)) && (msg.length() > 420)) {
+        } else if (!(chatter.hasRole(LocalRole.MOD) || connection.getUser().hasRole(GlobalRole.MOD)) && (msg.length() > 420)) {
             connection.send(Message.errorMessage("MESSAGE_TOO_BIG"));
         } else if (msg.length() != 0) {
             Message message = Message.meMessage(
