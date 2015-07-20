@@ -6,6 +6,7 @@ CREATE TABLE `user` (
 	`rename_available` BIT(1) NOT NULL,
 	`role` VARCHAR(255) NOT NULL,
 	`email` VARCHAR(255) NULL DEFAULT NULL,
+  `email_verified` BIT NOT NULL,
 	PRIMARY KEY (`id`),
 	UNIQUE INDEX `UNIQUE_NAME` (`name`),
 	UNIQUE INDEX `UNIQUE_EMAIL` (`email`)
