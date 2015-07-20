@@ -28,6 +28,7 @@ import lexek.wschat.chat.handlers.*;
 import lexek.wschat.db.dao.*;
 import lexek.wschat.frontend.http.*;
 import lexek.wschat.frontend.http.admin.AdminPageHandler;
+import lexek.wschat.frontend.http.rest.EmailResource;
 import lexek.wschat.frontend.http.rest.admin.*;
 import lexek.wschat.frontend.irc.*;
 import lexek.wschat.frontend.ws.WebSocketChatHandler;
@@ -133,7 +134,6 @@ public class Main {
         RoomDao roomDao = new RoomDao(dataSource);
         JournalDao journalDao = new JournalDao(dataSource);
         JournalService journalService = new JournalService(journalDao);
-        AuthenticationManager authenticationManager = new AuthenticationManager(ircHost, dataSource, emailService);
         CaptchaService captchaService = new CaptchaService();
         HistoryDao historyDao = new HistoryDao(dataSource);
         PendingNotificationDao pendingNotificationDao = new PendingNotificationDao(dataSource);
@@ -142,6 +142,7 @@ public class Main {
         MessageReactor messageReactor = new DefaultMessageReactor(metricRegistry);
         UserService userService = new UserService(connectionManager, userDao, journalService);
         ChatterService chatterService = new ChatterService(chatterDao, journalService);
+        AuthenticationManager authenticationManager = new AuthenticationManager(ircHost, dataSource, emailService, connectionManager);
 
         ThreadFactory scheduledThreadFactory = new ThreadFactoryBuilder().setNameFormat("ANNOUNCEMENT_SCHEDULER_%d").build();
         ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(scheduledThreadFactory);
@@ -275,7 +276,8 @@ public class Main {
                     new PollResource(roomManager, pollService),
                     new RoomResource(roomManager),
                     new ServicesResource(serviceManager),
-                    new TicketResource(ticketService)
+                    new TicketResource(ticketService),
+                    new EmailResource(authenticationManager)
                 );
             }
         };

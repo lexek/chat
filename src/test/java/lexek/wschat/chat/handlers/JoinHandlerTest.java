@@ -39,7 +39,7 @@ public class JoinHandlerTest {
         MessageBroadcaster messageBroadcaster = mock(MessageBroadcaster.class);
         JoinHandler handler = new JoinHandler(roomJoinNotificationService, roomManager, messageBroadcaster);
 
-        UserDto userDto = new UserDto(0L, "user", GlobalRole.USER, "#ffffff", false, false, null);
+        UserDto userDto = new UserDto(0L, "user", GlobalRole.USER, "#ffffff", false, false, null, false);
         User user = new User(userDto);
         Connection connection = spy(new TestConnection(user));
         Chatter chatter = new Chatter(0L, LocalRole.USER, false, null, user);
@@ -67,7 +67,7 @@ public class JoinHandlerTest {
         MessageBroadcaster messageBroadcaster = mock(MessageBroadcaster.class);
         JoinHandler handler = new JoinHandler(roomJoinNotificationService, roomManager, messageBroadcaster);
 
-        UserDto userDto = new UserDto(0L, "user", GlobalRole.USER, "#ffffff", false, false, null);
+        UserDto userDto = new UserDto(0L, "user", GlobalRole.USER, "#ffffff", false, false, null, false);
         User user = new User(userDto);
         Connection connection = spy(new TestConnection(user));
         Chatter chatter = new Chatter(0L, LocalRole.USER, false, null, user);
@@ -95,7 +95,7 @@ public class JoinHandlerTest {
         MessageBroadcaster messageBroadcaster = mock(MessageBroadcaster.class);
         JoinHandler handler = new JoinHandler(roomJoinNotificationService, roomManager, messageBroadcaster);
 
-        UserDto userDto = new UserDto(0L, "user", GlobalRole.UNAUTHENTICATED, "#ffffff", false, false, null);
+        UserDto userDto = new UserDto(0L, "user", GlobalRole.UNAUTHENTICATED, "#ffffff", false, false, null, false);
         User user = new User(userDto);
         Connection connection = spy(new TestConnection(user));
         Chatter chatter = new Chatter(0L, LocalRole.GUEST, false, null, user);
@@ -123,7 +123,7 @@ public class JoinHandlerTest {
         MessageBroadcaster messageBroadcaster = mock(MessageBroadcaster.class);
         JoinHandler handler = new JoinHandler(roomJoinNotificationService, roomManager, messageBroadcaster);
 
-        UserDto userDto = new UserDto(0L, "user", GlobalRole.USER, "#ffffff", false, false, null);
+        UserDto userDto = new UserDto(0L, "user", GlobalRole.USER, "#ffffff", false, false, null, false);
         User user = new User(userDto);
         Connection connection = spy(new TestConnection(user));
         Chatter chatter = new Chatter(0L, LocalRole.USER, false, null, user);
@@ -151,7 +151,7 @@ public class JoinHandlerTest {
         MessageBroadcaster messageBroadcaster = mock(MessageBroadcaster.class);
         JoinHandler handler = new JoinHandler(roomJoinNotificationService, roomManager, messageBroadcaster);
 
-        UserDto userDto = new UserDto(0L, "user", GlobalRole.USER, "#ffffff", false, false, null);
+        UserDto userDto = new UserDto(0L, "user", GlobalRole.USER, "#ffffff", false, false, null, false);
         User user = new User(userDto);
         Connection connection = spy(new TestConnection(user));
         Chatter chatter = new Chatter(0L, LocalRole.USER, false, null, user);

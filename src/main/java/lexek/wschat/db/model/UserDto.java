@@ -16,8 +16,16 @@ public class UserDto implements Serializable, Principal {
     private boolean banned;
     private boolean renameAvailable;
     private String email;
+    private boolean emailVerified;
 
-    public UserDto(Long id, String name, GlobalRole role, String color, boolean banned, boolean renameAvailable, String email) {
+    public UserDto(Long id,
+                   String name,
+                   GlobalRole role,
+                   String color,
+                   boolean banned,
+                   boolean renameAvailable,
+                   String email,
+                   boolean emailVerified) {
         this.id = id;
         this.name = name;
         this.role = role;
@@ -25,6 +33,7 @@ public class UserDto implements Serializable, Principal {
         this.banned = banned;
         this.renameAvailable = renameAvailable;
         this.email = email;
+        this.emailVerified = emailVerified;
     }
 
     public static UserDto fromRecord(Record record) {
@@ -36,8 +45,8 @@ public class UserDto implements Serializable, Principal {
                 record.getValue(USER.COLOR),
                 record.getValue(USER.BANNED),
                 record.getValue(USER.RENAME_AVAILABLE),
-                record.getValue(USER.EMAIL)
-            );
+                record.getValue(USER.EMAIL),
+                record.getValue(USER.EMAIL_VERIFIED));
         } else {
             return null;
         }
@@ -99,6 +108,14 @@ public class UserDto implements Serializable, Principal {
         this.email = email;
     }
 
+    public boolean isEmailVerified() {
+        return emailVerified;
+    }
+
+    public void setEmailVerified(boolean emailVerified) {
+        this.emailVerified = emailVerified;
+    }
+
     @Override
     public String toString() {
         return "UserDto{" +
@@ -109,6 +126,7 @@ public class UserDto implements Serializable, Principal {
             ", banned=" + banned +
             ", renameAvailable=" + renameAvailable +
             ", email=" + email +
+            ", emailVerified=" + emailVerified +
             '}';
     }
 

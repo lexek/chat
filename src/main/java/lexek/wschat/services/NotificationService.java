@@ -35,7 +35,7 @@ public class NotificationService implements RoomJoinedEventListener {
         } else {
             pendingNotificationDao.add(user.getId(), description);
         }
-        if (sendEmail && user.getEmail() != null) {
+        if (sendEmail && user.getEmail() != null && user.isEmailVerified()) {
             emailService.sendEmail(new Email(
                 user.getEmail(),
                 summary,

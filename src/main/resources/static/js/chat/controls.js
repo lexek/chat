@@ -237,6 +237,20 @@ var ProfileController = function($scope, $modalInstance, $http, chat) {
         });
     };
 
+    $scope.setEmail = function(email) {
+        $http({
+            method: 'PUT',
+            url: '/rest/email',
+            data: {
+                "email": email
+            }
+        }).success(function(d) {
+            $scope.error = null;
+            $scope.info = "You should now receive verification email.";
+            $scope.$apply();
+        });
+    };
+
     $scope.close = function() {
         $modalInstance.dismiss('cancel');
     };
