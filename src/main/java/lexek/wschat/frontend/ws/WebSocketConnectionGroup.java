@@ -88,6 +88,18 @@ public class WebSocketConnectionGroup implements ConnectionGroup<WebSocketConnec
     }
 
     @Override
+    public boolean anyConnection(Predicate<Connection> connectionPredicate) {
+        boolean result = false;
+        readLock.lock();
+        try {
+            result = connections.stream().anyMatch(connectionPredicate);
+        } finally {
+            readLock.unlock();
+        }
+        return result;
+    }
+
+    @Override
     public void send(Message message, User user) {
         if (!IGNORE_TYPES.contains(message.getType())) {
             readLock.lock();

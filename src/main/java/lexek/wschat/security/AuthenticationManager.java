@@ -21,8 +21,6 @@ import org.mindrot.jbcrypt.BCrypt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.mail.internet.AddressException;
-import javax.mail.internet.InternetAddress;
 import javax.sql.DataSource;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -279,12 +277,12 @@ public class AuthenticationManager {
             success = confirmationCode != null;
             if (success) {
                 emailService.sendEmail(new Email(
-                    new InternetAddress(email),
+                    email,
                     "Confirm your email.",
                     "https://" + host + ":1337/confirm_email?code=" + URLEncoder.encode(confirmationCode, "utf-8")
                 ));
             }
-        } catch (DataAccessException | SQLException | AddressException | UnsupportedEncodingException e) {
+        } catch (DataAccessException | SQLException | UnsupportedEncodingException e) {
             logger.error(e.getMessage());
         }
         return success;

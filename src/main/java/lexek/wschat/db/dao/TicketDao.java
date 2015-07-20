@@ -118,49 +118,6 @@ public class TicketDao {
         return result;
     }
 
-    public String getTicketsForUser(long userId) {
-        String result = null;
-        try (Connection connection = dataSource.getConnection()) {
-            DSLContext ctx = DSL.using(connection);
-            result = ctx
-                .select()
-                .from(TICKET)
-                .where(TICKET.USER.equal(userId))
-                .orderBy(TICKET.TIMESTAMP.desc())
-                .limit(10)
-                .fetch()
-                .formatJSON();
-        } catch (DataAccessException | SQLException e) {
-            logger.error("sql exception", e);
-        }
-        return result;
-    }
-
-    public List<Ticket> getNotDeliveredTicketsForUser(long userId) {
-        List<Ticket> result = null;
-        try (Connection connection = dataSource.getConnection()) {
-            DSLContext ctx = DSL.using(connection);
-            result = ctx
-                .select()
-                .from(TICKET)
-                .where(TICKET.USER.equal(userId)
-                    .and(TICKET.REPLY_DELIVERED.isFalse().or(TICKET.REPLY_DELIVERED.isNull()))
-                    .and(TICKET.IS_OPEN.isFalse()))
-                .fetch()
-                .into(Ticket.class);
-            ctx
-                .update(TICKET)
-                .set(TICKET.REPLY_DELIVERED, true)
-                .where(TICKET.USER.equal(userId)
-                    .and(TICKET.REPLY_DELIVERED.isFalse().or(TICKET.REPLY_DELIVERED.isNull()))
-                    .and(TICKET.IS_OPEN.isFalse()))
-                .execute();
-        } catch (DataAccessException | SQLException e) {
-            logger.error("sql exception", e);
-        }
-        return result;
-    }
-
     public Ticket close(long id, long closedBy, String comment) {
         Ticket ticket = null;
         try (Connection connection = dataSource.getConnection()) {

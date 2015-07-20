@@ -231,4 +231,21 @@ public class UserDao {
         }
         return result;
     }
+
+    public List<UserDto> getAdmins() {
+        List<UserDto> result = null;
+        try (Connection connection = dataSource.getConnection()) {
+            result = DSL.using(connection)
+                .select()
+                .from(USER)
+                .where(USER.ROLE.equal("SUPERADMIN"))
+                .fetch()
+                .stream()
+                .map(UserDto::fromRecord)
+                .collect(Collectors.toList());
+        } catch (DataAccessException | SQLException e) {
+            logger.error("sql exception", e);
+        }
+        return result;
+    }
 }

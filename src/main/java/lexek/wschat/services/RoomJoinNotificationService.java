@@ -11,9 +11,9 @@ import com.lmax.disruptor.EventHandler;
 import com.lmax.disruptor.RingBuffer;
 import com.lmax.disruptor.dsl.Disruptor;
 import com.lmax.disruptor.dsl.ProducerType;
+import lexek.wschat.chat.Chatter;
 import lexek.wschat.chat.Connection;
 import lexek.wschat.chat.Room;
-import lexek.wschat.chat.Chatter;
 import lexek.wschat.util.LoggingExceptionHandler;
 
 import java.util.List;

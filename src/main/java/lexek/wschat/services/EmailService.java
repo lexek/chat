@@ -31,7 +31,7 @@ public class EmailService {
         try {
             message.setSubject(email.getSubject());
             message.setFrom(fromAddress);
-            message.addRecipient(Message.RecipientType.TO, email.getTo());
+            message.addRecipient(Message.RecipientType.TO, new InternetAddress(email.getTo()));
 
             Multipart multipart = new MimeMultipart("alternative");
             BodyPart messageBodyPart = new MimeBodyPart();

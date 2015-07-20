@@ -120,4 +120,8 @@ public class ConnectionManager implements EventHandler<MessageEvent> {
         }
         return connections;
     }
+
+    public boolean anyConnection(Predicate<Connection> connectionPredicate) {
+        return connectionGroups.stream().anyMatch(group -> group.anyConnection(connectionPredicate));
+    }
 }

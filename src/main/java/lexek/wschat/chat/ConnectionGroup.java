@@ -20,4 +20,6 @@ public interface ConnectionGroup<T extends Connection> {
     long count();
 
     void getConnections(List<Connection> connections);
+
+    boolean anyConnection(Predicate<Connection> connectionPredicate);
 }
