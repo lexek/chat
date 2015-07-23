@@ -50,10 +50,12 @@ public class NotificationService implements RoomJoinedEventListener {
 
     @Override
     public void joined(Connection connection, Chatter chatter, Room room) {
-        List<String> notifications = pendingNotificationDao.getPendingNotifications(connection.getUser().getId());
-        if (notifications != null) {
-            for (String notification : notifications) {
-                connection.send(Message.infoMessage(notification));
+        if (chatter.hasRole(LocalRole.USER)) {
+            List<String> notifications = pendingNotificationDao.getPendingNotifications(connection.getUser().getId());
+            if (notifications != null) {
+                for (String notification : notifications) {
+                    connection.send(Message.infoMessage(notification));
+                }
             }
         }
     }
