@@ -10,6 +10,7 @@ install:
   - mvn install -DskipTests
 script:
   - mvn surefire:test
+  - mvn assembly:assembly
 notifications:
   email:
     recipients:
