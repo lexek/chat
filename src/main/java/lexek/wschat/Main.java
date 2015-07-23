@@ -121,12 +121,13 @@ public class Main {
         config.setHealthCheckRegistry(healthCheckRegistry);
         DataSource dataSource = new HikariDataSource(config);
 
+        EmailConfiguration emailSettings = settings.getEmail();
         EmailService emailService = new EmailService(
-            settings.getEmail().getSmtpHost(),
-            settings.getEmail().getSmtpPort(),
-            new InternetAddress(settings.getEmail().getEmail()),
-            settings.getEmail().getPassword()
-        );
+            emailSettings.getSmtpHost(),
+            emailSettings.getSmtpPort(),
+            new InternetAddress(emailSettings.getEmail(), emailSettings.getFromName()),
+            emailSettings.getPassword(),
+            emailSettings.getPrefix());
 
         UserDao userDao = new UserDao(dataSource);
         ChatterDao chatterDao = new ChatterDao(dataSource);
