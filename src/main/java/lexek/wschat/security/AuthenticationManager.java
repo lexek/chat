@@ -260,8 +260,8 @@ public class AuthenticationManager {
             String confirmationCode = dslContext.transactionResult(conf -> {
                 String code = null;
                 Long id = DSL.using(conf)
-                    .insertInto(USER, USER.NAME, USER.BANNED, USER.COLOR, USER.RENAME_AVAILABLE, USER.ROLE, USER.EMAIL)
-                    .values(name, false, color, false, GlobalRole.USER_UNCONFIRMED.toString(), email)
+                    .insertInto(USER, USER.NAME, USER.BANNED, USER.COLOR, USER.RENAME_AVAILABLE, USER.ROLE, USER.EMAIL, USER.EMAIL_VERIFIED)
+                    .values(name, false, color, false, GlobalRole.USER_UNCONFIRMED.toString(), email, false)
                     .returning(USER.ID)
                     .fetchOne().getValue(USER.ID);
                 if (id != null) {
@@ -402,8 +402,8 @@ public class AuthenticationManager {
         try (Connection connection = dataSource.getConnection()) {
             success = DSL.using(connection).transactionResult(conf -> {
                 Long id = DSL.using(conf)
-                    .insertInto(USER, USER.NAME, USER.BANNED, USER.COLOR, USER.RENAME_AVAILABLE, USER.ROLE)
-                    .values(name, false, color, false, GlobalRole.USER.toString())
+                    .insertInto(USER, USER.NAME, USER.BANNED, USER.COLOR, USER.RENAME_AVAILABLE, USER.ROLE, USER.EMAIL, USER.EMAIL_VERIFIED)
+                    .values(name, false, color, false, GlobalRole.USER.toString(), null, false)
                     .returning()
                     .fetchOne()
                     .getValue(USER.ID);

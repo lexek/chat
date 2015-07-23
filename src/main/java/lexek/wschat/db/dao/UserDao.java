@@ -130,7 +130,7 @@ public class UserDao {
         DataPage<UserData> result = null;
         try (Connection connection = dataSource.getConnection()) {
             List<UserData> data = DSL.using(connection)
-                .select(USER.ID, USER.NAME, USER.ROLE, USER.COLOR, USER.BANNED, USER.RENAME_AVAILABLE, USER.EMAIL,
+                .select(USER.ID, USER.NAME, USER.ROLE, USER.COLOR, USER.BANNED, USER.RENAME_AVAILABLE, USER.EMAIL, USER.EMAIL_VERIFIED,
                     DSL.groupConcat(USERAUTH.SERVICE).as("authServices"),
                     DSL.groupConcat(DSL.coalesce(USERAUTH.AUTH_NAME, "")).as("authNames"))
                 .from(USER.join(USERAUTH).on(USER.ID.equal(USERAUTH.USER_ID)))
@@ -157,7 +157,7 @@ public class UserDao {
         try (Connection connection = dataSource.getConnection()) {
             List<UserData> data = DSL.using(connection)
                 .select(USER.ID, USER.NAME, USER.ROLE, USER.COLOR, USER.BANNED,
-                    USER.RENAME_AVAILABLE, USER.EMAIL,
+                    USER.RENAME_AVAILABLE, USER.EMAIL, USER.EMAIL_VERIFIED,
                     DSL.groupConcat(USERAUTH.SERVICE).as("authServices"),
                     DSL.groupConcat(DSL.coalesce(USERAUTH.AUTH_NAME, "")).as("authNames"))
                 .from(USER.join(USERAUTH).on(USER.ID.equal(USERAUTH.USER_ID)))
@@ -212,7 +212,7 @@ public class UserDao {
         UserData result = null;
         try (Connection connection = dataSource.getConnection()) {
             Record record = DSL.using(connection)
-                .select(USER.ID, USER.NAME, USER.ROLE, USER.COLOR, USER.BANNED, USER.RENAME_AVAILABLE, USER.EMAIL,
+                .select(USER.ID, USER.NAME, USER.ROLE, USER.COLOR, USER.BANNED, USER.RENAME_AVAILABLE, USER.EMAIL, USER.EMAIL_VERIFIED,
                     DSL.groupConcat(USERAUTH.SERVICE).as("authServices"),
                     DSL.groupConcat(DSL.coalesce(USERAUTH.AUTH_NAME, "")).as("authNames"))
                 .from(USER.join(USERAUTH).on(USER.ID.equal(USERAUTH.USER_ID)))
