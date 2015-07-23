@@ -309,7 +309,8 @@ public class AuthenticationManager {
                         .execute();
                     DSL.using(conf)
                         .delete(PENDING_CONFIRMATION)
-                        .where(PENDING_CONFIRMATION.ID.equal(pendingConfirmation.getId()));
+                        .where(PENDING_CONFIRMATION.ID.equal(pendingConfirmation.getId()))
+                        .execute();
                     success1 = true;
                 }
                 return success1;
