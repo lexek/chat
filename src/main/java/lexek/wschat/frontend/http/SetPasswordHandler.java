@@ -8,7 +8,6 @@ import lexek.httpserver.SimpleHttpHandler;
 import lexek.wschat.db.model.UserAuthDto;
 import lexek.wschat.security.AuthenticationManager;
 import lexek.wschat.util.Names;
-import org.mindrot.jbcrypt.BCrypt;
 
 public class SetPasswordHandler extends SimpleHttpHandler {
     private final AuthenticationManager authenticationManager;
@@ -25,7 +24,7 @@ public class SetPasswordHandler extends SimpleHttpHandler {
             if (request.method() == HttpMethod.POST) {
                 String passwordParam = request.postParam("password");
                 if (passwordParam != null && Names.PASSWORD_PATTERN.matcher(passwordParam).matches()) {
-                    authenticationManager.setPassword(auth.getUser().getId(), BCrypt.hashpw(passwordParam, BCrypt.gensalt()));
+                    authenticationManager.setPassword(auth.getUser(), passwordParam);
                     response.jsonContent(ImmutableMap.of("success", true));
                 } else {
                     response.jsonContent(ImmutableMap.of("success", false, "error", "Bad password format."));

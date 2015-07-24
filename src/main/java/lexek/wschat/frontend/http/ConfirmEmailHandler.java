@@ -23,7 +23,7 @@ public class ConfirmEmailHandler extends SimpleHttpHandler {
         if (code != null) {
             final UserDto auth = authenticationManager.checkAuthentication(request);
             if (auth != null) {
-                boolean success = this.authenticationManager.confirmEmail(auth, code);
+                boolean success = this.authenticationManager.verifyEmail(code);
                 response.renderTemplate("confirm_email", ImmutableMap.of("success", success));
                 if (success) {
                     connectionManager.forEach(connection -> {

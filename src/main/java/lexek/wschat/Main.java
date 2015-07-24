@@ -138,12 +138,13 @@ public class Main {
         CaptchaService captchaService = new CaptchaService();
         HistoryDao historyDao = new HistoryDao(dataSource);
         PendingNotificationDao pendingNotificationDao = new PendingNotificationDao(dataSource);
+        UserAuthDao userAuthDao = new UserAuthDao(dataSource);
 
         ConnectionManager connectionManager = new ConnectionManager(metricRegistry);
         MessageReactor messageReactor = new DefaultMessageReactor(metricRegistry);
         UserService userService = new UserService(connectionManager, userDao, journalService);
         ChatterService chatterService = new ChatterService(chatterDao, journalService);
-        AuthenticationManager authenticationManager = new AuthenticationManager(ircHost, dataSource, emailService, connectionManager);
+        AuthenticationManager authenticationManager = new AuthenticationManager(ircHost, emailService, connectionManager, userAuthDao);
 
         ThreadFactory scheduledThreadFactory = new ThreadFactoryBuilder().setNameFormat("ANNOUNCEMENT_SCHEDULER_%d").build();
         ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(scheduledThreadFactory);
