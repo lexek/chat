@@ -12,7 +12,7 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
 public class ClearUserHandlerTest {
-    private UserDto userDto = new UserDto(0L, "user", GlobalRole.MOD, "#000000", false, false, null);
+    private UserDto userDto = new UserDto(0L, "user", GlobalRole.MOD, "#000000", false, false, null, false);
     private User user = new User(userDto);
     private Chatter chatter = new Chatter(0L, LocalRole.MOD, false, null, user);
     private Connection connection = spy(new TestConnection(user));
@@ -43,7 +43,7 @@ public class ClearUserHandlerTest {
 
     @Test
     public void testExistingUserWithGoodRole() {
-        UserDto otherUserDto = new UserDto(1L, "username", GlobalRole.USER, "#000000", false, false, null);
+        UserDto otherUserDto = new UserDto(1L, "username", GlobalRole.USER, "#000000", false, false, null, false);
         User otherUser = new User(otherUserDto);
         Chatter otherChatter = new Chatter(1L, LocalRole.USER, false, null, otherUser);
         when(roomManager.getRoomInstance("#main")).thenReturn(room);
@@ -60,7 +60,7 @@ public class ClearUserHandlerTest {
 
     @Test
     public void testExistingUserWithBadLocalRole() {
-        UserDto otherUserDto = new UserDto(1L, "username", GlobalRole.USER, "#000000", false, false, null);
+        UserDto otherUserDto = new UserDto(1L, "username", GlobalRole.USER, "#000000", false, false, null, false);
         User otherUser = new User(otherUserDto);
         Chatter otherChatter = new Chatter(1L, LocalRole.ADMIN, false, null, otherUser);
         when(roomManager.getRoomInstance("#main")).thenReturn(room);
@@ -75,7 +75,7 @@ public class ClearUserHandlerTest {
 
     @Test
     public void testExistingUserWithBadGlobalRole() {
-        UserDto otherUserDto = new UserDto(1L, "username", GlobalRole.MOD, "#000000", false, false, null);
+        UserDto otherUserDto = new UserDto(1L, "username", GlobalRole.MOD, "#000000", false, false, null, false);
         User otherUser = new User(otherUserDto);
         Chatter otherChatter = new Chatter(1L, LocalRole.USER, false, null, otherUser);
         when(roomManager.getRoomInstance("#main")).thenReturn(room);
@@ -90,7 +90,7 @@ public class ClearUserHandlerTest {
 
     @Test
     public void testWithBadRole() {
-        UserDto userDto = new UserDto(0L, "user", GlobalRole.USER, "#000000", false, false, null);
+        UserDto userDto = new UserDto(0L, "user", GlobalRole.USER, "#000000", false, false, null, false);
         User user = new User(userDto);
         Chatter chatter = new Chatter(0L, LocalRole.USER, false, null, user);
         Connection connection = spy(new TestConnection(user));

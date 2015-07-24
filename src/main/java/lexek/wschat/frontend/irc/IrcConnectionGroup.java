@@ -89,6 +89,18 @@ public class IrcConnectionGroup implements ConnectionGroup<IrcConnection> {
     }
 
     @Override
+    public boolean anyConnection(Predicate<Connection> connectionPredicate) {
+        boolean result = false;
+        readLock.lock();
+        try {
+            result = connections.stream().anyMatch(connectionPredicate);
+        } finally {
+            readLock.unlock();
+        }
+        return result;
+    }
+
+    @Override
     public void send(Message message, User user) {
         String encodedMessage = codec.encode(message, user);
 

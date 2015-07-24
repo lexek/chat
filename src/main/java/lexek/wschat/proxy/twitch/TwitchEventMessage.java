@@ -3,6 +3,7 @@ package lexek.wschat.proxy.twitch;
 public class TwitchEventMessage {
     private final Type type;
     private final String data;
+
     public TwitchEventMessage(Type type, String data) {
         this.type = type;
         this.data = data;

@@ -5,7 +5,7 @@ import lexek.httpserver.Request;
 import lexek.httpserver.Response;
 import lexek.httpserver.SimpleHttpHandler;
 import lexek.wschat.chat.ConnectionManager;
-import lexek.wschat.db.model.UserAuthDto;
+import lexek.wschat.db.model.UserDto;
 import lexek.wschat.security.AuthenticationManager;
 
 public class ConfirmEmailHandler extends SimpleHttpHandler {
@@ -21,18 +21,17 @@ public class ConfirmEmailHandler extends SimpleHttpHandler {
     protected void handle(Request request, Response response) throws Exception {
         String code = request.queryParam("code");
         if (code != null) {
-            boolean success = this.authenticationManager.confirmEmail(code);
-            response.renderTemplate("confirm_email", ImmutableMap.of("success", success));
-            if (success) {
-                final UserAuthDto auth = authenticationManager.checkFullAuthentication(request);
-                if (auth != null && auth.getUser() != null) {
+            final UserDto auth = authenticationManager.checkAuthentication(request);
+            if (auth != null) {
+                boolean success = this.authenticationManager.confirmEmail(auth, code);
+                response.renderTemplate("confirm_email", ImmutableMap.of("success", success));
+                if (success) {
                     connectionManager.forEach(connection -> {
                         Long id = connection.getUser().getId();
-                        if (id != null && id.equals(auth.getUser().getId())) {
+                        if (id != null && id.equals(auth.getId())) {
                             connection.close();
                         }
                     });
-
                 }
             }
         }

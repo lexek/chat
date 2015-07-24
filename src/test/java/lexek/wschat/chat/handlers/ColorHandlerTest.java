@@ -12,7 +12,7 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
 public class ColorHandlerTest {
-    private UserDto userDto = new UserDto(0L, "user", GlobalRole.USER, "#1337ff", false, false, null);
+    private UserDto userDto = new UserDto(0L, "user", GlobalRole.USER, "#1337ff", false, false, null, true);
     private User user = new User(userDto);
     private Connection connection = spy(new TestConnection(user));
     private UserDao userDao = mock(UserDao.class);

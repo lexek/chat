@@ -3,6 +3,7 @@ package lexek.wschat.security;
 import com.google.common.io.BaseEncoding;
 import io.netty.util.internal.chmv8.ConcurrentHashMapV8;
 import lexek.httpserver.Request;
+import lexek.wschat.chat.ConnectionManager;
 import lexek.wschat.chat.GlobalRole;
 import lexek.wschat.db.jooq.tables.pojos.PendingConfirmation;
 import lexek.wschat.db.model.Email;
@@ -21,8 +22,6 @@ import org.mindrot.jbcrypt.BCrypt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.mail.internet.AddressException;
-import javax.mail.internet.InternetAddress;
 import javax.sql.DataSource;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -45,11 +44,13 @@ public class AuthenticationManager {
     private final String host;
     private final DataSource dataSource;
     private final EmailService emailService;
+    private final ConnectionManager connectionManager;
 
-    public AuthenticationManager(String host, DataSource dataSource, EmailService emailService) {
+    public AuthenticationManager(String host, DataSource dataSource, EmailService emailService, ConnectionManager connectionManager) {
         this.host = host;
         this.dataSource = dataSource;
         this.emailService = emailService;
+        this.connectionManager = connectionManager;
     }
 
     public UserAuthDto fastAuth(String name, String password, String ip) {
@@ -259,8 +260,8 @@ public class AuthenticationManager {
             String confirmationCode = dslContext.transactionResult(conf -> {
                 String code = null;
                 Long id = DSL.using(conf)
-                    .insertInto(USER, USER.NAME, USER.BANNED, USER.COLOR, USER.RENAME_AVAILABLE, USER.ROLE, USER.EMAIL)
-                    .values(name, false, color, false, GlobalRole.USER_UNCONFIRMED.toString(), email)
+                    .insertInto(USER, USER.NAME, USER.BANNED, USER.COLOR, USER.RENAME_AVAILABLE, USER.ROLE, USER.EMAIL, USER.EMAIL_VERIFIED)
+                    .values(name, false, color, false, GlobalRole.USER_UNCONFIRMED.toString(), email, false)
                     .returning(USER.ID)
                     .fetchOne().getValue(USER.ID);
                 if (id != null) {
@@ -279,18 +280,52 @@ public class AuthenticationManager {
             success = confirmationCode != null;
             if (success) {
                 emailService.sendEmail(new Email(
-                    new InternetAddress(email),
-                    "Confirm your email.",
+                    email,
+                    "Verify your email.",
                     "https://" + host + ":1337/confirm_email?code=" + URLEncoder.encode(confirmationCode, "utf-8")
                 ));
             }
-        } catch (DataAccessException | SQLException | AddressException | UnsupportedEncodingException e) {
+        } catch (DataAccessException | SQLException | UnsupportedEncodingException e) {
             logger.error(e.getMessage());
         }
         return success;
     }
 
-    public boolean confirmEmail(final String code) {
+    public void setEmail(UserDto user, String email) {
+        if (!user.isEmailVerified()) {
+            try (Connection connection = dataSource.getConnection()) {
+                final DSLContext dslContext = DSL.using(connection);
+                String confirmationCode = dslContext.transactionResult(conf -> {
+                    String code = generateConfirmationCode();
+                    DSL.using(conf)
+                        .update(USER)
+                        .set(USER.EMAIL, email)
+                        .set(USER.EMAIL_VERIFIED, false)
+                        .where(USER.ID.equal(user.getId()))
+                        .execute();
+                    DSL.using(conf)
+                        .insertInto(PENDING_CONFIRMATION, PENDING_CONFIRMATION.CODE, PENDING_CONFIRMATION.USER_ID)
+                        .values(code, user.getId())
+                        .execute();
+                    return code;
+                });
+                if (confirmationCode != null) {
+                    user.setEmail(email);
+                    user.setEmailVerified(false);
+                    connectionManager.forEach(c -> user.getId().equals(c.getUser().getId()), lexek.wschat.chat.Connection::close);
+                    emailService.sendEmail(new Email(
+                        user.getEmail(),
+                        "Verify your email.",
+                        "https://" + host + ":1337/confirm_email?code=" + URLEncoder.encode(confirmationCode, "utf-8")
+                    ));
+                }
+            } catch (DataAccessException | SQLException | UnsupportedEncodingException e) {
+                logger.error(e.getMessage());
+            }
+        }
+    }
+
+    public boolean confirmEmail(UserDto user, final String code) {
         boolean success = false;
         try (Connection connection = dataSource.getConnection()) {
             success = DSL.using(connection).transactionResult(conf -> {
@@ -302,11 +337,20 @@ public class AuthenticationManager {
                     .fetchOne();
                 if (record != null) {
                     PendingConfirmation pendingConfirmation = record.into(PendingConfirmation.class);
-                    DSL.using(conf)
-                        .update(USER)
-                        .set(USER.ROLE, GlobalRole.USER.toString())
-                        .where(USER.ID.equal(pendingConfirmation.getUserId()))
-                        .execute();
+                    if (user.hasRole(GlobalRole.USER)) {
+                        DSL.using(conf)
+                            .update(USER)
+                            .set(USER.EMAIL_VERIFIED, true)
+                            .where(USER.ID.equal(pendingConfirmation.getUserId()))
+                            .execute();
+                    } else {
+                        DSL.using(conf)
+                            .update(USER)
+                            .set(USER.ROLE, GlobalRole.USER.toString())
+                            .set(USER.EMAIL_VERIFIED, true)
+                            .where(USER.ID.equal(pendingConfirmation.getUserId()))
+                            .execute();
+                    }
                     DSL.using(conf)
                         .delete(PENDING_CONFIRMATION)
                         .where(PENDING_CONFIRMATION.ID.equal(pendingConfirmation.getId()))
@@ -358,8 +402,8 @@ public class AuthenticationManager {
         try (Connection connection = dataSource.getConnection()) {
             success = DSL.using(connection).transactionResult(conf -> {
                 Long id = DSL.using(conf)
-                    .insertInto(USER, USER.NAME, USER.BANNED, USER.COLOR, USER.RENAME_AVAILABLE, USER.ROLE)
-                    .values(name, false, color, false, GlobalRole.USER.toString())
+                    .insertInto(USER, USER.NAME, USER.BANNED, USER.COLOR, USER.RENAME_AVAILABLE, USER.ROLE, USER.EMAIL, USER.EMAIL_VERIFIED)
+                    .values(name, false, color, false, GlobalRole.USER.toString(), null, false)
                     .returning()
                     .fetchOne()
                     .getValue(USER.ID);

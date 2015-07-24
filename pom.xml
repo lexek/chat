@@ -172,7 +172,9 @@
                                 ticket|
                                 announcement|
                                 room|
-                                pending_confirmation</includes>
+                                pending_confirmation|
+                                pending_notification
+                            </includes>
                             <excludes></excludes>
                             <inputSchema>chat</inputSchema>
                         </database>

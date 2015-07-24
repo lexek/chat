@@ -129,6 +129,29 @@
         <h3>{{self.name}}</h3>
     </div>
     <div class="modal-body">
+        <div class="btn btn-default btn-modal" ng-click="showEmail = !showEmail">{{'CONTROLS_SET_EMAIL' | translate}}</div>
+        <br />
+        <br />
+        <div ng-if="showEmail" class="panel panel-default">
+            <form class="panel-body" name="form" ng-submit="setEmail(email)">
+                <div class="form-group" ng-class="{'has-error': form.email.$invalid && form.email.$dirty, 'has-success': !form.email.$invalid}">
+                    <label for="email" class="control-label">{{'AUTH_EMAIL' | translate}}</label>
+                    <input
+                            ng-model="email"
+                            id="email"
+                            type="email"
+                            class="form-control"
+                            name="email"
+                            placeholder="{{'AUTH_EMAIL' | translate}}"
+                            required
+                            />
+                </div>
+                <div class="form-group">
+                    <input ng-disabled="form.$invalid" type="submit" class="btn btn-primary btn-modal" value="{{'CONTROLS_SET_EMAIL' | translate}}"/>
+                </div>
+            </form>
+        </div>
+
         <div class="btn btn-default btn-modal" ng-click="showRename = !showRename">{{'CONTROLS_CHANGE_NAME' | translate}}</div>
         <br />
         <br />

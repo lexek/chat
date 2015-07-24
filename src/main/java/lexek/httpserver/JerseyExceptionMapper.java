@@ -1,6 +1,8 @@
 package lexek.httpserver;
 
 import lexek.wschat.db.model.rest.ErrorModel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.validation.ValidationException;
 import javax.ws.rs.NotFoundException;
@@ -9,8 +11,11 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 
 public class JerseyExceptionMapper implements ExceptionMapper<Throwable> {
+    private final Logger logger = LoggerFactory.getLogger(JerseyExceptionMapper.class);
+
     @Override
     public Response toResponse(Throwable exception) {
+        logger.warn("exception", exception);
         if (exception instanceof WebApplicationException) {
             WebApplicationException webApplicationException = (WebApplicationException) exception;
             if (webApplicationException.getResponse() != null) {
