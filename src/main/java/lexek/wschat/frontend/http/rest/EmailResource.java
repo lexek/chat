@@ -24,6 +24,10 @@ public class EmailResource {
         this.authenticationManager = authenticationManager;
     }
 
+    private static boolean hasPendingVerification(UserDto user) {
+        return user.getEmail() != null && !user.isEmailVerified();
+    }
+
     @PUT
     @Consumes(MediaType.APPLICATION_JSON)
     public Response setEmail(
@@ -69,9 +73,5 @@ public class EmailResource {
             return "your email is successfully verified";
         }
         return "there was an error with verifying your email";
-    }
-
-    private static boolean hasPendingVerification(UserDto user) {
-        return user.getEmail() != null && !user.isEmailVerified();
     }
 }
