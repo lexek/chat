@@ -76,6 +76,8 @@ public class ChatterService {
     }
 
     public void removeTimeout(Chatter chatter) {
-        chatterDao.setTimeout(chatter.getId(), null);
+        if (chatterDao.setTimeout(chatter.getId(), null)) {
+            chatter.setTimeout(null);
+        }
     }
 }
