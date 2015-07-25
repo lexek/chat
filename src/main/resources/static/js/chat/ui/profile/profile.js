@@ -12,6 +12,7 @@
             $modal.open({
                 templateUrl: 'chat/ui/profile/email.html',
                 controller: "EmailSettingsController",
+                size: "sm",
                 resolve: {
                     hasPendingVerification: function() {
                         return user["email"] && !user["emailVerified"];
@@ -26,7 +27,8 @@
         $scope.showPasswordSettings = function() {
             $modal.open({
                 templateUrl: 'chat/ui/profile/password.html',
-                controller: "PasswordSettingsController"
+                controller: "PasswordSettingsController",
+                size: "sm"
             }).result.then(function() {
                 loadProfile();
             });

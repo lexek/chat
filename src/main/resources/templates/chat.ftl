@@ -297,7 +297,7 @@
             <div class='panel-body'>
                 <div class='input-group'>
                     <input type='text' class='form-control' ng-model='apiToken' readonly
-                        placeholder='click button to get new api token'>
+                        placeholder='press button to get token'>
                     <span class='input-group-btn'>
                         <button class='btn btn-default' type='button' ng-click='newToken()'>
                             <i class='fa fa-fw fa-refresh'></i>

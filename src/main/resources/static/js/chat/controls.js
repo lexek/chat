@@ -295,7 +295,8 @@ controlsModule.controller("SettingsController", ["$scope", "chatService", "$moda
     $scope.showProfile = function() {
         $modal.open({
             templateUrl: 'chat/ui/profile/profile.html',
-            controller: "ProfileController"
+            controller: "ProfileController",
+            size: "sm"
         });
     };
 

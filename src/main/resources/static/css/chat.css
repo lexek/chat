@@ -670,20 +670,8 @@ img.emoji {
     padding-bottom: 0;
 }
 
-.modal-dialog {
-    max-width: 350px;
-    margin: 30px auto;
-}
-
 .modal-content {
     border-radius: 0;
-}
-
-.btn-modal {
-    min-width: 180px;
-    width: 180px;
-    margin-left: auto;
-    margin-right: auto;
 }
 
 .mention {
