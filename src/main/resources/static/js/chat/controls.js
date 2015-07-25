@@ -302,8 +302,8 @@ controlsModule.controller("SettingsController", ["$scope", "chatService", "$moda
 
     $scope.showTickets = function() {
         $modal.open({
-            templateUrl: 'tickets.html',
-            controller: TicketsController
+            templateUrl: 'chat/ui/tickets/list.html',
+            controller: "TicketsController"
         });
     };
 
@@ -524,64 +524,6 @@ var EmoticonsController = function($scope, chat, $modalInstance) {
 };
 
 var HelpController = function($scope, $modalInstance) {
-    $scope.close = function() {
-        $modalInstance.dismiss('cancel');
-    };
-};
-
-
-var TicketsController = function($scope, $http, $modalInstance) {
-    $scope.input = {
-        "category": "BAN",
-        "text": ""
-    };
-    $scope.submitting = false;
-    $scope.entries = [];
-    $scope.status = null;
-    $scope.response = null;
-
-    $scope.loadData = function() {
-        $scope.entries.length = 0;
-        $http({method: "GET", url: "/api/tickets"})
-            .success(function (d, status, headers, config) {
-                $scope.entries = d;
-            })
-            .error(function (data, status, headers, config) {
-                alert.alert("danger", data);
-            });
-    };
-
-    $scope.resetFormData = function() {
-        $scope.input.text = "";
-        $scope.response = null;
-    };
-
-    $scope.submitTicket = function() {
-        $scope.submitting = true;
-        $http({method: "POST", url: "/api/tickets", data: $.param($scope.input), headers: {"Content-Type": "application/x-www-form-urlencoded"}})
-            .success(function(data, status, headers, config) {
-                $scope.submitting = false;
-                if (data === "ok") {
-                    $scope.response = {
-                        "success": true,
-                        "text": "Ticket is successfully submitted."
-                    }
-                } else {
-                    $scope.response = {
-                        "success": false,
-                        "text": data
-                    }
-                }
-            })
-            .error(function(data, status, headers, config) {
-                $scope.submitting = false;
-                $scope.response = {
-                    "success": false,
-                    "text": data
-                }
-            });
-    };
-
     $scope.close = function() {
         $modalInstance.dismiss('cancel');
     };

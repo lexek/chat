@@ -124,84 +124,80 @@
     </div>
 </script>
 
-<script type="text/ng-template" id="tickets.html">
+<script type="text/ng-template" id="chat/ui/tickets/compose.html">
     <div class="modal-header">
-        <h3>{{'TICKETS_MINE' | translate}}</h3>
+        <h3>
+            <i class="fa fa-ticket"></i> {{'TICKETS_MINE' | translate}}
+        </h3>
+    </div>
+    <form name="form" class="" ng-submit="submitTicket(name)">
+        <div class="modal-body">
+            <div class="alert" ng-if="response" ng-class="{'alert-success': response.success, 'alert-warning': !response.success}">
+                {{response.text}}
+            </div>
+            <div class="form-group">
+                <label class="control-label">{{'TICKETS_TYPE' | translate}}</label>
+                <select
+                        class="form-control"
+                        required
+                        ng-model="input.category"
+                        >
+                    <option value="BAN">{{'TICKETS_TYPE_BAN' | translate}}</option>
+                    <option value="RENAME">{{'TICKETS_TYPE_RENAME' | translate}}</option>
+                    <option value="BUG">{{'TICKETS_TYPE_BUG' | translate}}</option>
+                    <option value="OTHER">{{'TICKETS_TYPE_OTHER' | translate}}</option>
+                </select>
+            </div>
+            <div class="form-group" ng-class="{'has-error': form.text.$invalid && form.text.$dirty, 'has-success': !form.text.$invalid}">
+                <label class="control-label">{{'TICKETS_TEXT' | translate}}</label>
+                <textarea
+                        class="form-control"
+                        required
+                        name="text"
+                        ng-model="input.text"
+                        style="resize: none;"
+                        minlength="6"
+                        maxlength="1024"
+                        ></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <div class='btn btn-warning pull-left' ng-click='close()' translate='CONTROLS_CLOSE'></div>
+            <input ng-disabled="form.$invalid" ng-if="!submitting" type="submit" class="btn btn-primary" value="{{'CONTROLS_OK' | translate}}"/>
+            <button disabled ng-if="submitting" class="btn btn-success"><span class="fa fa-spinner fa-spin"></span></button>
+        </div>
+    </form>
+</script>
+
+<script type="text/ng-template" id="chat/ui/tickets/list.html">
+    <div class="modal-header">
+        <h3>
+            <i class="fa fa-ticket"></i> {{'TICKETS_MINE' | translate}}
+        </h3>
     </div>
     <div class="modal-body">
-        <tabset>
-            <tab heading="Ticket list" select="loadData()">
-                <table class="table table-hover" ng-if="entries.length > 0">
-                    <thead>
-                    <tr>
-                        <th>
-                        </th>
-                        <th style="width: 50px">
-                            {{'TICKETS_TYPE' | translate}}
-                        </th>
-                        <th>
-                            {{'TICKETS_MESSAGE' | translate}}
-                        </th>
-                        <th>
-                            {{'TICKETS_RESPONSE' | translate}}
-                        </th>
-                    </tr>
-                    </thead>
-                    <tr ng-repeat="entry in entries" ng-class="{success: !entry.isOpen, info: entry.isOpen}">
-                        <td>
-                            <span class="fa fa-fw" ng-class="{'fa-question-circle': entry.isOpen, 'fa-check-circle': !entry.isOpen}"></span>
-                        </td>
-                        <td>
-                            {{entry.category}}
-                        </td>
-                        <td>
-                            {{entry.text}}
-                        </td>
-                        <td>
-                            {{entry.isOpen ? "&mdash;" : entry.adminReply}}
-                        </td>
-                    </tr>
-                </table>
-                <div class="alert alert-info" ng-if="entries.length === 0">Nothing to show.</div>
-            </tab>
-            <tab heading="New ticket" select="resetFormData()">
-                <div class="alert" ng-if="response" ng-class="{'alert-success': response.success, 'alert-warning': !response.success}">
-                    {{response.text}}
+        <div class="list-group">
+            <div class="list-group-item"
+                 ng-repeat="ticket in entries"
+                 ng-class="{'list-group-item-success': !ticket.isOpen}">
+                <h4 class="list-group-item-heading">
+                    {{('TICKETS_TYPE_' + ticket.category) | translate}}
+                </h4>
+                <div class="list-group-item-text">
+                    <div>
+                        <strong translate="TICKETS_TEXT"></strong>: {{ticket.text}}
+                    </div>
+                    <div ng-if="ticket.adminReply">
+                        <strong translate="TICKETS_ADMIN_REPLY"></strong>: {{ticket.adminReply}}
+                    </div>
                 </div>
-                <form name="form" class="" ng-submit="submitTicket(name)">
-                    <div class="form-group">
-                        <label class="control-label">{{'TICKETS_TYPE' | translate}}</label>
-                        <select
-                                class="form-control"
-                                required
-                                ng-model="input.category"
-                                >
-                            <option value="BAN">{{'TICKETS_TYPE_BAN' | translate}}</option>
-                            <option value="RENAME">{{'TICKETS_TYPE_RENAME' | translate}}</option>
-                            <option value="BUG">{{'TICKETS_TYPE_BUG' | translate}}</option>
-                            <option value="OTHER">{{'TICKETS_TYPE_OTHER' | translate}}</option>
-                        </select>
-                    </div>
-                    <div class="form-group" ng-class="{'has-error': form.text.$invalid && form.text.$dirty, 'has-success': !form.text.$invalid}">
-                        <label class="control-label">{{'TICKETS_TEXT' | translate}}</label>
-                        <textarea
-                                class="form-control"
-                                required
-                                name="text"
-                                ng-model="input.text"
-                                style="resize: none;"
-                                minlength="6"
-                                maxlength="1024"
-                                ></textarea>
-                    </div>
-                    <div class="form-group">
-                        <input ng-disabled="form.$invalid" ng-if="!submitting" type="submit" class="btn btn-primary" value="{{'CONTROLS_OK' | translate}}"/>
-                        <button disabled ng-if="submitting" class="btn btn-success"><span class="fa fa-spinner fa-spin"></span></button>
-                    </div>
-                </form>
-            </tab>
-        </tabset>
-        <div class="btn btn-warning btn-modal" ng-click="close()">{{'CONTROLS_CLOSE' | translate}}</div>
+            </div>
+        </div>
+        <div class="alert alert-info" ng-if="entries.length === 0">Nothing to show.</div>
+    </div>
+    <div class='modal-footer'>
+        <div class="btn btn-default pull-left" ng-click="close()">{{'CONTROLS_CLOSE' | translate}}</div>
+        <div class="btn btn-primary" ng-click="compose()" translate="TICKETS_COMPOSE"></div>
     </div>
 </script>
 

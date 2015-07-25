@@ -41,6 +41,8 @@
         <js>/js/chat/ui/profile/email.js</js>
         <js>/js/chat/ui/profile/password.js</js>
         <js>/js/chat/ui/profile/profile.js</js>
+        <js>/js/chat/ui/tickets/list.js</js>
+        <js>/js/chat/ui/tickets/compose.js</js>
         <js>/js/chat/chat.js</js>
 
         <css>/vendor/css/animate.css</css>

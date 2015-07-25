@@ -37,5 +37,6 @@ document.chatApplication = angular.module("chatApplication", [
     "ngTextcomplete",
     "relativeDate",
     "ngSanitize",
-    "chat.ui.profile"
+    "chat.ui.profile",
+    "chat.ui.tickets"
 ]);

@@ -113,6 +113,8 @@ langModule.config(['$translateProvider', function ($translateProvider) {
         "TICKETS_TYPE_BUG": "I found bug",
         "TICKETS_TYPE_OTHER": "Other",
         "TICKETS_TEXT": "text",
+        "TICKETS_ADMIN_REPLY": "admin reply",
+        "TICKETS_COMPOSE": "Compose ticket",
 
         "POLL_OPEN_POLL": "Open poll",
         "POLL_VOTE": "vote",
@@ -249,6 +251,8 @@ langModule.config(['$translateProvider', function ($translateProvider) {
         "TICKETS_TYPE_BUG": "Я нашёл баг",
         "TICKETS_TYPE_OTHER": "Другое",
         "TICKETS_TEXT": "текст",
+        "TICKETS_ADMIN_REPLY": "ответ администратора",
+        "TICKETS_COMPOSE": "Создать тикет",
 
         "ERROR_BAN": "Вы забанены",
         "ERROR_BAN_DENIED": "Вы не можете забанить этого пользователя",
