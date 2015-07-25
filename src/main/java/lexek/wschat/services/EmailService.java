@@ -48,6 +48,5 @@ public class EmailService {
         } catch (MessagingException e) {
             logger.error("exception while sending email", e);
         }
-
     }
 }

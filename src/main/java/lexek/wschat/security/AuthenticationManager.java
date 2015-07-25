@@ -151,15 +151,7 @@ public class AuthenticationManager {
         String verificationCode = generateVerificationCode();
         boolean success = userAuthDao.registerWithPassword(name, password, email, color, verificationCode);
         if (success) {
-            try {
-                emailService.sendEmail(new Email(
-                    email,
-                    "Verify your email.",
-                    "https://" + host + ":1337/confirm_email?code=" + URLEncoder.encode(verificationCode, "utf-8")
-                ));
-            } catch (UnsupportedEncodingException e) {
-                logger.warn("", e);
-            }
+            sendVerificationEmail(email, verificationCode);
         }
         return success;
     }
@@ -171,16 +163,20 @@ public class AuthenticationManager {
                 user.setEmail(email);
                 user.setEmailVerified(false);
                 connectionManager.forEach(c -> user.getId().equals(c.getUser().getId()), lexek.wschat.chat.Connection::close);
-                try {
-                    emailService.sendEmail(new Email(
-                        user.getEmail(),
-                        "Verify your email.",
-                        "https://" + host + ":1337/confirm_email?code=" + URLEncoder.encode(verificationCode, "utf-8")
-                    ));
-                } catch (UnsupportedEncodingException e) {
-                    logger.warn("", e);
-                }
+                sendVerificationEmail(email, verificationCode);
             }
+        }
+    }
+
+    private void sendVerificationEmail(String email, String verificationCode) {
+        try {
+            emailService.sendEmail(new Email(
+                email,
+                "Verify your email.",
+                "https://" + host + ":1337/confirm_email?code=" + URLEncoder.encode(verificationCode, "utf-8")
+            ));
+        } catch (UnsupportedEncodingException e) {
+            logger.warn("", e);
         }
     }
 
