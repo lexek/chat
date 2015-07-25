@@ -35,5 +35,6 @@ document.chatApplication = angular.module("chatApplication", [
     "ui.utils",
     "pasvaz.bindonce",
     "ngTextcomplete",
-    "relativeDate"
+    "relativeDate",
+    "ngSanitize"
 ]);

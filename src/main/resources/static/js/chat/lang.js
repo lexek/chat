@@ -43,6 +43,7 @@ langModule.config(['$translateProvider', function ($translateProvider) {
         "CHAT_CONNECTING": "connecting",
         "CHAT_LOST_CONNECTION": "lost connection",
         "CHAT_MESSAGE_HIDDEN": "message deleted",
+        "CHAT_NO_LIKES": "No one liked this yet",
         "CHAT_AND_X_OTHERS": "And {{count}} others",
         "CHAT_CLEAR": "Chat was cleared by moderator",
         "CHAT_CLEAR_USER": "{{mod}} cleared messages by {{user}}",
@@ -175,6 +176,7 @@ langModule.config(['$translateProvider', function ($translateProvider) {
         "CHAT_CONNECTING": "соединение",
         "CHAT_LOST_CONNECTION": "потеряно соединение",
         "CHAT_MESSAGE_HIDDEN": "сообщение удалено",
+        "CHAT_NO_LIKES": "Никто ещё не лайкнул",
         "CHAT_AND_X_OTHERS": "И {{count}} других",
         "CHAT_CLEAR": "Чат был очищен модератором",
         "CHAT_CLEAR_USER": "{{mod}} стёр сообщения от {{user}}",
@@ -329,4 +331,5 @@ langModule.config(['$translateProvider', function ($translateProvider) {
     });
     $translateProvider.determinePreferredLanguage();
     $translateProvider.useCookieStorage();
+    $translateProvider.useSanitizeValueStrategy("escapeParameters");
 }]);
