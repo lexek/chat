@@ -73,9 +73,9 @@
 </script>
 
 <script type="text/ng-template" id="help.html">
-    <h4 class="modal-header">
-        {{'CONTROLS_MENU_HELP' | translate}}
-    </h4>
+    <div class="modal-header">
+        <h3><i class='fa fa-info'></i> {{'CONTROLS_MENU_HELP' | translate}}</h3>
+    </div>
     <div class="modal-body">
         <div style="max-height: 300px; overflow-y: auto; text-align: left">
             <h4>{{'HELP_MARKUP' | translate}}</h4>
