@@ -129,6 +129,10 @@
         <h3>{{self.name}}</h3>
     </div>
     <div class="modal-body">
+        <div ng-if="hasPendingVerification">
+            <div class="btn btn-default" ng-click="resendVerification()">Resend verification email</div>
+        </div>
+        <br />
         <div class="btn btn-default btn-modal" ng-click="showEmail = !showEmail">{{'CONTROLS_SET_EMAIL' | translate}}</div>
         <br />
         <br />
