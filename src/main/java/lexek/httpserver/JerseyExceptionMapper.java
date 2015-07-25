@@ -15,7 +15,6 @@ public class JerseyExceptionMapper implements ExceptionMapper<Throwable> {
 
     @Override
     public Response toResponse(Throwable exception) {
-        logger.warn("exception", exception);
         if (exception instanceof WebApplicationException) {
             WebApplicationException webApplicationException = (WebApplicationException) exception;
             if (webApplicationException.getResponse() != null) {
@@ -36,6 +35,7 @@ public class JerseyExceptionMapper implements ExceptionMapper<Throwable> {
         if (exception instanceof NotFoundException) {
             return Response.status(404).entity(new ErrorModel("Not found.")).build();
         }
+        logger.warn("exception", exception);
         return Response.status(500).entity(new ErrorModel("Internal error.")).build();
     }
 }

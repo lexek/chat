@@ -29,6 +29,7 @@ import lexek.wschat.db.dao.*;
 import lexek.wschat.frontend.http.*;
 import lexek.wschat.frontend.http.admin.AdminPageHandler;
 import lexek.wschat.frontend.http.rest.EmailResource;
+import lexek.wschat.frontend.http.rest.ProfileResource;
 import lexek.wschat.frontend.http.rest.admin.*;
 import lexek.wschat.frontend.irc.*;
 import lexek.wschat.frontend.ws.WebSocketChatHandler;
@@ -279,7 +280,8 @@ public class Main {
                     new RoomResource(roomManager),
                     new ServicesResource(serviceManager),
                     new TicketResource(ticketService),
-                    new EmailResource(authenticationManager)
+                    new EmailResource(authenticationManager),
+                    new ProfileResource(userService)
                 );
             }
         };

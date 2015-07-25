@@ -21,6 +21,7 @@
         <js>/vendor/js/angular-relative-date.js</js>
         <js>/vendor/js/angular-recaptcha.js</js>
         <js>/vendor/js/bootstrap-colorpicker.js</js>
+        <js>/js/chat/mixins/**</js>
         <js>/js/chat/types/chatState.js</js>
         <js>/js/chat/types/role.js</js>
         <js>/js/chat/types/user.js</js>
@@ -37,6 +38,9 @@
         <js>/js/chat/messages.js</js>
         <js>/js/chat/users.js</js>
         <js>/js/chat/controls.js</js>
+        <js>/js/chat/ui/profile/email.js</js>
+        <js>/js/chat/ui/profile/password.js</js>
+        <js>/js/chat/ui/profile/profile.js</js>
         <js>/js/chat/chat.js</js>
 
         <css>/vendor/css/animate.css</css>

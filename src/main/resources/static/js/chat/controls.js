@@ -214,73 +214,6 @@ controlsModule.controller("MenuController", ["$scope", function($scope) {
     };
 }]);
 
-var ProfileController = function($scope, $modalInstance, $http, chat) {
-    $scope.self = chat.self;
-    $scope.apiToken = "";
-    $scope.hasPendingVerification = false;
-
-    $scope.doRename = function(name) {
-        chat.sendMessage({"type": "NAME", "args": [name]});
-        $scope.close();
-    };
-
-    $scope.changePassword = function(password) {
-        $.post("/password", $.param({"password": password}), function(data) {
-            if (data["success"]) {
-                $scope.error = null;
-                $scope.info = "You have successfuly changed password.";
-            } else {
-                $scope.info = null;
-                $scope.error = data["error"];
-            }
-        });
-    };
-
-    $scope.setEmail = function(email) {
-        $http({
-            method: 'PUT',
-            url: '/rest/email',
-            data: {
-                "email": email
-            }
-        }).success(function(d) {
-            $scope.error = null;
-            $scope.info = "You should now receive verification email.";
-        });
-    };
-
-    var loadVerification = function() {
-        $http({
-            method: 'GET',
-            url: '/rest/email/hasPendingVerification'
-        }).success(function(d) {
-            $scope.hasPendingVerification = d["value"];
-        });
-    };
-
-    $scope.resendVerification = function() {
-        $http({
-            method: 'POST',
-            url: '/rest/email/resendVerification'
-        });
-    };
-
-    $scope.close = function() {
-        $modalInstance.dismiss('cancel');
-    };
-
-    $scope.newToken = function() {
-        $http.post("/token")
-            .success(function(data) {
-                if (data.token) {
-                    $scope.apiToken = data.token;
-                }
-            });
-    };
-
-    loadVerification()
-};
-
 controlsModule.controller("SettingsController", ["$scope", "chatService", "$modal", "chatSettings", "$cookieStore",
 "$translate", "notificationService", function($scope, chat, $modal, settings, $cookieStore, $translate, notificationService) {
     $scope.langs = {
@@ -361,11 +294,8 @@ controlsModule.controller("SettingsController", ["$scope", "chatService", "$moda
 
     $scope.showProfile = function() {
         $modal.open({
-            templateUrl: 'profile.html',
-            controller: ProfileController,
-            resolve: {
-                "chat": function () { return chat; }
-            }
+            templateUrl: 'chat/ui/profile/profile.html',
+            controller: "ProfileController"
         });
     };
 
