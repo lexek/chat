@@ -119,11 +119,11 @@ public class UserAuthDao {
         return success;
     }
 
-    public boolean registerWithPassword(String name, String password, String email, String color, String verificationCode) {
-        boolean success = false;
+    public Long registerWithPassword(String name, String password, String email, String color, String verificationCode) {
+        Long result = null;
         try (Connection connection = dataSource.getConnection()) {
             final DSLContext dslContext = DSL.using(connection);
-            success = dslContext.transactionResult(conf -> {
+            result = dslContext.transactionResult(conf -> {
                 Long id = DSL.using(conf)
                     .insertInto(USER, USER.NAME, USER.BANNED, USER.COLOR, USER.RENAME_AVAILABLE, USER.ROLE, USER.EMAIL, USER.EMAIL_VERIFIED)
                     .values(name, false, color, false, GlobalRole.USER_UNCONFIRMED.toString(), email, false)
@@ -138,14 +138,13 @@ public class UserAuthDao {
                         .insertInto(PENDING_CONFIRMATION, PENDING_CONFIRMATION.CODE, PENDING_CONFIRMATION.USER_ID)
                         .values(verificationCode, id)
                         .execute();
-                    return true;
                 }
-                return false;
+                return id;
             });
         } catch (DataAccessException | SQLException e) {
             logger.error(e.getMessage());
         }
-        return success;
+        return result;
     }
 
     public boolean setEmail(long userId, String email, String verificationCode) {
@@ -162,6 +161,8 @@ public class UserAuthDao {
                 DSL.using(conf)
                     .insertInto(PENDING_CONFIRMATION, PENDING_CONFIRMATION.CODE, PENDING_CONFIRMATION.USER_ID)
                     .values(verificationCode, userId)
+                    .onDuplicateKeyUpdate()
+                    .set(PENDING_CONFIRMATION.CODE, verificationCode)
                     .execute();
                 return true;
             });
@@ -281,14 +282,14 @@ public class UserAuthDao {
         return session;
     }
 
-    public boolean verifyEmail(final String code) {
+    public boolean verifyEmail(final String code, long userId) {
         boolean success = false;
         try (Connection connection = dataSource.getConnection()) {
             success = DSL.using(connection).transactionResult(conf -> {
                 Record record = DSL.using(conf)
                     .select()
                     .from(PENDING_CONFIRMATION.join(USER).on(PENDING_CONFIRMATION.USER_ID.equal(USER.ID)))
-                    .where(PENDING_CONFIRMATION.CODE.equal(code))
+                    .where(PENDING_CONFIRMATION.CODE.equal(code).and(USER.ID.equal(userId)))
                     .fetchOne();
                 if (record != null) {
                     PendingConfirmation pendingConfirmation = record.into(PENDING_CONFIRMATION).into(PendingConfirmation.class);
@@ -330,5 +331,20 @@ public class UserAuthDao {
         } catch (DataAccessException | SQLException e) {
             logger.error(e.getMessage());
         }
+    }
+
+    public String getPendingVerificationCode(long id) {
+        String code = null;
+        try (Connection connection = dataSource.getConnection()) {
+            code = DSL.using(connection)
+                .select(PENDING_CONFIRMATION.CODE)
+                .from(PENDING_CONFIRMATION)
+                .where(PENDING_CONFIRMATION.USER_ID.equal(id))
+                .fetchOne()
+                .value1();
+        } catch (DataAccessException | SQLException e) {
+            logger.error(e.getMessage());
+        }
+        return code;
     }
 }

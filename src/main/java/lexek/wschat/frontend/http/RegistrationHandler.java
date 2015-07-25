@@ -38,6 +38,7 @@ public class RegistrationHandler extends SimpleHttpHandler {
                 response.jsonContent(ImmutableMap.of("success", false, "error", "You can't register new accounts."));
                 return;
             } else if ((captchaResponse != null) && (username != null) && (password != null) && email != null) {
+                email = email.trim();
                 username = username.toLowerCase();
                 if (USERNAME_PATTERN.matcher(username).matches() && PASSWORD_PATTERN.matcher(password).matches() && EMAIL.matcher(email).matches()) {
                     if (reCaptcha.verify(captchaResponse, request.ip())) {

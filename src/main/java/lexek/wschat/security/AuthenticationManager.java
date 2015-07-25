@@ -149,39 +149,56 @@ public class AuthenticationManager {
     public boolean registerWithPassword(final String name, final String password, final String email) {
         final String color = Colors.generateColor(name);
         String verificationCode = generateVerificationCode();
-        boolean success = userAuthDao.registerWithPassword(name, password, email, color, verificationCode);
-        if (success) {
-            sendVerificationEmail(email, verificationCode);
+        Long userId = userAuthDao.registerWithPassword(name, password, email, color, verificationCode);
+        if (userId != null) {
+            sendVerificationEmail(email, verificationCode, userId);
         }
-        return success;
+        return userId != null;
     }
 
     public void setEmail(UserDto user, String email) {
-        if (!user.isEmailVerified()) {
+        if (user.getEmail() != null && user.isEmailVerified() || user.getEmail() == null) {
             String verificationCode = generateVerificationCode();
             if (userAuthDao.setEmail(user.getId(), email, verificationCode)) {
                 user.setEmail(email);
                 user.setEmailVerified(false);
                 connectionManager.forEach(c -> user.getId().equals(c.getUser().getId()), lexek.wschat.chat.Connection::close);
-                sendVerificationEmail(email, verificationCode);
+                sendVerificationEmail(email, verificationCode, user.getId());
             }
         }
     }
 
-    private void sendVerificationEmail(String email, String verificationCode) {
+    public void resendVerificationEmail(UserDto user) {
+        String code = userAuthDao.getPendingVerificationCode(user.getId());
+        if (code != null) {
+            sendVerificationEmail(user.getEmail(), code, user.getId());
+        }
+    }
+
+    private void sendVerificationEmail(String email, String verificationCode, long userId) {
         try {
             emailService.sendEmail(new Email(
                 email,
                 "Verify your email.",
-                "https://" + host + ":1337/confirm_email?code=" + URLEncoder.encode(verificationCode, "utf-8")
+                "https://" + host + ":1337/rest/email/verify?code=" + URLEncoder.encode(verificationCode, "utf-8")
+                    + "&uid=" + userId
             ));
         } catch (UnsupportedEncodingException e) {
             logger.warn("", e);
         }
     }
 
-    public boolean verifyEmail(final String code) {
-        return userAuthDao.verifyEmail(code);
+    public boolean verifyEmail(String code, long userId) {
+        boolean success = userAuthDao.verifyEmail(code, userId);
+        if (success) {
+            connectionManager.forEach(connection -> {
+                Long id = connection.getUser().getId();
+                if (id != null && id.equals(userId)) {
+                    connection.close();
+                }
+            });
+        }
+        return success;
     }
 
     public void setPassword(UserDto user, String password) {

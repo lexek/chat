@@ -289,7 +289,7 @@ public class Main {
         httpRequestDispatcher.add("/.*", new ClassPathStaticHandler(ClassPathStaticHandler.class, "/static/"));
         httpRequestDispatcher.add("/chat.html", new ChatHomeHandler(settings.getHttp().isAllowLikes(), settings.getHttp().isSingleRoom()));
         httpRequestDispatcher.add("/resolve_steam", new SteamNameResolver());
-        httpRequestDispatcher.add("/confirm_email", new ConfirmEmailHandler(authenticationManager, connectionManager));
+        httpRequestDispatcher.add("/confirm_email", new ConfirmEmailHandler());
         httpRequestDispatcher.add("/recaptcha/[0-9]+", new RecaptchaHandler(captchaService, reCaptcha));
         httpRequestDispatcher.add("/api/tickets", new UserTicketsHandler(authenticationManager, ticketService));
         httpRequestDispatcher.add("/admin/.*", new AdminPageHandler(authenticationManager));
