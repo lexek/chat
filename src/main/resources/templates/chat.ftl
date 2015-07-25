@@ -205,6 +205,151 @@
     </div>
 </script>
 
+<script type="text/ng-template" id="chat/ui/profile/email.html">
+    <div class='modal-header'>
+        <h3><i class='fa fa-envelope'></i> {{'PROFILE_EMAIL_SETTINGS' | translate}}</h3>
+    </div>
+    <form class="panel-body" name="form" ng-if="!hasPendingVerification">
+        <div class='modal-body'>
+            <div ng-if="hasPendingVerification">
+                <div class="btn btn-default" ng-click="resendVerification()" translate="PROFILE_EMAIL_RESEND"></div>
+            </div>
+                <div class='alert alert-danger' ng-if='error' ng-bind='error'></div>
+                <div class='alert alert-info' ng-if='info' ng-bind='info'></div>
+                <div class="form-group" ng-class="{'has-error': form.email.$invalid && form.email.$dirty, 'has-success': !form.email.$invalid}">
+                    <label for="email" class="control-label" translate="AUTH_EMAIL"></label>
+                    <input
+                        ng-model="email"
+                        id="email"
+                        type="email"
+                        class="form-control"
+                        name="email"
+                        ng-placeholder="'AUTH_EMAIL' | translate"
+                        required
+                        />
+                    </div>
+        </div>
+        <div class='modal-footer'>
+            <div class='btn btn-warning pull-left' ng-click='close()' translate='CONTROLS_CLOSE'></div>
+            <input
+                    type="submit"
+                    class="btn btn-primary"
+                    ng-if="!hasPendingVerification"
+                    ng-value="'CONTROLS_SET_EMAIL' | translate"
+                    ng-click="setEmail(email)"
+                    ng-disabled="inProgress || form.$invalid"/>
+        </div>
+    </form>
+</script>
+
+<script type="text/ng-template" id="chat/ui/profile/profile.html">
+    <div class='modal-header'>
+        <h3>
+            <i class='fa fa-user'></i>
+            {{self.name}}
+            <span class='btn btn-link btn-xs pull-right' ng-click='showPasswordSettings()'><i class='fa fa-key'></i></span>
+        </h3>
+    </div>
+    <div class='modal-body'>
+        <form class='form-horizontal' ng-if='profile'>
+            <div class='form-group' ng-if='profile.user.email'>
+                <label class='col-sm-2 control-label'>Email</label>
+                <div class='col-sm-10'>
+                    <div class='form-control-static'>
+                        {{profile.user.email}}
+                        <i class='fa fa-fw fa-check text-success' ng-if='profile.user.emailVerified'></i>
+                        <i class='fa fa-fw fa-times text-danger' ng-if='!profile.user.emailVerified'></i>
+                        <span class='btn btn-link btn-xs pull-right' ng-click='showEmailSettings()'><i class='fa fa-pencil'></i></span>
+                    </div>
+                </div>
+            </div>
+            <div class='form-group'>
+                <label class='col-sm-2 control-label'>Name</label>
+                <div class='col-sm-10'>
+                    <div class='form-control-static'>
+                        {{profile.user.name}}
+                    </div>
+                </div>
+            </div>
+            <div class='form-group'>
+                <label class='col-sm-2 control-label'>Role</label>
+                <div class='col-sm-10'>
+                    <div class='form-control-static'>
+                        {{profile.user.role}}
+                    </div>
+                </div>
+            </div>
+            <div class='form-group'>
+                <label class='col-sm-2 control-label'>
+                    Color
+                    </label>
+                <div class='col-sm-10'>
+                    <div class='form-control-static'>
+                        {{profile.user.color}} <span class='fa fa-circle fa-fw' ng-style='{"color": profile.user.color}'></span>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        <div class='panel panel-default'>
+            <div class='panel-heading'>
+                <div class='panel-title'>API token</div>
+            </div>
+            <div class='panel-body'>
+                <div class='input-group'>
+                    <input type='text' class='form-control' ng-model='apiToken' readonly
+                        placeholder='click button to get new api token'>
+                    <span class='input-group-btn'>
+                        <button class='btn btn-default' type='button' ng-click='newToken()'>
+                            <i class='fa fa-fw fa-refresh'></i>
+                        </button>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class='modal-footer'>
+        <div class='btn btn-warning' ng-click='close()' translate='CONTROLS_CLOSE'></div>
+    </div>
+</script>
+
+<script type="text/ng-template" id="chat/ui/profile/password.html">
+    <div class='modal-header'>
+        <h3><i class='fa fa-key'></i> {{'CONTROLS_CHANGE_PASSWORD' | translate}}</h3>
+    </div>
+    <form class='panel-body' name='pwForm' >
+        <div class='modal-body'>
+                <div class='alert alert-info' ng-if='info'>
+                    {{info}}
+                    </div>
+                <div class='alert alert-danger' ng-if='error'>
+                    {{error}}
+                    </div>
+                <div class='form-group' ng-class='{"has-error": pwForm.password.$invalid && pwForm.password.$dirty, "has-success": !pwForm.password.$invalid}'>
+                    <label for='password' class='control-label' translate='AUTH_PASSWORD'></label>
+                    <input
+                        ng-model='password'
+                        id='password'
+                        type='password'
+                        class='form-control'
+                        name='password'
+                        placeholder='{{"AUTH_PASSWORD" | translate}}'
+                        pattern='.{6,30}'
+                        title='{{"AUTH_PASSWORD_FORMAT" | translate}}'
+                        required
+                        />
+                    </div>
+            </div>
+        <div class='modal-footer'>
+            <div class='btn btn-warning pull-left' ng-click='close()' translate='CONTROLS_CLOSE'></div>
+            <input
+                    type="submit"
+                    class="btn btn-primary"
+                    ng-click='changePassword(password)'
+                    ng-value="'CONTROLS_CHANGE_PASSWORD' | translate"
+                    ng-disabled='pwForm.$invalid'/>
+        </div>
+    </form>
+</script>
 
 <script type="text/ng-template" id="authentication.html">
     <div class="modal-header">

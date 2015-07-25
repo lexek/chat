@@ -6,8 +6,8 @@ import org.hibernate.validator.constraints.Email;
 import javax.validation.constraints.NotNull;
 
 public class EmailForm {
-    @Email
-    @NotNull
+    @Email(message = "Email must fit email pattern.")
+    @NotNull(message = "You should provide email")
     private final String email;
 
     public EmailForm(@JsonProperty("email") String email) {

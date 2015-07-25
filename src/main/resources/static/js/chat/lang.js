@@ -37,6 +37,9 @@ langModule.config(['$translateProvider', function ($translateProvider) {
         "CONTROLS_MENU_NOTIFICATIONS": "notifications",
         "CONTROLS_MENU_HIDE_EXT": "hide ext messages",
 
+        "PROFILE_EMAIL_SETTINGS": "Email settings",
+        "PROFILE_EMAIL_RESEND": "Resend verification email",
+
         "CHAT_HELLO_UNAUTHENTICATED": "Hello, you joined {{room}} and you are unauthenticated.",
         "CHAT_HELLO": "Hello, <span style=\"color: {{color}}\">{{name}}</span>! You joined {{room}} and you are {{role}} ({{globalRole}})",
         "CHAT_LOGIN_SUCCESS": "You successfully logged in as {{name}} (<strong>{{role}}</strong>)",
@@ -142,7 +145,7 @@ langModule.config(['$translateProvider', function ($translateProvider) {
         "CONTROLS_CLOSE": "Закрыть",
         "CONTROLS_CHANGE_NAME": "Поменять имя",
         "CONTROLS_USERNAME": "Имя",
-        "CONTROLS_SET_EMAIL": "Почта",
+        "CONTROLS_SET_EMAIL": "Изменить email",
         "CONTROLS_CHANGE_PASSWORD": "Поменять пароль",
         "CONTROLS_AUTHENTICATION_REQUIRED": "Необходима аутентификация",
         "CONTROLS_CAPTCHA__REQUIRED": "Необходимо ввести капчу",
@@ -184,6 +187,9 @@ langModule.config(['$translateProvider', function ($translateProvider) {
         "CHAT_BAN_USER": "{{mod}} забанил {{user}}",
         "CHAT_RECONNECT_CD": "Переподключение через",
         "CHAT_AUTHENTICATING": "ожидание аутентификации",
+
+        "PROFILE_EMAIL_SETTINGS": "Настройки email",
+        "PROFILE_EMAIL_RESEND": "Выслать письмо для подтверждения почты",
 
         "USERS_MODS": "модераторы",
         "USERS_USERS": "пользователи",
