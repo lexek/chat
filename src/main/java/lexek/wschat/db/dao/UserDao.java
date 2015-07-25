@@ -162,6 +162,7 @@ public class UserDao {
                     DSL.groupConcat(DSL.coalesce(USERAUTH.AUTH_NAME, "")).as("authNames"))
                 .from(USER.join(USERAUTH).on(USER.ID.equal(USERAUTH.USER_ID)))
                 .where(USER.NAME.like(nameParam, '!'))
+                .groupBy(USER.ID)
                 .orderBy(USER.ID)
                 .limit(page * pageLength, pageLength)
                 .fetch()
