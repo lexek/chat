@@ -20,7 +20,7 @@ public class TokenHandler extends SimpleHttpHandler {
         UserDto user = authenticationManager.checkAuthentication(request);
         if (user != null) {
             if (request.method() == HttpMethod.POST) {
-                String token = authenticationManager.createTokenForUser(user.getId());
+                String token = authenticationManager.createTokenForUser(user);
                 if (token != null) {
                     response.jsonContent(ImmutableMap.of("token", token));
                 } else {

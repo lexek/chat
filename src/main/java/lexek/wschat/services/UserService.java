@@ -12,6 +12,8 @@ import lexek.wschat.db.model.UserData;
 import lexek.wschat.db.model.UserDto;
 import lexek.wschat.db.model.form.UserChangeSet;
 
+import java.util.List;
+
 public class UserService {
     private final Cache<String, User> userCache = CacheBuilder.newBuilder().weakValues().build();
     private final ConnectionManager connectionManager;
@@ -96,6 +98,10 @@ public class UserService {
 
     public DataPage<UserData> getAllPaged(Integer page, int pageLength) {
         return userDao.getAllPaged(page, pageLength);
+    }
+
+    public List<UserDto> getAdmins() {
+        return userDao.getAdmins();
     }
 
     public boolean checkIfAvailable(String username) {

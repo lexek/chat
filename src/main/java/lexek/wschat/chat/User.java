@@ -12,7 +12,7 @@ public class User {
         Colors.generateColor("unauthenticated"),
         false,
         false,
-        null);
+        null, false);
     public static final User UNAUTHENTICATED_USER = new User(userDto);
 
     private UserDto wrappedObject;

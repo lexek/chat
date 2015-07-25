@@ -26,10 +26,9 @@ import lexek.httpserver.*;
 import lexek.wschat.chat.*;
 import lexek.wschat.chat.handlers.*;
 import lexek.wschat.db.dao.*;
-import lexek.wschat.db.jooq.tables.pojos.Ticket;
-import lexek.wschat.chat.Chatter;
 import lexek.wschat.frontend.http.*;
 import lexek.wschat.frontend.http.admin.AdminPageHandler;
+import lexek.wschat.frontend.http.rest.EmailResource;
 import lexek.wschat.frontend.http.rest.admin.*;
 import lexek.wschat.frontend.irc.*;
 import lexek.wschat.frontend.ws.WebSocketChatHandler;
@@ -122,12 +121,13 @@ public class Main {
         config.setHealthCheckRegistry(healthCheckRegistry);
         DataSource dataSource = new HikariDataSource(config);
 
+        EmailConfiguration emailSettings = settings.getEmail();
         EmailService emailService = new EmailService(
-            settings.getEmail().getSmtpHost(),
-            settings.getEmail().getSmtpPort(),
-            new InternetAddress(settings.getEmail().getEmail()),
-            settings.getEmail().getPassword()
-        );
+            emailSettings.getSmtpHost(),
+            emailSettings.getSmtpPort(),
+            new InternetAddress(emailSettings.getEmail(), emailSettings.getFromName()),
+            emailSettings.getPassword(),
+            emailSettings.getPrefix());
 
         UserDao userDao = new UserDao(dataSource);
         ChatterDao chatterDao = new ChatterDao(dataSource);
@@ -135,14 +135,16 @@ public class Main {
         RoomDao roomDao = new RoomDao(dataSource);
         JournalDao journalDao = new JournalDao(dataSource);
         JournalService journalService = new JournalService(journalDao);
-        AuthenticationManager authenticationManager = new AuthenticationManager(ircHost, dataSource, emailService);
         CaptchaService captchaService = new CaptchaService();
         HistoryDao historyDao = new HistoryDao(dataSource);
+        PendingNotificationDao pendingNotificationDao = new PendingNotificationDao(dataSource);
+        UserAuthDao userAuthDao = new UserAuthDao(dataSource);
 
         ConnectionManager connectionManager = new ConnectionManager(metricRegistry);
         MessageReactor messageReactor = new DefaultMessageReactor(metricRegistry);
         UserService userService = new UserService(connectionManager, userDao, journalService);
         ChatterService chatterService = new ChatterService(chatterDao, journalService);
+        AuthenticationManager authenticationManager = new AuthenticationManager(ircHost, emailService, connectionManager, userAuthDao);
 
         ThreadFactory scheduledThreadFactory = new ThreadFactoryBuilder().setNameFormat("ANNOUNCEMENT_SCHEDULER_%d").build();
         ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(scheduledThreadFactory);
@@ -153,7 +155,8 @@ public class Main {
         AnnouncementService announcementService = new AnnouncementService(new AnnouncementDao(dataSource), journalService, roomManager, messageBroadcaster, scheduledExecutorService);
         PollService pollService = new PollService(new PollDao(dataSource), messageBroadcaster, roomManager, journalService);
         AuthenticationService authenticationService = new AuthenticationService(authenticationManager, userService, captchaService);
-        TicketService ticketService = new TicketService(userService, emailService, new TicketDao(dataSource), messageBroadcaster);
+        NotificationService notificationService = new NotificationService(connectionManager, userService, messageBroadcaster, emailService, pendingNotificationDao);
+        TicketService ticketService = new TicketService(userService, notificationService, new TicketDao(dataSource));
         EmoticonService emoticonService = new EmoticonService(emoticonDao, journalService);
 
         RoomJoinNotificationService roomJoinNotificationService = new RoomJoinNotificationService();
@@ -175,16 +178,9 @@ public class Main {
                 connection.send(Message.namesMessage(room.getName(), users.build()));
             }
         });
-        roomJoinNotificationService.registerListener((connection, chatter, room) -> {
-            if (connection.getUser().hasRole(GlobalRole.USER)) {
-                List<Ticket> tickets = ticketService.getUnreadTickets(connection.getUser().getWrappedObject());
-                tickets.forEach(ticket -> connection.send(Message.infoMessage(
-                    "Your ticket \"" + ticket.getText() + "\" is closed with comment: \"" + ticket.getAdminReply() + "\"."
-                )));
-            }
-        });
         roomJoinNotificationService.registerListener(((connection, chatter, room) ->
             connection.send(Message.historyMessage(room.getHistory()))));
+        roomJoinNotificationService.registerListener(notificationService);
         Set<String> bannedIps = new CopyOnWriteArraySet<>();
         messageReactor.registerHandler(new BanHandler(messageBroadcaster, roomManager));
         messageReactor.registerHandler(new ClearUserHandler(messageBroadcaster, roomManager));
@@ -282,7 +278,8 @@ public class Main {
                     new PollResource(roomManager, pollService),
                     new RoomResource(roomManager),
                     new ServicesResource(serviceManager),
-                    new TicketResource(ticketService)
+                    new TicketResource(ticketService),
+                    new EmailResource(authenticationManager)
                 );
             }
         };
@@ -292,7 +289,7 @@ public class Main {
         httpRequestDispatcher.add("/.*", new ClassPathStaticHandler(ClassPathStaticHandler.class, "/static/"));
         httpRequestDispatcher.add("/chat.html", new ChatHomeHandler(settings.getHttp().isAllowLikes(), settings.getHttp().isSingleRoom()));
         httpRequestDispatcher.add("/resolve_steam", new SteamNameResolver());
-        httpRequestDispatcher.add("/confirm_email", new ConfirmEmailHandler(authenticationManager, connectionManager));
+        httpRequestDispatcher.add("/confirm_email", new ConfirmEmailHandler());
         httpRequestDispatcher.add("/recaptcha/[0-9]+", new RecaptchaHandler(captchaService, reCaptcha));
         httpRequestDispatcher.add("/api/tickets", new UserTicketsHandler(authenticationManager, ticketService));
         httpRequestDispatcher.add("/admin/.*", new AdminPageHandler(authenticationManager));

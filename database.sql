@@ -6,6 +6,7 @@ CREATE TABLE `user` (
 	`rename_available` BIT(1) NOT NULL,
 	`role` VARCHAR(255) NOT NULL,
 	`email` VARCHAR(255) NULL DEFAULT NULL,
+  `email_verified` BIT NOT NULL,
 	PRIMARY KEY (`id`),
 	UNIQUE INDEX `UNIQUE_NAME` (`name`),
 	UNIQUE INDEX `UNIQUE_EMAIL` (`email`)
@@ -115,6 +116,7 @@ CREATE TABLE `pending_confirmation` (
 	`user_id` BIGINT(20) NOT NULL,
 	PRIMARY KEY (`id`),
 	INDEX `FK_CONFIRMATION_USER` (`user_id`),
+  UNIQUE INDEX `UNIQUE_USER_ID` (`user_id`),
 	CONSTRAINT `FK_CONFIRMATION_USER` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
@@ -182,4 +184,13 @@ CREATE TABLE `ticket` (
 	INDEX `USER_FK` (`user`),
 	CONSTRAINT `CLOSED_BY_FK` FOREIGN KEY (`closed_by`) REFERENCES `user` (`id`),
 	CONSTRAINT `USER_FK` FOREIGN KEY (`user`) REFERENCES `user` (`id`)
+);
+
+CREATE TABLE `pending_notification` (
+  `id` BIGINT(20) NOT NULL AUTO_INCREMENT,
+  `user_id` BIGINT(20) NOT NULL,
+  `text` TEXT NOT NULL COLLATE 'utf8mb4_unicode_ci',
+  PRIMARY KEY (`id`),
+  INDEX `user_id` (`user_id`),
+  CONSTRAINT `FK_NOTIFICATION_USER` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON UPDATE CASCADE ON DELETE CASCADE
 );

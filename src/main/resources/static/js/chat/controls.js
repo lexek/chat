@@ -217,6 +217,7 @@ controlsModule.controller("MenuController", ["$scope", function($scope) {
 var ProfileController = function($scope, $modalInstance, $http, chat) {
     $scope.self = chat.self;
     $scope.apiToken = "";
+    $scope.hasPendingVerification = false;
 
     $scope.doRename = function(name) {
         chat.sendMessage({"type": "NAME", "args": [name]});
@@ -228,12 +229,39 @@ var ProfileController = function($scope, $modalInstance, $http, chat) {
             if (data["success"]) {
                 $scope.error = null;
                 $scope.info = "You have successfuly changed password.";
-                $scope.$apply();
             } else {
                 $scope.info = null;
                 $scope.error = data["error"];
-                $scope.$apply();
             }
+        });
+    };
+
+    $scope.setEmail = function(email) {
+        $http({
+            method: 'PUT',
+            url: '/rest/email',
+            data: {
+                "email": email
+            }
+        }).success(function(d) {
+            $scope.error = null;
+            $scope.info = "You should now receive verification email.";
+        });
+    };
+
+    var loadVerification = function() {
+        $http({
+            method: 'GET',
+            url: '/rest/email/hasPendingVerification'
+        }).success(function(d) {
+            $scope.hasPendingVerification = d["value"];
+        });
+    };
+
+    $scope.resendVerification = function() {
+        $http({
+            method: 'POST',
+            url: '/rest/email/resendVerification'
         });
     };
 
@@ -249,6 +277,8 @@ var ProfileController = function($scope, $modalInstance, $http, chat) {
                 }
             });
     };
+
+    loadVerification()
 };
 
 controlsModule.controller("SettingsController", ["$scope", "chatService", "$modal", "chatSettings", "$cookieStore",

@@ -129,6 +129,33 @@
         <h3>{{self.name}}</h3>
     </div>
     <div class="modal-body">
+        <div ng-if="hasPendingVerification">
+            <div class="btn btn-default" ng-click="resendVerification()">Resend verification email</div>
+        </div>
+        <br />
+        <div class="btn btn-default btn-modal" ng-click="showEmail = !showEmail">{{'CONTROLS_SET_EMAIL' | translate}}</div>
+        <br />
+        <br />
+        <div ng-if="showEmail" class="panel panel-default">
+            <form class="panel-body" name="form" ng-submit="setEmail(email)">
+                <div class="form-group" ng-class="{'has-error': form.email.$invalid && form.email.$dirty, 'has-success': !form.email.$invalid}">
+                    <label for="email" class="control-label">{{'AUTH_EMAIL' | translate}}</label>
+                    <input
+                            ng-model="email"
+                            id="email"
+                            type="email"
+                            class="form-control"
+                            name="email"
+                            placeholder="{{'AUTH_EMAIL' | translate}}"
+                            required
+                            />
+                </div>
+                <div class="form-group">
+                    <input ng-disabled="form.$invalid" type="submit" class="btn btn-primary btn-modal" value="{{'CONTROLS_SET_EMAIL' | translate}}"/>
+                </div>
+            </form>
+        </div>
+
         <div class="btn btn-default btn-modal" ng-click="showRename = !showRename">{{'CONTROLS_CHANGE_NAME' | translate}}</div>
         <br />
         <br />
@@ -679,7 +706,7 @@
                         </div>
                         <ul class="settings-menu" ng-show="showSettings" ng-controller="SettingsController">
                             <li><a ng-click="showProfile()"><h4><span class="fa fa-user"></span> {{getSelf().name | inflector:'capital'}}</h4></a></li>
-                            <li ng-if="isAdmin()"><a ng-click="showAdmin()"><span class="fa fa-cogs"></span> {{'CONTROLS_MENU_ADMIN_PANEL' | translate}}</a></li>
+                            <li ng-if="isAdmin()"><a href="/admin/" target="_blank"><span class="fa fa-cogs"></span> {{'CONTROLS_MENU_ADMIN_PANEL' | translate}}</a></li>
                             <li>
                                 <a colorpicker="hex" ng-model="color" colorpicker-position="left"
                                    colorpicker-filter="colorFilter" colorpicker-cls="setColor">

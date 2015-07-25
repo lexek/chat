@@ -11,7 +11,7 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
 
 public class ClearHandlerTest {
-    private UserDto userDto = new UserDto(0L, "user", GlobalRole.MOD, "#000000", false, false, null);
+    private UserDto userDto = new UserDto(0L, "user", GlobalRole.MOD, "#000000", false, false, null, false);
     private User user = new User(userDto);
     private Chatter chatter = new Chatter(0L, LocalRole.MOD, false, null, user);
     private Connection connection = spy(new TestConnection(user));
@@ -59,7 +59,7 @@ public class ClearHandlerTest {
 
     @Test
     public void testWithBadRole() {
-        UserDto userDto = new UserDto(0L, "user", GlobalRole.USER, "#000000", false, false, null);
+        UserDto userDto = new UserDto(0L, "user", GlobalRole.USER, "#000000", false, false, null, false);
         User user = new User(userDto);
         Chatter chatter = new Chatter(0L, LocalRole.USER, false, null, user);
         Connection connection = spy(new TestConnection(user));

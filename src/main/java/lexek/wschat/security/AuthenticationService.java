@@ -81,7 +81,7 @@ public class AuthenticationService extends AbstractService {
     }
 
     public void invalidate(String sid) {
-        authenticationManager.invalidate(sid);
+        authenticationManager.invalidateSession(sid);
     }
 
     public void authenticateWithSid(Connection connection, String sid, AuthenticationCallback callback) {

@@ -1,7 +1,6 @@
 package lexek.wschat.chat.handlers;
 
 import lexek.wschat.chat.*;
-import lexek.wschat.chat.Chatter;
 
 import java.util.List;
 
@@ -24,8 +23,8 @@ public abstract class AbstractModerationHandler extends AbstractMsgHandler {
         return !userChatter.hasRole(LocalRole.MOD) &&
             (
                 modChatter.hasRole(LocalRole.MOD) &&
-                modChatter.hasGreaterRole(userChatter.getRole()) &&
-                modUser.hasGreaterRole(user.getRole())
+                    modChatter.hasGreaterRole(userChatter.getRole()) &&
+                    modUser.hasGreaterRole(user.getRole())
             );
     }
 

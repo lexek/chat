@@ -1,10 +1,10 @@
 package lexek.wschat.services;
 
+import lexek.wschat.chat.Chatter;
 import lexek.wschat.chat.LocalRole;
 import lexek.wschat.chat.Room;
 import lexek.wschat.chat.User;
 import lexek.wschat.db.dao.ChatterDao;
-import lexek.wschat.chat.Chatter;
 
 public class ChatterService {
     private final ChatterDao chatterDao;
@@ -76,6 +76,8 @@ public class ChatterService {
     }
 
     public void removeTimeout(Chatter chatter) {
-        chatterDao.setTimeout(chatter.getId(), null);
+        if (chatterDao.setTimeout(chatter.getId(), null)) {
+            chatter.setTimeout(null);
+        }
     }
 }

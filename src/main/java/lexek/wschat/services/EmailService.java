@@ -17,21 +17,23 @@ public class EmailService {
     private final int smtpPort;
     private final InternetAddress fromAddress;
     private final String password;
+    private final String prefix;
 
-    public EmailService(String smtpHost, int smtpPort, InternetAddress fromAddress, String password) {
+    public EmailService(String smtpHost, int smtpPort, InternetAddress fromAddress, String password, String prefix) {
         this.smtpHost = smtpHost;
         this.smtpPort = smtpPort;
         this.fromAddress = fromAddress;
         this.password = password;
+        this.prefix = prefix;
     }
 
     public void sendEmail(Email email) {
         MimeMessage message = new MimeMessage(session);
 
         try {
-            message.setSubject(email.getSubject());
+            message.setSubject(prefix + email.getSubject());
             message.setFrom(fromAddress);
-            message.addRecipient(Message.RecipientType.TO, email.getTo());
+            message.addRecipient(Message.RecipientType.TO, new InternetAddress(email.getTo()));
 
             Multipart multipart = new MimeMultipart("alternative");
             BodyPart messageBodyPart = new MimeBodyPart();
@@ -46,6 +48,5 @@ public class EmailService {
         } catch (MessagingException e) {
             logger.error("exception while sending email", e);
         }
-
     }
 }

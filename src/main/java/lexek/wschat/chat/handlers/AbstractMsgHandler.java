@@ -2,7 +2,6 @@ package lexek.wschat.chat.handlers;
 
 import com.google.common.collect.ImmutableList;
 import lexek.wschat.chat.*;
-import lexek.wschat.chat.Chatter;
 
 import java.util.List;
 

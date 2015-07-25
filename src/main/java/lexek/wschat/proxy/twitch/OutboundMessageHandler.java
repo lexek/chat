@@ -108,7 +108,7 @@ public class OutboundMessageHandler implements MessageConsumerService {
         UserCredentials userCredentials = null;
         logger.debug("fetching connection data for user {}", user.getName());
         boolean r = false;
-        UserAuthDto auth = authenticationManager.getAuthDataForUser(user.getId(), "twitch.tv");
+        UserAuthDto auth = authenticationManager.getAuthDataForUser(user.getWrappedObject(), "twitch.tv");
         if (auth != null) {
             String token = auth.getAuthenticationKey();
             String extName = auth.getAuthenticationName();
