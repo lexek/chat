@@ -26,11 +26,10 @@ public class ChatterService {
     public boolean banChatter(Room room, Chatter chatter, Chatter mod) {
         boolean result = false;
         if (chatter != null && chatter.getId() != null) {
-            result = chatterDao.banChatter(chatter.getId());
-            if (result) {
-                chatter.setBanned(true);
-                journalService.roomBan(chatter.getUser().getWrappedObject(), mod.getUser().getWrappedObject(), room);
-            }
+            chatterDao.banChatter(chatter.getId());
+            chatter.setBanned(true);
+            journalService.roomBan(chatter.getUser().getWrappedObject(), mod.getUser().getWrappedObject(), room);
+            result = true;
         }
         return result;
     }
@@ -38,12 +37,11 @@ public class ChatterService {
     public boolean unbanChatter(Room room, Chatter chatter, Chatter mod) {
         boolean result = false;
         if (chatter != null && chatter.getId() != null) {
-            result = chatterDao.unbanChatter(chatter.getId());
-            if (result) {
-                chatter.setBanned(false);
-                chatter.setTimeout(null);
-                journalService.roomUnban(chatter.getUser().getWrappedObject(), mod.getUser().getWrappedObject(), room);
-            }
+            chatterDao.unbanChatter(chatter.getId());
+            chatter.setBanned(false);
+            chatter.setTimeout(null);
+            journalService.roomUnban(chatter.getUser().getWrappedObject(), mod.getUser().getWrappedObject(), room);
+            result = true;
         }
         return result;
     }
@@ -51,10 +49,9 @@ public class ChatterService {
     public boolean timeoutChatter(Room room, Chatter chatter, long until) {
         boolean result = false;
         if (chatter != null && chatter.getId() != null) {
-            result = chatterDao.setTimeout(chatter.getId(), until);
-            if (result) {
-                chatter.setTimeout(until);
-            }
+            chatterDao.setTimeout(chatter.getId(), until);
+            chatter.setTimeout(until);
+            result = true;
         }
         return result;
     }
@@ -62,22 +59,20 @@ public class ChatterService {
     public boolean setRole(Room room, Chatter chatter, Chatter admin, LocalRole newRole) {
         boolean result = false;
         if (chatter != null && chatter.getId() != null && newRole != LocalRole.GUEST) {
-            result = chatterDao.setRole(chatter.getId(), newRole);
-            if (result) {
-                chatter.setRole(newRole);
-                journalService.roomRole(
-                    chatter.getUser().getWrappedObject(),
-                    admin.getUser().getWrappedObject(),
-                    room,
-                    newRole);
-            }
+            chatterDao.setRole(chatter.getId(), newRole);
+            chatter.setRole(newRole);
+            journalService.roomRole(
+                chatter.getUser().getWrappedObject(),
+                admin.getUser().getWrappedObject(),
+                room,
+                newRole);
+            result = true;
         }
         return result;
     }
 
     public void removeTimeout(Chatter chatter) {
-        if (chatterDao.setTimeout(chatter.getId(), null)) {
-            chatter.setTimeout(null);
-        }
+        chatterDao.setTimeout(chatter.getId(), null);
+        chatter.setTimeout(null);
     }
 }

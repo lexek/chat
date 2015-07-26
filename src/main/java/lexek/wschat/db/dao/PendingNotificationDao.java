@@ -1,10 +1,9 @@
 package lexek.wschat.db.dao;
 
 import lexek.wschat.db.jooq.tables.records.PendingNotificationRecord;
+import lexek.wschat.db.model.e.InternalErrorException;
 import org.jooq.exception.DataAccessException;
 import org.jooq.impl.DSL;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -14,7 +13,6 @@ import java.util.List;
 import static lexek.wschat.db.jooq.tables.PendingNotification.PENDING_NOTIFICATION;
 
 public class PendingNotificationDao {
-    private final Logger logger = LoggerFactory.getLogger(PendingNotificationDao.class);
     private final DataSource dataSource;
 
     public PendingNotificationDao(DataSource dataSource) {
@@ -25,12 +23,12 @@ public class PendingNotificationDao {
         try (Connection connection = dataSource.getConnection()) {
             DSL.using(connection).executeInsert(new PendingNotificationRecord(null, userId, message));
         } catch (DataAccessException | SQLException e) {
-            logger.error("sql exception", e);
+            throw new InternalErrorException(e);
         }
     }
 
     public List<String> getPendingNotifications(long userId) {
-        List<String> result = null;
+        List<String> result;
         try (Connection connection = dataSource.getConnection()) {
             result = DSL.using(connection).transactionResult(txCtx -> {
                 List<String> r = DSL.using(txCtx)
@@ -48,7 +46,7 @@ public class PendingNotificationDao {
             });
 
         } catch (DataAccessException | SQLException e) {
-            logger.error("sql exception", e);
+            throw new InternalErrorException(e);
         }
         return result;
     }

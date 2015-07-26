@@ -10,6 +10,7 @@ import lexek.wschat.chat.*;
 import lexek.wschat.db.dao.AnnouncementDao;
 import lexek.wschat.db.jooq.tables.pojos.Announcement;
 import lexek.wschat.db.model.UserDto;
+import lexek.wschat.db.model.e.EntityNotFoundException;
 
 import java.util.Collection;
 import java.util.List;
@@ -23,7 +24,6 @@ public class AnnouncementService extends AbstractService {
     private final MessageBroadcaster messageBroadcaster;
     private final ScheduledExecutorService scheduledExecutor;
     private final Multimap<Room, Announcement> roomAnnouncements = HashMultimap.create();
-    private final RoomManager roomManager;
     private final Runnable task;
     private long lastBroadcast;
 
@@ -35,7 +35,6 @@ public class AnnouncementService extends AbstractService {
         this.journalService = journalService;
         this.messageBroadcaster = messageBroadcaster;
         this.scheduledExecutor = scheduledExecutor;
-        this.roomManager = roomManager;
         this.announcementDao = announcementDao;
         this.lastBroadcast = System.currentTimeMillis();
         List<Announcement> announcements = announcementDao.getAll();
@@ -63,29 +62,26 @@ public class AnnouncementService extends AbstractService {
         };
     }
 
-    public void announce(Announcement announcement, UserDto admin) {
-        Room room = roomManager.getRoomInstance(announcement.getRoomId());
-        if (room != null) {
-            announcementDao.add(announcement);
-            if (announcement.getId() != null) {
-                roomAnnouncements.put(room, announcement);
-                messageBroadcaster.submitMessage(
-                    Message.infoMessage(announcement.getText()),
-                    Connection.STUB_CONNECTION,
-                    room.FILTER);
-                journalService.newAnnouncement(admin, room, announcement);
-            }
-        }
-    }
-
-    public void announceWithoutSaving(Announcement announcement) {
-        Room room = roomManager.getRoomInstance(announcement.getRoomId());
-        if (room != null) {
+    public Announcement announce(String text, Room room, UserDto admin) {
+        Announcement announcement = new Announcement(null, room.getId(), true, text);
+        announcementDao.add(announcement);
+        if (announcement.getId() != null) {
+            roomAnnouncements.put(room, announcement);
             messageBroadcaster.submitMessage(
                 Message.infoMessage(announcement.getText()),
                 Connection.STUB_CONNECTION,
                 room.FILTER);
+            journalService.newAnnouncement(admin, room, announcement);
         }
+        return announcement;
+    }
+
+    public Announcement announceWithoutSaving(String text, Room room) {
+        messageBroadcaster.submitMessage(
+            Message.infoMessage(text),
+            Connection.STUB_CONNECTION,
+            room.FILTER);
+        return new Announcement(null, room.getId(), true, text);
     }
 
     public void sendAnnouncements(Connection connection, Room room) {
@@ -104,6 +100,8 @@ public class AnnouncementService extends AbstractService {
         if (deleteEntry != null) {
             roomAnnouncements.remove(deleteEntry.getKey(), deleteEntry.getValue());
             journalService.inactiveAnnouncement(admin, deleteEntry.getKey(), deleteEntry.getValue());
+        } else {
+            throw new EntityNotFoundException("Announcement not found");
         }
         announcementDao.setInactive(id);
     }

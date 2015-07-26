@@ -4,6 +4,7 @@ import com.google.common.hash.Hashing;
 import lexek.wschat.chat.GlobalRole;
 import lexek.wschat.db.jooq.tables.pojos.Emoticon;
 import lexek.wschat.db.model.UserDto;
+import lexek.wschat.db.model.e.InvalidDataException;
 import lexek.wschat.security.jersey.Auth;
 import lexek.wschat.security.jersey.RequiredRole;
 import lexek.wschat.services.EmoticonService;
@@ -46,7 +47,7 @@ public class EmoticonsResource {
         @Auth UserDto admin
     ) throws URISyntaxException, IOException {
         if (fileData.getFileName().isEmpty()) {
-            return Response.status(400).entity("you should provide file").build();
+            throw new InvalidDataException("You should provide file");
         }
         java.nio.file.Path emoticonFile = createEmoticonFile(fileData.getFileName());
         Files.move(file.toPath(), emoticonFile);
@@ -54,7 +55,7 @@ public class EmoticonsResource {
         int width = image.getWidth();
         int height = image.getHeight();
         if (width > 200 || height > 200) {
-            return Response.status(400).entity("Image is too big.").build();
+            throw new InvalidDataException("Image is too big");
         } else {
             boolean success = true;
             try {

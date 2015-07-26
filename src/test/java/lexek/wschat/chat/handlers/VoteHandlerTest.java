@@ -56,7 +56,6 @@ public class VoteHandlerTest {
         when(roomManager.getRoomInstance("#main")).thenReturn(room);
         when(room.inRoom(connection)).thenReturn(true);
         when(room.getName()).thenReturn("#main");
-        when(pollService.vote(room, user, 0)).thenReturn(true);
         handler.handle(ImmutableList.of("#main", "0"), connection);
         verify(pollService).vote(room, user, 0);
         verifyZeroInteractions(pollService);
@@ -68,7 +67,6 @@ public class VoteHandlerTest {
         when(roomManager.getRoomInstance("#main")).thenReturn(room);
         when(room.inRoom(connection)).thenReturn(true);
         when(room.getName()).thenReturn("#main");
-        when(pollService.vote(room, user, 0)).thenReturn(true);
         handler.handle(ImmutableList.of("#main", "-1"), connection);
         verify(pollService, never()).vote(room, user, 0);
         verifyZeroInteractions(pollService);

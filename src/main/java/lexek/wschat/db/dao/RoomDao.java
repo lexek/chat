@@ -1,12 +1,10 @@
 package lexek.wschat.db.dao;
 
-import com.google.common.collect.ImmutableList;
 import lexek.wschat.db.jooq.tables.pojos.Room;
+import lexek.wschat.db.model.e.InternalErrorException;
 import org.jooq.DSLContext;
 import org.jooq.exception.DataAccessException;
 import org.jooq.impl.DSL;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -18,7 +16,6 @@ import static lexek.wschat.db.jooq.tables.Room.ROOM;
 
 public class RoomDao {
     private final DataSource dataSource;
-    private final Logger logger = LoggerFactory.getLogger(RoomDao.class);
 
     public RoomDao(DataSource dataSource) {
         this.dataSource = dataSource;
@@ -34,21 +31,20 @@ public class RoomDao {
                 .fetchOne().getId();
             room.setId(id);
         } catch (DataAccessException | SQLException e) {
-            logger.error("sql exception", e);
+            throw new InternalErrorException(e);
         }
     }
 
     public List<Room> getAll() {
-        List<Room> result = ImmutableList.of();
+        List<Room> result;
         try (Connection connection = dataSource.getConnection()) {
-            DSLContext ctx = DSL.using(connection);
-            result = ctx
+            result = DSL.using(connection)
                 .select()
                 .from(ROOM)
                 .fetch()
                 .into(Room.class);
         } catch (DataAccessException | SQLException e) {
-            logger.error("sql exception", e);
+            throw new InternalErrorException(e);
         }
         return result;
     }
@@ -61,7 +57,7 @@ public class RoomDao {
                 .where(ROOM.ID.equal(id))
                 .execute();
         } catch (DataAccessException | SQLException e) {
-            logger.error("sql exception", e);
+            throw new InternalErrorException(e);
         }
     }
 
@@ -74,7 +70,7 @@ public class RoomDao {
                 .where(ROOM.NAME.equal(name))
                 .execute();
         } catch (DataAccessException | SQLException e) {
-            logger.error("sql exception", e);
+            throw new InternalErrorException(e);
         }
     }
 }

@@ -2,13 +2,12 @@ package lexek.wschat.frontend.http.rest.admin;
 
 import lexek.wschat.chat.GlobalRole;
 import lexek.wschat.chat.Room;
-import lexek.wschat.chat.RoomManager;
 import lexek.wschat.db.model.DataPage;
 import lexek.wschat.db.model.UserDto;
 import lexek.wschat.db.model.form.PollForm;
-import lexek.wschat.db.model.rest.ErrorModel;
 import lexek.wschat.security.jersey.Auth;
 import lexek.wschat.security.jersey.RequiredRole;
+import lexek.wschat.services.RoomService;
 import lexek.wschat.services.poll.PollService;
 import lexek.wschat.services.poll.PollState;
 
@@ -16,16 +15,15 @@ import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 
 @Path("/rooms/{roomId}/polls")
 @RequiredRole(GlobalRole.ADMIN)
 public class PollResource {
-    private final RoomManager roomManager;
+    private final RoomService roomService;
     private final PollService pollService;
 
-    public PollResource(RoomManager roomManager, PollService pollService) {
-        this.roomManager = roomManager;
+    public PollResource(RoomService roomService, PollService pollService) {
+        this.roomService = roomService;
         this.pollService = pollService;
     }
 
@@ -33,10 +31,7 @@ public class PollResource {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public PollState getCurrentPollForRoom(@PathParam("roomId") @Min(0) long roomId) {
-        Room room = roomManager.getRoomInstance(roomId);
-        if (room == null) {
-            throw new WebApplicationException(Response.status(400).entity(new ErrorModel("Unknown room.")).build());
-        }
+        Room room = roomService.getRoomInstance(roomId);
         return pollService.getActivePoll(room);
     }
 
@@ -47,10 +42,7 @@ public class PollResource {
         @PathParam("roomId") @Min(0) long roomId,
         @QueryParam("page") @Min(0) int page
     ) {
-        Room room = roomManager.getRoomInstance(roomId);
-        if (room == null) {
-            throw new WebApplicationException(Response.status(400).entity(new ErrorModel("Unknown room.")).build());
-        }
+        Room room = roomService.getRoomInstance(roomId);
         return pollService.getOldPolls(room, page);
     }
 
@@ -62,10 +54,7 @@ public class PollResource {
         @Valid PollForm form,
         @Auth UserDto admin
     ) {
-        Room room = roomManager.getRoomInstance(roomId);
-        if (room == null) {
-            throw new WebApplicationException(Response.status(400).entity(new ErrorModel("Unknown room.")).build());
-        }
+        Room room = roomService.getRoomInstance(roomId);
         return pollService.createPoll(room, admin, form.getQuestion(), form.getOptions());
     }
 
@@ -76,10 +65,7 @@ public class PollResource {
         @PathParam("roomId") @Min(0) long roomId,
         @Auth UserDto admin
     ) {
-        Room room = roomManager.getRoomInstance(roomId);
-        if (room == null) {
-            throw new WebApplicationException(Response.status(400).entity(new ErrorModel("Unknown room.")).build());
-        }
+        Room room = roomService.getRoomInstance(roomId);
         PollState closedPoll = pollService.getActivePoll(room);
         pollService.closePoll(room, admin);
         return closedPoll;

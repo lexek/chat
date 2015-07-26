@@ -4,12 +4,11 @@ import lexek.wschat.chat.MessageType;
 import lexek.wschat.db.jooq.tables.pojos.History;
 import lexek.wschat.db.model.DataPage;
 import lexek.wschat.db.model.HistoryData;
+import lexek.wschat.db.model.e.InternalErrorException;
 import lexek.wschat.util.Pages;
 import org.jooq.Condition;
 import org.jooq.exception.DataAccessException;
 import org.jooq.impl.DSL;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -23,7 +22,6 @@ import static lexek.wschat.db.jooq.tables.History.HISTORY;
 import static lexek.wschat.db.jooq.tables.User.USER;
 
 public class HistoryDao {
-    private final Logger logger = LoggerFactory.getLogger(HistoryDao.class);
     private final DataSource dataSource;
 
     public HistoryDao(DataSource dataSource) {
@@ -34,7 +32,7 @@ public class HistoryDao {
         try (Connection connection = dataSource.getConnection()) {
             DSL.using(connection).newRecord(HISTORY, object).store();
         } catch (DataAccessException | SQLException e) {
-            logger.error("sql exception", e);
+            throw new InternalErrorException(e);
         }
     }
 
@@ -49,7 +47,7 @@ public class HistoryDao {
                 DSL.using(txCfg).newRecord(HISTORY, message).store();
             });
         } catch (DataAccessException | SQLException e) {
-            logger.error("sql exception", e);
+            throw new InternalErrorException(e);
         }
     }
 
@@ -63,14 +61,15 @@ public class HistoryDao {
                     .execute();
             });
         } catch (DataAccessException | SQLException e) {
-            logger.error("sql exception", e);
+            throw new InternalErrorException(e);
         }
     }
 
-    public DataPage<HistoryData> getAllForUsers(long roomId, int page, int pageLength,
-                                                Optional<List<String>> users,
-                                                Optional<Long> since,
-                                                Optional<Long> until) {
+    public DataPage<HistoryData> getAllForUsers(
+        long roomId, int page, int pageLength,
+        Optional<List<String>> users,
+        Optional<Long> since, Optional<Long> until
+    ) {
         List<Condition> conditions = new ArrayList<>();
         conditions.add(HISTORY.ROOM_ID.equal(roomId));
         users.ifPresent(names -> conditions.add(USER.NAME.in(names)));
@@ -99,13 +98,13 @@ public class HistoryDao {
                 .collect(Collectors.toList());
             result = new DataPage<>(data, page, Pages.pageCount(pageLength, count));
         } catch (DataAccessException | SQLException e) {
-            logger.error("sql exception", e);
+            throw new InternalErrorException(e);
         }
         return result;
     }
 
     public List<HistoryData> getLast20(long roomId) {
-        List<HistoryData> result = null;
+        List<HistoryData> result;
         try (Connection connection = dataSource.getConnection()) {
             result = DSL.using(connection)
                 .select(HISTORY.MESSAGE, HISTORY.TYPE, HISTORY.TIMESTAMP, USER.NAME, HISTORY.HIDDEN)
@@ -124,7 +123,7 @@ public class HistoryDao {
                 ))
                 .collect(Collectors.toList());
         } catch (DataAccessException | SQLException e) {
-            logger.error("sql exception", e);
+            throw new InternalErrorException(e);
         }
         return result;
     }

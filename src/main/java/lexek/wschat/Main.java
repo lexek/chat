@@ -153,6 +153,7 @@ public class Main {
         HistoryService historyService = new HistoryService(20, historyDao);
         MessageBroadcaster messageBroadcaster = new MessageBroadcaster(historyService, connectionManager);
         RoomManager roomManager = new RoomManager(userService, messageBroadcaster, roomDao, chatterService, journalService);
+        RoomService roomService = new RoomService(roomManager);
         AnnouncementService announcementService = new AnnouncementService(new AnnouncementDao(dataSource), journalService, roomManager, messageBroadcaster, scheduledExecutorService);
         PollService pollService = new PollService(new PollDao(dataSource), messageBroadcaster, roomManager, journalService);
         AuthenticationService authenticationService = new AuthenticationService(authenticationManager, userService, captchaService);
@@ -269,15 +270,15 @@ public class Main {
                 });
                 registerInstances(
                     new StatisticsResource(new StatisticsDao(dataSource), runtimeMetricRegistry, healthCheckRegistry),
-                    new AnnouncementResource(announcementService, roomManager),
-                    new ChattersResource(chatterDao, roomManager),
+                    new AnnouncementResource(announcementService, roomService),
+                    new ChattersResource(chatterDao, roomService),
                     new EmoticonsResource(dataDir, emoticonService),
                     new HistoryResource(historyService),
                     new IpBlockResource(bannedIps),
                     new JournalResource(journalDao),
                     new UsersResource(connectionManager, userService),
-                    new PollResource(roomManager, pollService),
-                    new RoomResource(roomManager),
+                    new PollResource(roomService, pollService),
+                    new RoomResource(roomService),
                     new ServicesResource(serviceManager),
                     new TicketResource(ticketService),
                     new EmailResource(authenticationManager),

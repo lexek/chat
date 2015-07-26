@@ -5,6 +5,7 @@ import com.google.common.collect.Sets;
 import lexek.wschat.db.jooq.tables.records.PollOptionRecord;
 import lexek.wschat.db.jooq.tables.records.PollRecord;
 import lexek.wschat.db.model.DataPage;
+import lexek.wschat.db.model.e.InternalErrorException;
 import lexek.wschat.services.poll.Poll;
 import lexek.wschat.services.poll.PollOption;
 import lexek.wschat.services.poll.PollState;
@@ -13,8 +14,6 @@ import org.jooq.Record;
 import org.jooq.Result;
 import org.jooq.exception.DataAccessException;
 import org.jooq.impl.DSL;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -31,7 +30,6 @@ import static lexek.wschat.db.jooq.tables.PollOption.POLL_OPTION;
 
 public class PollDao {
     private final DataSource dataSource;
-    private final Logger logger = LoggerFactory.getLogger(RoomDao.class);
 
     public PollDao(DataSource dataSource) {
         this.dataSource = dataSource;
@@ -60,36 +58,32 @@ public class PollDao {
                 result = new Poll(id, question, options);
             }
         } catch (DataAccessException | SQLException e) {
-            logger.error("sql exception", e);
+            throw new InternalErrorException(e);
         }
         return result;
     }
 
-    public boolean vote(long pollId, long userId, int optionId) {
-        boolean result = false;
+    public void vote(long pollId, long userId, int optionId) {
         try (Connection connection = dataSource.getConnection()) {
-            result = DSL.using(connection)
+            DSL.using(connection)
                 .insertInto(POLL_ANSWER, POLL_ANSWER.POLL_ID, POLL_ANSWER.USER_ID, POLL_ANSWER.SELECTED_OPTION)
                 .values(pollId, userId, optionId)
-                .execute() == 1;
+                .execute();
         } catch (DataAccessException | SQLException e) {
-            logger.error("sql exception", e);
+            throw new InternalErrorException(e);
         }
-        return result;
     }
 
-    public boolean closePoll(long pollId) {
-        boolean result = false;
+    public void closePoll(long pollId) {
         try (Connection connection = dataSource.getConnection()) {
-            result = DSL.using(connection)
+            DSL.using(connection)
                 .update(POLL)
                 .set(POLL.OPEN, false)
                 .where(POLL.ID.equal(pollId))
-                .execute() > 1;
+                .execute();
         } catch (DataAccessException | SQLException e) {
-            logger.error("sql exception", e);
+            throw new InternalErrorException(e);
         }
-        return result;
     }
 
     public Map<Long, PollState> getAllPolls() {
@@ -129,7 +123,7 @@ public class PollDao {
                 }
             }
         } catch (DataAccessException | SQLException e) {
-            logger.error("sql exception", e);
+            throw new InternalErrorException(e);
         }
         return polls;
     }
@@ -171,7 +165,7 @@ public class PollDao {
             }
             result = new DataPage<>(polls, page, Pages.pageCount(5, count));
         } catch (DataAccessException | SQLException e) {
-            logger.error("sql exception", e);
+            throw new InternalErrorException(e);
         }
         return result;
     }

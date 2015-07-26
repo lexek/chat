@@ -6,14 +6,12 @@ import lexek.wschat.chat.User;
 import lexek.wschat.db.model.ChatterData;
 import lexek.wschat.db.model.DataPage;
 import lexek.wschat.db.model.UserDto;
+import lexek.wschat.db.model.e.InternalErrorException;
 import lexek.wschat.util.Pages;
 import org.jooq.Condition;
-import org.jooq.DSLContext;
 import org.jooq.Record;
 import org.jooq.exception.DataAccessException;
 import org.jooq.impl.DSL;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -26,14 +24,13 @@ import static lexek.wschat.db.jooq.tables.User.USER;
 
 public class ChatterDao {
     private final DataSource dataSource;
-    private final Logger logger = LoggerFactory.getLogger(UserDao.class);
 
     public ChatterDao(DataSource dataSource) {
         this.dataSource = dataSource;
     }
 
     public Chatter getChatter(User user, long roomId) {
-        Chatter chatter = null;
+        Chatter chatter;
         try (Connection connection = dataSource.getConnection()) {
             Record record = DSL.using(connection)
                 .select()
@@ -41,7 +38,7 @@ public class ChatterDao {
                 .where(CHATTER.USER_ID.equal(user.getId()).and(CHATTER.ROOM_ID.equal(roomId)))
                 .fetchOne();
             chatter = Chatter.fromRecord(record, user);
-            if (chatter == null) {
+            if (record == null) {
                 long id = DSL.using(connection)
                     .insertInto(CHATTER, CHATTER.USER_ID, CHATTER.ROOM_ID, CHATTER.ROLE, CHATTER.TIMEOUT, CHATTER.BANNED)
                     .values(user.getId(), roomId, LocalRole.USER.toString(), null, false)
@@ -50,7 +47,7 @@ public class ChatterDao {
                 chatter = new Chatter(id, LocalRole.USER, false, null, user);
             }
         } catch (DataAccessException | SQLException e) {
-            logger.error("sql exception", e);
+            throw new InternalErrorException(e);
         }
         if (chatter == null) {
             chatter = new Chatter(null, LocalRole.USER, false, null, user);
@@ -70,74 +67,62 @@ public class ChatterDao {
                 chatter = Chatter.fromRecord(record, new User(UserDto.fromRecord(record)));
             }
         } catch (DataAccessException | SQLException e) {
-            logger.error("sql exception", e);
+            throw new InternalErrorException(e);
         }
         return chatter;
     }
 
-    public boolean banChatter(long chatterId) {
-        boolean result = false;
+    public void banChatter(long chatterId) {
         try (Connection connection = dataSource.getConnection()) {
-            DSLContext ctx = DSL.using(connection);
-            result = ctx
+            DSL.using(connection)
                 .update(CHATTER)
                 .set(CHATTER.BANNED, true)
                 .where(CHATTER.ID.equal(chatterId))
-                .execute() != 0;
+                .execute();
         } catch (DataAccessException | SQLException e) {
-            logger.error("sql exception", e);
+            throw new InternalErrorException(e);
         }
-        return result;
     }
 
-    public boolean unbanChatter(long chatterId) {
-        boolean result = false;
+    public void unbanChatter(long chatterId) {
         try (Connection connection = dataSource.getConnection()) {
-            DSLContext ctx = DSL.using(connection);
-            result = ctx
+            DSL.using(connection)
                 .update(CHATTER)
                 .set(CHATTER.BANNED, false)
                 .set(CHATTER.TIMEOUT, (Long) null)
                 .where(CHATTER.ID.equal(chatterId))
-                .execute() != 0;
+                .execute();
         } catch (DataAccessException | SQLException e) {
-            logger.error("sql exception", e);
+            throw new InternalErrorException(e);
         }
-        return result;
     }
 
-    public boolean setTimeout(long chatterId, Long until) {
-        boolean result = false;
+    public void setTimeout(long chatterId, Long until) {
         try (Connection connection = dataSource.getConnection()) {
-            DSLContext ctx = DSL.using(connection);
-            result = ctx
+            DSL.using(connection)
                 .update(CHATTER)
                 .set(CHATTER.TIMEOUT, until)
                 .where(CHATTER.ID.equal(chatterId))
-                .execute() != 0;
+                .execute();
         } catch (DataAccessException | SQLException e) {
-            logger.error("sql exception", e);
+            throw new InternalErrorException(e);
         }
-        return result;
     }
 
-    public boolean setRole(long chatterId, LocalRole newRole) {
-        boolean result = false;
+    public void setRole(long chatterId, LocalRole newRole) {
         try (Connection connection = dataSource.getConnection()) {
-            DSLContext ctx = DSL.using(connection);
-            result = ctx
+            DSL.using(connection)
                 .update(CHATTER)
                 .set(CHATTER.ROLE, newRole.toString())
                 .where(CHATTER.ID.equal(chatterId))
-                .execute() != 0;
+                .execute();
         } catch (DataAccessException | SQLException e) {
-            logger.error("sql exception", e);
+            throw new InternalErrorException(e);
         }
-        return result;
     }
 
     public DataPage<ChatterData> getAllPaged(long room, int page, int pageLength) {
-        DataPage<ChatterData> result = null;
+        DataPage<ChatterData> result;
         try (Connection connection = dataSource.getConnection()) {
             List<ChatterData> data = DSL.using(connection)
                 .select(CHATTER.ID, CHATTER.USER_ID, CHATTER.ROOM_ID, CHATTER.ROLE, CHATTER.TIMEOUT, CHATTER.BANNED, USER.NAME)
@@ -159,7 +144,7 @@ public class ChatterDao {
                 .collect(Collectors.toList());
             result = new DataPage<>(data, page, Pages.pageCount(pageLength, count(connection, room, null)));
         } catch (DataAccessException | SQLException e) {
-            logger.error("sql exception", e);
+            throw new InternalErrorException(e);
         }
         return result;
     }
@@ -188,7 +173,7 @@ public class ChatterDao {
             int count = count(connection, room, USER.NAME.like(nameParam, '!'));
             result = new DataPage<>(data, page, Pages.pageCount(pageLength, count));
         } catch (DataAccessException | SQLException e) {
-            logger.error("sql exception", e);
+            throw new InternalErrorException(e);
         }
         return result;
     }

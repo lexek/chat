@@ -4,19 +4,17 @@ import com.google.common.collect.ImmutableMap;
 import lexek.wschat.chat.GlobalRole;
 import lexek.wschat.chat.LocalRole;
 import lexek.wschat.chat.Room;
-import lexek.wschat.chat.RoomManager;
 import lexek.wschat.db.dao.ChatterDao;
 import lexek.wschat.db.model.ChatterData;
 import lexek.wschat.db.model.DataPage;
 import lexek.wschat.db.model.rest.ChatterRestModel;
-import lexek.wschat.db.model.rest.ErrorModel;
 import lexek.wschat.security.jersey.RequiredRole;
+import lexek.wschat.services.RoomService;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.Size;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -26,11 +24,11 @@ import java.util.stream.Collectors;
 public class ChattersResource {
     private static final int PAGE_LENGTH = 10;
     private final ChatterDao chatterDao;
-    private final RoomManager roomManager;
+    private final RoomService roomService;
 
-    public ChattersResource(ChatterDao chatterDao, RoomManager roomManager) {
+    public ChattersResource(ChatterDao chatterDao, RoomService roomService) {
         this.chatterDao = chatterDao;
-        this.roomManager = roomManager;
+        this.roomService = roomService;
     }
 
     //TODO: better representation
@@ -41,13 +39,7 @@ public class ChattersResource {
     public List<Map> getChatters(
         @PathParam("roomId") @Size(min = 2, max = 10) String roomName
     ) {
-        Room room = roomManager.getRoomInstance(roomName);
-        if (room == null) {
-            throw new WebApplicationException(Response
-                .status(404)
-                .entity(new ErrorModel("Unknown room."))
-                .build());
-        }
+        Room room = roomService.getRoomInstance(roomName);
         return room.getOnlineChatters()
             .stream()
             .filter(chatter -> chatter.hasRole(LocalRole.USER))
@@ -85,13 +77,7 @@ public class ChattersResource {
     @Path("/online")
     @Produces(MediaType.APPLICATION_JSON)
     public List<ChatterRestModel> getOnlineChatters(@Min(0) @PathParam("roomId") long roomId) {
-        Room room = roomManager.getRoomInstance(roomId);
-        if (room == null) {
-            throw new WebApplicationException(Response
-                .status(404)
-                .entity(new ErrorModel("Unknown room."))
-                .build());
-        }
+        Room room = roomService.getRoomInstance(roomId);
         return room.getOnlineChatters()
             .stream()
             .filter(chatter -> chatter.hasRole(LocalRole.USER))

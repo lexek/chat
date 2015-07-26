@@ -28,7 +28,7 @@ public class ServicesResource {
     public List<ServiceRestModel> getServices() {
         return serviceManager.getServices()
             .stream()
-            .map(service -> (Service<Object>) service)
+            .map(service -> (Service) service)
             .map(service -> new ServiceRestModel(
                 service.getName(),
                 service.getAvailableActions()

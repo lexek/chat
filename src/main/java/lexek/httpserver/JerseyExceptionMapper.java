@@ -1,5 +1,8 @@
 package lexek.httpserver;
 
+import lexek.wschat.db.model.e.DomainException;
+import lexek.wschat.db.model.e.EntityNotFoundException;
+import lexek.wschat.db.model.e.InvalidDataException;
 import lexek.wschat.db.model.rest.ErrorModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,6 +18,16 @@ public class JerseyExceptionMapper implements ExceptionMapper<Throwable> {
 
     @Override
     public Response toResponse(Throwable exception) {
+        if (exception instanceof DomainException) {
+            if (exception instanceof EntityNotFoundException) {
+                return Response.status(404).entity(new ErrorModel(exception.getMessage())).build();
+            }
+            if (exception instanceof InvalidDataException) {
+                return Response.status(400).entity(new ErrorModel(exception.getMessage())).build();
+            }
+            logger.warn("exception", exception);
+            return Response.status(500).entity(new ErrorModel(exception.getMessage())).build();
+        }
         if (exception instanceof WebApplicationException) {
             WebApplicationException webApplicationException = (WebApplicationException) exception;
             if (webApplicationException.getResponse() != null) {

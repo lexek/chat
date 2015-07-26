@@ -48,21 +48,17 @@ public class PollService {
         }
     }
 
-    public boolean vote(Room room, User user, int option) {
-        boolean result = false;
+    public void vote(Room room, User user, int option) {
         PollState pollState = activePolls.get(room);
         if (pollState != null && option < pollState.getPoll().getOptions().size()) {
             if (!pollState.getVoted().contains(user.getId())) {
-                result = pollDao.vote(pollState.getPoll().getId(), user.getId(), option);
-            }
-            if (result) {
+                pollDao.vote(pollState.getPoll().getId(), user.getId(), option);
                 pollState.addVote(pollState.getPoll().getOptions().get(option), user.getId());
                 this.messageBroadcaster.submitMessage(
                     Message.pollMessage(MessageType.POLL_UPDATE, room.getName(), pollState),
                     Connection.STUB_CONNECTION, room.FILTER);
             }
         }
-        return result;
     }
 
     public void closePoll(Room room, UserDto admin) {

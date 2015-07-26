@@ -3,6 +3,7 @@ package lexek.wschat.db.dao;
 import lexek.wschat.db.model.DataPage;
 import lexek.wschat.db.model.UserData;
 import lexek.wschat.db.model.UserDto;
+import lexek.wschat.db.model.e.InternalErrorException;
 import lexek.wschat.db.model.form.UserChangeSet;
 import lexek.wschat.util.Pages;
 import org.jooq.Condition;
@@ -45,7 +46,7 @@ public class UserDao {
                 .where(condition)
                 .execute() == 1;
         } catch (DataAccessException | SQLException e) {
-            logger.error("sql exception", e);
+            throw new InternalErrorException(e);
         }
         return result;
     }
@@ -60,7 +61,7 @@ public class UserDao {
                 .fetchOne();
             userDto = UserDto.fromRecord(record);
         } catch (DataAccessException | SQLException e) {
-            logger.error("sql exception", e);
+            throw new InternalErrorException(e);
         }
         return userDto;
     }
@@ -75,7 +76,7 @@ public class UserDao {
                 .fetchOne();
             userDto = UserDto.fromRecord(record);
         } catch (DataAccessException | SQLException e) {
-            logger.error("sql exception", e);
+            throw new InternalErrorException(e);
         }
         return userDto;
     }
@@ -109,7 +110,7 @@ public class UserDao {
                 userDto = UserDto.fromRecord(record);
             }
         } catch (DataAccessException | SQLException e) {
-            logger.error("sql exception", e);
+            throw new InternalErrorException(e);
         }
         return userDto;
     }
@@ -122,7 +123,7 @@ public class UserDao {
                 .where(USER.ID.equal(id))
                 .execute();
         } catch (DataAccessException | SQLException e) {
-            logger.error("sql exception", e);
+            throw new InternalErrorException(e);
         }
     }
 
@@ -147,7 +148,7 @@ public class UserDao {
                 .collect(Collectors.toList());
             result = new DataPage<>(data, page, Pages.pageCount(pageLength, DSL.using(connection).fetchCount(USER)));
         } catch (DataAccessException | SQLException e) {
-            logger.error("sql exception", e);
+            throw new InternalErrorException(e);
         }
         return result;
     }
@@ -177,7 +178,7 @@ public class UserDao {
             result = new DataPage<>(data, page,
                 Pages.pageCount(pageLength, DSL.using(connection).fetchCount(USER, USER.NAME.like(nameParam, '!'))));
         } catch (DataAccessException | SQLException e) {
-            logger.error("sql exception", e);
+            throw new InternalErrorException(e);
         }
         return result;
     }
@@ -190,7 +191,7 @@ public class UserDao {
                 .where(USER.ID.equal(user.getId()))
                 .execute() == 1;
         } catch (DataAccessException | SQLException e) {
-            logger.error("sql exception", e);
+            throw new InternalErrorException(e);
         }
         return result;
     }
@@ -204,7 +205,7 @@ public class UserDao {
                 .where(USER.NAME.equal(username))
                 .fetchOne() == null;
         } catch (DataAccessException | SQLException e) {
-            logger.error("sql exception", e);
+            throw new InternalErrorException(e);
         }
         return result;
     }
@@ -228,7 +229,7 @@ public class UserDao {
                 );
             }
         } catch (DataAccessException | SQLException e) {
-            logger.error("sql exception", e);
+            throw new InternalErrorException(e);
         }
         return result;
     }
@@ -245,7 +246,7 @@ public class UserDao {
                 .map(UserDto::fromRecord)
                 .collect(Collectors.toList());
         } catch (DataAccessException | SQLException e) {
-            logger.error("sql exception", e);
+            throw new InternalErrorException(e);
         }
         return result;
     }

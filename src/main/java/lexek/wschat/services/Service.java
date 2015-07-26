@@ -5,7 +5,7 @@ import com.codahale.metrics.health.HealthCheck;
 
 import java.util.List;
 
-public interface Service<T> {
+public interface Service {
     String getName();
 
     List<String> getAvailableActions();

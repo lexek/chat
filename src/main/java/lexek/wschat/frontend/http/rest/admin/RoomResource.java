@@ -2,13 +2,13 @@ package lexek.wschat.frontend.http.rest.admin;
 
 import lexek.wschat.chat.GlobalRole;
 import lexek.wschat.chat.Room;
-import lexek.wschat.chat.RoomManager;
 import lexek.wschat.db.model.UserDto;
 import lexek.wschat.db.model.form.RoomForm;
 import lexek.wschat.db.model.rest.ErrorModel;
 import lexek.wschat.db.model.rest.RoomRestModel;
 import lexek.wschat.security.jersey.Auth;
 import lexek.wschat.security.jersey.RequiredRole;
+import lexek.wschat.services.RoomService;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
@@ -22,17 +22,17 @@ import java.util.stream.Collectors;
 @Path("/rooms")
 @RequiredRole(GlobalRole.ADMIN)
 public class RoomResource {
-    private final RoomManager roomManager;
+    private final RoomService roomService;
 
-    public RoomResource(RoomManager roomManager) {
-        this.roomManager = roomManager;
+    public RoomResource(RoomService roomService) {
+        this.roomService = roomService;
     }
 
     @Path("/{roomId}/info")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public RoomRestModel getRoom(@PathParam("roomId") @Min(0) long roomId) {
-        Room room = roomManager.getRoomInstance(roomId);
+        Room room = roomService.getRoomInstance(roomId);
         if (room == null) {
             throw new WebApplicationException(Response.status(400).entity(new ErrorModel("Unknown room.")).build());
         }
@@ -43,7 +43,7 @@ public class RoomResource {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public List<RoomRestModel> getAllRooms() {
-        return roomManager.getRooms()
+        return roomService.getRooms()
             .stream()
             .map(room -> new RoomRestModel(
                 room.getId(),
@@ -63,7 +63,7 @@ public class RoomResource {
         @Valid @NotNull RoomForm roomForm,
         @Auth UserDto admin
     ) {
-        roomManager.createRoom(roomForm.getName(), roomForm.getTopic(), admin);
+        roomService.createRoom(roomForm.getName(), roomForm.getTopic(), admin);
     }
 
     @Path("/{roomId}")
@@ -75,10 +75,7 @@ public class RoomResource {
         @PathParam("roomId") @Min(0) long roomId,
         @Auth UserDto admin
     ) {
-        Room room = roomManager.getRoomInstance(roomId);
-        if (room == null) {
-            throw new WebApplicationException(Response.status(400).entity(new ErrorModel("Unknown room.")).build());
-        }
-        roomManager.deleteRoom(room, admin);
+        Room room = roomService.getRoomInstance(roomId);
+        roomService.deleteRoom(room, admin);
     }
 }

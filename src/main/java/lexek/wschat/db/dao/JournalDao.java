@@ -4,11 +4,10 @@ import com.google.common.collect.ImmutableSet;
 import lexek.wschat.db.model.DataPage;
 import lexek.wschat.db.model.JournalEntry;
 import lexek.wschat.db.model.UserDto;
+import lexek.wschat.db.model.e.InternalErrorException;
 import lexek.wschat.util.Pages;
 import org.jooq.exception.DataAccessException;
 import org.jooq.impl.DSL;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -25,7 +24,6 @@ public class JournalDao {
     private static final Set<String> GLOBAL_ACTIONS = ImmutableSet.of("USER_UPDATE", "NEW_EMOTICON", "DELETED_EMOTICON",
         "NAME_CHANGE", "NEW_ROOM", "DELETED_ROOM");
     private final DataSource dataSource;
-    private final Logger logger = LoggerFactory.getLogger(JournalDao.class);
 
     public JournalDao(DataSource dataSource) {
         this.dataSource = dataSource;
@@ -47,7 +45,7 @@ public class JournalDao {
                     journal.getRoomId())
                 .execute();
         } catch (DataAccessException | SQLException e) {
-            logger.error("sql exception", e);
+            throw new InternalErrorException(e);
         }
     }
 
@@ -74,7 +72,7 @@ public class JournalDao {
             int count = DSL.using(connection).fetchCount(JOURNAL, JOURNAL.ACTION.in(GLOBAL_ACTIONS));
             result = new DataPage<>(data, page, Pages.pageCount(pageSize, count));
         } catch (DataAccessException | SQLException e) {
-            logger.error("sql exception", e);
+            throw new InternalErrorException(e);
         }
         return result;
     }
@@ -102,7 +100,7 @@ public class JournalDao {
             int count = DSL.using(connection).fetchCount(JOURNAL, JOURNAL.ROOM_ID.equal(roomId));
             result = new DataPage<>(data, page, Pages.pageCount(pageSize, count));
         } catch (DataAccessException | SQLException e) {
-            logger.error("sql exception", e);
+            throw new InternalErrorException(e);
         }
         return result;
     }
