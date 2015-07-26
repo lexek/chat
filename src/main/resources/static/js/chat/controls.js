@@ -338,8 +338,7 @@ controlsModule.controller("SettingsController", ["$scope", "chatService", "$moda
             resolve: {
                 "action": function () { return "sign_in"; },
                 "chat": function () { return chat; }
-            },
-            size: "sm"
+            }
         });
     };
 
@@ -350,8 +349,7 @@ controlsModule.controller("SettingsController", ["$scope", "chatService", "$moda
             resolve: {
                 "action": function () { return "registration"; },
                 "chat": function () { return chat; }
-            },
-            size: "sm"
+            }
         });
     };
 

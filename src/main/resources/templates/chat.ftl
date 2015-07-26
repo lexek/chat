@@ -68,7 +68,9 @@
                 </tbody>
             </table>
         </div>
-        <div class="btn btn-warning btn-modal" ng-click="close()">{{'CONTROLS_CLOSE' | translate}}</div>
+    </div>
+    <div class="modal-footer">
+        <div class="btn btn-default btn-modal pull-left" ng-click="close()">{{'CONTROLS_CLOSE' | translate}}</div>
     </div>
 </script>
 
@@ -120,7 +122,9 @@
                 <a href="http://imgur.com/" target="_blank">imgur</a> {{'HELP_BUG_TEXT2' | translate}}
             </p>
         </div>
-        <div class="btn btn-warning btn-modal" ng-click="close()">{{'CONTROLS_CLOSE' | translate}}</div>
+    </div>
+    <div class="modal-footer">
+        <div class="btn btn-default pull-left" ng-click="close()">{{'CONTROLS_CLOSE' | translate}}</div>
     </div>
 </script>
 
@@ -148,7 +152,7 @@
                     <option value="OTHER">{{'TICKETS_TYPE_OTHER' | translate}}</option>
                 </select>
             </div>
-            <div class="form-group" ng-class="{'has-error': form.text.$invalid && form.text.$dirty, 'has-success': !form.text.$invalid}">
+            <div class="form-group" ng-class="{'has-error': form.text.$invalid && form.text.$dirty, 'has-success': form.text.$dirty && !form.text.$invalid}">
                 <label class="control-label">{{'TICKETS_TEXT' | translate}}</label>
                 <textarea
                         class="form-control"
@@ -243,7 +247,7 @@
         <h3>
             <i class='fa fa-user'></i>
             {{self.name}}
-            <span class='btn btn-link btn-xs pull-right' ng-click='showPasswordSettings()'><i class='fa fa-key'></i></span>
+            <span class='btn btn-link btn-xs pull-right' ng-if="profile" ng-click='showPasswordSettings()'><i class='fa fa-key'></i></span>
         </h3>
     </div>
     <div class='modal-body'>
@@ -286,7 +290,7 @@
                     </div>
                 </div>
             </form>
-        <div class='panel panel-default'>
+        <div class='panel panel-default' ng-if="profile">
             <div class='panel-heading'>
                 <div class='panel-title'>API token</div>
             </div>
@@ -304,7 +308,7 @@
         </div>
     </div>
     <div class='modal-footer'>
-        <div class='btn btn-warning' ng-click='close()' translate='CONTROLS_CLOSE'></div>
+        <div class='btn btn-default pull-left' ng-click='close()' translate='CONTROLS_CLOSE'></div>
     </div>
 </script>
 
@@ -320,7 +324,7 @@
                 <div class='alert alert-danger' ng-if='error'>
                     {{error}}
                     </div>
-                <div class='form-group' ng-class='{"has-error": pwForm.password.$invalid && pwForm.password.$dirty, "has-success": !pwForm.password.$invalid}'>
+                <div class='form-group' ng-class='{"has-error": pwForm.password.$invalid && pwForm.password.$dirty, "has-success": pwForm.password.$dirty && !pwForm.password.$invalid}'>
                     <label for='password' class='control-label' translate='AUTH_PASSWORD'></label>
                     <input
                         ng-model='password'
@@ -394,8 +398,8 @@
                     <div vc-recaptcha="" key="'6Lepxv4SAAAAAMFC4jmtZvnzyekEQ3XuX0xQ-3TB'" on-create="recaptchaCreated(widgetId)"></div>
                 </div>
                 <div class="form-group">
-                    <input type="submit" ng-disabled="busy || form.$invalid" class="btn btn-primary" value="{{'AUTH_SIGN_IN' | translate}}"/>
                     <div ng-disabled="busy" class="btn btn-default" ng-click="switchTo('registration')">{{'AUTH_NEW_ACCOUNT' | translate}}</div>
+                    <input type="submit" ng-disabled="busy || form.$invalid" class="btn btn-primary pull-right" value="{{'AUTH_SIGN_IN' | translate}}"/>
                 </div>
             </form>
         </div>
@@ -456,8 +460,8 @@
                     <div vc-recaptcha="" key="'6Lepxv4SAAAAAMFC4jmtZvnzyekEQ3XuX0xQ-3TB'" on-create="recaptchaCreated(widgetId)"></div>
                 </div>
                 <div class="form-group">
-                    <input ng-disabled="busy || form.$invalid" type="submit" class="btn btn-primary" value="{{'AUTH_NEW_ACCOUNT' | translate}}"/>
                     <div ng-disabled="busy" class="btn btn-default" ng-click="switchTo('sign_in')">{{'AUTH_SIGN_IN' | translate}}</div>
+                    <input ng-disabled="busy || form.$invalid" type="submit" class="btn btn-primary pull-right" value="{{'AUTH_NEW_ACCOUNT' | translate}}"/>
                 </div>
             </form>
         </div>

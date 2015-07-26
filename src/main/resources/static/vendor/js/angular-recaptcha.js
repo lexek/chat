@@ -1,5 +1,5 @@
 /**
- * angular-recaptcha build:2015-01-09
+ * angular-recaptcha build:2015-06-22
  * https://github.com/vividcortex/angular-recaptcha
  * Copyright (c) 2015 VividCortex
  **/
@@ -24,7 +24,7 @@
     app.service('vcRecaptchaService', ['$window', '$q', function ($window, $q) {
         var deferred = $q.defer(), promise = deferred.promise, recaptcha;
 
-        $window.vcRecapthaApiLoaded = function () {
+        $window.vcRecaptchaApiLoaded = function () {
             recaptcha = $window.grecaptcha;
 
             deferred.resolve(recaptcha);
@@ -48,7 +48,7 @@
 
         // Check if grecaptcha is not defined already.
         if (ng.isDefined($window.grecaptcha)) {
-            $window.vcRecapthaApiLoaded();
+            $window.vcRecaptchaApiLoaded();
         }
 
         return {
@@ -111,7 +111,7 @@
 
     var app = ng.module('vcRecaptcha');
 
-    app.directive('vcRecaptcha', ['$timeout', 'vcRecaptchaService', function ($timeout, vcRecaptcha) {
+    app.directive('vcRecaptcha', ['$document', '$timeout', 'vcRecaptchaService', function ($document, $timeout, vcRecaptcha) {
 
         return {
             restrict: 'A',
@@ -120,6 +120,8 @@
                 response: '=?ngModel',
                 key: '=',
                 theme: '=?',
+                size: '=?',
+                tabindex: '=?',
                 onCreate: '&',
                 onSuccess: '&',
                 onExpire: '&'
@@ -164,7 +166,9 @@
 
                     vcRecaptcha.create(elm[0], key, callback, {
 
-                        theme: scope.theme || attrs.theme || null
+                        theme: scope.theme || attrs.theme || null,
+                        tabindex: scope.tabindex || attrs.tabindex || null,
+                        size: scope.size || attrs.size || null
 
                     }).then(function (widgetId) {
                         // The widget has been created
@@ -173,11 +177,19 @@
                         }
                         scope.widgetId = widgetId;
                         scope.onCreate({widgetId: widgetId});
+
+                        scope.$on('$destroy', cleanup);
+
                     });
 
                     // Remove this listener to avoid creating the widget more than once.
                     removeCreationListener();
                 });
+
+                function cleanup(){
+                    // removes elements reCaptcha added.
+                    angular.element($document[0].querySelectorAll('.pls-container')).parent().remove();
+                }
             }
         };
     }]);
