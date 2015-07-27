@@ -36,7 +36,7 @@ public class RoomResource {
         if (room == null) {
             throw new WebApplicationException(Response.status(400).entity(new ErrorModel("Unknown room.")).build());
         }
-        return new RoomRestModel(room.getId(), room.getName(), room.getTopic(), room.getOnline());
+        return new RoomRestModel(room.getId(), room.getName(), room.getTopic(), room.getOnlineCount());
     }
 
     @Path("/all")
@@ -49,7 +49,7 @@ public class RoomResource {
                 room.getId(),
                 room.getName(),
                 room.getTopic(),
-                room.getOnline()
+                room.getOnlineCount()
             ))
             .collect(Collectors.toList());
     }

@@ -31,7 +31,7 @@ public class SetRoleHandler extends AbstractMsgHandler {
             return;
         }
         if (modChatter.hasRole(LocalRole.ADMIN)) {
-            Chatter userChatter = room.fetchChatter(args.get(1));
+            Chatter userChatter = room.getChatter(args.get(1));
             if (userChatter != null && userChatter.getId() != null) {
                 if (canChangeRole(modChatter, userChatter)) {
                     if (room.setRole(userChatter, modChatter, newRole)) {

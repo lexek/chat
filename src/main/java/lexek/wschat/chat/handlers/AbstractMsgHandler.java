@@ -19,7 +19,7 @@ abstract class AbstractMsgHandler extends AbstractMessageHandler {
         Room room = roomManager.getRoomInstance(args.get(0));
         if (room != null) {
             if (room.inRoom(connection)) {
-                Chatter chatter = room.getChatter(connection.getUser().getId());
+                Chatter chatter = room.getOnlineChatter(connection.getUser().getWrappedObject());
                 if (!(chatter.getUser().hasRole(GlobalRole.MOD) || chatter.hasRole(LocalRole.MOD))) {
                     if (chatter.isBanned() || connection.getUser().isBanned()) {
                         connection.send(Message.errorMessage("BAN"));

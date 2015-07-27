@@ -46,8 +46,8 @@ public class UnbanHandlerTest {
         Chatter otherChatter = new Chatter(1L, LocalRole.USER, false, null, otherUser);
         when(roomManager.getRoomInstance("#main")).thenReturn(room);
         when(room.inRoom(connection)).thenReturn(true);
-        when(room.getChatter(0L)).thenReturn(chatter);
-        when(room.fetchChatter("username")).thenReturn(otherChatter);
+        when(room.getOnlineChatter(userDto)).thenReturn(chatter);
+        when(room.getChatter("username")).thenReturn(otherChatter);
         when(room.getName()).thenReturn("#main");
         when(room.unbanChatter(otherChatter, chatter)).thenReturn(true);
         handler.handle(ImmutableList.of("#main", "username"), connection);
@@ -62,8 +62,8 @@ public class UnbanHandlerTest {
         Chatter otherChatter = new Chatter(1L, LocalRole.USER, false, null, otherUser);
         when(roomManager.getRoomInstance("#main")).thenReturn(room);
         when(room.inRoom(connection)).thenReturn(true);
-        when(room.getChatter(0L)).thenReturn(chatter);
-        when(room.fetchChatter("username")).thenReturn(otherChatter);
+        when(room.getOnlineChatter(userDto)).thenReturn(chatter);
+        when(room.getChatter("username")).thenReturn(otherChatter);
         when(room.getName()).thenReturn("#main");
         when(room.unbanChatter(otherChatter, chatter)).thenReturn(false);
         handler.handle(ImmutableList.of("#main", "username"), connection);
@@ -79,8 +79,8 @@ public class UnbanHandlerTest {
         Chatter otherChatter = new Chatter(1L, LocalRole.ADMIN, false, null, otherUser);
         when(roomManager.getRoomInstance("#main")).thenReturn(room);
         when(room.inRoom(connection)).thenReturn(true);
-        when(room.getChatter(0L)).thenReturn(chatter);
-        when(room.fetchChatter("username")).thenReturn(otherChatter);
+        when(room.getOnlineChatter(userDto)).thenReturn(chatter);
+        when(room.getChatter("username")).thenReturn(otherChatter);
         when(room.getName()).thenReturn("#main");
         handler.handle(ImmutableList.of("#main", "username"), connection);
         verify(room, never()).unbanChatter(otherChatter, chatter);
@@ -94,8 +94,8 @@ public class UnbanHandlerTest {
         Chatter otherChatter = new Chatter(1L, LocalRole.USER, false, null, otherUser);
         when(roomManager.getRoomInstance("#main")).thenReturn(room);
         when(room.inRoom(connection)).thenReturn(true);
-        when(room.getChatter(0L)).thenReturn(chatter);
-        when(room.fetchChatter("username")).thenReturn(otherChatter);
+        when(room.getOnlineChatter(userDto)).thenReturn(chatter);
+        when(room.getChatter("username")).thenReturn(otherChatter);
         when(room.getName()).thenReturn("#main");
         handler.handle(ImmutableList.of("#main", "username"), connection);
         verify(room, never()).unbanChatter(otherChatter, chatter);
@@ -106,8 +106,8 @@ public class UnbanHandlerTest {
     public void testNotExistingUser() {
         when(roomManager.getRoomInstance("#main")).thenReturn(room);
         when(room.inRoom(connection)).thenReturn(true);
-        when(room.getChatter(0L)).thenReturn(chatter);
-        when(room.fetchChatter("username")).thenReturn(null);
+        when(room.getOnlineChatter(userDto)).thenReturn(chatter);
+        when(room.getChatter("username")).thenReturn(null);
         when(room.getName()).thenReturn("#main");
         handler.handle(ImmutableList.of("#main", "username"), connection);
         verify(room, never()).unbanChatter(any(Chatter.class), any(Chatter.class));
@@ -122,10 +122,10 @@ public class UnbanHandlerTest {
         Connection connection = spy(new TestConnection(user));
         when(roomManager.getRoomInstance("#main")).thenReturn(room);
         when(room.inRoom(connection)).thenReturn(true);
-        when(room.getChatter(0L)).thenReturn(chatter);
+        when(room.getOnlineChatter(userDto)).thenReturn(chatter);
         when(room.getName()).thenReturn("#main");
         handler.handle(ImmutableList.of("#main", "username"), connection);
-        verify(room, never()).fetchChatter("username");
+        verify(room, never()).getChatter("username");
         verify(room, never()).unbanChatter(any(Chatter.class), any(Chatter.class));
         verify(connection, times(1)).send(eq(Message.errorMessage("NOT_AUTHORIZED")));
     }

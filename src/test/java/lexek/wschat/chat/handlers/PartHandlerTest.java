@@ -47,8 +47,8 @@ public class PartHandlerTest {
         Chatter chatter = new Chatter(0L, LocalRole.USER, false, null, user);
 
         when(room.inRoom(connection)).thenReturn(true);
-        when(room.getChatter(user.getName())).thenReturn(chatter);
-        when(room.getChatter(user.getId())).thenReturn(chatter);
+        when(room.getOnlineChatterByName(user.getName())).thenReturn(chatter);
+        when(room.getOnlineChatter(userDto)).thenReturn(chatter);
         when(room.part(connection)).thenReturn(true);
         when(room.getName()).thenReturn("#main");
 
@@ -73,8 +73,8 @@ public class PartHandlerTest {
         Chatter chatter = new Chatter(0L, LocalRole.USER, false, null, user);
 
         when(room.inRoom(connection)).thenReturn(true);
-        when(room.getChatter(user.getName())).thenReturn(chatter);
-        when(room.getChatter(user.getId())).thenReturn(chatter);
+        when(room.getOnlineChatterByName(user.getName())).thenReturn(chatter);
+        when(room.getOnlineChatter(userDto)).thenReturn(chatter);
         when(room.part(connection)).thenReturn(false);
         when(room.getName()).thenReturn("#main");
 
@@ -99,8 +99,8 @@ public class PartHandlerTest {
         Chatter chatter = new Chatter(0L, LocalRole.GUEST, false, null, user);
 
         when(room.inRoom(connection)).thenReturn(true);
-        when(room.getChatter(user.getName())).thenReturn(chatter);
-        when(room.getChatter(user.getId())).thenReturn(chatter);
+        when(room.getOnlineChatterByName(user.getName())).thenReturn(chatter);
+        when(room.getOnlineChatter(userDto)).thenReturn(chatter);
         when(room.part(connection)).thenReturn(true);
         when(room.getName()).thenReturn("#main");
 

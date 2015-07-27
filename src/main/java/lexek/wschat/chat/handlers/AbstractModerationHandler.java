@@ -33,9 +33,9 @@ public abstract class AbstractModerationHandler extends AbstractMsgHandler {
         if (modChatter.hasRole(LocalRole.MOD)) {
             Chatter userChatter;
             if (fetchChatterIfOffline) {
-                userChatter = room.fetchChatter(args.get(1));
-            } else {
                 userChatter = room.getChatter(args.get(1));
+            } else {
+                userChatter = room.getOnlineChatterByName(args.get(1));
             }
             if (userChatter != null && userChatter.getId() != null) {
                 if (canBan(modChatter, userChatter)) {

@@ -47,7 +47,7 @@ public class JoinHandlerTest {
         when(room.inRoom(connection)).thenReturn(false);
         when(room.join(connection)).thenReturn(chatter);
         when(room.getName()).thenReturn("#main");
-        when(room.hasUser(user)).thenReturn(false);
+        when(room.inRoom(user)).thenReturn(false);
 
         handler.handle(ImmutableList.of("#main"), connection);
 
@@ -75,7 +75,7 @@ public class JoinHandlerTest {
         when(room.inRoom(connection)).thenReturn(false);
         when(room.join(connection)).thenReturn(chatter);
         when(room.getName()).thenReturn("#main");
-        when(room.hasUser(user)).thenReturn(true);
+        when(room.inRoom(user)).thenReturn(true);
 
         handler.handle(ImmutableList.of("#main"), connection);
 
@@ -103,7 +103,7 @@ public class JoinHandlerTest {
         when(room.inRoom(connection)).thenReturn(false);
         when(room.join(connection)).thenReturn(chatter);
         when(room.getName()).thenReturn("#main");
-        when(room.hasUser(user)).thenReturn(false);
+        when(room.inRoom(user)).thenReturn(false);
 
         handler.handle(ImmutableList.of("#main"), connection);
 
@@ -131,7 +131,7 @@ public class JoinHandlerTest {
         when(room.inRoom(connection)).thenReturn(true);
         when(room.join(connection)).thenReturn(chatter);
         when(room.getName()).thenReturn("#main");
-        when(room.hasUser(user)).thenReturn(true);
+        when(room.inRoom(user)).thenReturn(true);
 
         handler.handle(ImmutableList.of("#main"), connection);
 

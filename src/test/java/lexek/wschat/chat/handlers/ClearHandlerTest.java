@@ -48,7 +48,7 @@ public class ClearHandlerTest {
     public void testExistingUserWithGoodRole() {
         when(roomManager.getRoomInstance("#main")).thenReturn(room);
         when(room.inRoom(connection)).thenReturn(true);
-        when(room.getChatter(0L)).thenReturn(chatter);
+        when(room.getOnlineChatter(userDto)).thenReturn(chatter);
         when(room.getName()).thenReturn("#main");
         handler.handle(ImmutableList.of("#main"), connection);
         verify(messageBroadcaster, times(1)).submitMessage(
@@ -65,10 +65,10 @@ public class ClearHandlerTest {
         Connection connection = spy(new TestConnection(user));
         when(roomManager.getRoomInstance("#main")).thenReturn(room);
         when(room.inRoom(connection)).thenReturn(true);
-        when(room.getChatter(0L)).thenReturn(chatter);
+        when(room.getOnlineChatter(userDto)).thenReturn(chatter);
         when(room.getName()).thenReturn("#main");
         handler.handle(ImmutableList.of("#main", "username"), connection);
-        verify(room, never()).fetchChatter("username");
+        verify(room, never()).getChatter("username");
         verifyZeroInteractions(messageBroadcaster);
         verify(connection, times(1)).send(eq(Message.errorMessage("NOT_AUTHORIZED")));
     }

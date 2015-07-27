@@ -50,8 +50,8 @@ public class MeHandlerTest {
         when(room.inRoom(connection)).thenReturn(true);
         when(room.join(connection)).thenReturn(chatter);
         when(room.getName()).thenReturn("#main");
-        when(room.getChatter(user.getId())).thenReturn(chatter);
-        when(room.getChatter(user.getName())).thenReturn(chatter);
+        when(room.getOnlineChatter(userDto)).thenReturn(chatter);
+        when(room.getOnlineChatterByName(user.getName())).thenReturn(chatter);
 
         handler.handle(ImmutableList.of("#main", "top kek"), connection);
 
@@ -86,8 +86,8 @@ public class MeHandlerTest {
         when(room.inRoom(connection)).thenReturn(true);
         when(room.join(connection)).thenReturn(chatter);
         when(room.getName()).thenReturn("#main");
-        when(room.getChatter(user.getId())).thenReturn(chatter);
-        when(room.getChatter(user.getName())).thenReturn(chatter);
+        when(room.getOnlineChatter(userDto)).thenReturn(chatter);
+        when(room.getOnlineChatterByName(user.getName())).thenReturn(chatter);
 
         char[] array = new char[421];
         Arrays.fill(array, 'a');
@@ -118,8 +118,8 @@ public class MeHandlerTest {
         when(room.inRoom(connection)).thenReturn(true);
         when(room.join(connection)).thenReturn(chatter);
         when(room.getName()).thenReturn("#main");
-        when(room.getChatter(user.getId())).thenReturn(chatter);
-        when(room.getChatter(user.getName())).thenReturn(chatter);
+        when(room.getOnlineChatter(userDto)).thenReturn(chatter);
+        when(room.getOnlineChatterByName(user.getName())).thenReturn(chatter);
 
         char[] array = new char[421];
         Arrays.fill(array, 'a');
@@ -157,8 +157,8 @@ public class MeHandlerTest {
         when(room.inRoom(connection)).thenReturn(true);
         when(room.join(connection)).thenReturn(chatter);
         when(room.getName()).thenReturn("#main");
-        when(room.getChatter(user.getId())).thenReturn(chatter);
-        when(room.getChatter(user.getName())).thenReturn(chatter);
+        when(room.getOnlineChatter(userDto)).thenReturn(chatter);
+        when(room.getOnlineChatterByName(user.getName())).thenReturn(chatter);
 
         handler.handle(ImmutableList.of("#main", ""), connection);
 
@@ -186,8 +186,8 @@ public class MeHandlerTest {
         when(room.inRoom(connection)).thenReturn(true);
         when(room.join(connection)).thenReturn(chatter);
         when(room.getName()).thenReturn("#main");
-        when(room.getChatter(user.getId())).thenReturn(chatter);
-        when(room.getChatter(user.getName())).thenReturn(chatter);
+        when(room.getOnlineChatter(userDto)).thenReturn(chatter);
+        when(room.getOnlineChatterByName(user.getName())).thenReturn(chatter);
 
         handler.handle(ImmutableList.of("#main", "      \r\n"), connection);
 

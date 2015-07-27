@@ -47,8 +47,8 @@ public class LikeHandlerTest {
         when(room.inRoom(connection)).thenReturn(true);
         when(room.join(connection)).thenReturn(chatter);
         when(room.getName()).thenReturn("#main");
-        when(room.getChatter(user.getId())).thenReturn(chatter);
-        when(room.getChatter(user.getName())).thenReturn(chatter);
+        when(room.getOnlineChatter(userDto)).thenReturn(chatter);
+        when(room.getOnlineChatterByName(user.getName())).thenReturn(chatter);
 
         handler.handle(ImmutableList.of("#main", "0"), connection);
 
