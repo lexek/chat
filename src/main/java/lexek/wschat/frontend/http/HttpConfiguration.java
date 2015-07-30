@@ -1,5 +1,7 @@
 package lexek.wschat.frontend.http;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class HttpConfiguration {
     private final int port;
     private final String recaptchaKey;
@@ -10,7 +12,14 @@ public class HttpConfiguration {
     private final boolean allowLikes;
     private final boolean singleRoom;
 
-    public HttpConfiguration(int port, String recaptchaKey, String recaptchaPubKey, String twitchClientId, String twitchSecret, String twitchUrl, boolean allowLikes, boolean singleRoom) {
+    public HttpConfiguration(@JsonProperty("port") int port,
+                             @JsonProperty("recaptchaKey") String recaptchaKey,
+                             @JsonProperty("recaptchaPubKey") String recaptchaPubKey,
+                             @JsonProperty("twitchClientId") String twitchClientId,
+                             @JsonProperty("twitchSecret") String twitchSecret,
+                             @JsonProperty("twitchUrl") String twitchUrl,
+                             @JsonProperty("allowLikes") boolean allowLikes,
+                             @JsonProperty("singleRoom") boolean singleRoom) {
         this.port = port;
         this.recaptchaKey = recaptchaKey;
         this.recaptchaPubKey = recaptchaPubKey;

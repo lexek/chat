@@ -1,8 +1,7 @@
 package lexek.wschat.proxy.goodgame;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageCodec;
@@ -13,19 +12,18 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 
 @ChannelHandler.Sharable
-public class GsonCodec extends MessageToMessageCodec<TextWebSocketFrame, JsonElement> {
-    private final Gson gson = new Gson();
-    private final JsonParser jsonParser = new JsonParser();
+public class GsonCodec extends MessageToMessageCodec<TextWebSocketFrame, JsonNode> {
+    private final ObjectMapper objectMapper = new ObjectMapper();
     Logger logger = LoggerFactory.getLogger(GsonCodec.class);
 
     @Override
-    protected void encode(ChannelHandlerContext ctx, JsonElement msg, List<Object> out) throws Exception {
-        out.add(new TextWebSocketFrame(gson.toJson(msg)));
+    protected void encode(ChannelHandlerContext ctx, JsonNode msg, List<Object> out) throws Exception {
+        out.add(new TextWebSocketFrame(objectMapper.writeValueAsString(msg)));
     }
 
     @Override
     protected void decode(ChannelHandlerContext ctx, TextWebSocketFrame msg, List<Object> out) throws Exception {
         logger.trace("raw message: {}", msg);
-        out.add(jsonParser.parse(msg.text()));
+        out.add(objectMapper.readTree(msg.text()));
     }
 }

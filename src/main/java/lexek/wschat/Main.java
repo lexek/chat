@@ -9,9 +9,9 @@ import com.codahale.metrics.health.HealthCheckRegistry;
 import com.codahale.metrics.jvm.BufferPoolMetricSet;
 import com.codahale.metrics.jvm.GarbageCollectorMetricSet;
 import com.codahale.metrics.jvm.MemoryUsageGaugeSet;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.google.gson.Gson;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import freemarker.template.DefaultObjectWrapper;
@@ -64,7 +64,6 @@ import javax.mail.internet.InternetAddress;
 import javax.sql.DataSource;
 import java.io.File;
 import java.lang.management.ManagementFactory;
-import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Set;
@@ -90,8 +89,8 @@ public class Main {
             .forServer(new File("./cert.pem"), new File("./key.pk8"))
             .build();
 
-        Gson gson = new Gson();
-        Configuration settings = gson.fromJson(new String(Files.readAllBytes(Paths.get("./settings.json"))), Configuration.class);
+        ObjectMapper objectMapper = new ObjectMapper();
+        Configuration settings = objectMapper.readValue(Paths.get("./settings.json").toFile(), Configuration.class);
 
         int wsPort = settings.getCore().getWsPort();
         String ircHost = settings.getCore().getHost();
@@ -297,7 +296,6 @@ public class Main {
         httpRequestDispatcher.add("/api/tickets", new UserTicketsHandler(authenticationManager, ticketService));
         httpRequestDispatcher.add("/admin/.*", new AdminPageHandler(authenticationManager));
         httpRequestDispatcher.add("/login", new LoginHandler(authenticationManager, reCaptcha));
-        httpRequestDispatcher.add("/check_username", new UsernameCheckHandler(userService));
         httpRequestDispatcher.add("/twitch_auth", new TwitchAuthHandler(
             authenticationManager,
             new TwitchTvSocialAuthService(settings.getHttp().getTwitchClientId(),

@@ -1,5 +1,7 @@
 package lexek.wschat;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class EmailConfiguration {
     private final String smtpHost;
     private final int smtpPort;
@@ -8,7 +10,12 @@ public class EmailConfiguration {
     private final String prefix;
     private final String fromName;
 
-    public EmailConfiguration(String smtpHost, int smtpPort, String email, String password, String prefix, String fromName) {
+    public EmailConfiguration(@JsonProperty("smtpHost") String smtpHost,
+                              @JsonProperty("smtpPort") int smtpPort,
+                              @JsonProperty("email") String email,
+                              @JsonProperty("password") String password,
+                              @JsonProperty("prefix") String prefix,
+                              @JsonProperty("fromName") String fromName) {
         this.smtpHost = smtpHost;
         this.smtpPort = smtpPort;
         this.email = email;

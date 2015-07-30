@@ -1,22 +1,10 @@
 package lexek.httpserver;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonPrimitive;
-import com.google.gson.JsonSerializer;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import freemarker.template.Configuration;
 
-import java.util.Date;
-
 public class ViewResolvers {
-    private final ThreadLocal<Gson> gson = new ThreadLocal<Gson>() {
-        @Override
-        protected Gson initialValue() {
-            return new GsonBuilder()
-                .registerTypeAdapter(Date.class, (JsonSerializer<Date>) (src, typeOfSrc, context) -> new JsonPrimitive(src.getTime()))
-                .create();
-        }
-    };
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     private final Configuration templateEngine;
 
@@ -24,11 +12,11 @@ public class ViewResolvers {
         this.templateEngine = templateEngine;
     }
 
-    public Gson getGson() {
-        return gson.get();
-    }
-
     public Configuration getTemplateEngine() {
         return templateEngine;
+    }
+
+    public ObjectMapper getObjectMapper() {
+        return objectMapper;
     }
 }

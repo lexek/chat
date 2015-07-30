@@ -1,9 +1,8 @@
 package lexek.wschat.security.social;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.net.HttpHeaders;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import io.netty.util.CharsetUtil;
 import lexek.wschat.util.JsonResponseHandler;
 import org.apache.http.HttpEntity;
@@ -55,22 +54,22 @@ public class TwitchTvSocialAuthService implements SocialAuthService {
         ), CharsetUtil.UTF_8);
         request.setEntity(entity);
         request.setHeader(HttpHeaders.ACCEPT, "application/json");
-        JsonObject response = httpClient.execute(request, JsonResponseHandler.INSTANCE).getAsJsonObject();
-        return response.get("access_token").getAsString();
+        JsonNode response = httpClient.execute(request, JsonResponseHandler.INSTANCE);
+        return response.get("access_token").asText();
     }
 
     @Override
     public SocialAuthProfile getProfile(String token) throws IOException {
         HttpGet request = new HttpGet("https://api.twitch.tv/kraken/user?oauth_token=" + token);
         request.setHeader(HttpHeaders.ACCEPT, "application/json");
-        JsonObject userData = httpClient.execute(request, JsonResponseHandler.INSTANCE).getAsJsonObject();
-        JsonElement emailElem = userData.get("email");
+        JsonNode userData = httpClient.execute(request, JsonResponseHandler.INSTANCE);
+        JsonNode emailElem = userData.get("email");
         String email = null;
-        if (!emailElem.isJsonNull()) {
-            email = emailElem.getAsString();
+        if (!emailElem.isNull()) {
+            email = emailElem.asText();
         }
-        String name = userData.get("name").getAsString().toLowerCase();
-        long id = userData.get("_id").getAsLong();
+        String name = userData.get("name").asText().toLowerCase();
+        long id = userData.get("_id").asLong();
         return new SocialAuthProfile(id, "twitch.tv", name, token, email);
     }
 }

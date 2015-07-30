@@ -1,5 +1,7 @@
 package lexek.wschat.chat;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 
 import java.util.List;
@@ -8,7 +10,9 @@ public class InboundMessage {
     private final MessageType type;
     private final List<String> args;
 
-    public InboundMessage(MessageType type, List<String> args) {
+    @JsonCreator
+    public InboundMessage(@JsonProperty("type") MessageType type,
+                          @JsonProperty("args") List<String> args) {
         this.type = type;
         this.args = args;
     }

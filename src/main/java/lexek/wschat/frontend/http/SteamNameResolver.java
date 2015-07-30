@@ -1,9 +1,7 @@
 package lexek.wschat.frontend.http;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.io.Files;
-import com.google.gson.Gson;
-import io.netty.util.CharsetUtil;
 import lexek.httpserver.Request;
 import lexek.httpserver.Response;
 import lexek.httpserver.SimpleHttpHandler;
@@ -18,9 +16,9 @@ public class SteamNameResolver extends SimpleHttpHandler {
 
     public SteamNameResolver() {
         Map<String, String> map1;
-        Gson gson = new Gson();
+        ObjectMapper objectMapper = new ObjectMapper();
         try {
-            map1 = gson.fromJson(Files.toString(new File("steam_lib.json"), CharsetUtil.UTF_8), HashMap.class);
+            map1 = objectMapper.readValue(new File("steam_lib.json"), HashMap.class);
         } catch (IOException e) {
             e.printStackTrace();
             map1 = ImmutableMap.of();

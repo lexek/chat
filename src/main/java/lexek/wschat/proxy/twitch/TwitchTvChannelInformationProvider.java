@@ -1,7 +1,6 @@
 package lexek.wschat.proxy.twitch;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
+import com.fasterxml.jackson.databind.JsonNode;
 import lexek.wschat.proxy.ChannelInformationProvider;
 import lexek.wschat.proxy.StreamInfo;
 import lexek.wschat.util.JsonResponseHandler;
@@ -30,14 +29,13 @@ public class TwitchTvChannelInformationProvider implements ChannelInformationPro
         StreamInfo result = null;
         HttpGet httpGet = new HttpGet("https://api.twitch.tv/kraken/streams/" + channel);
 
-        JsonObject rootObject = httpClient.execute(httpGet, JsonResponseHandler.INSTANCE).getAsJsonObject();
-        JsonElement streamElement = rootObject.get("stream");
-        if (streamElement != null && !streamElement.isJsonNull()) {
-            JsonObject streamObject = streamElement.getAsJsonObject();
-            long viewers = streamObject.get("viewers").getAsLong();
-            long started = Instant.parse(streamObject.get("created_at").getAsString()).toEpochMilli();
-            long id = streamObject.get("_id").getAsLong();
-            String title = streamObject.get("channel").getAsJsonObject().get("status").getAsString();
+        JsonNode rootObject = httpClient.execute(httpGet, JsonResponseHandler.INSTANCE);
+        JsonNode streamObject = rootObject.get("stream");
+        if (streamObject != null && !streamObject.isNull()) {
+            long viewers = streamObject.get("viewers").asLong();
+            long started = Instant.parse(streamObject.get("created_at").asText()).toEpochMilli();
+            long id = streamObject.get("_id").asLong();
+            String title = streamObject.get("channel").get("status").asText();
             result = new StreamInfo(id, started, title, viewers);
         }
         return result;

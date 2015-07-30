@@ -1,12 +1,11 @@
 package lexek.wschat.proxy;
 
 import com.codahale.metrics.health.HealthCheck;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.primitives.Longs;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.*;
@@ -21,13 +20,15 @@ import lexek.wschat.chat.*;
 import lexek.wschat.services.AbstractService;
 import lexek.wschat.util.Colors;
 
+import java.io.IOError;
+import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class Sc2tvChatProxy extends AbstractService {
-    private final JsonParser jsonParser = new JsonParser();
+    private final ObjectMapper objectMapper = new ObjectMapper();
     private final String channel;
     private final MessageBroadcaster messageBroadcaster;
     private final EventLoopGroup eventLoopGroup;
@@ -101,22 +102,21 @@ public class Sc2tvChatProxy extends AbstractService {
             if (response.getStatus().equals(HttpResponseStatus.OK)) {
                 lastModified = HttpHeaders.getDateHeader(response, HttpHeaders.Names.LAST_MODIFIED);
                 String data = response.content().toString(CharsetUtil.UTF_8);
-                JsonObject root = jsonParser.parse(data).getAsJsonObject();
-                List<JsonElement> messages = Lists.reverse(Lists.newArrayList(root.getAsJsonArray("messages")));
-                for (JsonElement element : messages) {
-                    JsonObject message = element.getAsJsonObject();
-                    Long id = Longs.tryParse(message.get("id").getAsString());
+                JsonNode root = objectMapper.readTree(data);
+                List<JsonNode> messages = Lists.reverse(Lists.newArrayList((root.get("messages").elements())));
+                for (JsonNode message : messages) {
+                    Long id = Longs.tryParse(message.get("id").asText());
                     if (id != null && id > lastId) {
                         if (!firstRun) {
                             Message chatMessage = Message.extMessage(
                                 "#main",
-                                message.get("name").getAsString(),
+                                message.get("name").asText(),
                                 LocalRole.USER,
                                 GlobalRole.USER,
-                                Colors.generateColor(message.get("name").getAsString()),
+                                Colors.generateColor(message.get("name").asText()),
                                 messageId.getAndIncrement(),
                                 System.currentTimeMillis(),
-                                message.get("message").getAsString(),
+                                message.get("message").asText(),
                                 "sc2tv.ru",
                                 "sc2tv"
                             );
@@ -154,7 +154,11 @@ public class Sc2tvChatProxy extends AbstractService {
 
         @Override
         public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-            logger.warn("exception", cause);
+            if (cause instanceof IOException) {
+                logger.debug("exception", cause);
+            } else {
+                logger.warn("exception", cause);
+            }
             ctx.close();
         }
 

@@ -1,5 +1,6 @@
 package lexek.wschat;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lexek.wschat.db.JdbcDataBaseConfiguration;
 import lexek.wschat.frontend.http.HttpConfiguration;
 import lexek.wschat.proxy.ProxyConfiguration;
@@ -11,7 +12,11 @@ public class Configuration {
     private final EmailConfiguration email;
     private final ProxyConfiguration[] proxy;
 
-    Configuration(ProxyConfiguration[] proxyConfigurations, HttpConfiguration http, CoreConfiguration core, JdbcDataBaseConfiguration db, EmailConfiguration email) {
+    Configuration(@JsonProperty("proxy") ProxyConfiguration[] proxyConfigurations,
+                  @JsonProperty("http") HttpConfiguration http,
+                  @JsonProperty("core") CoreConfiguration core,
+                  @JsonProperty("db") JdbcDataBaseConfiguration db,
+                  @JsonProperty("email") EmailConfiguration email) {
         this.proxy = proxyConfigurations;
         this.http = http;
         this.core = core;

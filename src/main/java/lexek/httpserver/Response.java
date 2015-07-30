@@ -1,6 +1,7 @@
 package lexek.httpserver;
 
-import com.google.gson.JsonObject;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import freemarker.template.TemplateException;
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http.FullHttpResponse;
@@ -48,9 +49,13 @@ public class Response {
 
     public void jsonContent(Object jsonObject) {
         if (jsonObject == null) {
-            jsonObject = new JsonObject();
+            jsonObject = JsonNodeFactory.instance.objectNode();
         }
-        stringContent(viewResolvers.getGson().toJson(jsonObject), "application/json; charset=utf-8");
+        try {
+            stringContent(viewResolvers.getObjectMapper().writeValueAsString(jsonObject), "application/json; charset=utf-8");
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
     }
 
     public void header(String key, String value) {

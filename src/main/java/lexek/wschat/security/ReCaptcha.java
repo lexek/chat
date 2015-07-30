@@ -1,11 +1,9 @@
 package lexek.wschat.security;
 
-import com.google.common.io.CharStreams;
-import com.google.gson.Gson;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -13,8 +11,8 @@ import java.util.Map;
 
 public class ReCaptcha {
     private static final int TIMEOUT = 3000;
-    private final Gson gson = new Gson();
     private final String secret;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     public ReCaptcha(String secret) {
         this.secret = secret;
@@ -33,7 +31,7 @@ public class ReCaptcha {
             httpConnection.setDoOutput(true);
             httpConnection.setDoInput(true);
             httpConnection.connect();
-            result = (boolean) gson.fromJson(CharStreams.toString(new InputStreamReader((InputStream) httpConnection.getContent())), Map.class).get("success");
+            result = (boolean) objectMapper.readValue((InputStream) httpConnection.getContent(), Map.class).get("success");
         } catch (IOException e) {
             e.printStackTrace();
         }

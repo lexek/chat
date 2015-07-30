@@ -1,11 +1,15 @@
 package lexek.wschat.db;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class JdbcDataBaseConfiguration {
     private final String uri;
     private final String username;
     private final String password;
 
-    public JdbcDataBaseConfiguration(String uri, String username, String password) {
+    public JdbcDataBaseConfiguration(@JsonProperty("uri") String uri,
+                                     @JsonProperty("username") String username,
+                                     @JsonProperty("password") String password) {
         this.uri = uri;
         this.username = username;
         this.password = password;

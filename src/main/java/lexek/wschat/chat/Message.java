@@ -164,7 +164,6 @@ public class Message {
         Message message = (Message) o;
 
         return data.equals(message.data);
-
     }
 
     @Override
@@ -196,5 +195,6 @@ public class Message {
         public static final MessageDataKey<List> SERVICE = MessageDataKey.valueOf("service");
         public static final MessageDataKey<List> SERVICE_RESOURCE = MessageDataKey.valueOf("serviceResource");
         public static final MessageDataKey<String> POLL_DATA = MessageDataKey.valueOf("pollData");
+        public static final MessageDataKey<Long> POLL_OPTION = MessageDataKey.valueOf("pollOption");
     }
 }

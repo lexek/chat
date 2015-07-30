@@ -1,5 +1,7 @@
 package lexek.wschat.services.poll;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -7,6 +9,7 @@ import java.util.Set;
 public class PollState {
     private final Poll poll;
     private final long[] votes;
+    @JsonIgnore
     private final Set<Long> voted;
 
     public PollState(Poll poll) {

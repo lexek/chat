@@ -1,7 +1,7 @@
 package lexek.wschat.proxy.cybergame;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.primitives.Longs;
-import com.google.gson.JsonObject;
 import lexek.wschat.proxy.ChannelInformationProvider;
 import lexek.wschat.proxy.StreamInfo;
 import lexek.wschat.util.JsonResponseHandler;
@@ -24,9 +24,9 @@ public class CybergameTvChannelInformationProvider implements ChannelInformation
         Long result = null;
         HttpGet httpGet = new HttpGet("http://api.cybergame.tv/w/streams2.php?channel=" + channel);
 
-        JsonObject rootObject = httpClient.execute(httpGet, JsonResponseHandler.INSTANCE).getAsJsonObject();
-        if (rootObject.get("online").getAsString().equals("1")) {
-            result = Longs.tryParse(rootObject.get("viewers").getAsString());
+        JsonNode rootObject = httpClient.execute(httpGet, JsonResponseHandler.INSTANCE);
+        if (rootObject.get("online").asText().equals("1")) {
+            result = Longs.tryParse(rootObject.get("viewers").asText());
         }
         return result;
     }
