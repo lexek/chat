@@ -5,7 +5,7 @@ import lexek.wschat.services.ChatterService;
 import lexek.wschat.services.UserService;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 
 public class RoomTest {

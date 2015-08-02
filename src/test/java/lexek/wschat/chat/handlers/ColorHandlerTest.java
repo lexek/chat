@@ -1,9 +1,9 @@
 package lexek.wschat.chat.handlers;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import lexek.wschat.chat.*;
-import lexek.wschat.db.model.UserDto;
 import lexek.wschat.db.dao.UserDao;
+import lexek.wschat.db.model.UserDto;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -36,13 +36,16 @@ public class ColorHandlerTest {
     }
 
     @Test
-    public void testGetArgCount() throws Exception {
-        assertEquals(handler.getArgCount(), 1);
+    public void shouldHaveRequiredProperties() throws Exception {
+        assertEquals(
+            handler.requiredProperties(),
+            ImmutableSet.of(MessageProperty.COLOR)
+        );
     }
 
     @Test
     public void testSetColorWithGoodColor() {
-        handler.handle(ImmutableList.of("springgreen"), connection);
+        handler.handle(connection, user, Message.colorMessage("springgreen"));
         verify(userDao, times(1)).setColor(eq(0L), eq("#00BA5D"));
         verify(connection, times(1)).send(eq(Message.colorMessage("#00BA5D")));
         assertEquals(user.getColor(), "#00BA5D");
@@ -50,7 +53,7 @@ public class ColorHandlerTest {
 
     @Test
     public void testSetColorWithBadColor() {
-        handler.handle(ImmutableList.of("#000000"), connection);
+        handler.handle(connection, user, Message.colorMessage("#000000"));
         verifyZeroInteractions(userDao);
         verify(connection, times(1)).send(eq(Message.errorMessage("WRONG_COLOR")));
     }
@@ -58,7 +61,7 @@ public class ColorHandlerTest {
     @Test
     public void testSuperadminSetColorWithBadColor() {
         user.setRole(GlobalRole.SUPERADMIN);
-        handler.handle(ImmutableList.of("#000000"), connection);
+        handler.handle(connection, user, Message.colorMessage("#000000"));
         verify(userDao, times(1)).setColor(eq(0L), eq("#000000"));
         verify(connection, times(1)).send(eq(Message.colorMessage("#000000")));
         assertEquals(user.getColor(), "#000000");

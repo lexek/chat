@@ -5,8 +5,8 @@ import lexek.wschat.chat.*;
 public class ClearUserHandler extends AbstractModerationHandler {
     private final MessageBroadcaster messageBroadcaster;
 
-    public ClearUserHandler(MessageBroadcaster messageBroadcaster, RoomManager roomManager) {
-        super(MessageType.CLEAR, roomManager, false, "CLEAR_DENIED");
+    public ClearUserHandler(MessageBroadcaster messageBroadcaster) {
+        super(MessageType.CLEAR, false, "CLEAR_DENIED");
         this.messageBroadcaster = messageBroadcaster;
     }
 

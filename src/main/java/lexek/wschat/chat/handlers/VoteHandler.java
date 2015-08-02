@@ -1,39 +1,35 @@
 package lexek.wschat.chat.handlers;
 
-import com.google.common.primitives.Ints;
+import com.google.common.collect.ImmutableSet;
 import lexek.wschat.chat.*;
+import lexek.wschat.chat.processing.AbstractRoomMessageHandler;
 import lexek.wschat.services.poll.PollService;
 
-import java.util.List;
 
-public class VoteHandler extends AbstractMessageHandler {
-    private final RoomManager roomManager;
+public class VoteHandler extends AbstractRoomMessageHandler {
     private final PollService pollService;
 
-    public VoteHandler(RoomManager roomManager, PollService pollService) {
-        super(MessageType.POLL_VOTE, GlobalRole.USER, 2, true, false);
-        this.roomManager = roomManager;
+    public VoteHandler(PollService pollService) {
+        super(
+            ImmutableSet.of(
+                MessageProperty.ROOM,
+                MessageProperty.POLL_OPTION
+            ),
+            MessageType.POLL_VOTE,
+            LocalRole.USER,
+            true
+        );
         this.pollService = pollService;
     }
 
     @Override
-    public void handle(List<String> args, Connection connection) {
-        Room room = roomManager.getRoomInstance(args.get(0));
-        User user = connection.getUser();
-        if (room != null) {
-            if (room.inRoom(connection)) {
-                Integer option = Ints.tryParse(args.get(1));
-                if (option != null && option >= 0) {
-                    pollService.vote(room, user, option);
-                    connection.send(Message.pollVotedMessage(room.getName()));
-                } else {
-                    connection.send(Message.errorMessage("BAD_ARG"));
-                }
-            } else {
-                connection.send(Message.errorMessage("NOT_JOINED"));
-            }
+    public void handle(Connection connection, User user, Room room, Chatter chatter, Message message) {
+        int option = message.get(MessageProperty.POLL_OPTION);
+        if (option >= 0) {
+            pollService.vote(room, user, option);
+            connection.send(Message.pollVotedMessage(room.getName()));
         } else {
-            connection.send(Message.errorMessage("UNKNOWN_ROOM"));
+            connection.send(Message.errorMessage("BAD_ARG"));
         }
     }
 }

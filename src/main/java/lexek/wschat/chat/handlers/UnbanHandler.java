@@ -3,8 +3,8 @@ package lexek.wschat.chat.handlers;
 import lexek.wschat.chat.*;
 
 public class UnbanHandler extends AbstractModerationHandler {
-    public UnbanHandler(RoomManager roomManager) {
-        super(MessageType.UNBAN, roomManager, true, "UNBAN_DENIED");
+    public UnbanHandler() {
+        super(MessageType.UNBAN, true, "UNBAN_DENIED");
     }
 
     @Override

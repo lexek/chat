@@ -1,25 +1,26 @@
 package lexek.wschat.chat.handlers;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import lexek.wschat.chat.*;
 import lexek.wschat.db.model.UserDto;
 import lexek.wschat.services.poll.PollService;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
-import static org.mockito.Matchers.any;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
 public class VoteHandlerTest {
     private UserDto userDto = new UserDto(0L, "user", GlobalRole.MOD, "#000000", false, false, null, false);
     private User user = new User(userDto);
+    private Chatter chatter = new Chatter(0L, LocalRole.USER, false, null, user);
     private Connection connection = spy(new TestConnection(user));
     private RoomManager roomManager = mock(RoomManager.class);
     private Room room = mock(Room.class);
     private PollService pollService = mock(PollService.class);
-    private VoteHandler handler = new VoteHandler(roomManager, pollService);
+    private VoteHandler handler = new VoteHandler(pollService);
 
     @Before
     public void resetMocks() {
@@ -33,12 +34,7 @@ public class VoteHandlerTest {
 
     @Test
     public void testGetRole() throws Exception {
-        assertEquals(handler.getRole(), GlobalRole.USER);
-    }
-
-    @Test
-    public void testGetArgCount() throws Exception {
-        assertEquals(handler.getArgCount(), 2);
+        assertEquals(handler.getRole(), LocalRole.USER);
     }
 
     @Test
@@ -47,8 +43,11 @@ public class VoteHandlerTest {
     }
 
     @Test
-    public void testIsNeedsLogging() throws Exception {
-        assertEquals(handler.isNeedsLogging(), false);
+    public void shouldHaveRequiredProperties() throws Exception {
+        assertEquals(
+            handler.requiredProperties(),
+            ImmutableSet.of(MessageProperty.ROOM, MessageProperty.POLL_OPTION)
+        );
     }
 
     @Test
@@ -56,7 +55,11 @@ public class VoteHandlerTest {
         when(roomManager.getRoomInstance("#main")).thenReturn(room);
         when(room.inRoom(connection)).thenReturn(true);
         when(room.getName()).thenReturn("#main");
-        handler.handle(ImmutableList.of("#main", "0"), connection);
+        handler.handle(connection, user, room, chatter, new Message(ImmutableMap.of(
+            MessageProperty.TYPE, MessageType.POLL_VOTE,
+            MessageProperty.ROOM, "#main",
+            MessageProperty.POLL_OPTION, 0
+        )));
         verify(pollService).vote(room, user, 0);
         verifyZeroInteractions(pollService);
         verify(connection, times(1)).send(eq(Message.pollVotedMessage("#main")));
@@ -67,27 +70,13 @@ public class VoteHandlerTest {
         when(roomManager.getRoomInstance("#main")).thenReturn(room);
         when(room.inRoom(connection)).thenReturn(true);
         when(room.getName()).thenReturn("#main");
-        handler.handle(ImmutableList.of("#main", "-1"), connection);
+        handler.handle(connection, user, room, chatter, new Message(ImmutableMap.of(
+            MessageProperty.TYPE, MessageType.POLL_VOTE,
+            MessageProperty.ROOM, "#main",
+            MessageProperty.POLL_OPTION, -1
+        )));
         verify(pollService, never()).vote(room, user, 0);
         verifyZeroInteractions(pollService);
         verify(connection, times(1)).send(eq(Message.errorMessage("BAD_ARG")));
     }
-
-    @Test
-    public void testNotJoined() {
-        when(roomManager.getRoomInstance("#main")).thenReturn(room);
-        when(room.inRoom(connection)).thenReturn(false);
-        handler.handle(ImmutableList.of("#main", "username"), connection);
-        verifyZeroInteractions(pollService);
-        verify(connection, times(1)).send(eq(Message.errorMessage("NOT_JOINED")));
-    }
-
-    @Test
-    public void testBadRoom() {
-        when(roomManager.getRoomInstance("#main")).thenReturn(null);
-        handler.handle(ImmutableList.of("#main", "username"), connection);
-        verifyZeroInteractions(pollService);
-        verify(connection, times(1)).send(eq(Message.errorMessage("UNKNOWN_ROOM")));
-    }
-
 }

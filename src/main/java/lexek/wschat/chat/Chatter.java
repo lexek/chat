@@ -58,7 +58,7 @@ public class Chatter {
     }
 
     public boolean isBanned() {
-        return banned;
+        return banned || user.isBanned();
     }
 
     public void setBanned(boolean banned) {

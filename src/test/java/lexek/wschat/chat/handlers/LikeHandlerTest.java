@@ -1,43 +1,42 @@
 package lexek.wschat.chat.handlers;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import lexek.wschat.chat.*;
-import lexek.wschat.chat.Chatter;
 import lexek.wschat.db.model.UserDto;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
-import static org.mockito.Mockito.verify;
 
 public class LikeHandlerTest {
     @Test
     public void shouldHaveLikeType() {
-        LikeHandler handler = new LikeHandler(null, null);
+        LikeHandler handler = new LikeHandler(null);
         assertEquals(handler.getType(), MessageType.LIKE);
     }
 
     @Test
-    public void shouldHaveSingleArgument() {
-        LikeHandler handler = new LikeHandler(null, null);
-        assertEquals(handler.getArgCount(), 2);
+    public void shouldBeAvailableOnlyForUsers() {
+        LikeHandler handler = new LikeHandler(null);
+        assertEquals(handler.getRole(), LocalRole.USER);
     }
 
     @Test
-    public void shouldBeAvailableOnlyForUsers() {
-        LikeHandler handler = new LikeHandler(null, null);
-        assertEquals(handler.getRole(), GlobalRole.USER);
+    public void shouldHaveRequiredProperties() throws Exception {
+        LikeHandler handler = new LikeHandler(null);
+        assertEquals(
+            handler.requiredProperties(),
+            ImmutableSet.of(MessageProperty.ROOM, MessageProperty.MESSAGE_ID)
+        );
     }
 
     @Test
     public void shouldWork() {
-        RoomManager roomManager = mock(RoomManager.class);
         Room room = mock(Room.class);
-        when(roomManager.getRoomInstance("#main")).thenReturn(room);
-        when(roomManager.getRoomInstance(0L)).thenReturn(room);
         MessageBroadcaster messageBroadcaster = mock(MessageBroadcaster.class);
-        LikeHandler handler = new LikeHandler(messageBroadcaster, roomManager);
+        LikeHandler handler = new LikeHandler(messageBroadcaster);
 
         UserDto userDto = new UserDto(0L, "user", GlobalRole.USER, "#ffffff", false, false, null, false);
         User user = new User(userDto);
@@ -50,7 +49,10 @@ public class LikeHandlerTest {
         when(room.getOnlineChatter(userDto)).thenReturn(chatter);
         when(room.getOnlineChatterByName(user.getName())).thenReturn(chatter);
 
-        handler.handle(ImmutableList.of("#main", "0"), connection);
+        handler.handle(connection, user, room, chatter, new Message(ImmutableMap.of(
+            MessageProperty.TYPE, MessageType.LIKE,
+            MessageProperty.MESSAGE_ID, 0L
+        )));
 
         verify(messageBroadcaster).submitMessage(eq(Message.likeMessage("#main", user.getName(), 0L)), eq(connection), eq(room.FILTER));
     }

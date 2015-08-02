@@ -13,8 +13,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import static lexek.wschat.chat.Message.Keys;
-
 public class HistoryService implements EventHandler<MessageEvent> {
     private static final Set<MessageType> STORE_TYPES = ImmutableSet.of(
         MessageType.MSG,
@@ -62,11 +60,11 @@ public class HistoryService implements EventHandler<MessageEvent> {
         MessageType type = message.getType();
         User user = connection.getUser();
         if (type == MessageType.MSG || type == MessageType.ME) {
-            historyDao.add(new History(null, room.getId(), user.getId(), message.get(Keys.TIME),
-                message.getType().toString(), message.get(Keys.TEXT), false));
+            historyDao.add(new History(null, room.getId(), user.getId(), message.get(MessageProperty.TIME),
+                message.getType().toString(), message.get(MessageProperty.TEXT), false));
         } else if (type == MessageType.CLEAR || type == MessageType.BAN || type == MessageType.TIMEOUT) {
             long t = System.currentTimeMillis();
-            String userName = message.get(Keys.NAME);
+            String userName = message.get(MessageProperty.NAME);
             historyDao.hideUserMessages(
                 new History(null, room.getId(), user.getId(), t, message.getType().toString(), userName, false),
                 userName, t - TimeUnit.MINUTES.toMillis(10));

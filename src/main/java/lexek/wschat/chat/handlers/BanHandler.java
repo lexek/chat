@@ -5,8 +5,8 @@ import lexek.wschat.chat.*;
 public class BanHandler extends AbstractModerationHandler {
     private final MessageBroadcaster messageBroadcaster;
 
-    public BanHandler(MessageBroadcaster messageBroadcaster, RoomManager roomManager) {
-        super(MessageType.BAN, roomManager, true, "BAN_DENIED");
+    public BanHandler(MessageBroadcaster messageBroadcaster) {
+        super(MessageType.BAN, true, "BAN_DENIED");
         this.messageBroadcaster = messageBroadcaster;
     }
 

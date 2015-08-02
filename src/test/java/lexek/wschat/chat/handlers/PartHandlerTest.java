@@ -1,8 +1,8 @@
 package lexek.wschat.chat.handlers;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import lexek.wschat.chat.*;
-import lexek.wschat.chat.Chatter;
 import lexek.wschat.db.model.UserDto;
 import org.junit.Test;
 
@@ -10,36 +10,34 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
 
 public class PartHandlerTest {
     @Test
     public void shouldHaveJoinType() {
-        PartHandler handler = new PartHandler(null, null);
+        PartHandler handler = new PartHandler(null);
         assertEquals(handler.getType(), MessageType.PART);
     }
 
     @Test
-    public void shouldHaveSingleArgument() {
-        PartHandler handler = new PartHandler(null, null);
-        assertEquals(handler.getArgCount(), 1);
+    public void shouldBeAvailableForAllRoles() {
+        PartHandler handler = new PartHandler(null);
+        assertEquals(handler.getRole(), LocalRole.GUEST);
     }
 
     @Test
-    public void shouldBeAvailableForAllRoles() {
-        PartHandler handler = new PartHandler(null, null);
-        assertEquals(handler.getRole(), GlobalRole.UNAUTHENTICATED);
+    public void shouldHaveRequiredProperties() throws Exception {
+        PartHandler handler = new PartHandler(null);
+        assertEquals(
+            handler.requiredProperties(),
+            ImmutableSet.of(MessageProperty.ROOM)
+        );
     }
 
     @Test
     public void should() {
-        RoomManager roomManager = mock(RoomManager.class);
         Room room = mock(Room.class);
-        when(roomManager.getRoomInstance("#main")).thenReturn(room);
-        when(roomManager.getRoomInstance(0L)).thenReturn(room);
         MessageBroadcaster messageBroadcaster = mock(MessageBroadcaster.class);
-        PartHandler handler = new PartHandler(messageBroadcaster, roomManager);
+        PartHandler handler = new PartHandler(messageBroadcaster);
 
         UserDto userDto = new UserDto(0L, "user", GlobalRole.USER, "#ffffff", false, false, null, false);
         User user = new User(userDto);
@@ -52,7 +50,10 @@ public class PartHandlerTest {
         when(room.part(connection)).thenReturn(true);
         when(room.getName()).thenReturn("#main");
 
-        handler.handle(ImmutableList.of("#main"), connection);
+        handler.handle(connection, user, room, chatter, new Message(ImmutableMap.of(
+            MessageProperty.TYPE, MessageType.PART,
+            MessageProperty.ROOM, "#main"
+        )));
 
         verify(room).part(connection);
         verify(messageBroadcaster).submitMessage(eq(Message.partMessage("#main", "user")), eq(connection), eq(room.FILTER));
@@ -60,12 +61,9 @@ public class PartHandlerTest {
 
     @Test
     public void shouldNotBroadcastMessageWhenOtherSessionActive() {
-        RoomManager roomManager = mock(RoomManager.class);
         Room room = mock(Room.class);
-        when(roomManager.getRoomInstance("#main")).thenReturn(room);
-        when(roomManager.getRoomInstance(0L)).thenReturn(room);
         MessageBroadcaster messageBroadcaster = mock(MessageBroadcaster.class);
-        PartHandler handler = new PartHandler(messageBroadcaster, roomManager);
+        PartHandler handler = new PartHandler(messageBroadcaster);
 
         UserDto userDto = new UserDto(0L, "user", GlobalRole.USER, "#ffffff", false, false, null, false);
         User user = new User(userDto);
@@ -78,7 +76,10 @@ public class PartHandlerTest {
         when(room.part(connection)).thenReturn(false);
         when(room.getName()).thenReturn("#main");
 
-        handler.handle(ImmutableList.of("#main"), connection);
+        handler.handle(connection, user, room, chatter, new Message(ImmutableMap.of(
+            MessageProperty.TYPE, MessageType.PART,
+            MessageProperty.ROOM, "#main"
+        )));
 
         verify(room).part(connection);
         verify(messageBroadcaster, never()).submitMessage(any(Message.class), any(Connection.class), any(BroadcastFilter.class));
@@ -86,12 +87,9 @@ public class PartHandlerTest {
 
     @Test
     public void shouldNotBroadcastMessageWhenRoleLowerThanUser() {
-        RoomManager roomManager = mock(RoomManager.class);
         Room room = mock(Room.class);
-        when(roomManager.getRoomInstance("#main")).thenReturn(room);
-        when(roomManager.getRoomInstance(0L)).thenReturn(room);
         MessageBroadcaster messageBroadcaster = mock(MessageBroadcaster.class);
-        PartHandler handler = new PartHandler(messageBroadcaster, roomManager);
+        PartHandler handler = new PartHandler(messageBroadcaster);
 
         UserDto userDto = new UserDto(0L, "user", GlobalRole.UNAUTHENTICATED, "#ffffff", false, false, null, false);
         User user = new User(userDto);
@@ -104,50 +102,12 @@ public class PartHandlerTest {
         when(room.part(connection)).thenReturn(true);
         when(room.getName()).thenReturn("#main");
 
-        handler.handle(ImmutableList.of("#main"), connection);
+        handler.handle(connection, user, room, chatter, new Message(ImmutableMap.of(
+            MessageProperty.TYPE, MessageType.PART,
+            MessageProperty.ROOM, "#main"
+        )));
 
         verify(room).part(connection);
         verify(messageBroadcaster, never()).submitMessage(any(Message.class), any(Connection.class), any(BroadcastFilter.class));
     }
-
-    @Test
-    public void shouldReturnErrorIfNotInRoom() {
-        RoomManager roomManager = mock(RoomManager.class);
-        Room room = mock(Room.class);
-        when(roomManager.getRoomInstance("#main")).thenReturn(room);
-        when(roomManager.getRoomInstance(0L)).thenReturn(room);
-        MessageBroadcaster messageBroadcaster = mock(MessageBroadcaster.class);
-        PartHandler handler = new PartHandler(messageBroadcaster, roomManager);
-
-        UserDto userDto = new UserDto(0L, "user", GlobalRole.USER, "#ffffff", false, false, null, false);
-        User user = new User(userDto);
-        Connection connection = spy(new TestConnection(user));
-
-        when(room.inRoom(connection)).thenReturn(false);
-
-        handler.handle(ImmutableList.of("#main"), connection);
-
-        verify(room, never()).part(connection);
-        verify(messageBroadcaster, never()).submitMessage(any(Message.class), any(Connection.class), any(BroadcastFilter.class));
-        verify(connection).send(eq(Message.errorMessage("ROOM_NOT_JOINED")));
-    }
-
-    @Test
-    public void shouldReturnErrorIfNoRoom() {
-        RoomManager roomManager = mock(RoomManager.class);
-        when(roomManager.getRoomInstance("#main")).thenReturn(null);
-        when(roomManager.getRoomInstance(0L)).thenReturn(null);
-        MessageBroadcaster messageBroadcaster = mock(MessageBroadcaster.class);
-        PartHandler handler = new PartHandler(messageBroadcaster, roomManager);
-
-        UserDto userDto = new UserDto(0L, "user", GlobalRole.USER, "#ffffff", false, false, null, false);
-        User user = new User(userDto);
-        Connection connection = spy(new TestConnection(user));
-
-        handler.handle(ImmutableList.of("#main"), connection);
-
-        verify(messageBroadcaster, never()).submitMessage(any(Message.class), any(Connection.class), any(BroadcastFilter.class));
-        verify(connection).send(eq(Message.errorMessage("ROOM_NOT_FOUND", ImmutableList.of("#main"))));
-    }
-
 }

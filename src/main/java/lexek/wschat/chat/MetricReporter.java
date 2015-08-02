@@ -34,14 +34,12 @@ public class MetricReporter extends ScheduledReporter {
             long time = System.currentTimeMillis();
             Map<String, Long> onlineCount = (Map<String, Long>) gauges.get("online").getValue();
             StreamInfo streamInfo = (StreamInfo) gauges.get("viewers").getValue();
-            Meter activityMeter = meters.get("activity");
 
             List<MetricRecord> records = new ArrayList<>();
 
             records.add(new MetricRecord(null, "online", time, Double.valueOf(onlineCount.get("online"))));
             records.add(new MetricRecord(null, "online.authenticated", time, Double.valueOf(onlineCount.get("authenticated"))));
             records.add(new MetricRecord(null, "online.active", time, Double.valueOf(onlineCount.get("active"))));
-            records.add(new MetricRecord(null, "activity", time, convertRate(activityMeter.getFiveMinuteRate())));
             records.add(new MetricRecord(null, "viewers", time, streamInfo != null ? (double) streamInfo.getViewers() : null));
 
             try (java.sql.Connection connection = dataSource.getConnection()) {

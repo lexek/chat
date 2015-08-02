@@ -1,18 +1,22 @@
 package lexek.wschat.chat.handlers;
 
+import com.google.common.collect.ImmutableSet;
 import lexek.wschat.chat.*;
+import lexek.wschat.chat.processing.AbstractRoomMessageHandler;
 
-import java.util.List;
-
-public abstract class AbstractModerationHandler extends AbstractMsgHandler {
+public abstract class AbstractModerationHandler extends AbstractRoomMessageHandler {
     private final boolean fetchChatterIfOffline;
     private final String deniedErrorName;
 
-    AbstractModerationHandler(MessageType type,
-                              RoomManager roomManager,
-                              boolean fetchChatterIfOffline,
-                              String deniedErrorName) {
-        super(type, 2, false, roomManager);
+    AbstractModerationHandler(MessageType type, boolean fetchChatterIfOffline, String deniedErrorName) {
+        super(
+            ImmutableSet.of(
+                MessageProperty.ROOM,
+                MessageProperty.NAME
+            ),
+            type,
+            LocalRole.MOD,
+            false);
         this.fetchChatterIfOffline = fetchChatterIfOffline;
         this.deniedErrorName = deniedErrorName;
     }
@@ -29,29 +33,25 @@ public abstract class AbstractModerationHandler extends AbstractMsgHandler {
     }
 
     @Override
-    final protected void handle(Connection connection, Room room, Chatter modChatter, List<String> args) {
-        if (modChatter.hasRole(LocalRole.MOD)) {
-            Chatter userChatter;
-            if (fetchChatterIfOffline) {
-                userChatter = room.getChatter(args.get(1));
-            } else {
-                userChatter = room.getOnlineChatterByName(args.get(1));
-            }
-            if (userChatter != null && userChatter.getId() != null) {
-                if (canBan(modChatter, userChatter)) {
-                    if (performOperation(room, modChatter, userChatter)) {
-                        success(connection, room, modChatter, userChatter);
-                    } else {
-                        connection.send(Message.errorMessage("INTERNAL_ERROR"));
-                    }
+    public void handle(Connection connection, User user, Room room, Chatter modChatter, Message message) {
+        Chatter userChatter;
+        if (fetchChatterIfOffline) {
+            userChatter = room.getChatter(message.get(MessageProperty.NAME));
+        } else {
+            userChatter = room.getOnlineChatterByName(message.get(MessageProperty.NAME));
+        }
+        if (userChatter != null && userChatter.getId() != null) {
+            if (canBan(modChatter, userChatter)) {
+                if (performOperation(room, modChatter, userChatter)) {
+                    success(connection, room, modChatter, userChatter);
                 } else {
-                    connection.send(Message.errorMessage(deniedErrorName));
+                    connection.send(Message.errorMessage("INTERNAL_ERROR"));
                 }
             } else {
-                connection.send(Message.errorMessage("UNKNOWN_USER"));
+                connection.send(Message.errorMessage(deniedErrorName));
             }
         } else {
-            connection.send(Message.errorMessage("NOT_AUTHORIZED"));
+            connection.send(Message.errorMessage("UNKNOWN_USER"));
         }
     }
 

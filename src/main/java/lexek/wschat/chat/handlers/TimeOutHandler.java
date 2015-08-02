@@ -7,8 +7,8 @@ import java.util.concurrent.TimeUnit;
 public class TimeOutHandler extends AbstractModerationHandler {
     private final MessageBroadcaster messageBroadcaster;
 
-    public TimeOutHandler(MessageBroadcaster messageBroadcaster, RoomManager roomManager) {
-        super(MessageType.TIMEOUT, roomManager, true, "TIMEOUT_DENIED");
+    public TimeOutHandler(MessageBroadcaster messageBroadcaster) {
+        super(MessageType.TIMEOUT, true, "TIMEOUT_DENIED");
         this.messageBroadcaster = messageBroadcaster;
     }
 
