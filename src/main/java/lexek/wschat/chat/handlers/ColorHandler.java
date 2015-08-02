@@ -1,24 +1,30 @@
 package lexek.wschat.chat.handlers;
 
+import com.google.common.collect.ImmutableSet;
 import lexek.wschat.chat.*;
+import lexek.wschat.chat.processing.AbstractGlobalMessageHandler;
 import lexek.wschat.db.dao.UserDao;
 import lexek.wschat.util.Colors;
 
-import java.util.List;
-
-public class ColorHandler extends AbstractMessageHandler {
+public class ColorHandler extends AbstractGlobalMessageHandler {
     private final UserDao userDao;
 
     public ColorHandler(UserDao userDao) {
-        super(MessageType.COLOR, GlobalRole.USER, 1, false, false);
+        super(
+            ImmutableSet.of(
+                MessageProperty.COLOR
+            ),
+            MessageType.COLOR,
+            GlobalRole.USER,
+            false
+        );
 
         this.userDao = userDao;
     }
 
     @Override
-    public void handle(List<String> args, Connection connection) {
-        User user = connection.getUser();
-        String color = args.get(0).toLowerCase();
+    public void handle(Connection connection, User user, Message message) {
+        String color = message.get(MessageProperty.COLOR);
         String colorCode = Colors.getColorCode(color, user.getRole() != GlobalRole.SUPERADMIN);
 
         if (colorCode != null) {

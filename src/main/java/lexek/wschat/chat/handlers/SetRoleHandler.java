@@ -1,13 +1,21 @@
 package lexek.wschat.chat.handlers;
 
+import com.google.common.collect.ImmutableSet;
 import lexek.wschat.chat.*;
+import lexek.wschat.chat.processing.AbstractRoomMessageHandler;
 
-import java.util.List;
+public class SetRoleHandler extends AbstractRoomMessageHandler {
 
-public class SetRoleHandler extends AbstractMsgHandler {
-
-    public SetRoleHandler(RoomManager roomManager) {
-        super(MessageType.ROLE, 3, false, roomManager);
+    public SetRoleHandler() {
+        super(
+            ImmutableSet.of(
+                MessageProperty.ROOM,
+                MessageProperty.NAME,
+                MessageProperty.LOCAL_ROLE
+            ),
+            MessageType.ROLE,
+            LocalRole.ADMIN,
+            false);
     }
 
     private static boolean canChangeRole(Chatter modChatter, Chatter userChatter) {
@@ -22,31 +30,25 @@ public class SetRoleHandler extends AbstractMsgHandler {
     }
 
     @Override
-    protected void handle(Connection connection, Room room, Chatter modChatter, List<String> args) {
-        LocalRole newRole;
-        try {
-            newRole = LocalRole.valueOf(args.get(2));
-        } catch (IllegalArgumentException e) {
+    public void handle(Connection connection, User user, Room room, Chatter adminChatter, Message message) {
+        LocalRole newRole = message.get(MessageProperty.LOCAL_ROLE);
+        if (newRole == null) {
             connection.send(Message.errorMessage("UNKNOWN_ROLE"));
             return;
         }
-        if (modChatter.hasRole(LocalRole.ADMIN)) {
-            Chatter userChatter = room.getChatter(args.get(1));
-            if (userChatter != null && userChatter.getId() != null) {
-                if (canChangeRole(modChatter, userChatter)) {
-                    if (room.setRole(userChatter, modChatter, newRole)) {
-                        connection.send(Message.infoMessage("OK"));
-                    } else {
-                        connection.send(Message.errorMessage("INTERNAL_ERROR"));
-                    }
+        Chatter userChatter = room.getChatter(message.get(MessageProperty.NAME));
+        if (userChatter != null && userChatter.getId() != null) {
+            if (canChangeRole(adminChatter, userChatter)) {
+                if (room.setRole(userChatter, adminChatter, newRole)) {
+                    connection.send(Message.infoMessage("OK"));
                 } else {
-                    connection.send(Message.errorMessage("BAN_DENIED"));
+                    connection.send(Message.errorMessage("INTERNAL_ERROR"));
                 }
             } else {
-                connection.send(Message.errorMessage("UNKNOWN_USER"));
+                connection.send(Message.errorMessage("ROLE_DENIED"));
             }
         } else {
-            connection.send(Message.errorMessage("NOT_AUTHORIZED"));
+            connection.send(Message.errorMessage("UNKNOWN_USER"));
         }
     }
 }

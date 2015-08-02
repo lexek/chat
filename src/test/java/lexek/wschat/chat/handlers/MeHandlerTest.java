@@ -1,8 +1,8 @@
 package lexek.wschat.chat.handlers;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import lexek.wschat.chat.*;
-import lexek.wschat.chat.Chatter;
 import lexek.wschat.db.model.UserDto;
 import org.junit.Test;
 
@@ -10,37 +10,37 @@ import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static lexek.wschat.chat.TextMessageMatcher.textMessage;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
 public class MeHandlerTest {
     @Test
     public void shouldHaveLikeType() {
-        MeHandler handler = new MeHandler(null, null, null);
+        MeHandler handler = new MeHandler(null, null);
         assertEquals(handler.getType(), MessageType.ME);
     }
 
     @Test
-    public void shouldHaveSingleArgument() {
-        MeHandler handler = new MeHandler(null, null, null);
-        assertEquals(handler.getArgCount(), 2);
+    public void shouldBeAvailableOnlyForUsers() {
+        MeHandler handler = new MeHandler(null, null);
+        assertEquals(handler.getRole(), LocalRole.USER);
     }
 
     @Test
-    public void shouldBeAvailableOnlyForUsers() {
-        MeHandler handler = new MeHandler(null, null, null);
-        assertEquals(handler.getRole(), GlobalRole.USER);
+    public void shouldHaveRequiredProperties() throws Exception {
+        MeHandler handler = new MeHandler(null, null);
+        assertEquals(
+            handler.requiredProperties(),
+            ImmutableSet.of(MessageProperty.ROOM, MessageProperty.TEXT)
+        );
     }
 
     @Test
     public void shouldWork() {
-        RoomManager roomManager = mock(RoomManager.class);
         Room room = mock(Room.class);
-        when(roomManager.getRoomInstance("#main")).thenReturn(room);
-        when(roomManager.getRoomInstance(0L)).thenReturn(room);
         MessageBroadcaster messageBroadcaster = mock(MessageBroadcaster.class);
-        MeHandler handler = new MeHandler(messageBroadcaster, new AtomicLong(), roomManager);
+        MeHandler handler = new MeHandler(messageBroadcaster, new AtomicLong());
 
         UserDto userDto = new UserDto(0L, "user", GlobalRole.USER, "#ffffff", false, false, null, false);
         User user = new User(userDto);
@@ -53,7 +53,11 @@ public class MeHandlerTest {
         when(room.getOnlineChatter(userDto)).thenReturn(chatter);
         when(room.getOnlineChatterByName(user.getName())).thenReturn(chatter);
 
-        handler.handle(ImmutableList.of("#main", "top kek"), connection);
+        handler.handle(connection, user, room, chatter, new Message(ImmutableMap.of(
+            MessageProperty.TYPE, MessageType.ME,
+            MessageProperty.ROOM, "#main",
+            MessageProperty.TEXT, "top kek"
+        )));
 
         verify(messageBroadcaster).submitMessage(
             argThat(textMessage(Message.meMessage(
@@ -71,12 +75,9 @@ public class MeHandlerTest {
 
     @Test
     public void shouldHaveErrorForLongUserMessage() {
-        RoomManager roomManager = mock(RoomManager.class);
         Room room = mock(Room.class);
-        when(roomManager.getRoomInstance("#main")).thenReturn(room);
-        when(roomManager.getRoomInstance(0L)).thenReturn(room);
         MessageBroadcaster messageBroadcaster = mock(MessageBroadcaster.class);
-        MeHandler handler = new MeHandler(messageBroadcaster, new AtomicLong(), roomManager);
+        MeHandler handler = new MeHandler(messageBroadcaster, new AtomicLong());
 
         UserDto userDto = new UserDto(0L, "user", GlobalRole.USER, "#ffffff", false, false, null, false);
         User user = new User(userDto);
@@ -92,7 +93,11 @@ public class MeHandlerTest {
         char[] array = new char[421];
         Arrays.fill(array, 'a');
         String s = new String(array);
-        handler.handle(ImmutableList.of("#main", s), connection);
+        handler.handle(connection, user, room, chatter, new Message(ImmutableMap.of(
+            MessageProperty.TYPE, MessageType.ME,
+            MessageProperty.ROOM, "#main",
+            MessageProperty.TEXT, s
+        )));
 
         verify(messageBroadcaster, never()).submitMessage(
             any(Message.class),
@@ -103,12 +108,9 @@ public class MeHandlerTest {
 
     @Test
     public void shouldNotHaveErrorForLongModMessage() {
-        RoomManager roomManager = mock(RoomManager.class);
         Room room = mock(Room.class);
-        when(roomManager.getRoomInstance("#main")).thenReturn(room);
-        when(roomManager.getRoomInstance(0L)).thenReturn(room);
         MessageBroadcaster messageBroadcaster = mock(MessageBroadcaster.class);
-        MeHandler handler = new MeHandler(messageBroadcaster, new AtomicLong(), roomManager);
+        MeHandler handler = new MeHandler(messageBroadcaster, new AtomicLong());
 
         UserDto userDto = new UserDto(0L, "user", GlobalRole.MOD, "#ffffff", false, false, null, false);
         User user = new User(userDto);
@@ -124,7 +126,11 @@ public class MeHandlerTest {
         char[] array = new char[421];
         Arrays.fill(array, 'a');
         String s = new String(array);
-        handler.handle(ImmutableList.of("#main", s), connection);
+        handler.handle(connection, user, room, chatter, new Message(ImmutableMap.of(
+            MessageProperty.TYPE, MessageType.ME,
+            MessageProperty.ROOM, "#main",
+            MessageProperty.TEXT, s
+        )));
 
         verify(messageBroadcaster).submitMessage(
             argThat(textMessage(Message.meMessage(
@@ -142,12 +148,9 @@ public class MeHandlerTest {
 
     @Test
     public void shouldHaveErrorForEmptyMessage() {
-        RoomManager roomManager = mock(RoomManager.class);
         Room room = mock(Room.class);
-        when(roomManager.getRoomInstance("#main")).thenReturn(room);
-        when(roomManager.getRoomInstance(0L)).thenReturn(room);
         MessageBroadcaster messageBroadcaster = mock(MessageBroadcaster.class);
-        MeHandler handler = new MeHandler(messageBroadcaster, new AtomicLong(), roomManager);
+        MeHandler handler = new MeHandler(messageBroadcaster, new AtomicLong());
 
         UserDto userDto = new UserDto(0L, "user", GlobalRole.USER, "#ffffff", false, false, null, false);
         User user = new User(userDto);
@@ -160,7 +163,11 @@ public class MeHandlerTest {
         when(room.getOnlineChatter(userDto)).thenReturn(chatter);
         when(room.getOnlineChatterByName(user.getName())).thenReturn(chatter);
 
-        handler.handle(ImmutableList.of("#main", ""), connection);
+        handler.handle(connection, user, room, chatter, new Message(ImmutableMap.of(
+            MessageProperty.TYPE, MessageType.ME,
+            MessageProperty.ROOM, "#main",
+            MessageProperty.TEXT, ""
+        )));
 
         verify(messageBroadcaster, never()).submitMessage(
             any(Message.class),
@@ -171,12 +178,9 @@ public class MeHandlerTest {
 
     @Test
     public void shouldHaveErrorForSpaceOnlyMessage() {
-        RoomManager roomManager = mock(RoomManager.class);
         Room room = mock(Room.class);
-        when(roomManager.getRoomInstance("#main")).thenReturn(room);
-        when(roomManager.getRoomInstance(0L)).thenReturn(room);
         MessageBroadcaster messageBroadcaster = mock(MessageBroadcaster.class);
-        MeHandler handler = new MeHandler(messageBroadcaster, new AtomicLong(), roomManager);
+        MeHandler handler = new MeHandler(messageBroadcaster, new AtomicLong());
 
         UserDto userDto = new UserDto(0L, "user", GlobalRole.USER, "#ffffff", false, false, null, false);
         User user = new User(userDto);
@@ -189,7 +193,11 @@ public class MeHandlerTest {
         when(room.getOnlineChatter(userDto)).thenReturn(chatter);
         when(room.getOnlineChatterByName(user.getName())).thenReturn(chatter);
 
-        handler.handle(ImmutableList.of("#main", "      \r\n"), connection);
+        handler.handle(connection, user, room, chatter, new Message(ImmutableMap.of(
+            MessageProperty.TYPE, MessageType.ME,
+            MessageProperty.ROOM, "#main",
+            MessageProperty.TEXT, "      \r\n"
+        )));
 
         verify(messageBroadcaster, never()).submitMessage(
             any(Message.class),

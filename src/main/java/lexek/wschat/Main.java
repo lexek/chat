@@ -25,6 +25,7 @@ import io.netty.handler.ssl.SslContextBuilder;
 import lexek.httpserver.*;
 import lexek.wschat.chat.*;
 import lexek.wschat.chat.handlers.*;
+import lexek.wschat.chat.processing.HandlerInvoker;
 import lexek.wschat.db.dao.*;
 import lexek.wschat.frontend.http.*;
 import lexek.wschat.frontend.http.admin.AdminPageHandler;
@@ -141,7 +142,6 @@ public class Main {
         UserAuthDao userAuthDao = new UserAuthDao(dataSource);
 
         ConnectionManager connectionManager = new ConnectionManager(metricRegistry);
-        MessageReactor messageReactor = new DefaultMessageReactor(metricRegistry);
         UserService userService = new UserService(connectionManager, userDao, journalService);
         ChatterService chatterService = new ChatterService(chatterDao, journalService);
         AuthenticationManager authenticationManager = new AuthenticationManager(ircHost, emailService, connectionManager, userAuthDao);
@@ -183,22 +183,23 @@ public class Main {
             connection.send(Message.historyMessage(room.getHistory()))));
         roomJoinNotificationService.registerListener(notificationService);
         Set<String> bannedIps = new CopyOnWriteArraySet<>();
-        messageReactor.registerHandler(new BanHandler(messageBroadcaster, roomManager));
-        messageReactor.registerHandler(new ClearUserHandler(messageBroadcaster, roomManager));
-        messageReactor.registerHandler(new ColorHandler(userDao));
-        messageReactor.registerHandler(new JoinHandler(roomJoinNotificationService, roomManager, messageBroadcaster));
-        messageReactor.registerHandler(new RestrictionFilter(captchaService,
-            new MsgHandler(messageId, messageBroadcaster, roomManager), bannedIps));
-        messageReactor.registerHandler(new RestrictionFilter(captchaService,
-            new MeHandler(messageBroadcaster, messageId, roomManager), bannedIps));
-        messageReactor.registerHandler(new PartHandler(messageBroadcaster, roomManager));
-        messageReactor.registerHandler(new SetRoleHandler(roomManager));
-        messageReactor.registerHandler(new TimeOutHandler(messageBroadcaster, roomManager));
-        messageReactor.registerHandler(new UnbanHandler(roomManager));
-        messageReactor.registerHandler(new NameHandler(userService));
-        messageReactor.registerHandler(new LikeHandler(messageBroadcaster, roomManager));
-        messageReactor.registerHandler(new ClearHandler(messageBroadcaster, roomManager));
-        messageReactor.registerHandler(new VoteHandler(roomManager, pollService));
+
+        HandlerInvoker handlerInvoker = new HandlerInvoker(roomManager, bannedIps, captchaService);
+        MessageReactor messageReactor = new DefaultMessageReactor(handlerInvoker);
+        handlerInvoker.register(new BanHandler(messageBroadcaster));
+        handlerInvoker.register(new ClearUserHandler(messageBroadcaster));
+        handlerInvoker.register(new ColorHandler(userDao));
+        handlerInvoker.register(new JoinHandler(roomJoinNotificationService, messageBroadcaster));
+        handlerInvoker.register(new MsgHandler(messageId, messageBroadcaster));
+        handlerInvoker.register(new MeHandler(messageBroadcaster, messageId));
+        handlerInvoker.register(new PartHandler(messageBroadcaster));
+        handlerInvoker.register(new SetRoleHandler());
+        handlerInvoker.register(new TimeOutHandler(messageBroadcaster));
+        handlerInvoker.register(new UnbanHandler());
+        handlerInvoker.register(new NameHandler(userService));
+        handlerInvoker.register(new LikeHandler(messageBroadcaster));
+        handlerInvoker.register(new ClearRoomHandler(messageBroadcaster));
+        handlerInvoker.register(new VoteHandler(pollService));
 
         serviceManager.registerService(announcementService);
         serviceManager.registerService(messageBroadcaster);

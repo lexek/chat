@@ -20,7 +20,6 @@ import lexek.wschat.chat.*;
 import lexek.wschat.services.AbstractService;
 import lexek.wschat.util.Colors;
 
-import java.io.IOError;
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;

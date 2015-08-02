@@ -1,47 +1,47 @@
 package lexek.wschat.chat.handlers;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import lexek.wschat.chat.*;
+import lexek.wschat.chat.processing.AbstractRoomMessageHandler;
 import lexek.wschat.services.RoomJoinNotificationService;
 
-import java.util.List;
-
-public class JoinHandler extends AbstractMessageHandler {
+public class JoinHandler extends AbstractRoomMessageHandler {
     private final RoomJoinNotificationService notificationService;
-    private final RoomManager roomManager;
     private final MessageBroadcaster messageBroadcaster;
 
-    public JoinHandler(RoomJoinNotificationService notificationService,
-                       RoomManager roomManager,
-                       MessageBroadcaster messageBroadcaster) {
-        super(MessageType.JOIN, GlobalRole.UNAUTHENTICATED, 1, false, true);
+    public JoinHandler(RoomJoinNotificationService notificationService, MessageBroadcaster messageBroadcaster) {
+        super(
+            ImmutableSet.of(
+                MessageProperty.ROOM
+            ),
+            MessageType.JOIN,
+            LocalRole.GUEST,
+            true
+        );
         this.notificationService = notificationService;
-        this.roomManager = roomManager;
         this.messageBroadcaster = messageBroadcaster;
     }
 
     @Override
-    public void handle(List<String> args, Connection connection) {
-        final Room room = roomManager.getRoomInstance(args.get(0));
-        if (room != null && !room.inRoom(connection)) {
-            User user = connection.getUser();
-            boolean sendJoin = !room.inRoom(user);
-            Chatter chatter = room.join(connection);
+    public boolean joinRequired() {
+        return false;
+    }
 
-            Message joinMessage = Message.joinMessage(room.getName(), user.getWrappedObject());
-            connection.send(Message.selfJoinMessage(room.getName(), chatter));
-            if (sendJoin) {
-                if (chatter.hasRole(LocalRole.USER)) {
-                    messageBroadcaster.submitMessage(joinMessage, connection, room.FILTER);
-                }
-            }
-            notificationService.joinedRoom(connection, chatter, room);
-        } else {
-            if (room == null) {
-                connection.send(Message.errorMessage("ROOM_NOT_FOUND", ImmutableList.of(args.get(0))));
-            } else {
-                connection.send(Message.errorMessage("ROOM_ALREADY_JOINED"));
+    @Override
+    public void handle(Connection connection, User user, Room room, Chatter chatter, Message message) {
+        if (room.inRoom(connection)) {
+            connection.send(Message.errorMessage("ROOM_ALREADY_JOINED"));
+            return;
+        }
+        chatter = room.join(connection);
+        boolean sendJoin = !room.inRoom(user);
+        Message joinMessage = Message.joinMessage(room.getName(), user.getWrappedObject());
+        connection.send(Message.selfJoinMessage(room.getName(), chatter));
+        if (sendJoin) {
+            if (chatter.hasRole(LocalRole.USER)) {
+                messageBroadcaster.submitMessage(joinMessage, connection, room.FILTER);
             }
         }
+        notificationService.joinedRoom(connection, chatter, room);
     }
 }

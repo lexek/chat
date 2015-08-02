@@ -66,28 +66,44 @@ function($modal, settings, $translate, $http, $timeout, notificationService, msg
      * @param {User} user
      */
     chatService.prototype.clear = function(user) {
-        this.sendMessage({"type": "CLEAR", args: [this.activeRoom, user.name]})
+        this.sendMessage({
+            "type": "CLEAR",
+            "room": this.activeRoom,
+            "name": user.name
+        })
     };
 
     /**
      * @param {User} user
      */
     chatService.prototype.timeout = function(user) {
-        this.sendMessage({"type": "TIMEOUT", args: [this.activeRoom, user.name]})
+        this.sendMessage({
+            "type": "TIMEOUT",
+            "room": this.activeRoom,
+            "name": user.name
+        })
     };
 
     /**
      * @param {User} user
      */
     chatService.prototype.unban = function(user) {
-        this.sendMessage({"type": "UNBAN", args: [this.activeRoom, user.name]})
+        this.sendMessage({
+            "type": "UNBAN",
+            "room": this.activeRoom,
+            "name": user.name
+        })
     };
 
     /**
      * @param {User} user
      */
     chatService.prototype.ban = function(user) {
-        this.sendMessage({"type": "BAN", args: [this.activeRoom, user.name]})
+        this.sendMessage({
+            "type": "BAN",
+            "room": this.activeRoom,
+            "name": user.name
+        })
     };
 
     /**
@@ -206,7 +222,7 @@ function($modal, settings, $translate, $http, $timeout, notificationService, msg
                 console.log("open");
                 chat.state = CHAT_STATE.AUTHENTICATING;
                 chat.stateUpdatedCallback();
-                chat.sendMessage({"type": "SESSION", "args": [read_cookie("sid")]});
+                chat.sendMessage({"type": "SESSION", "text": read_cookie("sid")});
                 if (chat.rooms.length > 0) {
                     angular.forEach(chat.rooms, function (e) {
                         if (e !== "#main") {

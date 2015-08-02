@@ -1,7 +1,5 @@
 package lexek.wschat.chat;
 
-import lexek.wschat.frontend.Protocol;
-
 public class TestConnection extends Connection {
     public TestConnection(User user) {
         super(null, user);

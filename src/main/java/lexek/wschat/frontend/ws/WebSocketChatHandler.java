@@ -1,5 +1,6 @@
 package lexek.wschat.frontend.ws;
 
+import com.google.common.collect.ImmutableMap;
 import io.netty.channel.*;
 import io.netty.handler.codec.http.websocketx.CloseWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.PingWebSocketFrame;
@@ -13,8 +14,6 @@ import lexek.wschat.security.AuthenticationCallback;
 import lexek.wschat.security.AuthenticationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.List;
 
 @ChannelHandler.Sharable
 public class WebSocketChatHandler extends SimpleChannelInboundHandler<WebSocketFrame>
@@ -79,7 +78,7 @@ public class WebSocketChatHandler extends SimpleChannelInboundHandler<WebSocketF
 
     private void handleTextMessage(Channel channel, String text) {
         WebSocketConnectionAdapter wrapper = channel.attr(WRAPPER_ATTR_KEY).get();
-        InboundMessage decodedMessage = protocol.getCodec().decode(text);
+        Message decodedMessage = protocol.getCodec().decode(text);
         if (wrapper.getState() == ConnectionState.AUTHENTICATED) {
             if (decodedMessage.getType() == MessageType.PING) {
                 wrapper.send(Message.emptyMessage(MessageType.PONG));
@@ -93,15 +92,12 @@ public class WebSocketChatHandler extends SimpleChannelInboundHandler<WebSocketF
             }
         } else if (wrapper.getState() == ConnectionState.CONNECTED) {
             if (decodedMessage.getType() == MessageType.SESSION) {
-                List<String> args = decodedMessage.getArgs();
-                if (args.size() == 1) {
-                    String sid = args.get(0);
-                    authenticationService.authenticateWithSid(wrapper, sid, this);
-                    if (sid != null) {
-                        channel.attr(SID_ATTR_KEY).set(sid);
-                    }
-                    return;
+                String sid = decodedMessage.get(MessageProperty.TEXT);
+                authenticationService.authenticateWithSid(wrapper, sid, this);
+                if (sid != null) {
+                    channel.attr(SID_ATTR_KEY).set(sid);
                 }
+                return;
             }
             channel.writeAndFlush(new TextWebSocketFrame(protocol.getCodec().encode(
                 Message.errorMessage("Not authenticated, try refreshing page."), null)));
@@ -113,7 +109,10 @@ public class WebSocketChatHandler extends SimpleChannelInboundHandler<WebSocketF
         User user = connection.getUser();
         logger.debug("{}[{}] joined; ip: {}", user.getName(), user.getRole(), connection.getIp());
         connectionGroup.registerConnection(connection);
-        messageReactor.processMessage(connection, new InboundMessage(MessageType.JOIN, "#main"));
+        messageReactor.processMessage(connection, new Message(ImmutableMap.of(
+            MessageProperty.TYPE, MessageType.JOIN,
+            MessageProperty.ROOM, "#main"
+        )));
         if (!user.hasRole(GlobalRole.USER)) {
             connection.getChannel().attr(SID_ATTR_KEY).remove();
         }

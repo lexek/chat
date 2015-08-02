@@ -7,7 +7,11 @@ messagesModule.controller("MessageController", ["$scope", "chatService", "chatSe
     };
 
     $scope.like = function(id_) {
-        chat.sendMessage({"type":"LIKE", "args":[chat.activeRoom, id_.toString()]});
+        chat.sendMessage({
+            "type":"LIKE",
+            "room": chat.activeRoom,
+            "messageId": id_
+        });
     };
 
     $scope.isSupporter = function() {

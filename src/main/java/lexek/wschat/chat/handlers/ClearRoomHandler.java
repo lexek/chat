@@ -4,26 +4,23 @@ import com.google.common.collect.ImmutableSet;
 import lexek.wschat.chat.*;
 import lexek.wschat.chat.processing.AbstractRoomMessageHandler;
 
-public class PartHandler extends AbstractRoomMessageHandler {
+public class ClearRoomHandler extends AbstractRoomMessageHandler {
     private final MessageBroadcaster messageBroadcaster;
 
-    public PartHandler(MessageBroadcaster messageBroadcaster) {
+    public ClearRoomHandler(MessageBroadcaster messageBroadcaster) {
         super(
             ImmutableSet.of(
                 MessageProperty.ROOM
             ),
-            MessageType.PART,
-            LocalRole.GUEST,
-            true
+            MessageType.CLEAR_ROOM,
+            LocalRole.MOD,
+            false
         );
-
         this.messageBroadcaster = messageBroadcaster;
     }
 
     @Override
     public void handle(Connection connection, User user, Room room, Chatter chatter, Message message) {
-        if (room.part(connection) && user.hasRole(GlobalRole.USER)) {
-            messageBroadcaster.submitMessage(Message.partMessage(room.getName(), user.getName()), connection, room.FILTER);
-        }
+        messageBroadcaster.submitMessage(Message.clearMessage(room.getName()), connection, room.FILTER);
     }
 }

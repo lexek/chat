@@ -75,7 +75,7 @@ public class OutboundMessageHandler implements MessageConsumerService {
     @Override
     public void consume(Connection connection, Message message, BroadcastFilter filter) {
         if (filter.getType() == BroadcastFilter.Type.ROOM && filter.getData() == room &&
-            message.getType() == MessageType.MSG && message.get(Message.Keys.ROOM).equals("#main")) {
+            message.getType() == MessageType.MSG && message.get(MessageProperty.ROOM).equals("#main")) {
             UserCredentials userCredentials = null;
             if (needsFetchingConnectionData(connection.getUser())) {
                 userCredentials = fetchConnectionDataForUser(connection.getUser());
@@ -93,7 +93,7 @@ public class OutboundMessageHandler implements MessageConsumerService {
                 }
                 if (channel != null) {
                     channel.attr(lastMessageAttrKey).set(System.currentTimeMillis());
-                    channel.writeAndFlush("PRIVMSG #" + this.channel + " :" + message.get(Message.Keys.TEXT) + "\r\n");
+                    channel.writeAndFlush("PRIVMSG #" + this.channel + " :" + message.get(MessageProperty.TEXT) + "\r\n");
                 }
             }
         }

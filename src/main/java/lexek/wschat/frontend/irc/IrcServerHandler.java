@@ -59,20 +59,20 @@ public class IrcServerHandler extends ChannelInboundHandlerAdapter implements Au
 
     public void onMessage(final IrcConnection connection, String message) {
         if (connection.getState() == ConnectionState.AUTHENTICATED) {
-            InboundMessage msg = connection.getCodec().decode(message);
+            Message msg = connection.getCodec().decode(message);
             if (msg.getType() == MessageType.PING) {
-                connection.send(Message.pongMessage(msg.getArgs().get(0)));
+                connection.send(Message.pongMessage(msg.getText()));
             } else {
                 messageReactor.processMessage(connection, msg);
             }
         } else if (connection.getState() == ConnectionState.CONNECTED) {
-            final InboundMessage msg = connection.getCodec().decode(message);
+            final Message msg = connection.getCodec().decode(message);
             switch (msg.getType()) {
                 case PASS:
-                    connection.setPassword(msg.getArgs().get(0));
+                    connection.setPassword(msg.getText());
                     break;
                 case NICK:
-                    String username = msg.getArg(0);
+                    String username = msg.getText();
                     if (connection.getPassword() == null) {
                         connection.close();
                     } else {

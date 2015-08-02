@@ -18,7 +18,7 @@ controlsModule.controller("RoomWidgetController", ["$scope", "chatService", func
         var roomName = prompt("Enter name of the room to join.");
         if (roomName) {
             chatService.setActiveRoom(roomName);
-            chatService.sendMessage({"type": "JOIN", "args": [roomName]});
+            chatService.sendMessage({"type": "JOIN", "room": roomName});
         }
     };
 
@@ -26,7 +26,7 @@ controlsModule.controller("RoomWidgetController", ["$scope", "chatService", func
         if (chatService.activeRoom != "#main") {
             var room = chatService.activeRoom;
             chatService.setActiveRoom("#main");
-            chatService.sendMessage({"type": "PART", "args": [chatService.activeRoom]});
+            chatService.sendMessage({"type": "PART", "room": chatService.activeRoom});
             chatService.deleteRoom(room);
         }
     };
@@ -111,7 +111,11 @@ controlsModule.controller("PollWidgetController", ["$scope", "chatService", func
     };
 
     $scope.vote = function(option) {
-        return chatService.sendMessage({"type": "POLL_VOTE", "args": [chatService.activeRoom, option.toString()]});
+        return chatService.sendMessage({
+            "type": "POLL_VOTE",
+            "room": chatService.activeRoom,
+            "pollOption": option
+        });
     };
 }]);
 
@@ -321,7 +325,7 @@ controlsModule.controller("SettingsController", ["$scope", "chatService", "$moda
 
     $scope.setColor = function(ok) {
         if (ok) {
-            chat.sendMessage({"type": "COLOR", "args": [$scope.color]});
+            chat.sendMessage({"type": "COLOR", "color": $scope.color});
         } else {
             $scope.color = chat.self.color;
         }
@@ -355,7 +359,7 @@ controlsModule.controller("SettingsController", ["$scope", "chatService", "$moda
 
     $scope.logOut = function() {
         $cookieStore.remove("sid");
-        chat.sendMessage({"type": "LOGOUT", "args":[]});
+        chat.sendMessage({"type": "LOGOUT"});
         chat.ws.close();
     };
 
@@ -659,24 +663,17 @@ messagesModule.controller("UserInputController", ["$scope", "$modal", "chatServi
             var tmp = msg.split(' ');
             message["type"] = tmp[0].toUpperCase();
 
-            if (tmp[1]) {
-                message["args"] = tmp.slice(1);
-            } else {
-                message["args"] = [];
-            }
-
             if (tmp[0].toUpperCase() === "LOGOUT") {
                 $cookieStore.remove("sid");
                 chat.ws.close();
                 send = false;
-            } else if (tmp[0].toUpperCase() === "ANNOUNCE") {
-                message["args"] = [tmp[1], msg.substr(tmp[1].length + tmp[0].length + 2)];
             } else if (tmp[0].toUpperCase() === 'LOGIN') {
                 send = false;
             } else if (tmp[0].toUpperCase() === 'ME') {
-                message['args'] = [chat.activeRoom, msg.substr(msg.indexOf(" ") + 1)];
+                message["room"] = chat.activeRoom;
+                message["text"] = msg.substr(msg.indexOf(" ") + 1);
             } else if (tmp[0].toUpperCase() === 'NAME') {
-                message['args'] = [msg.substr(msg.indexOf(" ") + 1)];
+                message['name'] = msg.substr(msg.indexOf(" ") + 1);
             } else if (tmp[0].toUpperCase() === 'IGNORE') {
                 if (tmp[1]) {
                     settings.addIgnored(tmp[1].toLowerCase());
@@ -688,20 +685,25 @@ messagesModule.controller("UserInputController", ["$scope", "$modal", "chatServi
                 }
                 send = false;
             } else if (tmp[0].toUpperCase() === "CLEAR") {
+                message["room"] = chat.activeRoom;
                 if (tmp[1]) {
-                    message.args = [chat.activeRoom, tmp[1]];
+                    message["name"] = tmp[1];
                 } else {
-                    message.args = [chat.activeRoom];
+                    message["type"] = "CLEAR_ROOM"
                 }
             } else if ((tmp[0].toUpperCase() === "BAN")||(tmp[0].toUpperCase() === "UNBAN")||(tmp[0].toUpperCase() === "TIMEOUT")) {
-                message.args = [chat.activeRoom, tmp[1]];
+                message["room"] = chat.activeRoom;
+                message["name"] = tmp[1];
             } else if (tmp[0].toUpperCase() === "ROLE") {
-                message.args = [chat.activeRoom, tmp[1], tmp[2]];
+                message["room"] = chat.activeRoom;
+                message["name"] = tmp[1];
+                message["role"] = tmp[2];
             }
         } else {
             if (msg.length > 0) {
                 message['type'] = 'MSG';
-                message['args'] = [chat.activeRoom, msg];
+                message["room"] = chat.activeRoom;
+                message["text"] = msg;
             } else {
                 send = false;
             }

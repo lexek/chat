@@ -1,51 +1,48 @@
 package lexek.wschat.chat.handlers;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import lexek.wschat.chat.*;
-import lexek.wschat.chat.Chatter;
 import lexek.wschat.db.model.UserDto;
 import org.junit.Test;
-import org.mockito.ArgumentMatcher;
 
 import java.util.Arrays;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static lexek.wschat.chat.TextMessageMatcher.textMessage;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
-import static org.mockito.Mockito.verify;
 
 public class MsgHandlerTest {
     @Test
     public void shouldHaveLikeType() {
-        MsgHandler handler = new MsgHandler(null, null, null);
+        MsgHandler handler = new MsgHandler(null, null);
         assertEquals(handler.getType(), MessageType.MSG);
     }
 
     @Test
-    public void shouldHaveSingleArgument() {
-        MsgHandler handler = new MsgHandler(null, null, null);
-        assertEquals(handler.getArgCount(), 2);
+    public void shouldBeAvailableOnlyForUsers() {
+        MsgHandler handler = new MsgHandler(null, null);
+        assertEquals(handler.getRole(), LocalRole.USER);
     }
 
     @Test
-    public void shouldBeAvailableOnlyForUsers() {
-        MsgHandler handler = new MsgHandler(null, null, null);
-        assertEquals(handler.getRole(), GlobalRole.USER);
+    public void shouldHaveRequiredProperties() throws Exception {
+        MsgHandler handler = new MsgHandler(null, null);
+        assertEquals(
+            handler.requiredProperties(),
+            ImmutableSet.of(MessageProperty.ROOM, MessageProperty.TEXT)
+        );
     }
 
     @Test
     public void shouldWork() {
-        RoomManager roomManager = mock(RoomManager.class);
         Room room = mock(Room.class);
-        when(roomManager.getRoomInstance("#main")).thenReturn(room);
-        when(roomManager.getRoomInstance(0L)).thenReturn(room);
         MessageBroadcaster messageBroadcaster = mock(MessageBroadcaster.class);
-        MsgHandler handler = new MsgHandler(new AtomicLong(), messageBroadcaster, roomManager);
+        MsgHandler handler = new MsgHandler(new AtomicLong(), messageBroadcaster);
 
         UserDto userDto = new UserDto(0L, "user", GlobalRole.USER, "#ffffff", false, false, null, false);
         User user = new User(userDto);
@@ -58,7 +55,11 @@ public class MsgHandlerTest {
         when(room.getOnlineChatter(userDto)).thenReturn(chatter);
         when(room.getOnlineChatterByName(user.getName())).thenReturn(chatter);
 
-        handler.handle(ImmutableList.of("#main", "top kek"), connection);
+        handler.handle(connection, user, room, chatter, new Message(ImmutableMap.of(
+            MessageProperty.TYPE, MessageType.MSG,
+            MessageProperty.ROOM, "#main",
+            MessageProperty.TEXT, "top kek"
+        )));
 
         verify(messageBroadcaster).submitMessage(
             argThat(textMessage(Message.msgMessage(
@@ -76,12 +77,9 @@ public class MsgHandlerTest {
 
     @Test
     public void shouldHaveErrorForLongUserMessage() {
-        RoomManager roomManager = mock(RoomManager.class);
         Room room = mock(Room.class);
-        when(roomManager.getRoomInstance("#main")).thenReturn(room);
-        when(roomManager.getRoomInstance(0L)).thenReturn(room);
         MessageBroadcaster messageBroadcaster = mock(MessageBroadcaster.class);
-        MsgHandler handler = new MsgHandler(new AtomicLong(), messageBroadcaster, roomManager);
+        MsgHandler handler = new MsgHandler(new AtomicLong(), messageBroadcaster);
 
         UserDto userDto = new UserDto(0L, "user", GlobalRole.USER, "#ffffff", false, false, null, false);
         User user = new User(userDto);
@@ -97,7 +95,11 @@ public class MsgHandlerTest {
         char[] array = new char[421];
         Arrays.fill(array, 'a');
         String s = new String(array);
-        handler.handle(ImmutableList.of("#main", s), connection);
+        handler.handle(connection, user, room, chatter, new Message(ImmutableMap.of(
+            MessageProperty.TYPE, MessageType.MSG,
+            MessageProperty.ROOM, "#main",
+            MessageProperty.TEXT, s
+        )));
 
         verify(messageBroadcaster, never()).submitMessage(
             any(Message.class),
@@ -108,12 +110,9 @@ public class MsgHandlerTest {
 
     @Test
     public void shouldNotHaveErrorForLongModMessage() {
-        RoomManager roomManager = mock(RoomManager.class);
         Room room = mock(Room.class);
-        when(roomManager.getRoomInstance("#main")).thenReturn(room);
-        when(roomManager.getRoomInstance(0L)).thenReturn(room);
         MessageBroadcaster messageBroadcaster = mock(MessageBroadcaster.class);
-        MsgHandler handler = new MsgHandler(new AtomicLong(), messageBroadcaster, roomManager);
+        MsgHandler handler = new MsgHandler(new AtomicLong(), messageBroadcaster);
 
         UserDto userDto = new UserDto(0L, "user", GlobalRole.MOD, "#ffffff", false, false, null, false);
         User user = new User(userDto);
@@ -129,7 +128,11 @@ public class MsgHandlerTest {
         char[] array = new char[421];
         Arrays.fill(array, 'a');
         String s = new String(array);
-        handler.handle(ImmutableList.of("#main", s), connection);
+        handler.handle(connection, user, room, chatter, new Message(ImmutableMap.of(
+            MessageProperty.TYPE, MessageType.MSG,
+            MessageProperty.ROOM, "#main",
+            MessageProperty.TEXT, s
+        )));
 
         verify(messageBroadcaster).submitMessage(
             argThat(textMessage(Message.msgMessage(
@@ -147,12 +150,9 @@ public class MsgHandlerTest {
 
     @Test
     public void shouldHaveErrorForEmptyMessage() {
-        RoomManager roomManager = mock(RoomManager.class);
         Room room = mock(Room.class);
-        when(roomManager.getRoomInstance("#main")).thenReturn(room);
-        when(roomManager.getRoomInstance(0L)).thenReturn(room);
         MessageBroadcaster messageBroadcaster = mock(MessageBroadcaster.class);
-        MsgHandler handler = new MsgHandler(new AtomicLong(), messageBroadcaster, roomManager);
+        MsgHandler handler = new MsgHandler(new AtomicLong(), messageBroadcaster);
 
         UserDto userDto = new UserDto(0L, "user", GlobalRole.USER, "#ffffff", false, false, null, false);
         User user = new User(userDto);
@@ -165,7 +165,11 @@ public class MsgHandlerTest {
         when(room.getOnlineChatter(userDto)).thenReturn(chatter);
         when(room.getOnlineChatterByName(user.getName())).thenReturn(chatter);
 
-        handler.handle(ImmutableList.of("#main", ""), connection);
+        handler.handle(connection, user, room, chatter, new Message(ImmutableMap.of(
+            MessageProperty.TYPE, MessageType.MSG,
+            MessageProperty.ROOM, "#main",
+            MessageProperty.TEXT, ""
+        )));
 
         verify(messageBroadcaster, never()).submitMessage(
             any(Message.class),
@@ -176,12 +180,9 @@ public class MsgHandlerTest {
 
     @Test
     public void shouldHaveErrorForSpaceOnlyMessage() {
-        RoomManager roomManager = mock(RoomManager.class);
         Room room = mock(Room.class);
-        when(roomManager.getRoomInstance("#main")).thenReturn(room);
-        when(roomManager.getRoomInstance(0L)).thenReturn(room);
         MessageBroadcaster messageBroadcaster = mock(MessageBroadcaster.class);
-        MsgHandler handler = new MsgHandler(new AtomicLong(), messageBroadcaster, roomManager);
+        MsgHandler handler = new MsgHandler(new AtomicLong(), messageBroadcaster);
 
         UserDto userDto = new UserDto(0L, "user", GlobalRole.USER, "#ffffff", false, false, null, false);
         User user = new User(userDto);
@@ -194,157 +195,17 @@ public class MsgHandlerTest {
         when(room.getOnlineChatter(userDto)).thenReturn(chatter);
         when(room.getOnlineChatterByName(user.getName())).thenReturn(chatter);
 
-        handler.handle(ImmutableList.of("#main", "      \r\n"), connection);
+        handler.handle(connection, user, room, chatter, new Message(ImmutableMap.of(
+            MessageProperty.TYPE, MessageType.MSG,
+            MessageProperty.ROOM, "#main",
+            MessageProperty.TEXT, "      \r\n"
+        )));
+
 
         verify(messageBroadcaster, never()).submitMessage(
             any(Message.class),
             eq(connection),
             eq(room.FILTER));
         verify(connection).send(eq(Message.errorMessage("EMPTY_MESSAGE")));
-    }
-
-    @Test
-    public void shouldHaveErrorForGlobalBannedUser() {
-        RoomManager roomManager = mock(RoomManager.class);
-        Room room = mock(Room.class);
-        when(roomManager.getRoomInstance("#main")).thenReturn(room);
-        when(roomManager.getRoomInstance(0L)).thenReturn(room);
-        MessageBroadcaster messageBroadcaster = mock(MessageBroadcaster.class);
-        MsgHandler handler = new MsgHandler(new AtomicLong(), messageBroadcaster, roomManager);
-
-        UserDto userDto = new UserDto(0L, "user", GlobalRole.USER, "#ffffff", true, false, null, false);
-        User user = new User(userDto);
-        Connection connection = spy(new TestConnection(user));
-        Chatter chatter = new Chatter(0L, LocalRole.USER, false, null, user);
-
-        when(room.inRoom(connection)).thenReturn(true);
-        when(room.join(connection)).thenReturn(chatter);
-        when(room.getName()).thenReturn("#main");
-        when(room.getOnlineChatter(userDto)).thenReturn(chatter);
-        when(room.getOnlineChatterByName(user.getName())).thenReturn(chatter);
-
-        handler.handle(ImmutableList.of("#main", "asd"), connection);
-
-        verify(messageBroadcaster, never()).submitMessage(
-            any(Message.class),
-            eq(connection),
-            eq(room.FILTER));
-        verify(connection).send(eq(Message.errorMessage("BAN")));
-    }
-
-    @Test
-    public void shouldHaveErrorForLocalBannedUser() {
-        RoomManager roomManager = mock(RoomManager.class);
-        Room room = mock(Room.class);
-        when(roomManager.getRoomInstance("#main")).thenReturn(room);
-        when(roomManager.getRoomInstance(0L)).thenReturn(room);
-        MessageBroadcaster messageBroadcaster = mock(MessageBroadcaster.class);
-        MsgHandler handler = new MsgHandler(new AtomicLong(), messageBroadcaster, roomManager);
-
-        UserDto userDto = new UserDto(0L, "user", GlobalRole.USER, "#ffffff", false, false, null, false);
-        User user = new User(userDto);
-        Connection connection = spy(new TestConnection(user));
-        Chatter chatter = new Chatter(0L, LocalRole.USER, true, null, user);
-
-        when(room.inRoom(connection)).thenReturn(true);
-        when(room.join(connection)).thenReturn(chatter);
-        when(room.getName()).thenReturn("#main");
-        when(room.getOnlineChatter(userDto)).thenReturn(chatter);
-        when(room.getOnlineChatterByName(user.getName())).thenReturn(chatter);
-
-        handler.handle(ImmutableList.of("#main", "asd"), connection);
-
-        verify(messageBroadcaster, never()).submitMessage(
-            any(Message.class),
-            eq(connection),
-            eq(room.FILTER));
-        verify(connection).send(eq(Message.errorMessage("BAN")));
-    }
-
-    @Test
-    public void shouldHaveErrorForTimedOutUser() {
-        RoomManager roomManager = mock(RoomManager.class);
-        Room room = mock(Room.class);
-        when(roomManager.getRoomInstance("#main")).thenReturn(room);
-        when(roomManager.getRoomInstance(0L)).thenReturn(room);
-        MessageBroadcaster messageBroadcaster = mock(MessageBroadcaster.class);
-        MsgHandler handler = new MsgHandler(new AtomicLong(), messageBroadcaster, roomManager);
-
-        UserDto userDto = new UserDto(0L, "user", GlobalRole.USER, "#ffffff", false, false, null, false);
-        User user = new User(userDto);
-        Connection connection = spy(new TestConnection(user));
-        Chatter chatter = new Chatter(0L,
-            LocalRole.USER,
-            false,
-            System.currentTimeMillis() + TimeUnit.DAYS.toMillis(1337),
-            user);
-
-        when(room.inRoom(connection)).thenReturn(true);
-        when(room.join(connection)).thenReturn(chatter);
-        when(room.getName()).thenReturn("#main");
-        when(room.getOnlineChatter(userDto)).thenReturn(chatter);
-        when(room.getOnlineChatterByName(user.getName())).thenReturn(chatter);
-
-        handler.handle(ImmutableList.of("#main", "asd"), connection);
-
-        verify(messageBroadcaster, never()).submitMessage(
-            any(Message.class),
-            eq(connection),
-            eq(room.FILTER));
-        verify(connection).send(argThat(
-            new ArgumentMatcher<Message>() {
-                @Override
-                public boolean matches(Object argument) {
-                    return argument instanceof Message &&
-                        ((Message) argument).get(Message.Keys.TYPE).equals(MessageType.ERROR) &&
-                        ((Message) argument).get(Message.Keys.TEXT).equals("TIMEOUT");
-                }
-            }
-        ));
-    }
-
-    @Test
-    public void shouldRemoveExpiredTimeout() {
-        RoomManager roomManager = mock(RoomManager.class);
-        Room room = mock(Room.class);
-        when(roomManager.getRoomInstance("#main")).thenReturn(room);
-        when(roomManager.getRoomInstance(0L)).thenReturn(room);
-        MessageBroadcaster messageBroadcaster = mock(MessageBroadcaster.class);
-        MsgHandler handler = new MsgHandler(new AtomicLong(), messageBroadcaster, roomManager);
-
-        UserDto userDto = new UserDto(0L, "user", GlobalRole.USER, "#ffffff", false, false, null, false);
-        User user = new User(userDto);
-        Connection connection = spy(new TestConnection(user));
-        Chatter chatter = new Chatter(0L,
-            LocalRole.USER,
-            false,
-            System.currentTimeMillis() - TimeUnit.DAYS.toMillis(1337),
-            user);
-
-        when(room.inRoom(connection)).thenReturn(true);
-        when(room.join(connection)).thenReturn(chatter);
-        when(room.getName()).thenReturn("#main");
-        when(room.getOnlineChatter(userDto)).thenReturn(chatter);
-        when(room.getOnlineChatterByName(user.getName())).thenReturn(chatter);
-        doAnswer(invocation -> {
-            ((Chatter) invocation.getArguments()[0]).setTimeout(null);
-            return null;
-        }).when(room).removeTimeout(chatter);
-
-        handler.handle(ImmutableList.of("#main", "top kek"), connection);
-
-        verify(messageBroadcaster).submitMessage(
-            argThat(textMessage(Message.msgMessage(
-                "#main",
-                "user",
-                LocalRole.USER,
-                GlobalRole.USER,
-                "#ffffff",
-                0L,
-                0L,
-                "top kek"))),
-            eq(connection),
-            eq(room.FILTER));
-        verify(room).removeTimeout(chatter);
     }
 }
