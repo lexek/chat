@@ -35,7 +35,7 @@
         };
 
         var loadProfile = function() {
-            if ($scope.self.role > globalLevels.USER_UNCONFIRMED) {
+            if ($scope.self.role >= globalLevels.USER_UNCONFIRMED) {
                 $http({
                     method: 'get',
                     url: '/rest/profile'
