@@ -2,6 +2,7 @@ package lexek.wschat.security.jersey;
 
 import lexek.wschat.chat.GlobalRole;
 import lexek.wschat.db.model.UserDto;
+import lexek.wschat.db.model.rest.ErrorModel;
 
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
@@ -28,7 +29,7 @@ public class SecurityFilter implements ContainerRequestFilter {
         }
         requestContext.abortWith(
             Response.status(Response.Status.BAD_REQUEST)
-                .entity("Access denied.")
+                .entity(new ErrorModel("Access denied."))
                 .build());
     }
 }

@@ -113,6 +113,14 @@ public class AuthenticationManager {
                 String token = tmp[1];
                 if (type.equals("Token")) {
                     user = fastAuthToken(token);
+                } else if (type.equals("Basic")) {
+                    String decodedAuth = new String(BaseEncoding.base64().decode(token));
+                    if (decodedAuth.indexOf(':') != -1 && decodedAuth.length() >= 3) {
+                        String[] s = decodedAuth.split(":");
+                        String username = s[0];
+                        String password = s[1];
+                        user = fastAuth(username, password, request.ip());
+                    }
                 }
             }
         }
