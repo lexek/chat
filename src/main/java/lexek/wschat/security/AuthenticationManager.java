@@ -127,7 +127,14 @@ public class AuthenticationManager {
         if (user == null) {
             String sid = request.cookieValue("sid");
             if (sid != null) {
-                user = checkFullAuthentication(sid, request.ip());
+                String ip = request.ip();
+                if (ip.equals("127.0.0.1")) {
+                    String realIpHeader = request.header("X-REAL-IP");
+                    if (realIpHeader != null) {
+                        ip = realIpHeader;
+                    }
+                }
+                user = checkFullAuthentication(sid, ip);
             }
         }
         return user;

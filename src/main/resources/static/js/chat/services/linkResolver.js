@@ -76,11 +76,9 @@ module.service("linkResolver", ["$q", "$http", function($q, $http) {
                         "appid": id
                     }
                 }).success(function(data){
-                    if (data) {
-                        var text = "<span style=\"color: #156291;\" class=\"fa fa-steam-square\"></span> "
-                            + htmlEscape(data);
-                        deferred.resolve(genLink(prefix, link, text));
-                    }
+                    var text = "<span style=\"color: #156291;\" class=\"fa fa-steam-square\"></span> "
+                        + htmlEscape(data);
+                    deferred.resolve(genLink(prefix, link, text));
                 }).error(function(){
                     deferred.resolve(genLink(prefix, link, linkText));
                 });

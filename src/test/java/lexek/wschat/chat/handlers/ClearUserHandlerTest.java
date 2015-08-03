@@ -17,13 +17,12 @@ public class ClearUserHandlerTest {
     private Chatter chatter = new Chatter(0L, LocalRole.MOD, false, null, user);
     private Connection connection = spy(new TestConnection(user));
     private MessageBroadcaster messageBroadcaster = mock(MessageBroadcaster.class);
-    private RoomManager roomManager = mock(RoomManager.class);
     private Room room = mock(Room.class);
     private ClearUserHandler handler = new ClearUserHandler(messageBroadcaster);
 
     @Before
     public void before() {
-        reset(messageBroadcaster, roomManager, connection, room);
+        reset(messageBroadcaster, connection, room);
     }
 
     @Test
@@ -49,7 +48,6 @@ public class ClearUserHandlerTest {
         UserDto otherUserDto = new UserDto(1L, "username", GlobalRole.USER, "#000000", false, false, null, false);
         User otherUser = new User(otherUserDto);
         Chatter otherChatter = new Chatter(1L, LocalRole.USER, false, null, otherUser);
-        when(roomManager.getRoomInstance("#main")).thenReturn(room);
         when(room.inRoom(connection)).thenReturn(true);
         when(room.getOnlineChatter(userDto)).thenReturn(chatter);
         when(room.getOnlineChatterByName("username")).thenReturn(otherChatter);
@@ -70,7 +68,6 @@ public class ClearUserHandlerTest {
         UserDto otherUserDto = new UserDto(1L, "username", GlobalRole.USER, "#000000", false, false, null, false);
         User otherUser = new User(otherUserDto);
         Chatter otherChatter = new Chatter(1L, LocalRole.ADMIN, false, null, otherUser);
-        when(roomManager.getRoomInstance("#main")).thenReturn(room);
         when(room.inRoom(connection)).thenReturn(true);
         when(room.getOnlineChatter(userDto)).thenReturn(chatter);
         when(room.getOnlineChatterByName("username")).thenReturn(otherChatter);
@@ -89,7 +86,6 @@ public class ClearUserHandlerTest {
         UserDto otherUserDto = new UserDto(1L, "username", GlobalRole.MOD, "#000000", false, false, null, false);
         User otherUser = new User(otherUserDto);
         Chatter otherChatter = new Chatter(1L, LocalRole.USER, false, null, otherUser);
-        when(roomManager.getRoomInstance("#main")).thenReturn(room);
         when(room.inRoom(connection)).thenReturn(true);
         when(room.getOnlineChatter(userDto)).thenReturn(chatter);
         when(room.getOnlineChatterByName("username")).thenReturn(otherChatter);
@@ -105,7 +101,6 @@ public class ClearUserHandlerTest {
 
     @Test
     public void testNotExistingUser() {
-        when(roomManager.getRoomInstance("#main")).thenReturn(room);
         when(room.inRoom(connection)).thenReturn(true);
         when(room.getOnlineChatter(userDto)).thenReturn(chatter);
         when(room.getOnlineChatterByName("username")).thenReturn(null);
