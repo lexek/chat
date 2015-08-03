@@ -151,9 +151,16 @@ public class IrcCodec implements Codec {
                     MessageProperty.TEXT, parsedMessage.getArg()[1]
                 ));
             default:
-                return new Message(ImmutableMap.of(
-                    MessageProperty.TYPE, MessageType.UNKNOWN
-                ));
+                try {
+                    return new Message(ImmutableMap.of(
+                        MessageProperty.TYPE, MessageType.valueOf(command),
+                        MessageProperty.TEXT, parsedMessage.getArg()[1]
+                    ));
+                } catch (IllegalArgumentException e) {
+                    return new Message(ImmutableMap.of(
+                        MessageProperty.TYPE, MessageType.UNKNOWN
+                    ));
+                }
         }
     }
 }
