@@ -148,7 +148,7 @@ public class IrcCodec implements Codec {
             case "JOIN":
                 return new Message(ImmutableMap.of(
                     MessageProperty.TYPE, MessageType.JOIN,
-                    MessageProperty.TEXT, parsedMessage.getArg()[1]
+                    MessageProperty.ROOM, parsedMessage.getArg()[1]
                 ));
             default:
                 try {
