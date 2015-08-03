@@ -45,7 +45,7 @@ public class MessageDeserializer extends StdDeserializer<Message> {
                     mapBuilder.put(MessageProperty.TEXT, node.asText());
                     break;
                 case "messageId":
-                    mapBuilder.put(MessageProperty.MESSAGE_ID, node.asText());
+                    mapBuilder.put(MessageProperty.MESSAGE_ID, node.asLong());
                     break;
                 case "pollOption":
                     mapBuilder.put(MessageProperty.POLL_OPTION, node.asInt());
