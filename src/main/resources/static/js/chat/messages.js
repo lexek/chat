@@ -10,7 +10,7 @@ messagesModule.controller("MessageController", ["$scope", "chatService", "chatSe
         chat.sendMessage({
             "type":"LIKE",
             "room": chat.activeRoom,
-            "messageId": id_
+            "messageId": parseInt(id_)
         });
     };
 
