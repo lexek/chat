@@ -431,7 +431,6 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
         }
         text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
         text = text.replace(/\*([^*]+)\*/g, '<em>$1</em>');
-        text = text.replace(/%%(.+?)%%/g, '<span class="spoiler">$1</span>');
         text = text.replace("@" + chat.self.name, function () {
             ctx.proc.mention = true;
             return "<span class='mentionLabel'>@" + chat.self.name + "</span>"
@@ -441,6 +440,39 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
 
     var isPromise = function(o) {
         return o && angular.isFunction(o.then);
+    };
+
+    var doSpoilers = function(data) {
+        var spoilers = [];
+        angular.forEach(data, function(e, i) {
+            if (!isPromise(e)) {
+                var idx = 0;
+                while ((idx = e.indexOf("%%", idx+2)) !== -1) {
+                    if (idx != -1) {
+                        spoilers.push({
+                            "chunk": i,
+                            "i": idx
+                        });
+                    }
+                }
+            }
+        });
+        if (!(spoilers.length % 2 === 0)) {
+            spoilers.pop();
+        }
+        var chunkOffset = {};
+        angular.forEach(spoilers, function(e, i) {
+            var s = data[e.chunk];
+            var offset = (chunkOffset[e.chunk] || 0);
+            var idx = e.i + offset;
+            if (i % 2 === 0) {
+                data[e.chunk] = s.substring(0, idx) + "<span class=\"spoiler\">" + s.substring(idx+2);
+                chunkOffset[e.chunk] = offset + 20;
+            } else {
+                data[e.chunk] = s.substring(0, idx) + "</span>" + s.substring(idx+2);
+                chunkOffset[e.chunk] = offset + 5;
+            }
+        });
     };
 
     var processMessageText = function(chat, ctx, msg) {
@@ -461,6 +493,7 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
         }
         html.push(processTextPart(chat, ctx, msg, raw));
         var promises = [];
+        doSpoilers(html);
         angular.forEach(html, function(e) {
             if (isPromise(e)) {
                 promises.push(e);
