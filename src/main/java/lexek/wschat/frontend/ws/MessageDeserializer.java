@@ -27,7 +27,11 @@ public class MessageDeserializer extends StdDeserializer<Message> {
             JsonNode node = entry.getValue();
             switch (name) {
                 case "type":
-                    mapBuilder.put(MessageProperty.TYPE, MessageType.valueOf(node.asText()));
+                    try {
+                        mapBuilder.put(MessageProperty.TYPE, MessageType.valueOf(node.asText()));
+                    } catch (IllegalArgumentException e) {
+                        mapBuilder.put(MessageProperty.TYPE, MessageType.UNKNOWN);
+                    }
                     break;
                 case "role":
                     mapBuilder.put(MessageProperty.LOCAL_ROLE, LocalRole.valueOf(node.asText()));
