@@ -96,7 +96,16 @@ public class HandlerInvoker {
 
             //check if user can invoke handler
             if (chatter == null || !chatter.hasRole(handler.getRole())) {
-                connection.send(Message.errorMessage("NOT_AUTHORIZED"));
+                if (handler.getRole() == LocalRole.USER) {
+                    if (user.getRole() == GlobalRole.UNAUTHENTICATED) {
+                        connection.send(Message.emptyMessage(MessageType.AUTH_REQUIRED));
+                    }
+                    if (user.getRole().equals(GlobalRole.USER_UNCONFIRMED)) {
+                        connection.send(Message.errorMessage("UNVERIFIED_EMAIL"));
+                    }
+                } else {
+                    connection.send(Message.errorMessage("NOT_AUTHORIZED"));
+                }
                 return;
             }
 
@@ -116,14 +125,6 @@ public class HandlerInvoker {
                             return;
                         }
                     }
-                }
-                if (user.getRole() == GlobalRole.UNAUTHENTICATED) {
-                    connection.send(Message.emptyMessage(MessageType.AUTH_REQUIRED));
-                    return;
-                }
-                if (user.getRole().equals(GlobalRole.USER_UNCONFIRMED)) {
-                    connection.send(Message.errorMessage("UNVERIFIED_EMAIL"));
-                    return;
                 }
                 if (bannedIps.contains(connection.getIp()) && !user.hasRole(GlobalRole.MOD)) {
                     captchaService.tryAuthorize(
