@@ -446,8 +446,8 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
         var spoilers = [];
         angular.forEach(data, function(e, i) {
             if (!isPromise(e)) {
-                var idx = 0;
-                while ((idx = e.indexOf("%%", idx+2)) !== -1) {
+                var idx = -1;
+                while ((idx = e.indexOf("%%", idx !== -1 ? idx+2 : 0)) !== -1) {
                     if (idx != -1) {
                         spoilers.push({
                             "chunk": i,
