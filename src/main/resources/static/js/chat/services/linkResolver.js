@@ -1,7 +1,7 @@
 var module = angular.module("chat.services.linkResolver", []);
 
 module.service("linkResolver", ["$q", "$http", function($q, $http) {
-    var STEAM_APP_REGEXP = /http:\/\/store\.steampowered\.com\/app\/([0-9]+)\/.*/;
+    var STEAM_APP_REGEXP = /\/app\/([0-9]+).*/;
 
     var genLink = function(prefix, link, linkText) {
         return "<a href=\"" + prefix + htmlEscape(link) + "\" target=\"_blank\" title=\"" + htmlEscape(link) + "\">" + linkText + "</a>";
@@ -66,7 +66,7 @@ module.service("linkResolver", ["$q", "$http", function($q, $http) {
                 fetchYoutubeTitle(videoId, ytKey, prefix, link, linkText, deferred);
             }
         } else if (host === "store.steampowered.com") {
-            var r = STEAM_APP_REGEXP.exec(completeLink);
+            var r = STEAM_APP_REGEXP.exec(parsedUrl.uriParts.path);
             if (r && r[1]) {
                 var id = r[1];
                 $http({
@@ -82,6 +82,8 @@ module.service("linkResolver", ["$q", "$http", function($q, $http) {
                 }).error(function(){
                     deferred.resolve(genLink(prefix, link, linkText));
                 });
+            } else {
+                deferred.resolve(genLink(prefix, link, linkText));
             }
         } else {
             deferred.resolve(genLink(prefix, link, linkText));
