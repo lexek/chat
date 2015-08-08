@@ -72,13 +72,10 @@ module.service("linkResolver", ["$q", "$http", function($q, $http) {
                     var id = r[1];
                     $http({
                         method: 'GET',
-                        url: 'resolve_steam',
-                        params: {
-                            "appid": id
-                        }
+                        url: '/rest/steamGames/'+id
                     }).success(function(data){
                         var text = "<span style=\"color: #156291;\" class=\"fa fa-steam-square\"></span> "
-                            + htmlEscape(data);
+                            + htmlEscape(data["name"]);
                         deferred.resolve(genLink(prefix, link, text));
                     }).error(function(){
                         deferred.resolve(genLink(prefix, link, linkText));

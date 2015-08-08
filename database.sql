@@ -194,3 +194,9 @@ CREATE TABLE `pending_notification` (
   INDEX `user_id` (`user_id`),
   CONSTRAINT `FK_NOTIFICATION_USER` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON UPDATE CASCADE ON DELETE CASCADE
 );
+
+CREATE TABLE `steam_game` (
+	`id` BIGINT NOT NULL,
+	`name` TEXT NOT NULL,
+	PRIMARY KEY (`id`)
+);

@@ -50,6 +50,7 @@ import lexek.wschat.security.social.TwitchTvSocialAuthService;
 import lexek.wschat.services.*;
 import lexek.wschat.services.poll.PollService;
 import lexek.wschat.services.poll.PollState;
+import org.apache.http.impl.client.HttpClients;
 import org.glassfish.hk2.api.InjectionResolver;
 import org.glassfish.hk2.api.TypeLiteral;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
@@ -159,6 +160,8 @@ public class Main {
         NotificationService notificationService = new NotificationService(connectionManager, userService, messageBroadcaster, emailService, pendingNotificationDao);
         TicketService ticketService = new TicketService(userService, notificationService, new TicketDao(dataSource));
         EmoticonService emoticonService = new EmoticonService(emoticonDao, journalService);
+        SteamGameDao steamGameDao = new SteamGameDao(dataSource);
+        SteamGameResolver steamGameResolver = new SteamGameResolver(steamGameDao, HttpClients.createMinimal());
 
         RoomJoinNotificationService roomJoinNotificationService = new RoomJoinNotificationService();
         roomJoinNotificationService.registerListener((connection, chatter, room) -> {
@@ -282,7 +285,8 @@ public class Main {
                     new ServicesResource(serviceManager),
                     new TicketResource(ticketService),
                     new EmailResource(authenticationManager),
-                    new ProfileResource(userService)
+                    new ProfileResource(userService),
+                    new SteamGameResource(steamGameResolver)
                 );
             }
         };
@@ -291,7 +295,6 @@ public class Main {
         httpRequestDispatcher.add("/.*", new FileSystemStaticHandler(dataDir));
         httpRequestDispatcher.add("/.*", new ClassPathStaticHandler(ClassPathStaticHandler.class, "/static/"));
         httpRequestDispatcher.add("/chat.html", new ChatHomeHandler(settings.getHttp().isAllowLikes(), settings.getHttp().isSingleRoom()));
-        httpRequestDispatcher.add("/resolve_steam", new SteamNameResolver());
         httpRequestDispatcher.add("/confirm_email", new ConfirmEmailHandler());
         httpRequestDispatcher.add("/recaptcha/[0-9]+", new RecaptchaHandler(captchaService, reCaptcha));
         httpRequestDispatcher.add("/api/tickets", new UserTicketsHandler(authenticationManager, ticketService));

@@ -173,7 +173,8 @@
                                 announcement|
                                 room|
                                 pending_confirmation|
-                                pending_notification
+                                pending_notification|
+                                steam_game
                             </includes>
                             <excludes></excludes>
                             <inputSchema>chat</inputSchema>
