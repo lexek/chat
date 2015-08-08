@@ -5,7 +5,7 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import lexek.wschat.db.dao.SteamGameDao;
 import lexek.wschat.db.jooq.tables.pojos.SteamGame;
-import lexek.wschat.db.model.e.InternalErrorException;
+import lexek.wschat.db.model.e.InvalidDataException;
 import lexek.wschat.util.JsonResponseHandler;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
@@ -15,7 +15,6 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class SteamGameResolver {
@@ -33,16 +32,19 @@ public class SteamGameResolver {
     }
 
     public String getName(long id) {
-        try {
-            return cache.get(id, () -> steamGameDao.get(id));
-        } catch (ExecutionException e) {
-            throw new InternalErrorException(e);
+        String cached = cache.getIfPresent(id);
+        if (cached == null) {
+            cached = steamGameDao.get(id);
+            if (cached != null) {
+                cache.put(id, cached);
+            }
         }
+        return cached;
     }
 
     public void syncDatabase() {
         if (syncInProgress.get()) {
-            throw new IllegalStateException("sync is already in progress");
+            throw new InvalidDataException("sync is already in progress");
         }
         syncInProgress.set(true);
         try {
@@ -62,6 +64,7 @@ public class SteamGameResolver {
             logger.warn("exception", e);
         } finally {
             syncInProgress.set(false);
+            cache.invalidateAll();
         }
     }
 }

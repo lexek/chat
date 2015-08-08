@@ -37,6 +37,7 @@ public class SteamGameResource {
 
     @Path("/syncDb")
     @POST
+    @Produces(MediaType.APPLICATION_JSON)
     @RequiredRole(GlobalRole.SUPERADMIN)
     public void syncDb() {
         steamGameResolver.syncDatabase();
