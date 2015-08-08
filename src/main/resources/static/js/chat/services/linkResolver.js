@@ -44,48 +44,52 @@ module.service("linkResolver", ["$q", "$http", function($q, $http) {
             linkText = linkText.substr(0, 32) + "[...]";
         }
         linkText = htmlEscape(linkText);
-        var parsedUrl = new Uri(link);
-        var host = parsedUrl.host();
-        if (host === "youtube.com" || host === "www.youtube.com") {
-            var videoId = null;
-            if (parsedUrl.getQueryParamValue("v")) {
-                videoId = parsedUrl.getQueryParamValue("v");
-            }
-            if (parsedUrl.getQueryParamValue("watch")) {
-                videoId = parsedUrl.getQueryParamValue("watch");
-            }
-            if (videoId) {
-                fetchYoutubeTitle(videoId, ytKey, prefix, link, linkText, deferred);
-            }
-        } else if (host === "youtu.be") {
-            var videoId = parsedUrl.uriParts.path;
-            if (videoId[0] === "/") {
-                videoId = videoId.substr(1);
-            }
-            if (videoId) {
-                fetchYoutubeTitle(videoId, ytKey, prefix, link, linkText, deferred);
-            }
-        } else if (host === "store.steampowered.com") {
-            var r = STEAM_APP_REGEXP.exec(parsedUrl.uriParts.path);
-            if (r && r[1]) {
-                var id = r[1];
-                $http({
-                    method: 'GET',
-                    url: 'resolve_steam',
-                    params: {
-                        "appid": id
-                    }
-                }).success(function(data){
-                    var text = "<span style=\"color: #156291;\" class=\"fa fa-steam-square\"></span> "
-                        + htmlEscape(data);
-                    deferred.resolve(genLink(prefix, link, text));
-                }).error(function(){
+        try {
+            var parsedUrl = new Uri(link);
+            var host = parsedUrl.host();
+            if (host === "youtube.com" || host === "www.youtube.com") {
+                var videoId = null;
+                if (parsedUrl.getQueryParamValue("v")) {
+                    videoId = parsedUrl.getQueryParamValue("v");
+                }
+                if (parsedUrl.getQueryParamValue("watch")) {
+                    videoId = parsedUrl.getQueryParamValue("watch");
+                }
+                if (videoId) {
+                    fetchYoutubeTitle(videoId, ytKey, prefix, link, linkText, deferred);
+                }
+            } else if (host === "youtu.be") {
+                var videoId = parsedUrl.uriParts.path;
+                if (videoId[0] === "/") {
+                    videoId = videoId.substr(1);
+                }
+                if (videoId) {
+                    fetchYoutubeTitle(videoId, ytKey, prefix, link, linkText, deferred);
+                }
+            } else if (host === "store.steampowered.com") {
+                var r = STEAM_APP_REGEXP.exec(parsedUrl.uriParts.path);
+                if (r && r[1]) {
+                    var id = r[1];
+                    $http({
+                        method: 'GET',
+                        url: 'resolve_steam',
+                        params: {
+                            "appid": id
+                        }
+                    }).success(function(data){
+                        var text = "<span style=\"color: #156291;\" class=\"fa fa-steam-square\"></span> "
+                            + htmlEscape(data);
+                        deferred.resolve(genLink(prefix, link, text));
+                    }).error(function(){
+                        deferred.resolve(genLink(prefix, link, linkText));
+                    });
+                } else {
                     deferred.resolve(genLink(prefix, link, linkText));
-                });
+                }
             } else {
                 deferred.resolve(genLink(prefix, link, linkText));
             }
-        } else {
+        } catch (URIError) {
             deferred.resolve(genLink(prefix, link, linkText));
         }
         return deferred.promise;
