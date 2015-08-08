@@ -57,6 +57,8 @@ module.service("linkResolver", ["$q", "$http", function($q, $http) {
                 }
                 if (videoId) {
                     fetchYoutubeTitle(videoId, ytKey, prefix, link, linkText, deferred);
+                } else {
+                    deferred.resolve(genLink(prefix, link, linkText));
                 }
             } else if (host === "youtu.be") {
                 var videoId = parsedUrl.uriParts.path;
@@ -65,6 +67,8 @@ module.service("linkResolver", ["$q", "$http", function($q, $http) {
                 }
                 if (videoId) {
                     fetchYoutubeTitle(videoId, ytKey, prefix, link, linkText, deferred);
+                } else {
+                    deferred.resolve(genLink(prefix, link, linkText));
                 }
             } else if (host === "store.steampowered.com") {
                 var r = STEAM_APP_REGEXP.exec(parsedUrl.uriParts.path);
