@@ -1,18 +1,21 @@
 package lexek.wschat.chat.handlers;
 
 import lexek.wschat.chat.*;
+import lexek.wschat.services.ChatterService;
 
 public class BanHandler extends AbstractModerationHandler {
     private final MessageBroadcaster messageBroadcaster;
+    private final ChatterService chatterService;
 
-    public BanHandler(MessageBroadcaster messageBroadcaster) {
+    public BanHandler(MessageBroadcaster messageBroadcaster, ChatterService chatterService) {
         super(MessageType.BAN, true, "BAN_DENIED");
         this.messageBroadcaster = messageBroadcaster;
+        this.chatterService = chatterService;
     }
 
     @Override
     protected boolean performOperation(Room room, Chatter mod, Chatter user) {
-        return room.banChatter(user, mod);
+        return chatterService.banChatter(room, user, mod);
     }
 
     @Override

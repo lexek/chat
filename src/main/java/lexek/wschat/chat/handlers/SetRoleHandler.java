@@ -3,10 +3,12 @@ package lexek.wschat.chat.handlers;
 import com.google.common.collect.ImmutableSet;
 import lexek.wschat.chat.*;
 import lexek.wschat.chat.processing.AbstractRoomMessageHandler;
+import lexek.wschat.services.ChatterService;
 
 public class SetRoleHandler extends AbstractRoomMessageHandler {
+    private final ChatterService chatterService;
 
-    public SetRoleHandler() {
+    public SetRoleHandler(ChatterService chatterService) {
         super(
             ImmutableSet.of(
                 MessageProperty.ROOM,
@@ -16,6 +18,7 @@ public class SetRoleHandler extends AbstractRoomMessageHandler {
             MessageType.ROLE,
             LocalRole.ADMIN,
             false);
+        this.chatterService = chatterService;
     }
 
     private static boolean canChangeRole(Chatter modChatter, Chatter userChatter) {
@@ -39,7 +42,7 @@ public class SetRoleHandler extends AbstractRoomMessageHandler {
         Chatter userChatter = room.getChatter(message.get(MessageProperty.NAME));
         if (userChatter != null && userChatter.getId() != null) {
             if (canChangeRole(adminChatter, userChatter)) {
-                if (room.setRole(userChatter, adminChatter, newRole)) {
+                if (chatterService.setRole(room, userChatter, adminChatter, newRole)) {
                     connection.send(Message.infoMessage("OK"));
                 } else {
                     connection.send(Message.errorMessage("INTERNAL_ERROR"));

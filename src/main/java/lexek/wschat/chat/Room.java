@@ -181,24 +181,4 @@ public class Room {
     public List<Message> getHistory() {
         return history;
     }
-
-    public void removeTimeout(Chatter chatter) {
-        chatterService.removeTimeout(chatter);
-    }
-
-    public boolean timeoutChatter(Chatter chatter, long until) {
-        return chatterService.timeoutChatter(this, chatter, until);
-    }
-
-    public boolean banChatter(Chatter user, Chatter mod) {
-        return chatterService.banChatter(this, user, mod);
-    }
-
-    public boolean setRole(Chatter userChatter, Chatter adminChatter, LocalRole newRole) {
-        return chatterService.setRole(this, userChatter, adminChatter, newRole);
-    }
-
-    public boolean unbanChatter(Chatter user, Chatter mod) {
-        return chatterService.unbanChatter(this, user, mod);
-    }
 }

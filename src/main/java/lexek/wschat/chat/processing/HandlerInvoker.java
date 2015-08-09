@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import lexek.wschat.chat.*;
 import lexek.wschat.security.CaptchaService;
+import lexek.wschat.services.ChatterService;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -16,11 +17,13 @@ public class HandlerInvoker {
     private final Map<MessageType, GlobalMessageHandler> globalMessageHandlers;
     private final Map<MessageType, RoomMessageHandler> roomMessageHandlers;
     private final RoomManager roomManager;
+    private final ChatterService chatterService;
     private final Set<String> bannedIps;
     private final CaptchaService captchaService;
 
-    public HandlerInvoker(RoomManager roomManager, Set<String> bannedIps, CaptchaService captchaService) {
+    public HandlerInvoker(RoomManager roomManager, ChatterService chatterService, Set<String> bannedIps, CaptchaService captchaService) {
         this.roomManager = roomManager;
+        this.chatterService = chatterService;
         this.bannedIps = bannedIps;
         this.captchaService = captchaService;
         this.globalMessageHandlers = new HashMap<>();
@@ -116,7 +119,7 @@ public class HandlerInvoker {
                         return;
                     } else if (chatter.getTimeout() != null) {
                         if (chatter.getTimeout() < System.currentTimeMillis()) {
-                            room.removeTimeout(chatter);
+                            chatterService.removeTimeout(chatter);
                             handle(connection, message);
                             return;
                         } else {

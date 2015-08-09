@@ -1,15 +1,19 @@
 package lexek.wschat.chat.handlers;
 
 import lexek.wschat.chat.*;
+import lexek.wschat.services.ChatterService;
 
 public class UnbanHandler extends AbstractModerationHandler {
-    public UnbanHandler() {
+    private final ChatterService chatterService;
+
+    public UnbanHandler(ChatterService chatterService) {
         super(MessageType.UNBAN, true, "UNBAN_DENIED");
+        this.chatterService = chatterService;
     }
 
     @Override
     protected boolean performOperation(Room room, Chatter mod, Chatter user) {
-        return room.unbanChatter(user, mod);
+        return chatterService.unbanChatter(room, user, mod);
     }
 
     @Override

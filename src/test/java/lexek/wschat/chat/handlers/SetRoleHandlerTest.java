@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import lexek.wschat.chat.*;
 import lexek.wschat.db.model.UserDto;
+import lexek.wschat.services.ChatterService;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -15,13 +16,13 @@ public class SetRoleHandlerTest {
     private User user = new User(userDto);
     private Chatter chatter = new Chatter(0L, LocalRole.ADMIN, false, null, user);
     private Connection connection = spy(new TestConnection(user));
-    private RoomManager roomManager = mock(RoomManager.class);
+    private ChatterService chatterService = mock(ChatterService.class);
     private Room room = mock(Room.class);
-    private SetRoleHandler handler = new SetRoleHandler();
+    private SetRoleHandler handler = new SetRoleHandler(chatterService);
 
     @Before
     public void resetMocks() {
-        reset(roomManager, connection, room);
+        reset(chatterService, connection, room);
     }
 
     @Test
@@ -51,19 +52,18 @@ public class SetRoleHandlerTest {
         UserDto otherUserDto = new UserDto(1L, "user", GlobalRole.USER, "#000000", false, false, null, false);
         User otherUser = new User(otherUserDto);
         Chatter otherChatter = new Chatter(1L, LocalRole.USER, false, null, otherUser);
-        when(roomManager.getRoomInstance("#main")).thenReturn(room);
         when(room.inRoom(connection)).thenReturn(true);
         when(room.getOnlineChatter(userDto)).thenReturn(chatter);
         when(room.getChatter("username")).thenReturn(otherChatter);
         when(room.getName()).thenReturn("#main");
-        when(room.setRole(otherChatter, chatter, LocalRole.MOD)).thenReturn(true);
+        when(chatterService.setRole(room, otherChatter, chatter, LocalRole.MOD)).thenReturn(true);
         handler.handle(connection, user, room, chatter, new Message(ImmutableMap.of(
             MessageProperty.TYPE, MessageType.ROLE,
             MessageProperty.ROOM, "#main",
             MessageProperty.NAME, "username",
             MessageProperty.LOCAL_ROLE, LocalRole.MOD
         )));
-        verify(room).setRole(otherChatter, chatter, LocalRole.MOD);
+        verify(chatterService).setRole(room, otherChatter, chatter, LocalRole.MOD);
         verify(connection).send(Message.infoMessage("OK"));
     }
 
@@ -76,19 +76,18 @@ public class SetRoleHandlerTest {
         UserDto otherUserDto = new UserDto(1L, "user", GlobalRole.USER, "#000000", false, false, null, false);
         User otherUser = new User(otherUserDto);
         Chatter otherChatter = new Chatter(1L, LocalRole.USER, false, null, otherUser);
-        when(roomManager.getRoomInstance("#main")).thenReturn(room);
         when(room.inRoom(connection)).thenReturn(true);
         when(room.getOnlineChatter(userDto)).thenReturn(chatter);
         when(room.getChatter("username")).thenReturn(otherChatter);
         when(room.getName()).thenReturn("#main");
-        when(room.setRole(otherChatter, chatter, LocalRole.MOD)).thenReturn(true);
+        when(chatterService.setRole(room, otherChatter, chatter, LocalRole.MOD)).thenReturn(true);
         handler.handle(connection, user, room, chatter, new Message(ImmutableMap.of(
             MessageProperty.TYPE, MessageType.ROLE,
             MessageProperty.ROOM, "#main",
             MessageProperty.NAME, "username",
             MessageProperty.LOCAL_ROLE, LocalRole.MOD
         )));
-        verify(room).setRole(otherChatter, chatter, LocalRole.MOD);
+        verify(chatterService).setRole(room, otherChatter, chatter, LocalRole.MOD);
         verify(connection).send(Message.infoMessage("OK"));
     }
 
@@ -101,12 +100,11 @@ public class SetRoleHandlerTest {
         UserDto otherUserDto = new UserDto(1L, "user", GlobalRole.SUPERADMIN, "#000000", false, false, null, false);
         User otherUser = new User(otherUserDto);
         Chatter otherChatter = new Chatter(1L, LocalRole.USER, false, null, otherUser);
-        when(roomManager.getRoomInstance("#main")).thenReturn(room);
         when(room.inRoom(connection)).thenReturn(true);
         when(room.getOnlineChatter(userDto)).thenReturn(chatter);
         when(room.getChatter("username")).thenReturn(otherChatter);
         when(room.getName()).thenReturn("#main");
-        when(room.setRole(otherChatter, chatter, LocalRole.MOD)).thenReturn(true);
+        when(chatterService.setRole(room, otherChatter, chatter, LocalRole.MOD)).thenReturn(true);
 
         handler.handle(connection, user, room, chatter, new Message(ImmutableMap.of(
             MessageProperty.TYPE, MessageType.ROLE,
@@ -115,7 +113,7 @@ public class SetRoleHandlerTest {
             MessageProperty.LOCAL_ROLE, LocalRole.MOD
         )));
 
-        verify(room, never()).setRole(otherChatter, chatter, LocalRole.MOD);
+        verify(chatterService, never()).setRole(room, otherChatter, chatter, LocalRole.MOD);
         verify(connection).send(Message.errorMessage("ROLE_DENIED"));
     }
 
@@ -128,12 +126,11 @@ public class SetRoleHandlerTest {
         UserDto otherUserDto = new UserDto(1L, "user", GlobalRole.SUPERADMIN, "#000000", false, false, null, false);
         User otherUser = new User(otherUserDto);
         Chatter otherChatter = new Chatter(1L, LocalRole.ADMIN, false, null, otherUser);
-        when(roomManager.getRoomInstance("#main")).thenReturn(room);
         when(room.inRoom(connection)).thenReturn(true);
         when(room.getOnlineChatter(userDto)).thenReturn(chatter);
         when(room.getChatter("username")).thenReturn(otherChatter);
         when(room.getName()).thenReturn("#main");
-        when(room.setRole(otherChatter, chatter, LocalRole.MOD)).thenReturn(true);
+        when(chatterService.setRole(room, otherChatter, chatter, LocalRole.MOD)).thenReturn(true);
 
         handler.handle(connection, user, room, chatter, new Message(ImmutableMap.of(
             MessageProperty.TYPE, MessageType.ROLE,
@@ -142,7 +139,7 @@ public class SetRoleHandlerTest {
             MessageProperty.LOCAL_ROLE, LocalRole.MOD
         )));
 
-        verify(room, never()).setRole(otherChatter, chatter, LocalRole.MOD);
+        verify(chatterService, never()).setRole(room, otherChatter, chatter, LocalRole.MOD);
         verify(connection).send(Message.errorMessage("ROLE_DENIED"));
     }
 
@@ -151,12 +148,11 @@ public class SetRoleHandlerTest {
         UserDto otherUserDto = new UserDto(1L, "user", GlobalRole.USER, "#000000", false, false, null, false);
         User otherUser = new User(otherUserDto);
         Chatter otherChatter = new Chatter(1L, LocalRole.USER, false, null, otherUser);
-        when(roomManager.getRoomInstance("#main")).thenReturn(room);
         when(room.inRoom(connection)).thenReturn(true);
         when(room.getOnlineChatter(userDto)).thenReturn(chatter);
         when(room.getChatter("username")).thenReturn(otherChatter);
         when(room.getName()).thenReturn("#main");
-        when(room.setRole(otherChatter, chatter, LocalRole.MOD)).thenReturn(false);
+        when(chatterService.setRole(room, otherChatter, chatter, LocalRole.MOD)).thenReturn(false);
 
         handler.handle(connection, user, room, chatter, new Message(ImmutableMap.of(
             MessageProperty.TYPE, MessageType.ROLE,
@@ -165,7 +161,7 @@ public class SetRoleHandlerTest {
             MessageProperty.LOCAL_ROLE, LocalRole.MOD
         )));
 
-        verify(room).setRole(otherChatter, chatter, LocalRole.MOD);
+        verify(chatterService).setRole(room, otherChatter, chatter, LocalRole.MOD);
         verify(connection, times(1)).send(eq(Message.errorMessage("INTERNAL_ERROR")));
     }
 
@@ -178,7 +174,6 @@ public class SetRoleHandlerTest {
         UserDto otherUserDto = new UserDto(1L, "user", GlobalRole.USER, "#000000", false, false, null, false);
         User otherUser = new User(otherUserDto);
         Chatter otherChatter = new Chatter(1L, LocalRole.ADMIN, false, null, otherUser);
-        when(roomManager.getRoomInstance("#main")).thenReturn(room);
         when(room.inRoom(connection)).thenReturn(true);
         when(room.getOnlineChatter(userDto)).thenReturn(chatter);
         when(room.getChatter("username")).thenReturn(otherChatter);
@@ -189,13 +184,12 @@ public class SetRoleHandlerTest {
             MessageProperty.NAME, "username",
             MessageProperty.LOCAL_ROLE, LocalRole.MOD
         )));
-        verify(room, never()).setRole(otherChatter, chatter, LocalRole.MOD);
+        verify(chatterService, never()).setRole(room, otherChatter, chatter, LocalRole.MOD);
         verify(connection, times(1)).send(eq(Message.errorMessage("ROLE_DENIED")));
     }
 
     @Test
     public void testNotExistingUser() {
-        when(roomManager.getRoomInstance("#main")).thenReturn(room);
         when(room.inRoom(connection)).thenReturn(true);
         when(room.getOnlineChatter(userDto)).thenReturn(chatter);
         when(room.getChatter("username")).thenReturn(null);
@@ -206,7 +200,7 @@ public class SetRoleHandlerTest {
             MessageProperty.NAME, "username",
             MessageProperty.LOCAL_ROLE, LocalRole.MOD
         )));
-        verify(room, never()).setRole(any(Chatter.class), any(Chatter.class), any(LocalRole.class));
+        verify(chatterService, never()).setRole(eq(room), any(Chatter.class), any(Chatter.class), any(LocalRole.class));
         verify(connection, times(1)).send(eq(Message.errorMessage("UNKNOWN_USER")));
     }
 }

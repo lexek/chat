@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import lexek.wschat.chat.*;
 import lexek.wschat.db.model.UserDto;
+import lexek.wschat.services.ChatterService;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -16,11 +17,12 @@ public class UnbanHandlerTest {
     private Chatter chatter = new Chatter(0L, LocalRole.MOD, false, null, user);
     private Connection connection = spy(new TestConnection(user));
     private Room room = mock(Room.class);
-    private UnbanHandler handler = new UnbanHandler();
+    private ChatterService chatterService = mock(ChatterService.class);
+    private UnbanHandler handler = new UnbanHandler(chatterService);
 
     @Before
     public void resetMocks() {
-        reset(connection, room);
+        reset(connection, room, chatterService);
     }
 
     @Test
@@ -50,13 +52,13 @@ public class UnbanHandlerTest {
         when(room.getOnlineChatter(userDto)).thenReturn(chatter);
         when(room.getChatter("username")).thenReturn(otherChatter);
         when(room.getName()).thenReturn("#main");
-        when(room.unbanChatter(otherChatter, chatter)).thenReturn(true);
+        when(chatterService.unbanChatter(room, otherChatter, chatter)).thenReturn(true);
         handler.handle(connection, user, room, chatter, new Message(ImmutableMap.of(
             MessageProperty.TYPE, MessageType.UNBAN,
             MessageProperty.ROOM, "#main",
             MessageProperty.NAME, "username"
         )));
-        verify(room).unbanChatter(otherChatter, chatter);
+        verify(chatterService).unbanChatter(room, otherChatter, chatter);
         verify(connection).send(Message.infoMessage("OK"));
     }
 
@@ -69,13 +71,13 @@ public class UnbanHandlerTest {
         when(room.getOnlineChatter(userDto)).thenReturn(chatter);
         when(room.getChatter("username")).thenReturn(otherChatter);
         when(room.getName()).thenReturn("#main");
-        when(room.unbanChatter(otherChatter, chatter)).thenReturn(false);
+        when(chatterService.unbanChatter(room, otherChatter, chatter)).thenReturn(false);
         handler.handle(connection, user, room, chatter, new Message(ImmutableMap.of(
             MessageProperty.TYPE, MessageType.UNBAN,
             MessageProperty.ROOM, "#main",
             MessageProperty.NAME, "username"
         )));
-        verify(room).unbanChatter(otherChatter, chatter);
+        verify(chatterService).unbanChatter(room, otherChatter, chatter);
         verify(connection, times(1)).send(eq(Message.errorMessage("INTERNAL_ERROR")));
     }
 
@@ -94,7 +96,7 @@ public class UnbanHandlerTest {
             MessageProperty.ROOM, "#main",
             MessageProperty.NAME, "username"
         )));
-        verify(room, never()).unbanChatter(otherChatter, chatter);
+        verify(chatterService, never()).unbanChatter(room, otherChatter, chatter);
         verify(connection, times(1)).send(eq(Message.errorMessage("UNBAN_DENIED")));
     }
 
@@ -112,7 +114,7 @@ public class UnbanHandlerTest {
             MessageProperty.ROOM, "#main",
             MessageProperty.NAME, "username"
         )));
-        verify(room, never()).unbanChatter(otherChatter, chatter);
+        verify(chatterService, never()).unbanChatter(room, otherChatter, chatter);
         verify(connection, times(1)).send(eq(Message.errorMessage("UNBAN_DENIED")));
     }
 
@@ -127,7 +129,7 @@ public class UnbanHandlerTest {
             MessageProperty.ROOM, "#main",
             MessageProperty.NAME, "username"
         )));
-        verify(room, never()).unbanChatter(any(Chatter.class), any(Chatter.class));
+        verify(chatterService, never()).unbanChatter(eq(room), any(Chatter.class), any(Chatter.class));
         verify(connection, times(1)).send(eq(Message.errorMessage("UNKNOWN_USER")));
     }
 }
