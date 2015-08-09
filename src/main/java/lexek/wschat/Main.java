@@ -5,6 +5,9 @@ import ch.qos.logback.classic.joran.JoranConfigurator;
 import com.codahale.metrics.Gauge;
 import com.codahale.metrics.JvmAttributeGaugeSet;
 import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.graphite.Graphite;
+import com.codahale.metrics.graphite.GraphiteReporter;
+import com.codahale.metrics.graphite.GraphiteSender;
 import com.codahale.metrics.health.HealthCheckRegistry;
 import com.codahale.metrics.jvm.BufferPoolMetricSet;
 import com.codahale.metrics.jvm.GarbageCollectorMetricSet;
@@ -66,6 +69,7 @@ import javax.mail.internet.InternetAddress;
 import javax.sql.DataSource;
 import java.io.File;
 import java.lang.management.ManagementFactory;
+import java.net.InetAddress;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Set;
@@ -320,5 +324,16 @@ public class Main {
 
         MetricReporter metricReporter = new MetricReporter(metricRegistry, "reporter", dataSource);
         metricReporter.start();
+
+        String graphiteHost = settings.getCore().getGraphiteServer();
+        if (graphiteHost != null) {
+            GraphiteSender graphiteSender = new Graphite(graphiteHost, 2003);
+            GraphiteReporter.forRegistry(runtimeMetricRegistry)
+                .prefixedWith(settings.getCore().getGraphitePrefix())
+                .convertDurationsTo(TimeUnit.MILLISECONDS)
+                .convertRatesTo(TimeUnit.SECONDS)
+                .build(graphiteSender)
+                .start(1, TimeUnit.MINUTES);
+        }
     }
 }

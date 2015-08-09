@@ -5,15 +5,21 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class CoreConfiguration {
     private final int poolSize;
     private final int wsPort;
+    private final String graphiteServer;
+    private final String graphitePrefix;
     private final String host;
     private final String dataDir;
 
     public CoreConfiguration(@JsonProperty("poolSize") int poolSize,
                              @JsonProperty("wsPort") int wsPort,
+                             @JsonProperty("graphiteServer") String graphiteServer,
+                             @JsonProperty("graphitePrefix") String graphitePrefix,
                              @JsonProperty("host") String host,
                              @JsonProperty("dataDir") String dataDir) {
         this.poolSize = poolSize;
         this.wsPort = wsPort;
+        this.graphiteServer = graphiteServer;
+        this.graphitePrefix = graphitePrefix;
         this.host = host;
         this.dataDir = dataDir;
     }
@@ -32,5 +38,13 @@ public class CoreConfiguration {
 
     public String getDataDir() {
         return dataDir;
+    }
+
+    public String getGraphiteServer() {
+        return graphiteServer;
+    }
+
+    public String getGraphitePrefix() {
+        return graphitePrefix;
     }
 }
