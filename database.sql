@@ -250,17 +250,17 @@ CREATE TABLE `steam_game` (
 );
 
 CREATE TABLE `chat_proxy` (
-  `id`              BIGINT(20)  NOT NULL,
+  `id`              BIGINT(20)  NOT NULL AUTO_INCREMENT,
   `room_id`         BIGINT(20)  NOT NULL,
   `provider_name`   VARCHAR(64) NOT NULL
   COLLATE 'utf8mb4_unicode_ci',
-  `auth_name`       TINYTEXT    NOT NULL
+  `auth_name`       TINYTEXT    NULL
   COLLATE 'utf8mb4_unicode_ci',
-  `auth_key`        TEXT        NOT NULL
+  `auth_key`        TEXT        NULL
   COLLATE 'utf8mb4_unicode_ci',
   `remote_room`     VARCHAR(50) NOT NULL
   COLLATE 'utf8mb4_unicode_ci',
-  `enable_outbound` BIT(1)      NULL DEFAULT NULL,
+  `enable_outbound` BIT(1)      NULL     DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE INDEX `id_channel_id_provider_name` (`room_id`, `provider_name`),
   UNIQUE INDEX `provider_name_remote_room` (`provider_name`, `remote_room`),
