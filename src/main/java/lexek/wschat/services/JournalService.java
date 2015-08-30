@@ -127,6 +127,40 @@ public class JournalService {
         }
     }
 
+    public void newProxy(UserDto admin, Room room, String providerName, String remoteRoom) {
+        try {
+            journalDao.add(new JournalEntry(
+                null,
+                admin,
+                "NEW_PROXY",
+                objectMapper.writeValueAsString(ImmutableMap.of(
+                    "providerName", providerName,
+                    "remoteRoom", remoteRoom
+                )),
+                now(),
+                room.getId()));
+        } catch (JsonProcessingException e) {
+            logger.warn("", e);
+        }
+    }
+
+    public void deletedProxy(UserDto admin, Room room, String providerName, String remoteRoom) {
+        try {
+            journalDao.add(new JournalEntry(
+                null,
+                admin,
+                "DELETED_PROXY",
+                objectMapper.writeValueAsString(ImmutableMap.of(
+                    "providerName", providerName,
+                    "remoteRoom", remoteRoom
+                )),
+                now(),
+                room.getId()));
+        } catch (JsonProcessingException e) {
+            logger.warn("", e);
+        }
+    }
+
     private long now() {
         return System.currentTimeMillis();
     }

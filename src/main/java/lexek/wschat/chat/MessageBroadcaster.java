@@ -3,7 +3,6 @@ package lexek.wschat.chat;
 import com.codahale.metrics.Gauge;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.health.HealthCheck;
-import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.lmax.disruptor.BlockingWaitStrategy;
 import com.lmax.disruptor.EventFactory;
@@ -22,7 +21,7 @@ public class MessageBroadcaster extends AbstractService {
     private final RingBuffer<MessageEvent> ringBuffer;
 
     public MessageBroadcaster(HistoryService historyService, ConnectionManager connectionManager) {
-        super("messageBroadcaster", ImmutableList.<String>of());
+        super("messageBroadcaster");
         EventFactory<MessageEvent> eventFactory = MessageEvent::new;
         ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("MESSAGE_BROADCASTER_%d").build();
         this.disruptor = new Disruptor<>(
@@ -53,11 +52,6 @@ public class MessageBroadcaster extends AbstractService {
     @Override
     protected void start0() {
         disruptor.start();
-    }
-
-    @Override
-    public void performAction(String action) {
-
     }
 
     @Override

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.net.HttpHeaders;
 import io.netty.util.CharsetUtil;
+import lexek.wschat.db.model.e.InvalidDataException;
 import lexek.wschat.util.JsonResponseHandler;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
@@ -16,6 +17,9 @@ import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.message.BasicNameValuePair;
 
 import java.io.IOException;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 public class TwitchTvSocialAuthService implements SocialAuthService {
     private static final int TIMEOUT = 3000;
@@ -71,5 +75,20 @@ public class TwitchTvSocialAuthService implements SocialAuthService {
         String name = userData.get("name").asText().toLowerCase();
         long id = userData.get("_id").asLong();
         return new SocialAuthProfile(id, "twitch.tv", name, token, email);
+    }
+
+    public Set<String> getScopes(String token) throws IOException {
+        HttpGet request = new HttpGet("https://api.twitch.tv/kraken?oauth_token=" + token);
+        request.setHeader(HttpHeaders.ACCEPT, "application/json");
+        JsonNode root = httpClient.execute(request, JsonResponseHandler.INSTANCE);
+        JsonNode tokenData = root.get("token");
+        boolean isValid = tokenData.get("valid").asBoolean();
+        if (!isValid) {
+            throw new InvalidDataException("invalid token");
+        }
+        JsonNode authNode = tokenData.get("authorization");
+        return StreamSupport.stream(authNode.get("scopes").spliterator(), false)
+            .map(JsonNode::asText)
+            .collect(Collectors.toSet());
     }
 }

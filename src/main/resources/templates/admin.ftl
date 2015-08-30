@@ -1574,6 +1574,63 @@
             <div class="panel panel-primary">
                 <div class="panel-heading">
                     <h4 class="panel-title">
+                        <i class="fa fa-fw fa-exchange"></i> proxies
+                    </h4>
+                </div>
+                <div class="panel-body" ng-if="proxies.length === 0">
+                    <div class="alert alert-info">
+                        There are no proxies for this room.
+                    </div>
+                </div>
+                <div class="list-group">
+                    <div class="list-group-item" ng-repeat="proxy in proxies | orderBy:'providerName'">
+                        <h4 class="list-group-item-heading">
+                            {{proxy.providerName}}
+                            <small ng-bind="proxy.remoteRoom"></small>
+                            <span class="btn btn-xs btn-link-danger pull-right" ng-click="removeProxy(proxy)">
+                                <span class="fa fa-fw fa-trash"></span>
+                            </span>
+                        </h4>
+                        <p class="list-group-item-text">
+                            <span
+                                class="fa fa-fw fa-arrow-down"
+                                tooltip="inbound"></span>
+                            <span
+                                class="fa fa-fw fa-arrow-up"
+                                ng-class="{'text-muted': !proxy.outboundEnabled}"
+                                tooltip="outbound"
+                            ></span>
+                            <span
+                                    class="label"
+                                    ng-class="proxyStateClass(proxy.state)"
+                                    tooltip-enable="proxy.lastError"
+                                    tooltip="{{proxy.lastError}}"
+                                    >{{proxy.state}}</span>
+                            <span
+                                    class="btn btn-xs btn-link-danger"
+                                    tooltip="stop"
+                                    ng-if="proxy.state === 'RUNNING'"
+                                    ng-click="stopProxy(proxy.providerName)">
+                                <span class="fa fa-fw fa-stop"></span>
+                            </span>
+                            <span class="btn btn-xs btn-link-success"
+                                  ng-if="proxy.state === 'STOPPED' || proxy.state === 'FAILED'"
+                                  tooltip="start"
+                                  ng-click="startProxy(proxy.providerName)">
+                                <span class="fa fa-fw fa-play"></span>
+                            </span>
+                        </p>
+                    </div>
+                </div>
+                <div class="panel-footer">
+                    <div class="btn btn-default" ng-click="newProxy()">add proxy</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    <h4 class="panel-title">
                         <i class="fa fa-fw fa-book"></i> journal
                     </h4>
                 </div>
@@ -1607,6 +1664,12 @@
                                     <span ng-switch-when="NEW_POLL"><strong>Question:</strong> {{entry.actionDescription}}</span>
                                     <span ng-switch-when="CLOSE_POLL"><strong>Question:</strong> {{entry.actionDescription}}</span>
                                     <span ng-switch-when="ROOM_ROLE"><strong>New role:</strong> {{entry.actionDescription}}</span>
+                                    <span ng-switch-when="NEW_PROXY">
+                                        {{entry.actionDescription.providerName}}/{{entry.actionDescription.remoteRoom}}
+                                    </span>
+                                    <span ng-switch-when="DELETED_PROXY">
+                                        {{entry.actionDescription.providerName}}/{{entry.actionDescription.remoteRoom}}
+                                    </span>
                                     <span ng-switch-default ng-bind="entry.actionDescription"></span>
                                 </span>
                             </span>
@@ -1714,6 +1777,78 @@
             </div>
         </div>
     </div>
+</script>
+
+<script type="text/ng-template" id="new_proxy.html">
+    <div class="modal-header">
+        <h3 class="modal-title">New proxy</h3>
+    </div>
+    <form ng-submit="submitForm()">
+        <div class="modal-body">
+            <div class="alert alert-danger" ng-if="error" ng-bind="error"></div>
+            <div class="form-group">
+                <label class="control-label" for="provider">Provider</label>
+                <select
+                        class="form-control"
+                        id="provider"
+                        ng-options="item as item.name for item in providers track by item.name"
+                        ng-model="input.provider"
+                        ng-change="reset()"
+                        required
+                        >
+                    <option style="display: none" value="">Select proxy provider</option>
+                </select>
+            </div>
+            <div class="form-group" ng-if="input.provider">
+                <label class="control-label" for="roomName">Room name</label>
+                <input
+                        type="text"
+                        class="form-control"
+                        id="roomName"
+                        ng-model="input.room"
+                        required
+                        ></input>
+            </div>
+            <div class="form-group" ng-if="input.provider && input.provider.supportsAuthentication">
+                <div class="checkbox">
+                    <label>
+                        <input type="checkbox" ng-model="input.authentication"> authenticate (needed for moderation)
+                    </label>
+                </div>
+            </div>
+            <div class="form-group" ng-if="input.authentication">
+                <label class="control-label" for="username">Username</label>
+                <input
+                        type="text"
+                        class="form-control"
+                        id="username"
+                        ng-model="input.name"
+                        required
+                        ></input>
+            </div>
+            <div class="form-group" ng-if="input.authentication">
+                <label class="control-label" for="key">Password/token</label>
+                <input
+                        type="password"
+                        class="form-control"
+                        id="key"
+                        ng-model="input.key"
+                        required
+                        ></input>
+            </div>
+            <div class="form-group" ng-if="input.provider && input.provider.supportsOutbound">
+                <div class="checkbox">
+                    <label>
+                        <input type="checkbox" ng-model="input.outbound"> enable outbound passing
+                    </label>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <input type="button" class="btn btn-warning pull-left" value="cancel" ng-click="cancel()"/>
+            <input type="submit" class="btn btn-primary" value="submit"/>
+        </div>
+    </form>
 </script>
 
 <script type="text/ng-template" id="compose_announcement.html">

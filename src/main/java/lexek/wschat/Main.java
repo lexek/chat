@@ -40,8 +40,11 @@ import lexek.wschat.frontend.ws.WebSocketChatHandler;
 import lexek.wschat.frontend.ws.WebSocketChatServer;
 import lexek.wschat.frontend.ws.WebSocketConnectionGroup;
 import lexek.wschat.frontend.ws.WebSocketProtocol;
-import lexek.wschat.proxy.ChatProxyFactory;
-import lexek.wschat.proxy.ProxyConfiguration;
+import lexek.wschat.proxy.ProxyManager;
+import lexek.wschat.proxy.cybergame.CybergameTvProxyProvider;
+import lexek.wschat.proxy.goodgame.GoodGameProxyProvider;
+import lexek.wschat.proxy.sc2tv.Sc2tvProxyProvider;
+import lexek.wschat.proxy.twitch.TwitchTvProxyProvider;
 import lexek.wschat.security.AuthenticationManager;
 import lexek.wschat.security.AuthenticationService;
 import lexek.wschat.security.CaptchaService;
@@ -144,6 +147,7 @@ public class Main {
         HistoryDao historyDao = new HistoryDao(dataSource);
         PendingNotificationDao pendingNotificationDao = new PendingNotificationDao(dataSource);
         UserAuthDao userAuthDao = new UserAuthDao(dataSource);
+        ProxyDao proxyDao = new ProxyDao(dataSource);
 
         ConnectionManager connectionManager = new ConnectionManager(metricRegistry);
         UserService userService = new UserService(connectionManager, userDao, journalService);
@@ -165,6 +169,9 @@ public class Main {
         EmoticonService emoticonService = new EmoticonService(emoticonDao, journalService);
         SteamGameDao steamGameDao = new SteamGameDao(dataSource);
         SteamGameResolver steamGameResolver = new SteamGameResolver(steamGameDao, HttpClients.createMinimal());
+        TwitchTvSocialAuthService twitchAuthService = new TwitchTvSocialAuthService(settings.getHttp().getTwitchClientId(),
+            settings.getHttp().getTwitchSecret(),
+            settings.getHttp().getTwitchUrl());
 
         RoomJoinNotificationService roomJoinNotificationService = new RoomJoinNotificationService();
         roomJoinNotificationService.registerListener((connection, chatter, room) -> {
@@ -190,6 +197,19 @@ public class Main {
         roomJoinNotificationService.registerListener(notificationService);
         Set<String> bannedIps = new CopyOnWriteArraySet<>();
 
+        EventLoopGroup proxyEventLoopGroup;
+        if (Epoll.isAvailable()) {
+            proxyEventLoopGroup = new EpollEventLoopGroup(1);
+        } else {
+            proxyEventLoopGroup = new NioEventLoopGroup(1);
+        }
+        ProxyManager proxyManager = new ProxyManager(proxyDao, roomManager, journalService);
+        proxyManager.registerProvider(new GoodGameProxyProvider(proxyEventLoopGroup, messageBroadcaster, messageId));
+        proxyManager.registerProvider(new TwitchTvProxyProvider(messageId, messageBroadcaster, authenticationManager, proxyEventLoopGroup, twitchAuthService));
+        proxyManager.registerProvider(new Sc2tvProxyProvider(proxyEventLoopGroup, messageBroadcaster, messageId));
+        proxyManager.registerProvider(new CybergameTvProxyProvider(proxyEventLoopGroup, messageBroadcaster, messageId));
+        connectionManager.registerService(proxyManager);
+
         HandlerInvoker handlerInvoker = new HandlerInvoker(roomManager, chatterService, bannedIps, captchaService);
         MessageReactor messageReactor = new DefaultMessageReactor(handlerInvoker);
         handlerInvoker.register(new BanHandler(messageBroadcaster, chatterService));
@@ -206,18 +226,14 @@ public class Main {
         handlerInvoker.register(new LikeHandler(messageBroadcaster));
         handlerInvoker.register(new ClearRoomHandler(messageBroadcaster));
         handlerInvoker.register(new VoteHandler(pollService));
+        handlerInvoker.register(new ProxyModerationHandler(proxyManager));
 
         serviceManager.registerService(announcementService);
         serviceManager.registerService(messageBroadcaster);
         serviceManager.registerService(messageReactor);
         serviceManager.registerService(authenticationService);
         serviceManager.registerService(roomJoinNotificationService);
-
-        ChatProxyFactory chatProxyFactory = new ChatProxyFactory(connectionManager, messageId, authenticationManager,
-            roomManager, messageBroadcaster, metricRegistry);
-        for (ProxyConfiguration proxyConfiguration : settings.getProxy()) {
-            serviceManager.registerService(chatProxyFactory.newInstance(proxyConfiguration));
-        }
+        serviceManager.registerService(proxyManager);
 
         EventLoopGroup bossGroup;
         EventLoopGroup childGroup;
@@ -258,7 +274,7 @@ public class Main {
         ResourceConfig resourceConfig = new ResourceConfig() {
             {
                 property(ServerProperties.WADL_FEATURE_DISABLE, Boolean.TRUE);
-                //property(ServerProperties.TRACING, "ALL");
+                property(ServerProperties.TRACING, "ALL");
                 register(ObjectMapperProvider.class);
                 register(new Slf4jLoggingFilter());
                 register(JerseyExceptionMapper.class);
@@ -285,11 +301,11 @@ public class Main {
                     new UsersResource(connectionManager, userService),
                     new PollResource(roomService, pollService),
                     new RoomResource(roomService),
-                    new ServicesResource(serviceManager),
                     new TicketResource(ticketService),
                     new EmailResource(authenticationManager),
                     new ProfileResource(userService),
-                    new SteamGameResource(steamGameResolver)
+                    new SteamGameResource(steamGameResolver),
+                    new ProxyResource(roomService, proxyManager)
                 );
             }
         };
@@ -305,9 +321,7 @@ public class Main {
         httpRequestDispatcher.add("/login", new LoginHandler(authenticationManager, reCaptcha));
         httpRequestDispatcher.add("/twitch_auth", new TwitchAuthHandler(
             authenticationManager,
-            new TwitchTvSocialAuthService(settings.getHttp().getTwitchClientId(),
-                settings.getHttp().getTwitchSecret(),
-                settings.getHttp().getTwitchUrl())));
+            twitchAuthService));
         httpRequestDispatcher.add("/setup_profile", new SetupProfileHandler(authenticationManager, reCaptcha));
         httpRequestDispatcher.add("/register", new RegistrationHandler(authenticationManager, reCaptcha, bannedIps));
         httpRequestDispatcher.add("/password", new SetPasswordHandler(authenticationManager));

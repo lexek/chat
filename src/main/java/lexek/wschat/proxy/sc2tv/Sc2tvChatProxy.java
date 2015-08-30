@@ -1,9 +1,7 @@
-package lexek.wschat.proxy;
+package lexek.wschat.proxy.sc2tv;
 
-import com.codahale.metrics.health.HealthCheck;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.primitives.Longs;
 import io.netty.bootstrap.Bootstrap;
@@ -17,49 +15,59 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.http.*;
 import io.netty.util.CharsetUtil;
 import lexek.wschat.chat.*;
-import lexek.wschat.services.AbstractService;
+import lexek.wschat.proxy.ModerationOperation;
+import lexek.wschat.proxy.Proxy;
+import lexek.wschat.proxy.ProxyProvider;
+import lexek.wschat.proxy.ProxyState;
 import lexek.wschat.util.Colors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class Sc2tvChatProxy extends AbstractService {
+public class Sc2tvChatProxy implements Proxy {
+    private final Logger logger = LoggerFactory.getLogger(Sc2tvChatProxy.class);
     private final ObjectMapper objectMapper = new ObjectMapper();
-    private final String channel;
+    private final String channelName;
     private final MessageBroadcaster messageBroadcaster;
-    private final EventLoopGroup eventLoopGroup;
     private final AtomicLong messageId;
     private final Room room;
-    private Bootstrap bootstrap;
+    private final Bootstrap bootstrap;
+    private final long id;
+    private final ProxyProvider provider;
+    private volatile ScheduledFuture scheduledFuture;
+    private volatile Channel channel;
+    private volatile ProxyState state = ProxyState.NEW;
 
-    protected Sc2tvChatProxy(String channel,
+    protected Sc2tvChatProxy(String channelName,
                              MessageBroadcaster messageBroadcaster,
                              EventLoopGroup eventLoopGroup,
-                             AtomicLong messageId, Room room) {
-        super("sc2tv", ImmutableList.<String>of());
-        this.channel = channel;
+                             AtomicLong messageId, Room room, long id, ProxyProvider provider) {
+        this.channelName = channelName;
         this.messageBroadcaster = messageBroadcaster;
-        this.eventLoopGroup = eventLoopGroup;
         this.messageId = messageId;
         this.room = room;
+        this.id = id;
+        this.provider = provider;
+        this.bootstrap = createBootstrap(eventLoopGroup, new Sc2ChannelHandler());
     }
 
-    @Override
-    protected void start0() {
-        this.bootstrap = new Bootstrap();
-        this.bootstrap.group(eventLoopGroup);
+    private static Bootstrap createBootstrap(EventLoopGroup eventLoopGroup, ChannelHandler handler) {
+        Bootstrap bootstrap = new Bootstrap();
+        bootstrap.group(eventLoopGroup);
         if (Epoll.isAvailable()) {
-            this.bootstrap.channel(EpollSocketChannel.class);
+            bootstrap.channel(EpollSocketChannel.class);
         } else {
-            this.bootstrap.channel(NioSocketChannel.class);
+            bootstrap.channel(NioSocketChannel.class);
         }
-        this.bootstrap.option(ChannelOption.SO_KEEPALIVE, true);
-        this.bootstrap.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
-        final ChannelHandler handler = new Sc2ChannelHandler();
-        this.bootstrap.handler(new ChannelInitializer<SocketChannel>() {
+        bootstrap.option(ChannelOption.SO_KEEPALIVE, true);
+        bootstrap.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
+        bootstrap.handler(new ChannelInitializer<SocketChannel>() {
             @Override
             public void initChannel(final SocketChannel c) throws Exception {
                 ChannelPipeline pipeline = c.pipeline();
@@ -68,25 +76,64 @@ public class Sc2tvChatProxy extends AbstractService {
                 pipeline.addLast(handler);
             }
         });
-        this.bootstrap.connect("chat.sc2tv.ru", 80);
+        return bootstrap;
     }
 
     @Override
-    public void performAction(String action) {
+    public void start() {
+        this.state = ProxyState.STARTING;
+        this.channel = this.bootstrap.connect("chat.sc2tv.ru", 80).channel();
+        this.state = ProxyState.RUNNING;
     }
 
     @Override
     public void stop() {
+        this.state = ProxyState.STOPPING;
+        if (scheduledFuture != null) {
+            scheduledFuture.cancel(false);
+        }
+        this.channel.close();
+        this.state = ProxyState.STOPPED;
     }
 
     @Override
-    public HealthCheck getHealthCheck() {
-        return new HealthCheck() {
-            @Override
-            protected Result check() throws Exception {
-                return Result.healthy();
-            }
-        };
+    public void moderate(ModerationOperation type, String name) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void onMessage(Connection connection, Message message) {
+        //do nothing
+    }
+
+    @Override
+    public long id() {
+        return this.id;
+    }
+
+    @Override
+    public ProxyProvider provider() {
+        return this.provider;
+    }
+
+    @Override
+    public String remoteRoom() {
+        return this.channelName;
+    }
+
+    @Override
+    public boolean outboundEnabled() {
+        return false;
+    }
+
+    @Override
+    public ProxyState state() {
+        return this.state;
+    }
+
+    @Override
+    public String lastError() {
+        return null;
     }
 
     @Sharable
@@ -116,7 +163,7 @@ public class Sc2tvChatProxy extends AbstractService {
                                 messageId.getAndIncrement(),
                                 System.currentTimeMillis(),
                                 message.get("message").asText(),
-                                "sc2tv.ru",
+                                "sc2tv",
                                 "sc2tv"
                             );
                             messageBroadcaster.submitMessage(chatMessage, Connection.STUB_CONNECTION, room.FILTER);
@@ -129,7 +176,7 @@ public class Sc2tvChatProxy extends AbstractService {
                 }
             }
             if (HttpHeaders.isKeepAlive(response)) {
-                ctx.channel().eventLoop().schedule(() -> {
+                scheduledFuture = ctx.channel().eventLoop().schedule(() -> {
                     logger.trace("sending request for next update");
                     ctx.writeAndFlush(composeRequest());
                 }, 10, TimeUnit.SECONDS);
@@ -148,7 +195,9 @@ public class Sc2tvChatProxy extends AbstractService {
         @Override
         public void channelInactive(ChannelHandlerContext ctx) throws Exception {
             logger.debug("disconnected");
-            bootstrap.connect("chat.sc2tv.ru", 80);
+            if (state == ProxyState.RUNNING) {
+                channel = bootstrap.connect("chat.sc2tv.ru", 80).channel();
+            }
         }
 
         @Override
@@ -165,7 +214,7 @@ public class Sc2tvChatProxy extends AbstractService {
             HttpRequest request = new DefaultFullHttpRequest(
                 HttpVersion.HTTP_1_1,
                 HttpMethod.GET,
-                "http://chat.sc2tv.ru/memfs/channel-" + channel + ".json");
+                "http://chat.sc2tv.ru/memfs/channel-" + channelName + ".json");
             if (lastModified != null) {
                 HttpHeaders.setDateHeader(request, HttpHeaders.Names.IF_MODIFIED_SINCE, lastModified);
             }

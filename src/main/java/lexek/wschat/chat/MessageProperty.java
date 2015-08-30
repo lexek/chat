@@ -23,9 +23,9 @@ public class MessageProperty<T> {
     public static final MessageProperty<Chatter> CHATTER = valueOf("chatter");
     public static final MessageProperty<List<Message>> HISTORY_DATA = valueOf("history");
     public static final MessageProperty<List<Chatter>> NAMES = valueOf("names");
-    public static final MessageProperty<List> ERROR_DATA = valueOf("errorData");
-    public static final MessageProperty<List> SERVICE = valueOf("service");
-    public static final MessageProperty<List> SERVICE_RESOURCE = valueOf("serviceResource");
+    public static final MessageProperty<String> ERROR_DATA = valueOf("errorData");
+    public static final MessageProperty<String> SERVICE = valueOf("service");
+    public static final MessageProperty<String> SERVICE_RESOURCE = valueOf("serviceResource");
     public static final MessageProperty<String> POLL_DATA = valueOf("pollData");
     public static final MessageProperty<Integer> POLL_OPTION = valueOf("pollOption");
     private final String name;

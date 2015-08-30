@@ -3,7 +3,6 @@ package lexek.wschat.frontend.ws;
 import com.codahale.metrics.Gauge;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.health.HealthCheck;
-import com.google.common.collect.ImmutableList;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.PooledByteBufAllocator;
@@ -28,7 +27,7 @@ public class WebSocketChatServer extends AbstractService {
 
     public WebSocketChatServer(final int port, final WebSocketChatHandler handler, EventLoopGroup bossGroup,
                                EventLoopGroup childGroup, final SslContext sslContext) {
-        super("websocketServer", ImmutableList.<String>of());
+        super("websocketServer");
         this.port = port;
         final ChannelHandler flashPolicyHandler = new FlashPolicyFileHandler(port);
         final ExceptionLogger exceptionLogger = new ExceptionLogger();
@@ -56,10 +55,6 @@ public class WebSocketChatServer extends AbstractService {
                 pipeline.addLast(exceptionLogger);
             }
         });
-    }
-
-    @Override
-    public void performAction(String action) {
     }
 
     @Override

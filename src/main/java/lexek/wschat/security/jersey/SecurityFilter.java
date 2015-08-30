@@ -28,7 +28,7 @@ public class SecurityFilter implements ContainerRequestFilter {
             }
         }
         requestContext.abortWith(
-            Response.status(Response.Status.BAD_REQUEST)
+            Response.status(Response.Status.FORBIDDEN)
                 .entity(new ErrorModel("Access denied."))
                 .build());
     }

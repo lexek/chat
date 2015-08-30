@@ -8,18 +8,27 @@ import io.netty.handler.timeout.IdleStateEvent;
 public class TwitchMessageHandler extends SimpleChannelInboundHandler<TwitchEventMessage> {
     private final JTVEventListener eventListener;
     private final String channel;
+    private final String username;
+    private final String token;
 
-    public TwitchMessageHandler(JTVEventListener eventListener, String channel) {
+    public TwitchMessageHandler(JTVEventListener eventListener, String channel, String username, String token) {
         this.eventListener = eventListener;
         this.channel = channel;
+        this.username = username;
+        this.token = token;
     }
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         //do authentication and join room
-        ctx.write("TWITCHCLIENT 3\r\n");
-        ctx.write("PASS blah\r\n");
-        ctx.write("NICK justinfan1337\r\n");
+        if (username != null && token != null) {
+            ctx.write("PASS oauth:" + token + "\r\n");
+            ctx.write("NICK " + username + "\r\n");
+        } else {
+            ctx.write("PASS blah\r\n");
+            ctx.write("NICK justinfan1337\r\n");
+        }
+        ctx.write("CAP REQ :twitch.tv/commands\r\n");
         ctx.writeAndFlush("JOIN #" + channel + "\r\n");
 
         eventListener.onConnected();
@@ -36,6 +45,8 @@ public class TwitchMessageHandler extends SimpleChannelInboundHandler<TwitchEven
             eventListener.onClear(msg.getData());
         } else if (msg.getType() == TwitchEventMessage.Type.MSG && msg instanceof TwitchUserMessage) {
             eventListener.onMessage(((TwitchUserMessage) msg).getUser(), msg.getData());
+        } else if (msg.getType() == TwitchEventMessage.Type.LOGIN_FAILED) {
+            eventListener.loginFailed();
         }
     }
 

@@ -3,7 +3,6 @@ package lexek.wschat.frontend.irc;
 import com.codahale.metrics.Gauge;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.health.HealthCheck;
-import com.google.common.collect.ImmutableList;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.*;
@@ -30,7 +29,7 @@ public class IrcServer extends AbstractService {
     private Channel channel;
 
     public IrcServer(final IrcServerHandler handler, EventLoopGroup bossGroup, EventLoopGroup childGroup, final SslContext sslContext) {
-        super("ircServer", ImmutableList.<String>of());
+        super("ircServer");
 
         bootstrap = new ServerBootstrap();
         bootstrap.group(bossGroup, childGroup);
@@ -57,10 +56,6 @@ public class IrcServer extends AbstractService {
                 pipeline.addLast(exceptionLogger);
             }
         });
-    }
-
-    @Override
-    public void performAction(String action) {
     }
 
     @Override

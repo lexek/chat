@@ -1,30 +1,20 @@
 package lexek.wschat.services;
 
 import com.codahale.metrics.MetricRegistry;
-import com.google.common.collect.ImmutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
-
 public abstract class AbstractService implements Service {
-    private final ImmutableList<String> availableActions;
     private final String name;
     protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    protected AbstractService(String name, ImmutableList<String> availableActions) {
+    protected AbstractService(String name) {
         this.name = name;
-        this.availableActions = availableActions;
     }
 
     @Override
     public String getName() {
         return name;
-    }
-
-    @Override
-    public List<String> getAvailableActions() {
-        return availableActions;
     }
 
     @Override

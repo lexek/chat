@@ -1,6 +1,6 @@
 var messagesModule = angular.module("chat.messages", ["chat.services.chat"]);
 
-//TODO: fix moderation
+//TODO: fix moderation (???)
 messagesModule.controller("MessageController", ["$scope", "chatService", "chatSettings", "$element", function($scope, chat, settings) {
     $scope.showTimestamps = function() {
         return $scope.message.showTS || settings.getS("showTS");
@@ -53,20 +53,51 @@ messagesModule.controller("MessageController", ["$scope", "chatService", "chatSe
 
     $scope.extUrl = function() {
         if ($scope.message.user.service !== null) {
-            if ($scope.message.user.service === "twitch.tv") {
+            if ($scope.message.user.service === "twitch") {
                 return "http://www.twitch.tv/" + $scope.message.user.name + "/profile";
             }
         }
     };
 
     $scope.clear = function() {
-        chat.clear($scope.message.user);
+        console.log($scope.message);
+        if ($scope.message.user.service) {
+            chat.sendMessage({
+                "type": "PROXY_MOD",
+                "text": "CLEAR",
+                "room": chat.activeRoom,
+                "name": $scope.message.user.name,
+                "service": $scope.message.user.service
+            })
+        } else {
+            chat.clear($scope.message.user);
+        }
     };
     $scope.timeout = function() {
-        chat.timeout($scope.message.user);
+        if ($scope.message.user.service) {
+            chat.sendMessage({
+                "type": "PROXY_MOD",
+                "text": "TIMEOUT",
+                "room": chat.activeRoom,
+                "name": $scope.message.user.name,
+                "service": $scope.message.user.service
+            })
+        } else {
+            chat.timeout($scope.message.user);
+        }
     };
     $scope.ban = function() {
-        chat.ban($scope.message.user);
+        if ($scope.message.user.service) {
+            chat.sendMessage({
+                "type": "PROXY_MOD",
+                "text": "BAN",
+                "room": chat.activeRoom,
+                "name": $scope.message.user.name,
+                "service": $scope.message.user.service
+            })
+        } else {
+            chat.ban($scope.message.user);
+        }
     };
 }]);
 

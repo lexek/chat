@@ -2,7 +2,6 @@ package lexek.wschat.db.dao;
 
 import com.google.common.collect.ImmutableList;
 import lexek.wschat.db.jooq.tables.pojos.Metric;
-import lexek.wschat.db.jooq.tables.pojos.Stream;
 import lexek.wschat.db.model.UserMessageCount;
 import lexek.wschat.db.model.e.InternalErrorException;
 import org.jooq.Record1;
@@ -15,7 +14,6 @@ import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -26,7 +24,6 @@ import java.util.stream.Collectors;
 
 import static lexek.wschat.db.jooq.tables.History.HISTORY;
 import static lexek.wschat.db.jooq.tables.Metric.METRIC;
-import static lexek.wschat.db.jooq.tables.Stream.STREAM;
 import static lexek.wschat.db.jooq.tables.User.USER;
 
 public class StatisticsDao {
@@ -112,21 +109,5 @@ public class StatisticsDao {
         }
         return metrics;
 
-    }
-
-    public List<Stream> getStreams(long since) {
-        List<Stream> streams;
-        try (Connection connection = dataSource.getConnection()) {
-            streams = DSL.using(connection)
-                .select()
-                .from(STREAM)
-                .where(STREAM.ENDED.greaterOrEqual(new Timestamp(since)))
-                .orderBy(STREAM.STARTED)
-                .fetch()
-                .into(Stream.class);
-        } catch (DataAccessException | SQLException e) {
-            throw new InternalErrorException(e);
-        }
-        return streams;
     }
 }

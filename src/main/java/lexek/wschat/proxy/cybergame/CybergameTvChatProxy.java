@@ -1,7 +1,5 @@
 package lexek.wschat.proxy.cybergame;
 
-import com.codahale.metrics.health.HealthCheck;
-import com.google.common.collect.ImmutableList;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.*;
@@ -19,7 +17,10 @@ import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.handler.timeout.IdleStateHandler;
 import lexek.wschat.chat.*;
-import lexek.wschat.services.AbstractService;
+import lexek.wschat.proxy.ModerationOperation;
+import lexek.wschat.proxy.Proxy;
+import lexek.wschat.proxy.ProxyProvider;
+import lexek.wschat.proxy.ProxyState;
 import lexek.wschat.util.Colors;
 
 import java.net.URI;
@@ -27,28 +28,34 @@ import java.net.URISyntaxException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class CybergameTvChatProxy extends AbstractService {
-    private final String channel;
+public class CybergameTvChatProxy implements Proxy {
+    private final String channelName;
+    private final ProxyProvider provider;
     private final MessageBroadcaster messageBroadcaster;
-    private final EventLoopGroup eventLoopGroup;
     private final AtomicLong messageId;
     private final Room room;
-    private Bootstrap bootstrap;
+    private final Bootstrap bootstrap;
+    private final long id;
+    private volatile Channel channel;
+    private volatile ProxyState state = ProxyState.NEW;
 
-    public CybergameTvChatProxy(EventLoopGroup eventLoopGroup, String channel,
-                                MessageBroadcaster messageBroadcaster,
-                                AtomicLong messageId, Room room) {
-        super("cybergame.tv", ImmutableList.<String>of());
-        this.eventLoopGroup = eventLoopGroup;
-        this.channel = channel;
+    public CybergameTvChatProxy(EventLoopGroup eventLoopGroup, String ChannelName,
+                                ProxyProvider provider, MessageBroadcaster messageBroadcaster,
+                                AtomicLong messageId, Room room, long id) {
+        this.channelName = ChannelName;
+        this.provider = provider;
         this.messageBroadcaster = messageBroadcaster;
         this.messageId = messageId;
         this.room = room;
+        this.id = id;
+        this.bootstrap = createBootstrap(eventLoopGroup, new CybergameTvChannelHandler(), channelName);
     }
 
-
-    @Override
-    protected void start0() {
+    private static Bootstrap createBootstrap(
+        EventLoopGroup eventLoopGroup,
+        ChannelHandler handler,
+        String channelName
+    ) {
         URI uri_ = null;
         try {
             uri_ = new URI("ws://cybergame.tv:9090/123/agerh4tt/websocket");
@@ -56,19 +63,18 @@ public class CybergameTvChatProxy extends AbstractService {
             e.printStackTrace();
         }
         final URI uri = uri_;
-        this.bootstrap = new Bootstrap();
-        this.bootstrap.group(eventLoopGroup);
+        Bootstrap bootstrap = new Bootstrap();
+        bootstrap.group(eventLoopGroup);
         if (Epoll.isAvailable()) {
-            this.bootstrap.channel(EpollSocketChannel.class);
+            bootstrap.channel(EpollSocketChannel.class);
         } else {
-            this.bootstrap.channel(NioSocketChannel.class);
+            bootstrap.channel(NioSocketChannel.class);
         }
-        this.bootstrap.option(ChannelOption.SO_KEEPALIVE, true);
-        this.bootstrap.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
-        final ChannelHandler handler = new CybergameTvChannelHandler();
+        bootstrap.option(ChannelOption.SO_KEEPALIVE, true);
+        bootstrap.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
         final CybergameTvMessageCodec codec = new CybergameTvMessageCodec();
-        final CybergameTvProtocolHandler protocolHandler = new CybergameTvProtocolHandler(channel);
-        this.bootstrap.handler(new ChannelInitializer<SocketChannel>() {
+        final CybergameTvProtocolHandler protocolHandler = new CybergameTvProtocolHandler(channelName);
+        bootstrap.handler(new ChannelInitializer<SocketChannel>() {
             @Override
             public void initChannel(final SocketChannel c) throws Exception {
                 ChannelPipeline pipeline = c.pipeline();
@@ -81,32 +87,70 @@ public class CybergameTvChatProxy extends AbstractService {
                 pipeline.addLast(handler);
             }
         });
-        this.bootstrap.connect("cybergame.tv", 9090);
+        return bootstrap;
     }
 
     @Override
-    public void performAction(String action) {
+    public void start() {
+        this.state = ProxyState.STARTING;
+        this.channel = this.bootstrap.connect("cybergame.tv", 9090).channel();
+        this.state = ProxyState.RUNNING;
     }
 
     @Override
     public void stop() {
+        this.state = ProxyState.STOPPING;
+        this.channel.close();
+        this.state = ProxyState.STOPPED;
     }
 
     @Override
-    public HealthCheck getHealthCheck() {
-        return new HealthCheck() {
-            @Override
-            protected Result check() throws Exception {
-                return Result.healthy();
-            }
-        };
+    public void moderate(ModerationOperation type, String name) {
+        throw new UnsupportedOperationException(type.toString());
+    }
+
+    @Override
+    public void onMessage(Connection connection, Message message) {
+        //do nothing
+    }
+
+    @Override
+    public long id() {
+        return this.id;
+    }
+
+    @Override
+    public ProxyProvider provider() {
+        return this.provider;
+    }
+
+    @Override
+    public String remoteRoom() {
+        return channelName;
+    }
+
+    @Override
+    public boolean outboundEnabled() {
+        return false;
+    }
+
+    @Override
+    public ProxyState state() {
+        return this.state;
+    }
+
+    @Override
+    public String lastError() {
+        return null;
     }
 
     @Sharable
     private class CybergameTvChannelHandler extends SimpleChannelInboundHandler<CybergameTvInboundMessage> {
         @Override
         public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-            bootstrap.connect("cybergame.tv", 9090);
+            if (state == ProxyState.RUNNING) {
+                channel = bootstrap.connect("cybergame.tv", 9090).channel();
+            }
         }
 
         @Override
@@ -125,8 +169,8 @@ public class CybergameTvChatProxy extends AbstractService {
                 messageId.getAndIncrement(),
                 System.currentTimeMillis(),
                 message.getText(),
-                "cybergame.tv",
-                channel
+                "cybergame",
+                channelName
             );
             messageBroadcaster.submitMessage(
                 chatMessage,

@@ -3,7 +3,6 @@ package lexek.wschat.frontend.http;
 import com.codahale.metrics.Gauge;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.health.HealthCheck;
-import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.ByteBufAllocator;
@@ -34,7 +33,7 @@ public class HttpServer extends AbstractService {
 
     public HttpServer(SslContext sslContext, RequestDispatcher requestDispatcher)
         throws FileNotFoundException, SSLException {
-        super("httpServer", ImmutableList.<String>of());
+        super("httpServer");
 
         EventLoopGroup parentGroup;
         EventLoopGroup childGroup;
@@ -73,10 +72,6 @@ public class HttpServer extends AbstractService {
                 pipeline.addLast(exceptionLogger);
             }
         });
-    }
-
-    @Override
-    public void performAction(String action) {
     }
 
     @Override

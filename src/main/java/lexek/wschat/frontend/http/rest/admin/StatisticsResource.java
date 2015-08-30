@@ -50,8 +50,7 @@ public class StatisticsResource {
     public Map getMetrics() {
         long since = System.currentTimeMillis() - TimeUnit.MILLISECONDS.convert(24, TimeUnit.HOURS);
         return ImmutableMap.of(
-            "metrics", statisticsDao.getMetrics(since),
-            "streams", statisticsDao.getStreams(since)
+            "metrics", statisticsDao.getMetrics(since)
         );
     }
 

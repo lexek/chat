@@ -12,9 +12,13 @@ public class GoodGameProtocolHandler extends SimpleChannelInboundHandler<GoodGam
 
     private final Logger logger = LoggerFactory.getLogger(GoodGameProtocolHandler.class);
     private final String channelId;
+    private final String name;
+    private final String password;
 
-    public GoodGameProtocolHandler(String channelId) {
+    public GoodGameProtocolHandler(String channelId, String name, String password) {
         this.channelId = channelId;
+        this.name = name;
+        this.password = password;
     }
 
     @Override
@@ -26,14 +30,21 @@ public class GoodGameProtocolHandler extends SimpleChannelInboundHandler<GoodGam
                 } else {
                     logger.warn("different protocol version");
                 }
-                ctx.writeAndFlush(new GoodGameEvent(GoodGameEventType.JOIN, channelId, null, null));
+                ctx.writeAndFlush(new GoodGameEvent(GoodGameEventType.AUTH, null, password, name, null));
+                break;
+            case SUCCESS_AUTH:
+                if (name != null && msg.getUser().equals(name)) {
+                    ctx.writeAndFlush(new GoodGameEvent(GoodGameEventType.JOIN, channelId, null, null, null));
+                } else {
+                    ctx.fireChannelRead(new GoodGameEvent(GoodGameEventType.FAILED_AUTH, null, null, null, null));
+                }
                 break;
             case SUCCESS_JOIN:
                 logger.debug("successfully joined channel {}", channelId);
                 break;
+            case FAILED_JOIN:
+            case BAD_RIGHTS:
             case MESSAGE:
-                ctx.fireChannelRead(msg);
-                break;
             case USER_BAN:
                 ctx.fireChannelRead(msg);
                 break;

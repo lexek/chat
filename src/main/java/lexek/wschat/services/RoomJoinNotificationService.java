@@ -3,7 +3,6 @@ package lexek.wschat.services;
 import com.codahale.metrics.Gauge;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.health.HealthCheck;
-import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.lmax.disruptor.BlockingWaitStrategy;
 import com.lmax.disruptor.EventFactory;
@@ -27,7 +26,7 @@ public class RoomJoinNotificationService extends AbstractService {
     private final List<RoomJoinedEventListener> listeners = new CopyOnWriteArrayList<>();
 
     public RoomJoinNotificationService() {
-        super("notificationService", ImmutableList.<String>of());
+        super("notificationService");
         EventFactory<JoinedRoomEvent> eventFactory = JoinedRoomEvent::new;
         ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("NOTIFICATIONS_%d").build();
         this.disruptor = new Disruptor<>(
@@ -45,10 +44,6 @@ public class RoomJoinNotificationService extends AbstractService {
     @Override
     protected void start0() {
         this.disruptor.start();
-    }
-
-    @Override
-    public void performAction(String action) {
     }
 
     @Override

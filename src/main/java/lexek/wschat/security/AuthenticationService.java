@@ -3,7 +3,6 @@ package lexek.wschat.security;
 import com.codahale.metrics.Gauge;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.health.HealthCheck;
-import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.lmax.disruptor.BlockingWaitStrategy;
 import com.lmax.disruptor.EventFactory;
@@ -31,7 +30,7 @@ public class AuthenticationService extends AbstractService {
     private final CaptchaService captchaService;
 
     public AuthenticationService(AuthenticationManager authenticationManager, UserService userService, CaptchaService captchaService) {
-        super("authenticationService", ImmutableList.<String>of());
+        super("authenticationService");
         this.authenticationManager = authenticationManager;
         this.userService = userService;
         this.captchaService = captchaService;
@@ -52,11 +51,6 @@ public class AuthenticationService extends AbstractService {
     @Override
     protected void start0() {
         this.disruptor.start();
-    }
-
-    @Override
-    public void performAction(String action) {
-
     }
 
     @Override

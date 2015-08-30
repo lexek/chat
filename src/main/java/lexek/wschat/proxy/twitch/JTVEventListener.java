@@ -10,4 +10,6 @@ public interface JTVEventListener {
     void onServerMessage(String message);
 
     void onClear(String name);
+
+    void loginFailed();
 }

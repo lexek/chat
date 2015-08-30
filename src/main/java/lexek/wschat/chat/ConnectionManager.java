@@ -42,6 +42,9 @@ public class ConnectionManager implements EventHandler<MessageEvent> {
         services.add(service);
     }
 
+    public void deregisterService(MessageConsumerService service) {
+        services.remove(service);
+    }
 
     private void sendAll(Message message, final Connection connection) {
         if (connection.isNeedSendingBack()) {

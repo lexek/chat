@@ -4,7 +4,6 @@ import com.codahale.metrics.Gauge;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.health.HealthCheck;
 import com.google.common.collect.HashMultimap;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimap;
 import lexek.wschat.chat.*;
 import lexek.wschat.db.dao.AnnouncementDao;
@@ -31,7 +30,7 @@ public class AnnouncementService extends AbstractService {
                                JournalService journalService, RoomManager roomManager,
                                MessageBroadcaster messageBroadcaster,
                                ScheduledExecutorService scheduledExecutor) {
-        super("announcements", ImmutableList.of("force_announce"));
+        super("announcements");
         this.journalService = journalService;
         this.messageBroadcaster = messageBroadcaster;
         this.scheduledExecutor = scheduledExecutor;
@@ -108,13 +107,6 @@ public class AnnouncementService extends AbstractService {
 
     public Collection<Announcement> getAnnouncements(Room room) {
         return roomAnnouncements.get(room);
-    }
-
-    @Override
-    public void performAction(String action) {
-        if (action.equals("force_announce")) {
-            scheduledExecutor.submit(task);
-        }
     }
 
     @Override

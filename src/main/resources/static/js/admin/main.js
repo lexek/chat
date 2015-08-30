@@ -189,24 +189,6 @@ var DashboardController = function($scope, $http, alert) {
                     values.push([metric.time, "value" in metric ? metric.value : null]);
                 });
 
-                var bands = [];
-                angular.forEach(streams, function(stream) {
-                    bands.push({
-                        "label": {
-                            "text": stream.title,
-                            rotation: -90,
-                            textAlign: "right",
-                            style: {
-                                color: 'rgba(0,0,0,.5)',
-                            }
-                        },
-                        "color": "rgba(68, 170, 213, 0.1)",
-                        "from": new Date(stream.started),
-                        "to": new Date(stream.ended),
-                        "zIndex": 5
-                    });
-                });
-
                 $('#onlineConnectionsChart').highcharts({
                     chart: {
                         type: 'areaspline',
@@ -219,8 +201,7 @@ var DashboardController = function($scope, $http, alert) {
                         type: 'datetime',
                         title: {
                             enabled: false
-                        },
-                        plotBands: bands
+                        }
                     },
                     yAxis: [
                         {
@@ -1522,12 +1503,73 @@ var TopChattersController = function($scope, $http, $modal, room) {
     };
 };
 
+var NewProxyController = function($scope, $http, $modalInstance, room) {
+    $scope.error = null;
+    $scope.providers = [];
+    $scope.input = {
+        outbound: false,
+        authentication: false
+    };
+
+    $http({
+        method: "GET",
+        url: StringFormatter.format("/rest/rooms/{number}/proxies/providers", room.id)
+    }).success(function (data) {
+        $scope.providers = data;
+    });
+
+    $scope.reset = function() {
+        $scope.input = {
+            provider: $scope.input.provider,
+            outbound: false,
+            authentication: false
+        }
+    };
+
+    $scope.submitForm = function() {
+        if ($scope.input.provider) {
+            $scope.error = null;
+            var data = {
+                providerName: $scope.input.provider.name,
+                authName: $scope.input.authentication ? $scope.input.name : null,
+                authKey: $scope.input.authentication ? $scope.input.key : null,
+                remoteRoom: $scope.input.room,
+                enableOutbound: $scope.input.outbound
+            };
+            $http({
+                method: "POST",
+                data: data,
+                url: StringFormatter.format("/rest/rooms/{number}/proxies", room.id)
+            }).success(function(data) {
+                $modalInstance.close(data);
+            }).error(function (data) {
+                $scope.error = data["message"];
+            });
+        }
+    };
+
+    $scope.cancel = function() {
+        $modalInstance.dismiss('cancel');
+    };
+};
+
 var RoomController = function($scope, $location, $http, $sce, $modal, alert, title) {
     $scope.messages = [];
     $scope.journal = [];
+    $scope.proxies = [];
+    $scope.proxyProviders = [];
     $scope.poll = null;
     $scope.maxPollVotes = 0;
     $scope.chatterOffset = 0;
+
+    var loadProxies = function() {
+        $http({
+            method: "GET",
+            url: StringFormatter.format("/rest/rooms/{number}/proxies/list", $scope.roomId)
+        }).success(function (data) {
+            $scope.proxies = data;
+        });
+    };
 
     var loadPage = function() {
         $scope.messages.length = 0;
@@ -1559,6 +1601,7 @@ var RoomController = function($scope, $location, $http, $sce, $modal, alert, tit
             .success(function (d) {
                 $scope.journal = d.data;
             });
+        loadProxies();
     };
 
     $scope.showHistory = function() {
@@ -1623,6 +1666,66 @@ var RoomController = function($scope, $location, $http, $sce, $modal, alert, tit
                 }
             }
         });
+    };
+
+    $scope.newProxy = function() {
+        $modal.open({
+            templateUrl: 'new_proxy.html',
+            controller: NewProxyController,
+            size: "sm",
+            resolve: {
+                room: function() {
+                    return $scope.roomData;
+                }
+            }
+        }).result.then(function (data) {
+            if (data) {
+                $scope.proxies.push(data);
+            }
+        });
+    };
+
+    $scope.removeProxy = function(proxy) {
+        $http({
+            method: "DELETE",
+            url: StringFormatter.format("/rest/rooms/{number}/proxies/{string}", $scope.roomData.id, proxy.providerName)
+        }).success(function() {
+            $scope.proxies.splice($scope.proxies.indexOf(proxy), 1);
+        });
+    };
+
+    $scope.stopProxy = function(providerName) {
+        $http({
+            method: "POST",
+            url: StringFormatter.format("/rest/rooms/{number}/proxies/{string}/stop", $scope.roomData.id, providerName)
+        }).success(function() {
+            loadProxies()
+        });
+    };
+
+    $scope.startProxy = function(providerName) {
+        $http({
+            method: "POST",
+            url: StringFormatter.format("/rest/rooms/{number}/proxies/{string}/start", $scope.roomData.id, providerName)
+        }).success(function() {
+            loadProxies()
+        });
+    };
+
+    $scope.proxyStateClass = function(state) {
+        switch (state) {
+            case "NEW":
+                return "label-primary";
+            case "RUNNING":
+                return "label-success";
+            case "STOPPED":
+                return "label-default";
+            case "STOPPING":
+            case "STARTING":
+                return "label-warning";
+            case "FAILED":
+                return "label-danger";
+        }
     };
 
     $scope.closePoll = function() {
@@ -1704,11 +1807,14 @@ var RoomController = function($scope, $location, $http, $sce, $modal, alert, tit
 
     var classMap = {
         "ROOM_BAN": "warning",
+        "DELETED_PROXY": "warning",
         "ROOM_UNBAN": "success",
         "ROOM_ROLE": "success"
     };
 
     var actionMap = {
+        "NEW_PROXY": "Proxy added",
+        "DELETED_PROXY": "Proxy removed",
         "NEW_ROOM": "Room created",
         "NEW_POLL": "Poll created",
         "CLOSE_POLL": "Poll closed",
@@ -1749,7 +1855,6 @@ var RoomController = function($scope, $location, $http, $sce, $modal, alert, tit
         loadPage();
     }
 };
-
 
 var ServicesController = function($scope, $location, $http) {
     $scope.data = null;

@@ -21,7 +21,7 @@ import javax.ws.rs.core.Response;
 import java.util.Map;
 
 @Path("/tickets")
-@RequiredRole(GlobalRole.SUPERADMIN)
+@RequiredRole(GlobalRole.ADMIN)
 public class TicketResource {
     private final TicketService ticketService;
 

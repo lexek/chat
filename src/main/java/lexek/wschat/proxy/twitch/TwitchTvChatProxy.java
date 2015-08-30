@@ -1,9 +1,5 @@
 package lexek.wschat.proxy.twitch;
 
-import com.codahale.metrics.Gauge;
-import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.health.HealthCheck;
-import com.google.common.collect.ImmutableList;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.*;
@@ -19,39 +15,50 @@ import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.CharsetUtil;
 import io.netty.util.internal.chmv8.ConcurrentHashMapV8;
 import lexek.wschat.chat.*;
+import lexek.wschat.proxy.ModerationOperation;
+import lexek.wschat.proxy.Proxy;
+import lexek.wschat.proxy.ProxyProvider;
+import lexek.wschat.proxy.ProxyState;
 import lexek.wschat.security.AuthenticationManager;
-import lexek.wschat.services.AbstractService;
 import lexek.wschat.util.Colors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class TwitchTvChatProxy extends AbstractService {
-    private final String channel;
-    private final ConnectionManager connectionManager;
+public class TwitchTvChatProxy implements Proxy {
+    private final Logger logger = LoggerFactory.getLogger(TwitchTvChatProxy.class);
+    private final ProxyProvider provider;
+    private final String channelName;
     private final AtomicLong messageId;
     private final MessageBroadcaster messageBroadcaster;
     private final Room room;
     private final Bootstrap inboundBootstrap;
     private final Map<String, Channel> connections = new ConcurrentHashMapV8<>();
-    private OutboundMessageHandler outboundHandler;
-    private Channel activeInboundChannel = null;
+    private final OutboundMessageHandler outboundHandler;
+    private final long id;
+    private volatile Channel channel;
+    private volatile ProxyState state = ProxyState.NEW;
+    private volatile String lastError;
 
-    public TwitchTvChatProxy(final String channel,
-                             ConnectionManager connectionManager,
-                             AtomicLong messageId,
-                             MessageBroadcaster messageBroadcaster,
-                             AuthenticationManager authenticationManager,
-                             Room room,
-                             EventLoopGroup eventLoopGroup) {
-        super("twitch.tv", ImmutableList.<String>of());
-        this.channel = channel;
-        this.connectionManager = connectionManager;
+    public TwitchTvChatProxy(
+        long id, ProxyProvider provider, Room room, String channelName, String username, String token, boolean outbound,
+        AtomicLong messageId, MessageBroadcaster messageBroadcaster, AuthenticationManager authenticationManager,
+        EventLoopGroup eventLoopGroup
+    ) {
+        this.channelName = channelName;
         this.messageId = messageId;
         this.messageBroadcaster = messageBroadcaster;
         this.room = room;
-        this.outboundHandler = new OutboundMessageHandler(connections, channel, authenticationManager, eventLoopGroup, room);
+        this.id = id;
+        this.provider = provider;
+        if (outbound) {
+            this.outboundHandler = new OutboundMessageHandler(connections, channelName, authenticationManager, eventLoopGroup);
+        } else {
+            this.outboundHandler = null;
+        }
 
         this.inboundBootstrap = new Bootstrap();
         this.inboundBootstrap.group(eventLoopGroup);
@@ -74,58 +81,98 @@ public class TwitchTvChatProxy extends AbstractService {
                 pipeline.addLast(stringDecoder);
                 pipeline.addLast(new IdleStateHandler(120, 0, 140, TimeUnit.SECONDS));
                 pipeline.addLast(new TwitchTvMessageDecoder());
-                pipeline.addLast(new TwitchMessageHandler(eventListener, channel));
+                pipeline.addLast(new TwitchMessageHandler(eventListener, channelName, username, token));
             }
         });
     }
 
     @Override
-    public void start0() {
-        connectInbound();
-        connectionManager.registerService(outboundHandler);
-    }
-
-    @Override
-    public void registerMetrics(MetricRegistry metricRegistry) {
-        metricRegistry.register(getName() + ".activeOutboundConnections",
-            (Gauge<Integer>) outboundHandler::getConnectionCount);
-    }
-
-    @Override
-    public HealthCheck getHealthCheck() {
-        return new HealthCheck() {
-            @Override
-            protected Result check() throws Exception {
-                if (activeInboundChannel == null || !activeInboundChannel.isActive()) {
-                    return Result.unhealthy("inbound channel issue");
-                }
-                return Result.healthy();
-            }
-        };
-    }
-
-    @Override
-    public void performAction(String action) {
+    public void start() {
+        this.state = ProxyState.STARTING;
+        this.channel = inboundBootstrap.connect("irc.twitch.tv", 6667).channel();
+        this.lastError = null;
+        if (this.outboundHandler != null) {
+            this.outboundHandler.start();
+        }
+        this.state = ProxyState.RUNNING;
     }
 
     @Override
     public void stop() {
+        this.state = ProxyState.STOPPING;
+        this.channel.close();
+        if (this.outboundHandler != null) {
+            this.outboundHandler.shutdown();
+        }
+        this.state = ProxyState.STOPPED;
     }
 
-    private void connectInbound() {
-        this.activeInboundChannel = inboundBootstrap.connect("irc.twitch.tv", 6667).channel();
+    @Override
+    public void moderate(ModerationOperation type, String name) {
+        if (type == ModerationOperation.BAN) {
+            channel.writeAndFlush("PRIVMSG #" + channelName + " :.ban " + name + "\r\n");
+        }
+        if (type == ModerationOperation.TIMEOUT) {
+            channel.writeAndFlush("PRIVMSG #" + channelName + " :.timeout " + name + "\r\n");
+        }
+        if (type == ModerationOperation.UNBAN) {
+            channel.writeAndFlush("PRIVMSG #" + channelName + " :.unban " + name + "\r\n");
+        }
+        if (type == ModerationOperation.CLEAR) {
+            channel.writeAndFlush("PRIVMSG #" + channelName + " :.ban " + name + "\r\n");
+            channel.writeAndFlush("PRIVMSG #" + channelName + " :.unban " + name + "\r\n");
+        }
+    }
+
+    @Override
+    public void onMessage(Connection connection, Message message) {
+        if (this.outboundHandler != null) {
+            outboundHandler.onMessage(connection, message);
+        }
+    }
+
+    @Override
+    public long id() {
+        return this.id;
+    }
+
+    @Override
+    public ProxyProvider provider() {
+        return this.provider;
+    }
+
+    @Override
+    public String remoteRoom() {
+        return channelName;
+    }
+
+    @Override
+    public boolean outboundEnabled() {
+        return this.outboundHandler != null;
+    }
+
+    @Override
+    public ProxyState state() {
+        return this.state;
+    }
+
+    @Override
+    public String lastError() {
+        return this.lastError;
     }
 
     private class JtvEventListenerImpl implements JTVEventListener {
         @Override
         public void onConnected() {
-            logger.info("Twitch proxy connected. Channel: {}", channel);
+            logger.info("Twitch proxy connected. Channel: {}", channelName);
         }
 
         @Override
         public void onDisconnected() {
             logger.info("Twitch proxy disconnected.");
-            connectInbound();
+            if (state == ProxyState.RUNNING) {
+                channel = inboundBootstrap.connect("irc.twitch.tv", 6667).channel();
+            }
         }
 
         @Override
@@ -140,8 +187,8 @@ public class TwitchTvChatProxy extends AbstractService {
                     messageId.getAndIncrement(),
                     System.currentTimeMillis(),
                     message,
-                    "twitch.tv",
-                    channel
+                    "twitch",
+                    channelName
                 );
                 messageBroadcaster.submitMessage(msg, Connection.STUB_CONNECTION, room.FILTER);
             }
@@ -149,10 +196,9 @@ public class TwitchTvChatProxy extends AbstractService {
 
         @Override
         public void onClear(String name) {
-            Message msg = Message.moderationMessage(
-                MessageType.CLEAR_EXT,
+            Message msg = Message.proxyClear(
                 "#main",
-                "*twitch_ext",
+                "twitch",
                 name
             );
             messageBroadcaster.submitMessage(msg, Connection.STUB_CONNECTION, room.FILTER);
@@ -161,6 +207,13 @@ public class TwitchTvChatProxy extends AbstractService {
         @Override
         public void onServerMessage(String s) {
             logger.trace(s);
+        }
+
+        @Override
+        public void loginFailed() {
+            lastError = "login failed";
+            state = ProxyState.FAILED;
+            channel.close();
         }
     }
 }

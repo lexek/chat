@@ -44,6 +44,17 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
         chat.hideMessagesFromUser(ctx.room, msg.name);
     };
 
+    var processProxyClearMessage = function (chat, ctx, msg) {
+        chat.lastChatter(ctx.room, null);
+        if ((chat.self.role >= globalLevels.MOD) || chat.hasLocalRole(levels.MOD, ctx.room)) {
+            chat.addMessage(
+                new Message(msg.type, $translate.instant("CHAT_CLEAR_USER", {"mod": ctx.msg.service, "user": msg.name}))
+            );
+        }
+        chat.messagesUpdated();
+        chat.hideMessagesFromUser(ctx.room, msg.name, ctx.msg.service);
+    };
+
     var processClearRoomMessage = function(chat, ctx) {
         chat.lastChatter(ctx.room, null);
         if (!((chat.self.role >= globalLevels.MOD) || chat.hasLocalRole(levels.MOD, ctx.room))) {
@@ -67,8 +78,7 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
             (
                 chat.self &&
                 (chat.self.name !== user.name) &&
-                (msg.type !== "ME") &&
-                (msg.type !== "MSG_EXT")
+                (msg.type !== "ME")
             ) && (
                 (
                     (chat.localRole[ctx.room] >= levels.MOD) &&
@@ -250,8 +260,10 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
         ctx.currentPoll = chat.polls[ctx.room];
 
         switch (message.type) {
+            case "PROXY_CLEAR":
+                processProxyClearMessage(chat, ctx, message);
+                break;
             case "CLEAR":
-            case "CLEAR_EXT":
                 processClearMessage(chat, ctx, message);
                 break;
             case "CLEAR_ROOM":

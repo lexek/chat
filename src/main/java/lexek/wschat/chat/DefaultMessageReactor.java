@@ -3,7 +3,6 @@ package lexek.wschat.chat;
 import com.codahale.metrics.Gauge;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.health.HealthCheck;
-import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.lmax.disruptor.BlockingWaitStrategy;
 import com.lmax.disruptor.EventFactory;
@@ -29,7 +28,7 @@ public class DefaultMessageReactor extends AbstractService implements MessageRea
     private final RingBuffer<InboundMessageEvent> ringBuffer;
 
     public DefaultMessageReactor(HandlerInvoker handlerInvoker) {
-        super("messageReactor", ImmutableList.<String>of());
+        super("messageReactor");
         this.handlerInvoker = handlerInvoker;
         EventFactory<InboundMessageEvent> eventFactory = InboundMessageEvent::new;
         ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("MESSAGE_REACTOR_%d").build();
@@ -98,11 +97,6 @@ public class DefaultMessageReactor extends AbstractService implements MessageRea
     @Override
     public void onEvent(InboundMessageEvent event, long sequence, boolean endOfBatch) throws Exception {
         process(event.connection, event.message);
-    }
-
-    @Override
-    public void performAction(String action) {
-
     }
 
     public static class InboundMessageEvent {

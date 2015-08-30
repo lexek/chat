@@ -158,18 +158,20 @@ function($modal, settings, $translate, $http, $timeout, notificationService, msg
         });
     };
 
-    chatService.prototype.hideMessagesFromUser = function(room, name) {
+    chatService.prototype.hideMessagesFromUser = function(room, name, service) {
         var chat = this;
         angular.forEach(this.messages[room], function(message) {
             if (!message.hidden && message.user && message.user.name == name) {
-                if (message.type === "MSG_GROUP") {
-                    angular.forEach(message.messages, function(msg) {
-                        msg.hidden = true;
-                    });
-                } else {
-                    message.hidden = true;
+                if (service && message.user.service === service || !service) {
+                    if (message.type === "MSG_GROUP") {
+                        angular.forEach(message.messages, function (msg) {
+                            msg.hidden = true;
+                        });
+                    } else {
+                        message.hidden = true;
+                    }
+                    chat.messageUpdated(message);
                 }
-                chat.messageUpdated(message);
             }
         });
     };

@@ -21,7 +21,7 @@ public class HistoryService implements EventHandler<MessageEvent> {
         MessageType.BAN,
         MessageType.TIMEOUT,
         MessageType.CLEAR,
-        MessageType.CLEAR_EXT,
+        MessageType.PROXY_CLEAR,
         MessageType.LIKE
     );
 

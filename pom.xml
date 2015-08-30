@@ -157,7 +157,6 @@
                         <database>
                             <name>org.jooq.util.mysql.MySQLDatabase</name>
                             <includes>
-                                stream|
                                 poll|
                                 poll_option|
                                 poll_answer|
@@ -174,7 +173,8 @@
                                 room|
                                 pending_confirmation|
                                 pending_notification|
-                                steam_game
+                                steam_game|
+                                chat_proxy
                             </includes>
                             <excludes></excludes>
                             <inputSchema>chat</inputSchema>

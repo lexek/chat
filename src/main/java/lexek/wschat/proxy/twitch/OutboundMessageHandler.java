@@ -17,16 +17,17 @@ import io.netty.util.CharsetUtil;
 import lexek.wschat.chat.*;
 import lexek.wschat.db.model.UserAuthDto;
 import lexek.wschat.security.AuthenticationManager;
-import lexek.wschat.services.MessageConsumerService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-public class OutboundMessageHandler implements MessageConsumerService {
+public class OutboundMessageHandler {
     private static final long FIVE_MINUTES = TimeUnit.MINUTES.toMillis(5);
     private static final AttributeKey<Long> lastMessageAttrKey = AttributeKey.valueOf("__last_message");
     private final Logger logger = LoggerFactory.getLogger(OutboundMessageHandler.class);
@@ -35,17 +36,17 @@ public class OutboundMessageHandler implements MessageConsumerService {
     private final Bootstrap outboundBootstrap;
     private final String channel;
     private final AuthenticationManager authenticationManager;
-    private final Room room;
+    private final ScheduledExecutorService eventLoopGroup;
+    private ScheduledFuture scheduledFuture;
 
     public OutboundMessageHandler(Map<String, Channel> connections,
                                   String channel,
                                   AuthenticationManager authenticationManager,
-                                  EventLoopGroup eventLoopGroup,
-                                  Room room) {
+                                  EventLoopGroup eventLoopGroup) {
         this.connections = connections;
         this.channel = channel;
         this.authenticationManager = authenticationManager;
-        this.room = room;
+        this.eventLoopGroup = eventLoopGroup;
 
         this.outboundBootstrap = new Bootstrap();
         this.outboundBootstrap.group(eventLoopGroup);
@@ -69,13 +70,15 @@ public class OutboundMessageHandler implements MessageConsumerService {
                 pipeline.addLast(handler);
             }
         });
-        eventLoopGroup.scheduleAtFixedRate(new ConnectionCleanupTask(), 10, 5, TimeUnit.MINUTES);
     }
 
-    @Override
-    public void consume(Connection connection, Message message, BroadcastFilter filter) {
-        if (filter.getType() == BroadcastFilter.Type.ROOM && filter.getData() == room &&
-            message.getType() == MessageType.MSG && message.get(MessageProperty.ROOM).equals("#main")) {
+    public void shutdown() {
+        this.scheduledFuture.cancel(false);
+        this.connections.values().forEach(Channel::close);
+    }
+
+    public void onMessage(Connection connection, Message message) {
+        if (message.getType() == MessageType.MSG && message.get(MessageProperty.ROOM).equals("#main")) {
             UserCredentials userCredentials = null;
             if (needsFetchingConnectionData(connection.getUser())) {
                 userCredentials = fetchConnectionDataForUser(connection.getUser());
@@ -137,8 +140,8 @@ public class OutboundMessageHandler implements MessageConsumerService {
         return channel;
     }
 
-    public int getConnectionCount() {
-        return this.connections.size();
+    public void start() {
+        this.scheduledFuture = eventLoopGroup.scheduleAtFixedRate(new ConnectionCleanupTask(), 10, 5, TimeUnit.MINUTES);
     }
 
     private static class UserCredentials {

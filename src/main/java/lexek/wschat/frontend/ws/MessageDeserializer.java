@@ -54,6 +54,9 @@ public class MessageDeserializer extends StdDeserializer<Message> {
                 case "pollOption":
                     mapBuilder.put(MessageProperty.POLL_OPTION, node.asInt());
                     break;
+                case "service":
+                    mapBuilder.put(MessageProperty.SERVICE, node.asText());
+                    break;
             }
 
         });

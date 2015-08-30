@@ -694,6 +694,12 @@ messagesModule.controller("UserInputController", ["$scope", "$modal", "chatServi
             } else if ((tmp[0].toUpperCase() === "BAN")||(tmp[0].toUpperCase() === "UNBAN")||(tmp[0].toUpperCase() === "TIMEOUT")) {
                 message["room"] = chat.activeRoom;
                 message["name"] = tmp[1];
+            } else if ((tmp[0].toUpperCase() === "PROXYMOD")) {
+                message["type"] = "PROXY_MOD";
+                message["room"] = chat.activeRoom;
+                message["service"] = tmp[1];
+                message["text"] = tmp[2].toUpperCase();
+                message["name"] = tmp[3];
             } else if (tmp[0].toUpperCase() === "ROLE") {
                 message["room"] = chat.activeRoom;
                 message["name"] = tmp[1];

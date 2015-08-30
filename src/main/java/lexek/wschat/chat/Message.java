@@ -69,6 +69,15 @@ public class Message {
         return new Message(ImmutableMap.<MessageProperty, Object>of(MessageProperty.TYPE, messageType, MessageProperty.ROOM, room, MessageProperty.NAME, user, MessageProperty.MOD, mod));
     }
 
+    public static Message proxyClear(String room, String service, String user) {
+        return new Message(ImmutableMap.<MessageProperty, Object>of(
+            MessageProperty.TYPE, MessageType.PROXY_CLEAR,
+            MessageProperty.SERVICE, service,
+            MessageProperty.ROOM, room,
+            MessageProperty.NAME, user
+        ));
+    }
+
     public static Message clearMessage(String room) {
         return new Message(ImmutableMap.<MessageProperty, Object>of(MessageProperty.TYPE, MessageType.CLEAR_ROOM, MessageProperty.ROOM, room));
     }
