@@ -2,6 +2,7 @@ package lexek.wschat.chat;
 
 import com.codahale.metrics.Gauge;
 import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.Timer;
 import com.codahale.metrics.health.HealthCheck;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.lmax.disruptor.BlockingWaitStrategy;
@@ -26,6 +27,7 @@ public class DefaultMessageReactor extends AbstractService implements MessageRea
     private final HandlerInvoker handlerInvoker;
     private final Disruptor<InboundMessageEvent> disruptor;
     private final RingBuffer<InboundMessageEvent> ringBuffer;
+    private final Timer timer = new Timer();
 
     public DefaultMessageReactor(HandlerInvoker handlerInvoker) {
         super("messageReactor");
@@ -92,11 +94,14 @@ public class DefaultMessageReactor extends AbstractService implements MessageRea
     public void registerMetrics(MetricRegistry metricRegistry) {
         metricRegistry.register(this.getName() + ".queue.remainingCapacity", (Gauge<Long>) ringBuffer::remainingCapacity);
         metricRegistry.register(this.getName() + ".queue.bufferSize", (Gauge<Integer>) ringBuffer::getBufferSize);
+        metricRegistry.register(this.getName() + ".events", timer);
     }
 
     @Override
     public void onEvent(InboundMessageEvent event, long sequence, boolean endOfBatch) throws Exception {
+        Timer.Context timerContext = timer.time();
         process(event.connection, event.message);
+        timerContext.stop();
     }
 
     public static class InboundMessageEvent {

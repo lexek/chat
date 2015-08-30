@@ -1,5 +1,7 @@
 package lexek.httpserver;
 
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.Timer;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.channel.*;
 import io.netty.handler.codec.http.*;
@@ -8,6 +10,7 @@ import org.glassfish.jersey.server.ApplicationHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.naming.Context;
 import javax.ws.rs.core.Application;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -24,13 +27,21 @@ public class RequestDispatcher extends SimpleChannelInboundHandler<FullHttpReque
     private final ViewResolvers viewResolvers;
     private final ApplicationHandler applicationHandler;
     private final JerseyContainer jerseyContainer;
+    private final Timer timer;
 
-    public RequestDispatcher(ServerMessageHandler serverMessageHandler, ViewResolvers viewResolvers, AuthenticationManager authenticationManager, Application resourceConfig) {
+    public RequestDispatcher(
+        ServerMessageHandler serverMessageHandler,
+        ViewResolvers viewResolvers,
+        AuthenticationManager authenticationManager,
+        Application resourceConfig,
+        MetricRegistry metricRegistry
+    ) {
         this.serverMessageHandler = serverMessageHandler;
         this.viewResolvers = viewResolvers;
         this.applicationHandler = new ApplicationHandler(resourceConfig);
         this.jerseyContainer = new JerseyContainer(authenticationManager, applicationHandler);
-        matcherEntries.add(new MatcherEntry(Pattern.compile("/rest/.*"), jerseyContainer));
+        this.matcherEntries.add(new MatcherEntry(Pattern.compile("/rest/.*"), jerseyContainer));
+        this.timer = metricRegistry.register("httpServer.requests", new Timer());
     }
 
     @Override
@@ -39,6 +50,7 @@ public class RequestDispatcher extends SimpleChannelInboundHandler<FullHttpReque
         channel.config().setAutoRead(false);
         boolean keepAlive = HttpHeaders.isKeepAlive(request);
         FullHttpResponse response = null;
+        Timer.Context timerContext = timer.time();
         for (MatcherEntry matcherEntry : matcherEntries) {
             if (matcherEntry.getPattern().matcher(withoutQuery(request.getUri())).matches()) {
                 try {
@@ -52,6 +64,7 @@ public class RequestDispatcher extends SimpleChannelInboundHandler<FullHttpReque
                 }
             }
         }
+        timerContext.stop();
 
         if (response == null) {
             response = new DefaultFullHttpResponse(
