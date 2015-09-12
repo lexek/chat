@@ -48,29 +48,18 @@
 <div id="content" ng-class="{'dark': isDark()}" ng-controller="StyleController">
 
 <script type="text/ng-template" id="emoticons.html">
-    <div class="modal-header">
-        <h3>{{'CONTROLS_EMOTICONS' | translate}}</h3>
-    </div>
-    <div class="modal-body">
-        <div style="max-height: 300px; overflow-y: auto">
-            <table class="table table-hover">
-                <thead>
-                <tr>
-                    <th class="col-xs-1">{{'CONTROLS_ICON' | translate}}</th>
-                    <th class="col-xs-11" style="text-align: center">{{'CONTROLS_CODE' | translate}}</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr ng-repeat="emoticon in emoticons | orderBy:'code'" style="cursor: pointer;" ng-click="addToInput(unescapeCode(emoticon.code))">
-                    <td><img ng-src="/emoticons/{{emoticon.fileName}}"/></td>
-                    <td ng-bind="unescapeCode(emoticon.code)"></td>
-                </tr>
-                </tbody>
-            </table>
+    <div style="height: 200px; width:120px; overflow-y: auto; overflow-x: hidden" ng-controller="EmoticonsController">
+        <div
+                ng-repeat="emoticon in emoticons | orderBy:'code'"
+                style="display: inline-block; width: 25px; cursor: pointer;"
+                ng-click="addToInput(unescapeCode(emoticon.code))"
+                title="{{unescapeCode(emoticon.code)}}"
+                >
+            <img
+                    style="max-height: 25px; max-width: 25px; height:auto; width: auto;"
+                    ng-src="/emoticons/{{emoticon.fileName}}"
+                    />
         </div>
-    </div>
-    <div class="modal-footer">
-        <div class="btn btn-default btn-modal pull-left" ng-click="close()">{{'CONTROLS_CLOSE' | translate}}</div>
     </div>
 </script>
 
@@ -478,7 +467,6 @@
     </ul>
 </script>
 
-
 <script type="text/ng-template" id="anonCaptcha.html">
     <div class="modal-header">
         <h3>{{'CONTROLS_CAPTCHA_REQUIRED' | translate}}</h3>
@@ -694,6 +682,20 @@
     </div>
     <div class="right-part">
         <div class="btn-group" ng-controller="MenuController">
+            <div class="btn-group">
+                <div
+                        id="emoticonsButton"
+                        class="btn btn-link btn-link-default"
+                        ng-class="{active: showEmoticons}"
+                        ng-click="toggleEmoticons()"
+                        popover-template="'emoticons.html'"
+                        popover-placement="top"
+                        popover-trigger="none"
+                        popover-is-open="showEmoticons"
+                        >
+                    <span class="fa fa-smile-o"></span>
+                </div>
+            </div>
             <div class="btn-group">
                 <div id="listButton" class="btn btn-link btn-link-default" ng-click="toggleOnline()" ng-class="{active: showOnline}">
                     <span class="fa fa-list"></span>

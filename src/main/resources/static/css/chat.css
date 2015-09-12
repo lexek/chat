@@ -3,7 +3,6 @@ body {
     height: 100%;
     min-width: 150px;
     overflow: hidden;
-    overflow-x: auto;
     background: #fafafa;
 }
 
@@ -351,7 +350,7 @@ img.emoji {
 }
 
 .right-part {
-    width: 62px;
+    width: 91px;
     float: right;
 }
 

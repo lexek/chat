@@ -1,4 +1,4 @@
-var controlsModule = angular.module("chat.controls", ["chat.services.chat", "ui.bootstrap", "colorpicker.module", "ngCookies", "vcRecaptcha"]);
+var controlsModule = angular.module("chat.controls", ["chat.services.chat", "ui.bootstrap", "colorpicker.module", "ngCookies", "vcRecaptcha", "ui.bootstrap.popover"]);
 
 controlsModule.controller("RoomWidgetController", ["$scope", "chatService", function($scope, chatService) {
     $scope.open = false;
@@ -123,6 +123,7 @@ controlsModule.controller("MenuController", ["$scope", function($scope) {
     var animationInProgress = false;
     $scope.showOnline = false;
     $scope.showSettings = false;
+    $scope.showEmoticons = false;
     $scope.opened = false;
 
     var open = function() {
@@ -216,6 +217,14 @@ controlsModule.controller("MenuController", ["$scope", function($scope) {
             }
         }
     };
+
+    $scope.toggleEmoticons = function() {
+        $scope.showEmoticons = !$scope.showEmoticons;
+    };
+
+    $scope.hideEmoticons = function() {
+        $scope.showEmoticons = false;
+    }
 }]);
 
 controlsModule.controller("SettingsController", ["$scope", "chatService", "$modal", "chatSettings", "$cookieStore",
@@ -508,22 +517,18 @@ var AuthenticationController = function($scope, $modalInstance, chat, action) {
     $(".pls-container").remove();
 };
 
-var EmoticonsController = function($scope, chat, $modalInstance) {
+controlsModule.controller("EmoticonsController", ["$scope", "chatService", function($scope, chat) {
     $scope.emoticons = chat.emoticons;
 
-    $scope.close = function() {
-        $modalInstance.dismiss('cancel');
-    };
-
     $scope.unescapeCode = function(code) {
-        return code.replace(/\\(.)/, "$1");
+        return code.replace(/\\(.)/, "$1").replace("&lt;", "<").replace("&gt;");
     };
 
     $scope.addToInput = function(text) {
         chat.addToInputCallback(text);
-        $scope.close();
+        $scope.hideEmoticons();
     };
-};
+}]);
 
 var HelpController = function($scope, $modalInstance) {
     $scope.close = function() {
