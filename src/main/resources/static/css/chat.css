@@ -57,10 +57,10 @@ img.emoji {
 }
 
 .btn-link-default {
-    background-color: #E7E7E7;
+    background-color: transparent;
     color: #878787;
-    padding: 3px 5px;
-    font-size: 19px;
+    padding: 1px 2px;
+    font-size: 23px;
     transition: all ease-in-out .15s, box-shadow ease-in-out .15s;
 }
 .btn-link-default:hover,
@@ -74,10 +74,6 @@ img.emoji {
     background-image: none;
     box-shadow: none;
     color: white;
-}
-
-.dark .btn-link-default {
-    background-color: #373737;
 }
 
 .dark .btn-link-default:hover,
@@ -350,7 +346,7 @@ img.emoji {
 }
 
 .right-part {
-    width: 91px;
+    width: 85px;
     float: right;
 }
 
@@ -881,4 +877,32 @@ a:focus {
     -moz-animation-duration: .2s;
     -o-animation-duration: .2s;
     animation-duration: .2s;
+}
+
+.list-group-item.ng-hide-remove {
+    -webkit-animation: fadeInUp;
+    -o-animation: fadeInUp;
+    animation: fadeInUp;
+    -webkit-animation-duration: .2s;
+    -moz-animation-duration: .2s;
+    -o-animation-duration: .2s;
+    animation-duration: .2s;
+}
+
+.list-group-item.ng-hide-add {
+    -webkit-animation: fadeOutDown;
+    -o-animation: fadeOutDown;
+    animation: fadeOutDown;
+    -webkit-animation-duration: .2s;
+    -moz-animation-duration: .2s;
+    -o-animation-duration: .2s;
+    animation-duration: .2s;
+}
+
+.userNameItem {
+    -webkit-transition: all .2s;
+    -moz-transition: all .2s;
+    -ms-transition: all .2s;
+    -o-transition: all .2s;
+    transition: all .2s;
 }

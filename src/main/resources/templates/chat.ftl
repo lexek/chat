@@ -698,7 +698,7 @@
             </div>
             <div class="btn-group">
                 <div id="listButton" class="btn btn-link btn-link-default" ng-click="toggle('online')" ng-class="{active: active === 'online'}">
-                    <span class="fa fa-list"></span>
+                    <span class="fa fa-list-ul"></span>
                 </div>
             </div>
             <div class="btn-group">
@@ -712,13 +712,12 @@
                         <div style="width: 100%; height: 100%" ng-controller="UsersController" ng-if="active === 'online'">
                             <div class="list-group online-list" ng-if="(users | mods).length > 0">
                                 <div class="list-group-item"><h4 style="font-weight: bold">{{'USERS_MODS' | translate}}</h4></div>
-                                <a class="list-group-item" ng-repeat-start="user in users | mods | orderBy:'name'"
+                                <a class="list-group-item userNameItem" ng-repeat-start="user in users | mods | orderBy:'name'"
                                    ng-controller="UserController" ng-class="{active: user.showDescription}" ng-click="toggleDescription()">
                                     {{user.name | inflector:'capital'}}
                                 </a>
-                                <div ng-repeat-end="" class="list-group-item desc" ng-class="{show: user.showDescription}" ng-controller="UserController" style="display: none">
+                                <div ng-repeat-end="" class="list-group-item desc" ng-show="user.showDescription" ng-controller="UserController">
                                     <div class="onlineUserDescription small"><span class="fa fa-user"></span> {{"ROLE_" + user.role.title | translate}}</div>
-                                    <div class="onlineUserDescription small"><span class="fa fa-star"></span> {{"ROLE_" + user.globalRole.title | translate}}</div>
                                     <div ng-if="canBan()" class="btn btn-default btn-x" ng-click="ban()"><span class="fa fa-ban"></span></div>
                                     <div ng-if="canUnban()" class="btn btn-default btn-x" ng-click="unban()"><span class="fa fa-check-circle-o"></span></div>
                                     <div ng-if="canTimeOut()" class="btn btn-default btn-x" ng-click="timeout()"><span class="fa fa-clock-o"></span></div>
@@ -726,11 +725,11 @@
                             </div>
                             <div class="list-group online-list" ng-if="(users | users).length > 0">
                                 <div class="list-group-item"><h4 style="font-weight: bold">{{'USERS_USERS' | translate}}</h4></div>
-                                <a class="list-group-item" ng-repeat-start="user in users | users | orderBy:'name'"
+                                <a class="list-group-item userNameItem" ng-repeat-start="user in users | users | orderBy:'name'"
                                    ng-controller="UserController" ng-class="{active: user.showDescription}" ng-click="toggleDescription()">
                                     {{user.name | inflector:'capital'}}
                                 </a>
-                                <div ng-repeat-end="" class="list-group-item desc" ng-class="{show: user.showDescription}" ng-controller="UserController" style="display: none">
+                                <div ng-repeat-end="" class="list-group-item desc" ng-show="user.showDescription" ng-controller="UserController">
                                     <div class="onlineUserDescription small"><span class="fa fa-user"></span> {{"ROLE_" + user.role.title | translate}}</div>
                                     <div ng-if="showModButtons()" class="btn btn-default btn-x" ng-click="clear()"><span class="fa fa-eraser"></span></div>
                                     <div ng-if="canBan()" class="btn btn-default btn-x" ng-click="ban()"><span class="fa fa-ban"></span></div>
