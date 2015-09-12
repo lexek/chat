@@ -686,30 +686,30 @@
                 <div
                         id="emoticonsButton"
                         class="btn btn-link btn-link-default"
-                        ng-class="{active: showEmoticons}"
-                        ng-click="toggleEmoticons()"
+                        ng-class="{active: active === 'emoticons'}"
+                        ng-click="toggle('emoticons')"
                         popover-template="'emoticons.html'"
                         popover-placement="top"
                         popover-trigger="none"
-                        popover-is-open="showEmoticons"
+                        popover-is-open="active === 'emoticons'"
                         >
                     <span class="fa fa-smile-o"></span>
                 </div>
             </div>
             <div class="btn-group">
-                <div id="listButton" class="btn btn-link btn-link-default" ng-click="toggleOnline()" ng-class="{active: showOnline}">
+                <div id="listButton" class="btn btn-link btn-link-default" ng-click="toggle('online')" ng-class="{active: active === 'online'}">
                     <span class="fa fa-list"></span>
                 </div>
             </div>
             <div class="btn-group">
-                <div id="settingsButton" class="btn btn-link btn-link-default" ng-click="toggleSettings()" ng-class="{active: showSettings}">
+                <div id="settingsButton" class="btn btn-link btn-link-default" ng-click="toggle('settings')" ng-class="{active: active === 'settings'}">
                     <span class="fa fa-cog"></span>
                 </div>
             </div>
-            <div id="sideMenu" class="tse-scrollable online <#if !singleRoom>offset</#if>" style="display: none">
+            <div id="sideMenu" class="tse-scrollable online <#if !singleRoom>offset</#if>" ng-show="inSideMenu()">
                 <div class="tse-scroll-content">
                     <div id="sideMenuContent" class="tse-content" style="width: 100%;">
-                        <div style="width: 100%; height: 100%" ng-controller="UsersController" ng-if="showOnline">
+                        <div style="width: 100%; height: 100%" ng-controller="UsersController" ng-if="active === 'online'">
                             <div class="list-group online-list" ng-if="(users | mods).length > 0">
                                 <div class="list-group-item"><h4 style="font-weight: bold">{{'USERS_MODS' | translate}}</h4></div>
                                 <a class="list-group-item" ng-repeat-start="user in users | mods | orderBy:'name'"
@@ -739,7 +739,7 @@
                                 </div>
                             </div>
                         </div>
-                        <ul class="settings-menu" ng-show="showSettings" ng-controller="SettingsController">
+                        <ul class="settings-menu" ng-show="active === 'settings'" ng-controller="SettingsController">
                             <li><a ng-click="showProfile()"><h4><span class="fa fa-user"></span> {{getSelf().name | inflector:'capital'}}</h4></a></li>
                             <li ng-if="isAdmin()"><a href="/admin/" target="_blank"><span class="fa fa-cogs"></span> {{'CONTROLS_MENU_ADMIN_PANEL' | translate}}</a></li>
                             <li>
@@ -753,7 +753,6 @@
                             <li ng-if="canLogin()"><a ng-click="showSignUp()"><span class="fa fa-sign-in"></span> {{'CONTROLS_MENU_SIGN_UP' | translate}}</a></li>
                             <li class="divider"></li>
                             <li ng-if="!canLogin()"><a ng-click="showTickets()"><span class="fa fa-ticket"></span> {{'CONTROLS_MENU_TICKETS' | translate}}</a></li>
-                            <li><a ng-click="showEmoticons()"><span class="fa fa-smile-o"></span> {{'CONTROLS_MENU_EMOTICONS' | translate}}</a></li>
                             <li><a ng-click="showHelp()"><span class="fa fa-fw fa-info"></span> {{'CONTROLS_MENU_HELP' | translate}}</a></li>
                             <li><a ng-click="popout()"><span class="fa fa-external-link"></span> {{'CONTROLS_MENU_POPOUT' | translate}}</a></li>
                             <li class="divider"></li>

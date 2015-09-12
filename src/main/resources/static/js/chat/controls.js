@@ -120,110 +120,22 @@ controlsModule.controller("PollWidgetController", ["$scope", "chatService", func
 }]);
 
 controlsModule.controller("MenuController", ["$scope", function($scope) {
-    var animationInProgress = false;
-    $scope.showOnline = false;
-    $scope.showSettings = false;
-    $scope.showEmoticons = false;
-    $scope.opened = false;
+    $scope.active = null;
 
-    var open = function() {
-        if (!animationInProgress) {
-            animationInProgress = true;
-            var sideMenuElem = $("#sideMenu");
-            if (Modernizr.cssanimations) {
-                sideMenuElem.show();
-                sideMenuElem.TrackpadScrollEmulator('recalculate');
-                sideMenuElem.addClass("animated fadeInRight");
-                sideMenuElem.one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend', function () {
-                    sideMenuElem.removeClass('animated fadeInRight');
-                    animationInProgress = false;
-                });
-            } else {
-                sideMenuElem.slideRightShow(function() {
-                    animationInProgress = false;
-                    sideMenuElem.TrackpadScrollEmulator('recalculate');
-                });
-            }
-            $scope.opened = true;
+    $scope.toggle = function(name) {
+        if ($scope.active === name) {
+            $scope.active = null;
+        } else {
+            $scope.active = name;
         }
-    };
-
-    var close = function() {
-        if (!animationInProgress) {
-            var sideMenuElem = $("#sideMenu");
-            if (Modernizr.cssanimations) {
-                animationInProgress = true;
-                sideMenuElem.addClass("animated fadeOutRight");
-                sideMenuElem.one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend', function () {
-                    sideMenuElem.removeClass('animated fadeOutRight');
-                    sideMenuElem.hide();
-                    animationInProgress = false;
-                });
-            } else {
-                sideMenuElem.slideRightHide(function() {
-                    animationInProgress = false;
-                });
-            }
-            $scope.opened = false;
-        }
-    };
-
-    var doTransition = function () {
-        if ($scope.opened && Modernizr.cssanimations) {
-            animationInProgress = true;
-            var elem = $("#sideMenuContent");
-            elem.addClass("animated fadeIn");
-            elem.one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend', function () {
-                elem.removeClass('animated fadeIn');
-                animationInProgress = false;
-            });
-        }
-    };
-
-    $scope.toggleOnline = function() {
-        if (!animationInProgress) {
-            if ($scope.opened) {
-                if ($scope.showOnline) {
-                    close();
-                    $scope.showOnline = false;
-                } else {
-                    $scope.showOnline = true;
-                    $scope.showSettings = false;
-                    doTransition();
-                }
-            } else {
-                open();
-                $scope.showOnline = true;
-                $scope.showSettings = false;
-            }
-        }
-    };
-
-    $scope.toggleSettings = function() {
-        if (!animationInProgress) {
-            if ($scope.opened) {
-                if ($scope.showSettings) {
-                    close();
-                    $scope.showSettings = false;
-                } else {
-                    $scope.showOnline = false;
-                    $scope.showSettings = true;
-                    doTransition();
-                }
-            } else {
-                open();
-                $scope.showOnline = false;
-                $scope.showSettings = true;
-            }
-        }
-    };
-
-    $scope.toggleEmoticons = function() {
-        $scope.showEmoticons = !$scope.showEmoticons;
     };
 
     $scope.hideEmoticons = function() {
-        $scope.showEmoticons = false;
+        $scope.active = null;
+    };
+
+    $scope.inSideMenu = function() {
+        return ["settings", "online"].indexOf($scope.active) !== -1;
     }
 }]);
 
@@ -374,17 +286,6 @@ controlsModule.controller("SettingsController", ["$scope", "chatService", "$moda
 
     $scope.lebannen = function() {
         return chat.self && (chat.self.name.toLowerCase() === "atplay");
-    };
-
-    $scope.showEmoticons = function() {
-        $modal.open({
-            templateUrl: 'emoticons.html',
-            controller: EmoticonsController,
-            resolve: {
-                "chat": function () { return chat; }
-            },
-            size: "sm"
-        });
     };
 
     $scope.popout = function() {

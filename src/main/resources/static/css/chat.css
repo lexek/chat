@@ -648,12 +648,6 @@ img.emoji {
     filter: progid:DXImageTransform.Microsoft.gradient(enabled = false);
 }
 
-#sideMenu, #sideMenuContent {
-    -webkit-animation-duration: .25s;
-    -moz-animation-duration: .25s;
-    animation-duration: .25s;
-}
-
 .list-padded {
     margin: 10px 20px;
 }
@@ -863,6 +857,26 @@ a:focus {
     -moz-animation-name: fadeIn;
     -o-animation-name: fadeIn;
     animation-name: fadeIn;
+    -webkit-animation-duration: .2s;
+    -moz-animation-duration: .2s;
+    -o-animation-duration: .2s;
+    animation-duration: .2s;
+}
+
+#sideMenu.ng-hide-remove {
+    -webkit-animation: fadeInRight;
+    -o-animation: fadeInRight;
+    animation: fadeInRight;
+    -webkit-animation-duration: .2s;
+    -moz-animation-duration: .2s;
+    -o-animation-duration: .2s;
+    animation-duration: .2s;
+}
+
+#sideMenu.ng-hide-add {
+    -webkit-animation: fadeOutRight;
+    -o-animation: fadeOutRight;
+    animation: fadeOutRight;
     -webkit-animation-duration: .2s;
     -moz-animation-duration: .2s;
     -o-animation-duration: .2s;
