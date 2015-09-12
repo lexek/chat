@@ -36,7 +36,7 @@ public class GoodGameCodec extends MessageToMessageCodec<JsonNode, GoodGameEvent
                 break;
             }
             case "success_join": {
-                if (data.get("access_rights").asLong() >= 10) {
+                if (data.get("access_rights").asLong() >= 10 || data.get("user_id").asLong() == 0) {
                     String channel = data.get("channel_name").asText();
                     out.add(new GoodGameEvent(GoodGameEventType.SUCCESS_JOIN, channel, null, null, null));
                 } else {

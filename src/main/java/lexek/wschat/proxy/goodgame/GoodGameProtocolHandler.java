@@ -33,7 +33,7 @@ public class GoodGameProtocolHandler extends SimpleChannelInboundHandler<GoodGam
                 ctx.writeAndFlush(new GoodGameEvent(GoodGameEventType.AUTH, null, password, name, null));
                 break;
             case SUCCESS_AUTH:
-                if (name != null && msg.getUser().equals(name)) {
+                if (name == null || msg.getUser().equals(name)) {
                     ctx.writeAndFlush(new GoodGameEvent(GoodGameEventType.JOIN, channelId, null, null, null));
                 } else {
                     ctx.fireChannelRead(new GoodGameEvent(GoodGameEventType.FAILED_AUTH, null, null, null, null));
