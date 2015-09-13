@@ -439,7 +439,7 @@ var UsersController = function($scope, $location, $http, alert, title) {
         } else {
             $scope.user = u;
         }
-    }
+    };
 
     $scope.previousPage = function() {
         if ($scope.page !== 0) {
@@ -1103,6 +1103,17 @@ var RoomJournalModalController = function($scope, $http, $modal, room) {
     loadPage();
 };
 
+var TicketController = function($scope, $http) {
+    $scope.showReply = false;
+    $scope.text = "";
+
+    $scope.toggleReply = function() {
+        $scope.showReply = !$scope.showReply;
+    };
+};
+
+AdminApplication.controller("TicketController", ["$scope", "$http", TicketController]);
+
 var TicketsController = function($scope, $location, $http, $modal, alert, title) {
     $scope.entries = [];
     $scope.totalPages = 0;
@@ -1145,20 +1156,17 @@ var TicketsController = function($scope, $location, $http, $modal, alert, title)
         }
     };
 
-    $scope.tryClose = function(id) {
-        var comment = prompt("Type in closing comment.");
-        if (comment != null) {
-            var data = {
-                "comment": comment
-            };
-            $http({
-                method: "POST",
-                url: "/rest/tickets/ticket/"+id+"/close",
-                data: data
-            }).success(function() {
-                loadPage();
-            });
-        }
+    $scope.close = function(ticketId, text) {
+        var data = {
+            "comment": text
+        };
+        $http({
+            method: "POST",
+            url: "/rest/tickets/ticket/"+ticketId+"/close",
+            data: data
+        }).success(function() {
+            loadPage();
+        });
     };
 
     $scope.getLabelClass = function(cat) {

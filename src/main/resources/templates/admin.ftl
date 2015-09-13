@@ -503,70 +503,73 @@
 </script>
 
 <script type="text/ng-template" id="tickets.html">
-    <div class="panel panel-primary">
-        <div class="panel-heading">
-            <h4 class="panel-title">
-                tickets
-            </h4>
-        </div>
-        <div class="panel-body">
-            <span class="btn btn-xs btn-link btn-link-success" ng-class="{disabled: opened}" ng-click="setOpened(true)"><span class="fa fa-exclamation-circle"></span> open</span>
-            <span class="btn btn-xs btn-link btn-link-danger" ng-class="{disabled: !opened}" ng-click="setOpened(false)"><span class="fa fa-check-circle"></span> closed</span>
-            <div class="alert alert-info" ng-if="entries.length === 0">
+    <ul class="nav nav-tabs nav-justified">
+        <li ng-class="{active: opened}">
+            <a href="" ng-click="setOpened(true)">
+                <span class="fa fa-exclamation-circle text-danger"></span> open
+            </a>
+        </li>
+        <li ng-class="{active: !opened}">
+            <a href="" ng-click="setOpened(false)">
+                <span class="fa fa-check-circle text-success"></span> closed
+            </a>
+        </li>
+    </ul>
+    <div class="panel panel-default" style="border-top: 0">
+        <div class="panel-body" ng-if="entries.length === 0">
+            <div class="alert alert-info" >
                 nothing to show
             </div>
         </div>
-        <table class="table table-hover" ng-if="entries.length > 0">
-            <thead>
-            <tr>
-                <th style="width: 120px">
-                    date
-                </th>
-                <th style="width: 100px">
-                    user
-                </th>
-                <th style="width: 50px">
-                    category
-                </th>
-                <th style="width: 100px" ng-if="!opened">
-                    closed by
-                </th>
-                <th>
-                    message
-                </th>
-                <th ng-if="!opened">
-                    admin comment
-                </th>
-                <th style="width: 20px" ng-if="opened">
-                </th>
-            </tr>
-            </thead>
-            <tr ng-repeat="entry in entries">
-                <td>
-                    <abbr title="{{entry.ticket.timestamp | date:'dd.MM.yyyy HH:mm'}}">{{entry.ticket.timestamp | relativeDate}}</abbr>
-                </td>
-                <td>
-                    <a ng-href="/admin/users?search={{entry.user.name}}" ng-click="showUser(entry.user.id, $event)">{{entry.user.name}}</a>
-                </td>
-                <td>
-                    <span class="label" ng-class="getLabelClass(entry.ticket.category)">{{entry.ticket.category}}</span>
-                </td>
-                <td ng-if="!opened">
-                    {{entry.closedBy}}
-                </td>
-                <td>
-                    {{entry.ticket.text}}
-                </td>
-                <td ng-if="!opened">
-                    {{entry.ticket.adminReply}}
-                </td>
-                <td ng-if="opened">
-                    <span class="btn btn-xs btn-link btn-link-success" title="close" ng-click="tryClose(entry.ticket.id)">
-                        <span class="fa fa-check-circle"></span>
-                    </span>
-                </td>
-            </tr>
-        </table>
+        <div class="list-group">
+            <div class="list-group-item" ng-repeat="entry in entries" ng-controller="TicketController">
+                <div>
+                    <div ng-if="entry.ticket.isOpen" class="pull-right">
+                        <div class="btn btn-lg" ng-class="{'btn-link-success': !showReply, 'btn-link-danger': showReply}" ng-click="toggleReply()">
+                            <i class="fa fa-reply" ng-class="{'fa-reply': !showReply, 'fa-times': showReply}"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 class="list-group-item-heading">
+                            {{entry.ticket.category}}
+                            <small>
+                                from <a ng-href="/admin/users?search={{entry.user.name}}" ng-click="showUser(entry.user.id, $event)">{{entry.user.name}}</a>
+                            </small>
+                            <small class="pull-right">
+                                <abbr title="{{entry.ticket.timestamp | date:'dd.MM.yyyy HH:mm'}}">{{entry.ticket.timestamp | relativeDate}}</abbr>
+                            </small>
+                        </h4>
+                        <div class="list-group-item-text">
+                                <div>
+                                    <strong>Text</strong>: {{entry.ticket.text}}
+                                </div>
+                                <div ng-if="entry.ticket.adminReply">
+                                    <strong>Reply from {{entry.closedBy}}</strong>: {{entry.ticket.adminReply}}
+                                </div>
+                        </div>
+                    </div>
+                    <div ng-if="showReply" class="row">
+                        <form name="form" class="col-xs-12" ng-submit="close(entry.ticket.id, text)">
+                            <div class="input-group" ng-class="{'has-error': form.text.$invalid && form.text.$dirty, 'has-success': form.text.$dirty && !form.text.$invalid}">
+                                <input
+                                        class="form-control"
+                                        required
+                                        type="text"
+                                        name="text"
+                                        ng-model="text"
+                                        style="resize: none;"
+                                        minlength="0"
+                                        maxlength="1024"
+                                        ></input>
+                                <div class="input-group-btn">
+                                    <input ng-disabled="form.$invalid" ng-if="!submitting" type="submit" class="btn btn-primary" value="Submit"/>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div class="panel-footer" ng-if="(page !== 0) || hasNextPage()">
             <ul class="pager">
                 <li class="previous" ng-if="page !== 0" ng-click="previousPage()"><a href="">&larr; Previous page</a></li>
