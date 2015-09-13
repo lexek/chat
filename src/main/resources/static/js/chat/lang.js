@@ -41,7 +41,7 @@ langModule.config(['$translateProvider', function ($translateProvider) {
         "PROFILE_EMAIL_RESEND": "Resend verification email",
 
         "CHAT_HELLO_UNAUTHENTICATED": "Hello, you joined {{room}} and you are unauthenticated.",
-        "CHAT_HELLO": "Hello, <span style=\"color: {{color}}\">{{name}}</span>! You joined {{room}} and you are {{role}} ({{globalRole}})",
+        "CHAT_HELLO": "Hello, <span style=\"color: {{color}}\">{{name}}</span>! You joined {{room}} and you are {{role}}",
         "CHAT_LOGIN_SUCCESS": "You successfully logged in as {{name}} (<strong>{{role}}</strong>)",
         "CHAT_CONNECTING": "connecting",
         "CHAT_LOST_CONNECTION": "lost connection",
@@ -176,7 +176,7 @@ langModule.config(['$translateProvider', function ($translateProvider) {
         "CONTROLS_MENU_HIDE_EXT": "не показывать внешние сообщения",
 
         "CHAT_HELLO_UNAUTHENTICATED": "Привет, ты вошёл в {{room}} и ты гость.",
-        "CHAT_HELLO": "Привет, <span style=\"color: {{color}}\">{{name}}</span>! Ты вошёл в {{room}} и ты {{role}} ({{globalRole}})",
+        "CHAT_HELLO": "Привет, <span style=\"color: {{color}}\">{{name}}</span>! Ты вошёл в {{room}} и ты {{role}}",
         "CHAT_LOGIN_SUCCESS": "Ты успешно вошёл как {{name}} (<strong>{{role}}</strong>)",
         "CHAT_CONNECTING": "соединение",
         "CHAT_LOST_CONNECTION": "потеряно соединение",
@@ -307,7 +307,7 @@ langModule.config(['$translateProvider', function ($translateProvider) {
         "CONTROLS_MENU_HELP": "допомога",
 
         "CHAT_HELLO_UNAUTHENTICATED": "Привіт гість, ти долучився до {{room}}.",
-        "CHAT_HELLO": "Привіт, <span style=\"color: {{color}}\">{{name}}</span>! Ти зайшов у {{room}} і ти {{role}} ({{globalRole}})",
+        "CHAT_HELLO": "Привіт, <span style=\"color: {{color}}\">{{name}}</span>! Ти зайшов у {{room}} і ти {{role}}",
         "CHAT_LOGIN_SUCCESS": "Ти успішно зайшов як {{name}} (<strong>{{role}}</strong>)",
         "CHAT_CONNECTING": "підключаємося",
         "CHAT_LOST_CONNECTION": "з'єднання втрачено",

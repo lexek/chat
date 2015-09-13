@@ -165,7 +165,6 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
                     "color": chat.self.color,
                     "name": chat.self.name,
                     "role": $translate.instant("ROLE_" + ctx.msg["chatter"]["role"]),
-                    "globalRole": $translate.instant("ROLE_" + chat.self.role.title),
                     "room": ctx.room
                 }
             )), ctx.room);
