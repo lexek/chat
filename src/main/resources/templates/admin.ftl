@@ -466,10 +466,10 @@
                                 <table class="table">
                                     <thead>
                                     <tr>
-                                        <th>
+                                        <th class="col-xs-6">
                                             attribute
                                         </th>
-                                        <th>
+                                        <th class="col-xs-6">
                                             value
                                         </th>
                                     </tr>
