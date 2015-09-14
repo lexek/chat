@@ -23,8 +23,8 @@ public class NameHandler extends AbstractGlobalMessageHandler {
 
     @Override
     public void handle(Connection connection, User user, Message message) {
+        String newName = message.get(MessageProperty.NAME).trim().toLowerCase();
         if (connection.getUser().isRenameAvailable()) {
-            String newName = message.get(MessageProperty.NAME);
             if (Names.USERNAME_PATTERN.matcher(newName).matches()) {
                 if (!userService.changeName(user.getWrappedObject(), newName)) {
                     connection.send(Message.errorMessage("NAME_TAKEN"));
@@ -33,8 +33,7 @@ public class NameHandler extends AbstractGlobalMessageHandler {
                 connection.send(Message.errorMessage("NAME_BAD_FORMAT"));
             }
         } else if (user.getRole() == GlobalRole.SUPERADMIN) {
-            String newName = message.get(MessageProperty.NAME);
-            if (newName != null && !newName.isEmpty()) {
+            if (!newName.isEmpty()) {
                 if (!userService.changeName(user.getWrappedObject(), newName)) {
                     connection.send(Message.errorMessage("NAME_TAKEN"));
                 }
