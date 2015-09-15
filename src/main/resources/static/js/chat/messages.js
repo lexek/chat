@@ -36,7 +36,7 @@ messagesModule.controller("MessageController", ["$scope", "chatService", "chatSe
         }
     };
 
-    $scope.message.messageUpdatedCallbacks.push(function() {$scope.$apply();});
+    $scope.message.messageUpdatedCallbacks.push(function() {$scope.$digest();});
 
     $scope.showModButtons = function() {
         return $scope.message.showModButtons && !settings.getS("hideMB");
@@ -114,11 +114,11 @@ messagesModule.controller("MessagesController", ["$scope", "chatService", "chatS
 
     $scope.$on('$viewContentLoaded', function() {
         $('.messagesContainer').TrackpadScrollEmulator({ wrapContent: false });
-        $scope.$watchCollection("messages", function() {
-            $('.messagesContainer').TrackpadScrollEmulator('recalculate');
-        });
     });
 
-    chat.messagesUpdatedCallbacks.push(function() {$scope.$apply();});
+    chat.messagesUpdatedCallbacks.push(function() {
+        $scope.$digest();
+        $('.messagesContainer').TrackpadScrollEmulator('recalculate');
+    });
     chat.init();
 }]);

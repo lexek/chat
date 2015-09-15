@@ -9,11 +9,11 @@
                 if (data["success"]) {
                     $scope.error = null;
                     $scope.info = "You have successfuly changed password.";
-                    $scope.$apply();
+                    $scope.$digest();
                 } else {
                     $scope.info = null;
                     $scope.error = data["error"];
-                    $scope.$apply();
+                    $scope.$digest();
                 }
             });
         };
