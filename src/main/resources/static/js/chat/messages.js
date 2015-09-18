@@ -120,5 +120,6 @@ messagesModule.controller("MessagesController", ["$scope", "chatService", "chatS
         $scope.$digest();
         $('.messagesContainer').TrackpadScrollEmulator('recalculate');
     });
+
     chat.init();
 }]);

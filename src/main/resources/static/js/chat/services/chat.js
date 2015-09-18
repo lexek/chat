@@ -29,6 +29,7 @@ function($modal, settings, $translate, $http, $timeout, notificationService, msg
         this.lastMessageTimeout = null;
         this.state = CHAT_STATE.DISCONNECTED;
         this.idCounter = 0;
+        this.limit = document.IS_MOBILE ? 20 : 50;
 
         var c = this;
 
@@ -208,7 +209,7 @@ function($modal, settings, $translate, $http, $timeout, notificationService, msg
             }
             this.lastChatters[room].push(name);
 
-            if (a.length > 50) {
+            if (a.length > this.limit) {
                 a.shift();
             }
         }

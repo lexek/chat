@@ -13,6 +13,7 @@
         <js>/vendor/js/bindonce.js</js>
         <js>/vendor/js/angular-ui-utils.js</js>
         <js>/vendor/js/angular-animate.2.js</js>
+        <js>/vendor/js/angular-touch.js</js>
         <js>/vendor/js/angular-ui-bootstrap.js</js>
         <js>/vendor/js/angular-cookies.js</js>
         <js>/vendor/js/angular-translate.js</js>

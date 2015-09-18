@@ -14,6 +14,8 @@ var setSizes = function() {
     $(".left-part").width(windowWidth - 92 + "px");
 };
 
+document.IS_MOBILE = (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i).test(navigator.userAgent);
+
 (function() {
     var glueCallback = angular.noop;
     document.setGlueCallback = function(callback) {
@@ -33,6 +35,7 @@ var setSizes = function() {
 
 document.chatApplication = angular.module("chatApplication", [
     "ngAnimate",
+    "ngTouch",
     "chat.lang",
     "chat.services",
     "chat.controls",

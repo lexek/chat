@@ -619,7 +619,7 @@
                                 --><span bo-if="message.user.service==='cybergame'" class="fa fa-gamepad" style="color: #999999"></span><!--
                                 --><strong bo-if="message.user.service==='goodgame'" style="color: #73ADFF">GG</strong><!--
                                 --><span bo-if="message.user.service==='sc2tv'" class="sc2tvIcon"></span></small>
-                                <div class="pull-right btn-group modButtons" ng-if="showModButtons()">
+                                <div class="pull-right btn-group modButtons" bo-if="showModButtons()">
                                     <div class="btn btn-link btn-x" ng-click="clear()"><span class="fa fa-eraser"></span></div>
                                     <div class="btn btn-link btn-x" ng-click="ban()"><span class="fa fa-ban"></span></div>
                                     <div class="btn btn-link btn-x" ng-click="timeout()"><span class="fa fa-clock-o"></span></div>

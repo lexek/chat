@@ -481,7 +481,7 @@ controlsModule.directive('textcomplete', ['Textcomplete', "chatService", functio
             message: '='
         },
         template: "<input id=\"userInput\" placeholder=\"Chat about this nostream\" ng-trim=\"false\"" +
-            "ng-model=\"message\" type=\"text\"/>",
+            "ng-model=\"message\" type=\"text\" ng-model-options=\"{ debounce: 100 }\"/>",
         link: function(scope, iElement, iAttrs) {
             var ta = iElement.find('#userInput');
             var textcomplete = new Textcomplete(ta, [
