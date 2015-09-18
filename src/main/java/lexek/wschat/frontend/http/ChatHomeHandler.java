@@ -9,18 +9,22 @@ import java.util.Map;
 
 public class ChatHomeHandler extends SimpleHttpHandler {
     private static final String TITLE = "Yoba chat";
-    private final Map data;
+    private final boolean allowLikes;
+    private final boolean singleRoom;
 
     public ChatHomeHandler(boolean allowLikes, boolean singleRoom) {
-        this.data = ImmutableMap.of(
-            "title", TITLE,
-            "like", allowLikes,
-            "singleRoom", singleRoom
-        );
+        this.allowLikes = allowLikes;
+        this.singleRoom = singleRoom;
     }
 
     @Override
     protected void handle(Request request, Response response) throws Exception {
-        response.renderTemplate("chat", data);
+        boolean debug = request.queryParamAsBoolean("debug");
+        response.renderTemplate("chat", ImmutableMap.of(
+            "title", TITLE,
+            "like", allowLikes,
+            "singleRoom", singleRoom,
+            "debug", debug
+        ));
     }
 }
