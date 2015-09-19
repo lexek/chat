@@ -747,7 +747,7 @@
             </div>
             <div class="btn-group">
                 <div id="listButton" class="btn btn-link btn-link-default" ng-click="toggle('online')" ng-class="{active: active === 'online'}">
-                    <span class="fa fa-list-ul"></span>
+                    <span class="fa fa-bars"></span>
                 </div>
             </div>
             <div class="btn-group">
