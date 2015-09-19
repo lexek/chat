@@ -604,8 +604,9 @@ messagesModule.controller("UserInputController", ["$scope", "$modal", "chatServi
                 message["type"] = "PROXY_MOD";
                 message["room"] = chat.activeRoom;
                 message["service"] = tmp[1];
-                message["text"] = tmp[2].toUpperCase();
-                message["name"] = tmp[3];
+                message["serviceResource"] = tmp[2];
+                message["text"] = tmp[3].toUpperCase();
+                message["name"] = tmp[4];
             } else if (tmp[0].toUpperCase() === "ROLE") {
                 message["room"] = chat.activeRoom;
                 message["name"] = tmp[1];
