@@ -20,6 +20,8 @@ public interface Proxy {
 
     boolean outboundEnabled();
 
+    boolean moderationEnabled();
+
     ProxyState state();
 
     String lastError();

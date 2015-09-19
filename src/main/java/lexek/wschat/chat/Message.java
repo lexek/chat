@@ -1,6 +1,7 @@
 package lexek.wschat.chat;
 
 import com.google.common.collect.ImmutableMap;
+import lexek.wschat.db.model.ProxyMessageModel;
 import lexek.wschat.db.model.UserDto;
 import lexek.wschat.services.poll.PollState;
 
@@ -151,6 +152,14 @@ public class Message {
 
     public static Message emptyMessage(MessageType messageType) {
         return new Message(ImmutableMap.<MessageProperty, Object>of(MessageProperty.TYPE, messageType));
+    }
+
+    public static Message proxyListMessage(List<ProxyMessageModel> proxies, String room) {
+        return new Message(ImmutableMap.<MessageProperty, Object>of(
+            MessageProperty.TYPE, MessageType.PROXIES,
+            MessageProperty.ROOM, room,
+            MessageProperty.PROXIES, proxies
+        ));
     }
 
     @SuppressWarnings("unchecked")

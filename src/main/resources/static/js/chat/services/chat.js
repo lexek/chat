@@ -30,6 +30,7 @@ function($modal, settings, $translate, $http, $timeout, notificationService, msg
         this.state = CHAT_STATE.DISCONNECTED;
         this.idCounter = 0;
         this.limit = document.IS_MOBILE ? 20 : 50;
+        this.proxies = {};
 
         var c = this;
 
@@ -58,10 +59,37 @@ function($modal, settings, $translate, $http, $timeout, notificationService, msg
                     }
                 }
             })
-            .error(function(data, status, headers, config) {
+            .error(function() {
                 console.log("failed to load emoticons");
             });
     };
+
+    chatService.prototype.isProxyModerationEnabled = function(room, providerName, remoteRoom) {
+        var proxies = this.proxies[room];
+        var result = false;
+        if (proxies && proxies.length) {
+            $.each(proxies, function(i, e) {
+                if ((e.providerName === providerName) && (e.remoteRoom === remoteRoom)) {
+                    result = e.moderationEnabled;
+                }
+            });
+        }
+        return result;
+    };
+
+    chatService.prototype.isProxyOutboundEnabled = function(room, providerName, remoteRoom) {
+        var proxies = this.proxies[room];
+        var result = false;
+        if (proxies && proxies.length) {
+            $.each(proxies, function(i, e) {
+                if ((e.providerName === providerName) && (e.remoteRoom === remoteRoom)) {
+                    result = e.outboundEnabled;
+                }
+            });
+        }
+        return result;
+    };
+
 
     /**
      * @param {User} user

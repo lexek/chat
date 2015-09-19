@@ -1604,6 +1604,11 @@
                                 tooltip="outbound"
                             ></span>
                             <span
+                                    class="fa fa-fw fa-shield"
+                                    ng-class="{'text-muted': !proxy.moderationEnabled}"
+                                    tooltip="moderation"
+                                    ></span>
+                            <span
                                     class="label"
                                     ng-class="proxyStateClass(proxy.state)"
                                     tooltip-enable="proxy.lastError"

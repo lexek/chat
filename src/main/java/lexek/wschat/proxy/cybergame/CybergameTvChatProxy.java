@@ -135,6 +135,11 @@ public class CybergameTvChatProxy implements Proxy {
     }
 
     @Override
+    public boolean moderationEnabled() {
+        return false;
+    }
+
+    @Override
     public ProxyState state() {
         return this.state;
     }

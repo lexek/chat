@@ -2,6 +2,7 @@ package lexek.wschat.chat;
 
 import io.netty.util.internal.chmv8.ConcurrentHashMapV8;
 import lexek.wschat.db.model.UserDto;
+import lexek.wschat.db.model.rest.ProxyRestModel;
 
 import java.util.List;
 import java.util.Map;
@@ -28,6 +29,7 @@ public class MessageProperty<T> {
     public static final MessageProperty<String> SERVICE_RESOURCE = valueOf("serviceResource");
     public static final MessageProperty<String> POLL_DATA = valueOf("pollData");
     public static final MessageProperty<Integer> POLL_OPTION = valueOf("pollOption");
+    public static final MessageProperty<List<ProxyRestModel>> PROXIES = valueOf("proxies");
     private final String name;
 
     private MessageProperty(String name) {

@@ -127,6 +127,11 @@ public class Sc2tvChatProxy implements Proxy {
     }
 
     @Override
+    public boolean moderationEnabled() {
+        return false;
+    }
+
+    @Override
     public ProxyState state() {
         return this.state;
     }

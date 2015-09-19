@@ -32,6 +32,7 @@ public class TwitchTvChatProxy implements Proxy {
     private final Logger logger = LoggerFactory.getLogger(TwitchTvChatProxy.class);
     private final ProxyProvider provider;
     private final String channelName;
+    private final String username;
     private final AtomicLong messageId;
     private final MessageBroadcaster messageBroadcaster;
     private final Room room;
@@ -49,6 +50,7 @@ public class TwitchTvChatProxy implements Proxy {
         EventLoopGroup eventLoopGroup
     ) {
         this.channelName = channelName;
+        this.username = username;
         this.messageId = messageId;
         this.messageBroadcaster = messageBroadcaster;
         this.room = room;
@@ -149,6 +151,11 @@ public class TwitchTvChatProxy implements Proxy {
     @Override
     public boolean outboundEnabled() {
         return this.outboundHandler != null;
+    }
+
+    @Override
+    public boolean moderationEnabled() {
+        return username != null;
     }
 
     @Override

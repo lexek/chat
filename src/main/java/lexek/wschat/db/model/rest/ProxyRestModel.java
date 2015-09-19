@@ -9,14 +9,16 @@ public class ProxyRestModel {
     private final String lastError;
     private final ProxyState state;
     private final boolean outboundEnabled;
+    private final boolean moderationEnabled;
 
-    public ProxyRestModel(long id, String providerName, String remoteRoom, String lastError, ProxyState state, boolean outboundEnabled) {
+    public ProxyRestModel(long id, String providerName, String remoteRoom, String lastError, ProxyState state, boolean outboundEnabled, boolean moderationEnabled) {
         this.id = id;
         this.providerName = providerName;
         this.remoteRoom = remoteRoom;
         this.lastError = lastError;
         this.state = state;
         this.outboundEnabled = outboundEnabled;
+        this.moderationEnabled = moderationEnabled;
     }
 
     public long getId() {
@@ -26,7 +28,6 @@ public class ProxyRestModel {
     public String getProviderName() {
         return providerName;
     }
-
 
     public String getRemoteRoom() {
         return remoteRoom;
@@ -42,5 +43,9 @@ public class ProxyRestModel {
 
     public String getLastError() {
         return lastError;
+    }
+
+    public boolean isModerationEnabled() {
+        return moderationEnabled;
     }
 }

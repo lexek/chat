@@ -88,13 +88,17 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
                     (chat.self.role >= globalLevels.MOD) &&
                     (chat.self.role > user.globalRole)
                 )
+            ) && (
+                (msg.type !== "MSG_EXT") || chat.isProxyModerationEnabled(ctx.room, service, serviceRes)
             );
         var ignored = settings.getIgnored().indexOf(user.name.toLowerCase()) != -1;
         var showIgnored = settings.getS("showIgnored");
         var hideExt = settings.getS("hideExt");
         var hidden = ignored && showIgnored;
         var omit = (ignored && !showIgnored) ||
-            ((msg.type === "MSG_EXT") && ((service === "sc2tv.ru") || (service === "cybergame.tv")) && hideExt);
+            ((msg.type === "MSG_EXT") && !chat.isProxyOutboundEnabled(ctx.room, service, serviceRes) && hideExt);
+        console.log(chat.isProxyModerationEnabled(ctx.room, service, serviceRes));
+        console.log(chat.isProxyOutboundEnabled(ctx.room, service, serviceRes));
 
         if (!omit) {
             var tempText = htmlEscape(ctx.proc.unprocessedText);
@@ -394,6 +398,10 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
                         }
                     }, 60*1000);
                 }
+                break;
+            case "PROXIES":
+                chat.proxies[ctx.room] = ctx.msg.proxies;
+                console.log(chat.proxies);
                 break;
             default:
                 console.log(message);

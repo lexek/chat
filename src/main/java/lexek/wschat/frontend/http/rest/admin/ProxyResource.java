@@ -42,8 +42,8 @@ public class ProxyResource {
                 proxy.remoteRoom(),
                 proxy.lastError(),
                 proxy.state(),
-                proxy.outboundEnabled()
-            ))
+                proxy.outboundEnabled(),
+                proxy.moderationEnabled()))
             .collect(Collectors.toList());
     }
 
@@ -85,8 +85,8 @@ public class ProxyResource {
             result.remoteRoom(),
             result.lastError(),
             result.state(),
-            result.outboundEnabled()
-        );
+            result.outboundEnabled(),
+            result.moderationEnabled());
     }
 
     @Path("/{providerName}/{remoteRoom}")

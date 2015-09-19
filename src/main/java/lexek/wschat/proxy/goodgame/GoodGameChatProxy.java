@@ -152,6 +152,11 @@ public class GoodGameChatProxy implements Proxy {
     }
 
     @Override
+    public boolean moderationEnabled() {
+        return userId != null;
+    }
+
+    @Override
     public ProxyState state() {
         return this.state;
     }

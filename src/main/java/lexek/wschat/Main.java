@@ -30,6 +30,7 @@ import lexek.wschat.chat.*;
 import lexek.wschat.chat.handlers.*;
 import lexek.wschat.chat.processing.HandlerInvoker;
 import lexek.wschat.db.dao.*;
+import lexek.wschat.db.model.ProxyMessageModel;
 import lexek.wschat.frontend.http.*;
 import lexek.wschat.frontend.http.admin.AdminPageHandler;
 import lexek.wschat.frontend.http.rest.EmailResource;
@@ -77,6 +78,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
 public class Main {
     private Main() {
@@ -174,6 +176,36 @@ public class Main {
             settings.getHttp().getTwitchUrl());
 
         RoomJoinNotificationService roomJoinNotificationService = new RoomJoinNotificationService();
+
+        Set<String> bannedIps = new CopyOnWriteArraySet<>();
+
+        EventLoopGroup proxyEventLoopGroup;
+        if (Epoll.isAvailable()) {
+            proxyEventLoopGroup = new EpollEventLoopGroup(1);
+        } else {
+            proxyEventLoopGroup = new NioEventLoopGroup(1);
+        }
+        ProxyManager proxyManager = new ProxyManager(proxyDao, roomManager, journalService);
+        proxyManager.registerProvider(new GoodGameProxyProvider(proxyEventLoopGroup, messageBroadcaster, messageId));
+        proxyManager.registerProvider(new TwitchTvProxyProvider(messageId, messageBroadcaster, authenticationManager, proxyEventLoopGroup, twitchAuthService));
+        proxyManager.registerProvider(new Sc2tvProxyProvider(proxyEventLoopGroup, messageBroadcaster, messageId));
+        proxyManager.registerProvider(new CybergameTvProxyProvider(proxyEventLoopGroup, messageBroadcaster, messageId));
+        connectionManager.registerService(proxyManager);
+        roomJoinNotificationService.registerListener((connection, chatter, room) ->
+                connection.send(Message.proxyListMessage(
+                    proxyManager.getProxiesByRoom(room)
+                        .stream()
+                        .map(proxy -> new ProxyMessageModel(
+                            proxy.provider().getName(),
+                            proxy.remoteRoom(),
+                            proxy.outboundEnabled(),
+                            proxy.moderationEnabled()
+                        ))
+                        .collect(Collectors.toList())
+                    ,
+                    room.getName()
+                ))
+        );
         roomJoinNotificationService.registerListener((connection, chatter, room) -> {
             PollState activePoll = pollService.getActivePoll(room);
             if (activePoll != null) {
@@ -195,20 +227,6 @@ public class Main {
         roomJoinNotificationService.registerListener(((connection, chatter, room) ->
             connection.send(Message.historyMessage(room.getHistory()))));
         roomJoinNotificationService.registerListener(notificationService);
-        Set<String> bannedIps = new CopyOnWriteArraySet<>();
-
-        EventLoopGroup proxyEventLoopGroup;
-        if (Epoll.isAvailable()) {
-            proxyEventLoopGroup = new EpollEventLoopGroup(1);
-        } else {
-            proxyEventLoopGroup = new NioEventLoopGroup(1);
-        }
-        ProxyManager proxyManager = new ProxyManager(proxyDao, roomManager, journalService);
-        proxyManager.registerProvider(new GoodGameProxyProvider(proxyEventLoopGroup, messageBroadcaster, messageId));
-        proxyManager.registerProvider(new TwitchTvProxyProvider(messageId, messageBroadcaster, authenticationManager, proxyEventLoopGroup, twitchAuthService));
-        proxyManager.registerProvider(new Sc2tvProxyProvider(proxyEventLoopGroup, messageBroadcaster, messageId));
-        proxyManager.registerProvider(new CybergameTvProxyProvider(proxyEventLoopGroup, messageBroadcaster, messageId));
-        connectionManager.registerService(proxyManager);
 
         HandlerInvoker handlerInvoker = new HandlerInvoker(roomManager, chatterService, bannedIps, captchaService);
         MessageReactor messageReactor = new DefaultMessageReactor(handlerInvoker);
