@@ -206,6 +206,7 @@ public class GoodGameChatProxy implements Proxy {
                 Message message = Message.proxyClear(
                     "#main",
                     "goodgame",
+                    "GoodGame",
                     msg.getUser()
                 );
                 messageBroadcaster.submitMessage(message, Connection.STUB_CONNECTION, room.FILTER);

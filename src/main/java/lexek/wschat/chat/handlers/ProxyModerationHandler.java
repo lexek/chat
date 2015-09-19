@@ -14,7 +14,8 @@ public class ProxyModerationHandler extends AbstractRoomMessageHandler {
             ImmutableSet.of(
                 MessageProperty.ROOM,
                 MessageProperty.NAME,
-                MessageProperty.SERVICE
+                MessageProperty.SERVICE,
+                MessageProperty.SERVICE_RESOURCE
             ),
             MessageType.PROXY_MOD,
             LocalRole.MOD,
@@ -26,7 +27,12 @@ public class ProxyModerationHandler extends AbstractRoomMessageHandler {
     public void handle(Connection connection, User user, Room room, Chatter chatter, Message message) {
         try {
             ModerationOperation operation = ModerationOperation.valueOf(message.get(MessageProperty.TEXT));
-            proxyManager.moderate(room, message.get(MessageProperty.SERVICE), operation, message.get(MessageProperty.NAME));
+            proxyManager.moderate(
+                room,
+                message.get(MessageProperty.SERVICE),
+                message.get(MessageProperty.SERVICE_RESOURCE),
+                operation, message.get(MessageProperty.NAME)
+            );
         } catch (IllegalArgumentException e) {
             connection.send(Message.errorMessage("BAD_ARG"));
         }

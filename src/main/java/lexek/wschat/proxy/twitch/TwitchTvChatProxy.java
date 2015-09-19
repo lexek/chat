@@ -199,6 +199,7 @@ public class TwitchTvChatProxy implements Proxy {
             Message msg = Message.proxyClear(
                 "#main",
                 "twitch",
+                channelName,
                 name
             );
             messageBroadcaster.submitMessage(msg, Connection.STUB_CONNECTION, room.FILTER);

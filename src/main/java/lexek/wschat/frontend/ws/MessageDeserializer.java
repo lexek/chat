@@ -57,6 +57,9 @@ public class MessageDeserializer extends StdDeserializer<Message> {
                 case "service":
                     mapBuilder.put(MessageProperty.SERVICE, node.asText());
                     break;
+                case "serviceResource":
+                    mapBuilder.put(MessageProperty.SERVICE_RESOURCE, node.asText());
+                    break;
             }
 
         });

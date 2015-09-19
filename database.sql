@@ -37,7 +37,7 @@ CREATE TABLE `room` (
   UNIQUE INDEX `NAME_UNIQUE` (`name`)
 );
 
-INSERT INTO `room` VALUES (NULL, "#main", "main room");
+INSERT INTO `room` VALUES (NULL, '#main', 'main room');
 
 CREATE TABLE `chatter` (
   `id`      BIGINT(20) NOT NULL AUTO_INCREMENT,
@@ -262,8 +262,8 @@ CREATE TABLE `chat_proxy` (
   COLLATE 'utf8mb4_unicode_ci',
   `enable_outbound` BIT(1)      NULL     DEFAULT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE INDEX `id_channel_id_provider_name` (`room_id`, `provider_name`),
   UNIQUE INDEX `provider_name_remote_room` (`provider_name`, `remote_room`),
+  INDEX `room_id` (`room_id`),
   CONSTRAINT `PROXY_ROOM` FOREIGN KEY (`room_id`) REFERENCES `room` (`id`)
     ON UPDATE CASCADE
     ON DELETE CASCADE

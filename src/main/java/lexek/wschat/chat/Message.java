@@ -69,10 +69,11 @@ public class Message {
         return new Message(ImmutableMap.<MessageProperty, Object>of(MessageProperty.TYPE, messageType, MessageProperty.ROOM, room, MessageProperty.NAME, user, MessageProperty.MOD, mod));
     }
 
-    public static Message proxyClear(String room, String service, String user) {
+    public static Message proxyClear(String room, String service, String remoteRoom, String user) {
         return new Message(ImmutableMap.<MessageProperty, Object>of(
             MessageProperty.TYPE, MessageType.PROXY_CLEAR,
             MessageProperty.SERVICE, service,
+            MessageProperty.SERVICE_RESOURCE, remoteRoom,
             MessageProperty.ROOM, room,
             MessageProperty.NAME, user
         ));

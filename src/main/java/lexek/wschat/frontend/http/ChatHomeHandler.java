@@ -5,8 +5,6 @@ import lexek.httpserver.Request;
 import lexek.httpserver.Response;
 import lexek.httpserver.SimpleHttpHandler;
 
-import java.util.Map;
-
 public class ChatHomeHandler extends SimpleHttpHandler {
     private static final String TITLE = "Yoba chat";
     private final boolean allowLikes;

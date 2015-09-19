@@ -56,8 +56,8 @@ public class ProxyManager extends AbstractService implements MessageConsumerServ
         }
     }
 
-    public void remove(UserDto admin, Room room, String provider) {
-        Proxy proxy = getProxy(room, provider);
+    public void remove(UserDto admin, Room room, String provider, String remoteRoom) {
+        Proxy proxy = getProxy(room, provider, remoteRoom);
         if (proxy != null) {
             proxies.remove(room.getId(), proxy);
             proxy.stop();
@@ -68,8 +68,8 @@ public class ProxyManager extends AbstractService implements MessageConsumerServ
         }
     }
 
-    public void stopProxy(Room room, String provider) {
-        Proxy proxy = getProxy(room, provider);
+    public void stopProxy(Room room, String provider, String remoteRoom) {
+        Proxy proxy = getProxy(room, provider, remoteRoom);
         if (proxy != null) {
             if (proxy.state() == ProxyState.RUNNING) {
                 proxy.stop();
@@ -81,8 +81,8 @@ public class ProxyManager extends AbstractService implements MessageConsumerServ
         }
     }
 
-    public void startProxy(Room room, String provider) {
-        Proxy proxy = getProxy(room, provider);
+    public void startProxy(Room room, String provider, String remoteRoom) {
+        Proxy proxy = getProxy(room, provider, remoteRoom);
         if (proxy != null) {
             if (proxy.state() == ProxyState.STOPPED || proxy.state() == ProxyState.FAILED) {
                 proxy.start();
@@ -106,8 +106,8 @@ public class ProxyManager extends AbstractService implements MessageConsumerServ
         }
     }
 
-    public void moderate(Room room, String providerName, ModerationOperation operation, String name) {
-        Proxy proxy = getProxy(room, providerName);
+    public void moderate(Room room, String providerName, String remoteRoom, ModerationOperation operation, String name) {
+        Proxy proxy = getProxy(room, providerName, remoteRoom);
         if (proxy != null && proxy.state() == ProxyState.RUNNING) {
             if (proxy.provider().supports(operation)) {
                 proxy.moderate(operation, name);
@@ -156,11 +156,11 @@ public class ProxyManager extends AbstractService implements MessageConsumerServ
         };
     }
 
-    private Proxy getProxy(Room room, String provider) {
+    private Proxy getProxy(Room room, String provider, String remoteRoom) {
         Collection<Proxy> roomProxies = proxies.get(room.getId());
         if (roomProxies != null) {
             for (Proxy e : roomProxies) {
-                if (e.provider().getName().equals(provider)) {
+                if (e.provider().getName().equals(provider) && e.remoteRoom().equals(remoteRoom)) {
                     return e;
                 }
             }

@@ -1613,13 +1613,13 @@
                                     class="btn btn-xs btn-link-danger"
                                     tooltip="stop"
                                     ng-if="proxy.state === 'RUNNING'"
-                                    ng-click="stopProxy(proxy.providerName)">
+                                    ng-click="stopProxy(proxy)">
                                 <span class="fa fa-fw fa-stop"></span>
                             </span>
                             <span class="btn btn-xs btn-link-success"
                                   ng-if="proxy.state === 'STOPPED' || proxy.state === 'FAILED'"
                                   tooltip="start"
-                                  ng-click="startProxy(proxy.providerName)">
+                                  ng-click="startProxy(proxy)">
                                 <span class="fa fa-fw fa-play"></span>
                             </span>
                         </p>

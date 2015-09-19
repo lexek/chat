@@ -1696,25 +1696,34 @@ var RoomController = function($scope, $location, $http, $sce, $modal, alert, tit
     $scope.removeProxy = function(proxy) {
         $http({
             method: "DELETE",
-            url: StringFormatter.format("/rest/rooms/{number}/proxies/{string}", $scope.roomData.id, proxy.providerName)
+            url: StringFormatter.format(
+                "/rest/rooms/{number}/proxies/{string}/{string}",
+                $scope.roomData.id, proxy.providerName, proxy.remoteRoom
+            )
         }).success(function() {
             $scope.proxies.splice($scope.proxies.indexOf(proxy), 1);
         });
     };
 
-    $scope.stopProxy = function(providerName) {
+    $scope.stopProxy = function(proxy) {
         $http({
             method: "POST",
-            url: StringFormatter.format("/rest/rooms/{number}/proxies/{string}/stop", $scope.roomData.id, providerName)
+            url: StringFormatter.format(
+                "/rest/rooms/{number}/proxies/{string}/{string}/stop",
+                $scope.roomData.id, proxy.providerName, proxy.remoteRoom
+            )
         }).success(function() {
             loadProxies()
         });
     };
 
-    $scope.startProxy = function(providerName) {
+    $scope.startProxy = function(proxy) {
         $http({
             method: "POST",
-            url: StringFormatter.format("/rest/rooms/{number}/proxies/{string}/start", $scope.roomData.id, providerName)
+            url: StringFormatter.format(
+                "/rest/rooms/{number}/proxies/{string}/{string}/start",
+                $scope.roomData.id, proxy.providerName, proxy.remoteRoom
+            )
         }).success(function() {
             loadProxies()
         });

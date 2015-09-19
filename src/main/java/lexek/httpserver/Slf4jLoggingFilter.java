@@ -61,7 +61,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Universal logging filter.
- *
+ * <p/>
  * Can be used on client or server side. Has the highest priority.
  *
  * @author Pavel Bucek (pavel.bucek at oracle.com)
@@ -71,7 +71,7 @@ import java.util.concurrent.atomic.AtomicLong;
 @Priority(Integer.MIN_VALUE)
 @SuppressWarnings("ClassWithMultipleLoggers")
 public class Slf4jLoggingFilter implements ContainerRequestFilter, ClientRequestFilter, ContainerResponseFilter,
-                                      ClientResponseFilter, WriterInterceptor {
+    ClientResponseFilter, WriterInterceptor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger("rest-access");
     private static final String NOTIFICATION_PREFIX = "* ";
@@ -141,20 +141,20 @@ public class Slf4jLoggingFilter implements ContainerRequestFilter, ClientRequest
 
     private void printRequestLine(final StringBuilder b, final String note, final long id, final String method, final URI uri) {
         prefixId(b, id).append(NOTIFICATION_PREFIX)
-                .append(note)
-                .append(" on thread ").append(Thread.currentThread().getName())
-                .append("\n");
+            .append(note)
+            .append(" on thread ").append(Thread.currentThread().getName())
+            .append("\n");
         prefixId(b, id).append(REQUEST_PREFIX).append(method).append(" ")
-                .append(uri.toASCIIString()).append("\n");
+            .append(uri.toASCIIString()).append("\n");
     }
 
     private void printResponseLine(final StringBuilder b, final String note, final long id, final int status) {
         prefixId(b, id).append(NOTIFICATION_PREFIX)
-                .append(note)
-                .append(" on thread ").append(Thread.currentThread().getName()).append("\n");
+            .append(note)
+            .append(" on thread ").append(Thread.currentThread().getName()).append("\n");
         prefixId(b, id).append(RESPONSE_PREFIX)
-                .append(Integer.toString(status))
-                .append("\n");
+            .append(Integer.toString(status))
+            .append("\n");
     }
 
     private void printPrefixedHeaders(final StringBuilder b,
@@ -225,7 +225,7 @@ public class Slf4jLoggingFilter implements ContainerRequestFilter, ClientRequest
 
     @Override
     public void filter(final ClientRequestContext requestContext, final ClientResponseContext responseContext)
-            throws IOException {
+        throws IOException {
         final long id = (Long) requestContext.getProperty(LOGGING_ID_PROPERTY);
         final StringBuilder b = new StringBuilder();
 
@@ -234,7 +234,7 @@ public class Slf4jLoggingFilter implements ContainerRequestFilter, ClientRequest
 
         if (printEntity && responseContext.hasEntity()) {
             responseContext.setEntityStream(logInboundEntity(b, responseContext.getEntityStream(),
-                    MessageUtils.getCharset(responseContext.getMediaType())));
+                MessageUtils.getCharset(responseContext.getMediaType())));
         }
 
         log(b);
@@ -251,7 +251,7 @@ public class Slf4jLoggingFilter implements ContainerRequestFilter, ClientRequest
 
         if (printEntity && context.hasEntity()) {
             context.setEntityStream(
-                    logInboundEntity(b, context.getEntityStream(), MessageUtils.getCharset(context.getMediaType())));
+                logInboundEntity(b, context.getEntityStream(), MessageUtils.getCharset(context.getMediaType())));
         }
 
         log(b);
@@ -259,7 +259,7 @@ public class Slf4jLoggingFilter implements ContainerRequestFilter, ClientRequest
 
     @Override
     public void filter(final ContainerRequestContext requestContext, final ContainerResponseContext responseContext)
-            throws IOException {
+        throws IOException {
         long id = (Long) requestContext.getProperty(LOGGING_ID_PROPERTY);
         final StringBuilder b = new StringBuilder();
 
@@ -278,7 +278,7 @@ public class Slf4jLoggingFilter implements ContainerRequestFilter, ClientRequest
 
     @Override
     public void aroundWriteTo(final WriterInterceptorContext writerInterceptorContext)
-            throws IOException, WebApplicationException {
+        throws IOException, WebApplicationException {
         final LoggingStream stream = (LoggingStream) writerInterceptorContext.getProperty(ENTITY_LOGGER_PROPERTY);
         writerInterceptorContext.proceed();
         if (stream != null) {

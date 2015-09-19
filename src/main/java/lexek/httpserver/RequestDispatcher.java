@@ -10,7 +10,6 @@ import org.glassfish.jersey.server.ApplicationHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.naming.Context;
 import javax.ws.rs.core.Application;
 import java.io.PrintWriter;
 import java.io.StringWriter;

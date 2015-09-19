@@ -67,7 +67,8 @@ messagesModule.controller("MessageController", ["$scope", "chatService", "chatSe
                 "text": "CLEAR",
                 "room": chat.activeRoom,
                 "name": $scope.message.user.name,
-                "service": $scope.message.user.service
+                "service": $scope.message.user.service,
+                "serviceResource": $scope.message.user.serviceRes
             })
         } else {
             chat.clear($scope.message.user);
@@ -80,7 +81,8 @@ messagesModule.controller("MessageController", ["$scope", "chatService", "chatSe
                 "text": "TIMEOUT",
                 "room": chat.activeRoom,
                 "name": $scope.message.user.name,
-                "service": $scope.message.user.service
+                "service": $scope.message.user.service,
+                "serviceResource": $scope.message.user.serviceRes
             })
         } else {
             chat.timeout($scope.message.user);
@@ -93,7 +95,8 @@ messagesModule.controller("MessageController", ["$scope", "chatService", "chatSe
                 "text": "BAN",
                 "room": chat.activeRoom,
                 "name": $scope.message.user.name,
-                "service": $scope.message.user.service
+                "service": $scope.message.user.service,
+                "serviceResource": $scope.message.user.serviceRes
             })
         } else {
             chat.ban($scope.message.user);

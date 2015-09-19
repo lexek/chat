@@ -52,7 +52,7 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
             );
         }
         chat.messagesUpdated();
-        chat.hideMessagesFromUser(ctx.room, msg.name, ctx.msg.service);
+        chat.hideMessagesFromUser(ctx.room, msg.name, ctx.msg.service, ctx.msg.serviceResource);
     };
 
     var processClearRoomMessage = function(chat, ctx) {
@@ -105,7 +105,7 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
                 (previousMessage.type === "MSG_GROUP") && ((msg.type === "MSG") || (msg.type === "MSG_EXT")) &&
                 (lastChatter &&
                     (lastChatter.name.toLowerCase() === user.name.toLowerCase()) &&
-                    (lastChatter.service === user.service)
+                    (lastChatter.service === user.service) && (lastChatter.serviceRes === user.serviceRes)
                 ) &&
                 (previousMessage.messages.length < 5);
             chat.lastChatter(ctx.room, user);

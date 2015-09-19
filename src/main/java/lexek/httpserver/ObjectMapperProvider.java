@@ -1,12 +1,11 @@
 package lexek.httpserver;
 
-import javax.ws.rs.ext.ContextResolver;
-import javax.ws.rs.ext.Provider;
-
 import com.codahale.metrics.json.HealthCheckModule;
 import com.codahale.metrics.json.MetricsModule;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import javax.ws.rs.ext.ContextResolver;
+import javax.ws.rs.ext.Provider;
 import java.util.concurrent.TimeUnit;
 
 @Provider

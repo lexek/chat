@@ -10,7 +10,9 @@ import lexek.wschat.proxy.ProxyManager;
 import lexek.wschat.security.jersey.Auth;
 import lexek.wschat.security.jersey.RequiredRole;
 import lexek.wschat.services.RoomService;
+import org.hibernate.validator.constraints.NotEmpty;
 
+import javax.validation.constraints.Min;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
@@ -87,31 +89,34 @@ public class ProxyResource {
         );
     }
 
-    @Path("/{providerName}")
+    @Path("/{providerName}/{remoteRoom}")
     @DELETE
     public void delete(
-        @PathParam("roomId") long roomId,
-        @PathParam("providerName") String providerName,
+        @PathParam("roomId") @Min(0) long roomId,
+        @PathParam("providerName") @NotEmpty String providerName,
+        @PathParam("remoteRoom") @NotEmpty String remoteRoom,
         @Auth UserDto admin
     ) {
-        proxyManager.remove(admin, roomService.getRoomInstance(roomId), providerName);
+        proxyManager.remove(admin, roomService.getRoomInstance(roomId), providerName, remoteRoom);
     }
 
-    @Path("/{providerName}/start")
+    @Path("/{providerName}/{remoteRoom}/start")
     @POST
     public void start(
-        @PathParam("roomId") long roomId,
-        @PathParam("providerName") String providerName
+        @PathParam("roomId") @Min(0) long roomId,
+        @PathParam("providerName") @NotEmpty String providerName,
+        @PathParam("remoteRoom") @NotEmpty String remoteRoom
     ) {
-        proxyManager.startProxy(roomService.getRoomInstance(roomId), providerName);
+        proxyManager.startProxy(roomService.getRoomInstance(roomId), providerName, remoteRoom);
     }
 
-    @Path("/{providerName}/stop")
+    @Path("/{providerName}/{remoteRoom}/stop")
     @POST
     public void stop(
-        @PathParam("roomId") long roomId,
-        @PathParam("providerName") String providerName
+        @PathParam("roomId") @Min(0) long roomId,
+        @PathParam("providerName") @NotEmpty String providerName,
+        @PathParam("remoteRoom") @NotEmpty String remoteRoom
     ) {
-        proxyManager.stopProxy(roomService.getRoomInstance(roomId), providerName);
+        proxyManager.stopProxy(roomService.getRoomInstance(roomId), providerName, remoteRoom);
     }
 }
