@@ -129,7 +129,7 @@ function fakeNgModel(initValue){
     };
 }
 
-angular.module('luegg.directives', []).directive('scrollGlue', function(){
+angular.module('luegg.directives', []).directive('scrollGlue', [function() {
     return {
         priority: 1,
         require: ['?ngModel'],
@@ -137,14 +137,17 @@ angular.module('luegg.directives', []).directive('scrollGlue', function(){
         link: function(scope, $el, attrs, ctrls){
             var el = $el[0],
                 ngModel = ctrls[0] || fakeNgModel(true);
+            var lastHeight = 0;
 
             function scrollToBottom(){
                 el.scrollTop = el.scrollHeight;
             }
 
-            function shouldActivateAutoScroll(){
+            function shouldActivateAutoScroll() {
+                var downsize = el.clientHeight < lastHeight;
+                lastHeight = el.clientHeight;
                 // + 1 catches off by one errors in chrome
-                return el.scrollTop + el.clientHeight + 1 >= el.scrollHeight;
+                return downsize || (el.scrollTop + el.clientHeight + 1 >= el.scrollHeight);
             }
 
             scope.$watch(function(){
@@ -153,9 +156,13 @@ angular.module('luegg.directives', []).directive('scrollGlue', function(){
                 }
             });
 
-            $el.bind('scroll', function(){
+            $el.bind('scroll', function() {
+                scope.$apply(ngModel.$setViewValue.bind(ngModel, shouldActivateAutoScroll()));
+            });
+
+            document.setGlueCallback(function() {
                 scope.$apply(ngModel.$setViewValue.bind(ngModel, shouldActivateAutoScroll()));
             });
         }
     };
-});
+}]);

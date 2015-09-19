@@ -33,9 +33,6 @@ usersModule.controller("UsersController", ["$scope", "$http", "chatService", fun
 
     $scope.$on('$viewContentLoaded', function() {
         $('#onlineList').TrackpadScrollEmulator({ wrapContent: false, autoHide: false });
-        $scope.$watchCollection("users", function() {
-            $('#onlineList').TrackpadScrollEmulator('recalculate');
-        });
     });
 }]);
 

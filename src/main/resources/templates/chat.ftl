@@ -40,7 +40,56 @@
     </script>
 
     <script src="https://www.google.com/recaptcha/api.js?onload=vcRecapthaApiLoaded&render=explicit" async defer></script>
-    <script type="text/javascript" src="/min/app.js"></script>
+    <#if debug>
+        <script type="text/javascript" src="/vendor/js/modernizr.js"></script>
+        <script type="text/javascript" src="/vendor/js/jquery-1.11.1.js"></script>
+        <script type="text/javascript" src="/vendor/js/twemoji.js"></script>
+        <script type="text/javascript" src="/vendor/js/url.js"></script>
+        <script type="text/javascript" src="/vendor/js/jquery.cookie.js"></script>
+        <script type="text/javascript" src="/vendor/js/tse.js"></script>
+        <script type="text/javascript" src="/vendor/js/swfobject.js"></script>
+        <script type="text/javascript" src="/vendor/js/web_socket.js"></script>
+        <script type="text/javascript" src="/vendor/js/angular.js"></script>
+        <script type="text/javascript" src="/vendor/js/angular-sanitize.js"></script>
+        <script type="text/javascript" src="/vendor/js/bindonce.js"></script>
+        <script type="text/javascript" src="/vendor/js/angular-ui-utils.js"></script>
+        <script type="text/javascript" src="/vendor/js/angular-animate.2.js"></script>
+        <script type="text/javascript" src="/vendor/js/angular-touch.js"></script>
+        <script type="text/javascript" src="/vendor/js/angular-ui-bootstrap.js"></script>
+        <script type="text/javascript" src="/vendor/js/angular-cookies.js"></script>
+        <script type="text/javascript" src="/vendor/js/angular-translate.js"></script>
+        <script type="text/javascript" src="/vendor/js/angular-translate-storage-cookie.js"></script>
+        <script type="text/javascript" src="/vendor/js/angular-textcomplete.js"></script>
+        <script type="text/javascript" src="/vendor/js/angular-relative-date.js"></script>
+        <script type="text/javascript" src="/vendor/js/angular-recaptcha.js"></script>
+        <script type="text/javascript" src="/vendor/js/bootstrap-colorpicker.js"></script>
+        <script type="text/javascript" src="/js/chat/mixins/closable.js"></script>
+        <script type="text/javascript" src="/js/chat/mixins/pending.js"></script>
+        <script type="text/javascript" src="/js/chat/types/chatState.js"></script>
+        <script type="text/javascript" src="/js/chat/types/role.js"></script>
+        <script type="text/javascript" src="/js/chat/types/user.js"></script>
+        <script type="text/javascript" src="/js/libs.js"></script>
+        <script type="text/javascript" src="/js/chat/sc2emotes.js"></script>
+        <script type="text/javascript" src="/js/chat/lang.js"></script>
+        <script type="text/javascript" src="/js/chat/services/linkResolver.js"></script>
+        <script type="text/javascript" src="/js/chat/services/settings.js"></script>
+        <script type="text/javascript" src="/js/chat/services/windowState.js"></script>
+        <script type="text/javascript" src="/js/chat/services/notifications.js"></script>
+        <script type="text/javascript" src="/js/chat/services/messageProcessing.js"></script>
+        <script type="text/javascript" src="/js/chat/services/chat.js"></script>
+        <script type="text/javascript" src="/js/chat/services.js"></script>
+        <script type="text/javascript" src="/js/chat/messages.js"></script>
+        <script type="text/javascript" src="/js/chat/users.js"></script>
+        <script type="text/javascript" src="/js/chat/controls.js"></script>
+        <script type="text/javascript" src="/js/chat/ui/profile/email.js"></script>
+        <script type="text/javascript" src="/js/chat/ui/profile/password.js"></script>
+        <script type="text/javascript" src="/js/chat/ui/profile/profile.js"></script>
+        <script type="text/javascript" src="/js/chat/ui/tickets/list.js"></script>
+        <script type="text/javascript" src="/js/chat/ui/tickets/compose.js"></script>
+        <script type="text/javascript" src="/js/chat/chat.js"></script>
+    <#else>
+        <script type="text/javascript" src="/min/app.js"></script>
+    </#if>
 </head>
 
 <body>
@@ -48,16 +97,16 @@
 <div id="content" ng-class="{'dark': isDark()}" ng-controller="StyleController">
 
 <script type="text/ng-template" id="emoticons.html">
-    <div style="height: 200px; width:120px; overflow-y: auto; overflow-x: hidden" ng-controller="EmoticonsController">
+    <div style="height: 200px; width:120px; overflow-y: auto; overflow-x: hidden" ng-controller="EmoticonsController" bindonce>
         <div
-                ng-repeat="emoticon in emoticons | orderBy:'code'"
+                ng-repeat="emoticon in ::emoticons | orderBy:'code'"
                 style="display: inline-block; width: 25px; cursor: pointer;"
-                ng-click="addToInput(unescapeCode(emoticon.code))"
-                title="{{unescapeCode(emoticon.code)}}"
+                ng-click="::addToInput(unescapeCode(emoticon.code))"
+                ng-title="::unescapeCode(emoticon.code)"
                 >
             <img
                     style="max-height: 25px; max-width: 25px; height:auto; width: auto;"
-                    ng-src="/emoticons/{{emoticon.fileName}}"
+                    bo-src="'/emoticons/' + emoticon.fileName"
                     />
         </div>
     </div>
@@ -619,7 +668,7 @@
                                 --><span bo-if="message.user.service==='cybergame'" class="fa fa-gamepad" style="color: #999999"></span><!--
                                 --><strong bo-if="message.user.service==='goodgame'" style="color: #73ADFF">GG</strong><!--
                                 --><span bo-if="message.user.service==='sc2tv'" class="sc2tvIcon"></span></small>
-                                <div class="pull-right btn-group modButtons" ng-if="showModButtons()">
+                                <div class="pull-right btn-group modButtons" bo-if="showModButtons()">
                                     <div class="btn btn-link btn-x" ng-click="clear()"><span class="fa fa-eraser"></span></div>
                                     <div class="btn btn-link btn-x" ng-click="ban()"><span class="fa fa-ban"></span></div>
                                     <div class="btn btn-link btn-x" ng-click="timeout()"><span class="fa fa-clock-o"></span></div>

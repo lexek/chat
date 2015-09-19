@@ -14,18 +14,28 @@ var setSizes = function() {
     $(".left-part").width(windowWidth - 92 + "px");
 };
 
-$(document).ready(function () {
-    wide = false;
-    setSizes();
-    $('.tse-scrollable').TrackpadScrollEmulator({wrapContent: false, autoHide: false});
-    $( window ).resize(function() {
+document.IS_MOBILE = (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i).test(navigator.userAgent);
+
+(function() {
+    var glueCallback = angular.noop;
+    document.setGlueCallback = function(callback) {
+        glueCallback = callback;
+    };
+    $(document).ready(function () {
+        wide = false;
         setSizes();
-        $('.tse-scrollable').TrackpadScrollEmulator('recalculate');
+        $('.tse-scrollable').TrackpadScrollEmulator({wrapContent: false, autoHide: false});
+        $(window).resize(function() {
+            setSizes();
+            $('.tse-scrollable').TrackpadScrollEmulator('recalculate');
+            glueCallback();
+        });
     });
-});
+})();
 
 document.chatApplication = angular.module("chatApplication", [
     "ngAnimate",
+    "ngTouch",
     "chat.lang",
     "chat.services",
     "chat.controls",

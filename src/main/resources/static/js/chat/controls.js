@@ -65,7 +65,7 @@ controlsModule.controller("RoomWidgetController", ["$scope", "chatService", func
 }]);
 
 controlsModule.controller("PollWidgetController", ["$scope", "chatService", function($scope, chatService) {
-    chatService.pollsUpdatedCallback = function() {$scope.$apply()};
+    chatService.pollsUpdatedCallback = function() {$scope.$digest()};
 
     $scope.open = false;
     $scope.input = {};
@@ -200,7 +200,7 @@ controlsModule.controller("SettingsController", ["$scope", "chatService", "$moda
             c = "#000000"
         }
         $scope.color = c;
-        $scope.$apply();
+        $scope.$digest();
     });
 
     $scope.color = chat.self ? chat.self.color : "#ffffff";
@@ -315,7 +315,7 @@ var AnonCaptchaController = function($scope, $modalInstance, id, isUser) {
             } else {
                 $scope.error = true;
                 $scope.message = "Wrong captcha";
-                $scope.$apply();
+                $scope.$digest();
             }
         });
     };
@@ -372,7 +372,7 @@ var AuthenticationController = function($scope, $modalInstance, chat, action) {
                     $(".pls-container").remove();
                     grecaptcha.reset($scope.recaptchaWidgetId);
                 }
-                $scope.$apply();
+                $scope.$digest();
             }
         });
     };
@@ -385,7 +385,7 @@ var AuthenticationController = function($scope, $modalInstance, chat, action) {
                 $scope.info = "You have successfuly registered. An email with information how to confirm your " +
                     "account has been sent to address you entered.";
                 $scope.switchTo("sign_in");
-                $scope.$apply();
+                $scope.$digest();
             } else {
                 $scope.info = null;
                 $scope.busy = false;
@@ -395,7 +395,7 @@ var AuthenticationController = function($scope, $modalInstance, chat, action) {
                     $(".pls-container").remove();
                     grecaptcha.reset($scope.recaptchaWidgetId);
                 }
-                $scope.$apply();
+                $scope.$digest();
             }
         });
     };
@@ -411,7 +411,7 @@ var AuthenticationController = function($scope, $modalInstance, chat, action) {
 
     $.ajax("/login").done(function(data) {
         $scope.captchaRequired = data["captchaRequired"];
-        $scope.$apply();
+        $scope.$digest();
     });
 
     document.lastModal = $modalInstance;
@@ -481,7 +481,7 @@ controlsModule.directive('textcomplete', ['Textcomplete', "chatService", functio
             message: '='
         },
         template: "<input id=\"userInput\" placeholder=\"Chat about this nostream\" ng-trim=\"false\"" +
-            "ng-model=\"message\" type=\"text\"/>",
+            "ng-model=\"message\" type=\"text\" ng-model-options=\"{ debounce: 100 }\"/>",
         link: function(scope, iElement, iAttrs) {
             var ta = iElement.find('#userInput');
             var textcomplete = new Textcomplete(ta, [
@@ -509,7 +509,7 @@ controlsModule.directive('textcomplete', ['Textcomplete', "chatService", functio
 
             $(textcomplete).on({
                 'textComplete:select': function (e, value) {
-                    scope.$apply(function() {
+                    scope.$digest(function() {
                         scope.message = value
                     })
                 },
@@ -525,7 +525,7 @@ controlsModule.directive('textcomplete', ['Textcomplete', "chatService", functio
 }]);
 
 messagesModule.controller("UserInputController", ["$scope", "$modal", "chatService", "chatSettings", "$cookieStore", function($scope, $modal, chat, settings, $cookieStore) {
-    chat.stateUpdatedCallback = function() {$scope.$apply()};
+    chat.stateUpdatedCallback = function() {$scope.$digest()};
     $scope.message = "";
 
     chat.addToInputCallback = function(string) {

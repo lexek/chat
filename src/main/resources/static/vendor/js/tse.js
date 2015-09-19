@@ -78,10 +78,6 @@
 
             resizeScrollbar();
 
-            $(window).on('resize', function() {
-                recalculate();
-            });
-
             if (!options.autoHide) {
                 showScrollbar();
             }
