@@ -322,6 +322,13 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
                 chat.self.role = globalLevels[chat.self.role];
                 chat.state = CHAT_STATE.AUTHENTICATED;
                 chat.stateUpdatedCallback();
+                if (chat.rooms.length > 0) {
+                    angular.forEach(chat.rooms, function (e) {
+                        if (e !== "#main") {
+                            chat.sendMessage({"type": "JOIN", "room": e});
+                        }
+                    });
+                }
                 break;
             case 'TIMEOUT':
                 processTimeoutMessage(chat, ctx, message);

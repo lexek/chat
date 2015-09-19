@@ -226,13 +226,6 @@ function($modal, settings, $translate, $http, $timeout, notificationService, msg
                 chat.state = CHAT_STATE.AUTHENTICATING;
                 chat.stateUpdatedCallback();
                 chat.sendMessage({"type": "SESSION", "text": read_cookie("sid")});
-                if (chat.rooms.length > 0) {
-                    angular.forEach(chat.rooms, function (e) {
-                        if (e !== "#main") {
-                            chat.sendMessage({"type": "JOIN", "args": [e]});
-                        }
-                    });
-                }
                 chat.connectionAttempt = 0;
             };
             chat.ws.onclose = function () {
