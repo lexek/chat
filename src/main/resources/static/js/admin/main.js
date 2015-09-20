@@ -157,6 +157,24 @@ var AlertController = function($scope, $timeout, alert) {
 
 AdminApplication.controller("AlertController", AlertController);
 
+var SteamController = function($scope, $http) {
+    $scope.inProgress = false;
+
+    $scope.updateDatabase = function() {
+        $scope.inProgress = true;
+        $http({
+            method: "POST",
+            url: "/rest/steamGames/syncDb"
+        }).success(function () {
+            $scope.inProgress = false;
+        }).error(function() {
+            $scope.inProgress = false;
+        });
+    }
+};
+
+AdminApplication.controller("SteamController", ["$scope", "$http", SteamController]);
+
 var TitleController = function($scope, title) {
     $scope.title = function() {
         return title.title;

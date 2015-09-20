@@ -361,6 +361,20 @@
             </#if>
         </div>
     </div>
+    <div class="col-xs-4" ng-controller="SteamController">
+        <div class="panel panel-info">
+            <div class="panel-heading">
+                <h4 class="panel-title">
+                    <i class="fa fa-fw fa-steam"></i> steam database
+                </h4>
+            </div>
+            <div class="panel-body">
+                <button class="btn btn-primary" ng-disabled="inProgress" ng-click="updateDatabase()">
+                    <i class="fa fa-fw fa-refresh" ng-class="{'fa-spin': inProgress}"></i> Sync database
+                </button>
+            </div>
+        </div>
+    </div>
 </script>
 
 <script type="text/ng-template" id="emoticons.html">
