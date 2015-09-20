@@ -628,7 +628,7 @@
                                 <a class="userMessageBody" ng-if="msg.hidden" ng-click="msg.hidden=false">[{{'CHAT_MESSAGE_HIDDEN' | translate}}]</a>
                             </span>
                         </div>
-                        <div class="message" bo-if="(message.type == 'ME')" bo-style="{'color': message.user.color}">
+                        <div class="message" bo-if="(message.type == 'ME')" bo-style="{'color': message.user.color}" ng-init="msg=message">
                             <span class="timeCompact" ng-if="showTimestamps()">{{message.time | date:'HH:mm'}}</span><!--
                                     --><span class="btn-group btn-group-xs" ng-if="showModButtons()">
                                         <span class="btn btn-default" ng-click="clear()" title="clear"><span class="fa fa-eraser"></span></span>
@@ -639,12 +639,14 @@
                                     --><span ng-if="isAdmin()" class="admin">A</span><!--
                                     --><span ng-if="message.ext" class="ext" tooltip="{{message.extOriginRes}}"
                                              tooltip-trigger="mouseenter" tooltip-placement="right"><span class="fa fa-twitch" style="color: #6441A5"></span></span><!--
-                                --><#if like><span class="like" popover-append-to-body="true" popover-template="'likedTemplate.html'" popover-title="Liked this:" popover-trigger="mouseenter" popover-placement="left">
-                                    <span class="likeButton btn btn-link btn-xs" ng-click="like(message.id_)" ng-class="{likedButton: message.likes.length &gt; 0}">
-                                        <span class="fa fa-heart"></span><!--
-                                        --><span class="likeCount" ng-if="message.likes.length &gt; 0">&nbsp;{{message.likes.length}}</span>
+                                --><#if like>
+                                    <span class="like" popover-append-to-body="true" popover-template="'likedTemplate.html'" popover-title="Liked this:" popover-trigger="mouseenter" popover-placement="left">
+                                        <span class="likeButton btn btn-link btn-xs" ng-click="like(message.id_)" ng-class="{likedButton: message.likes.length &gt; 0}">
+                                            <span class="fa fa-heart"></span><!--
+                                            --><span class="likeCount" ng-if="message.likes.length &gt; 0">&nbsp;{{message.likes.length}}</span>
+                                        </span>
                                     </span>
-                                </span></#if><!--
+                                </#if><!--
                          --><span class="username" ng-click="addToInput($event)" bo-bind="message.user.name | inflector:'capital'"></span>
                             <span class="userMessageBody" ng-if="!message.hidden" ng-bind-html="message.body"></span>
                             <a class="userMessageBody" ng-if="message.hidden" ng-click="message.hidden=false">[{{'CHAT_MESSAGE_HIDDEN' | translate}}]</a>
@@ -686,8 +688,13 @@
                                 <a class="userMessageBody" bo-style="{'border-color': message.user.color}" ng-if="msg.hidden" ng-click="msg.hidden=false">[{{'CHAT_MESSAGE_HIDDEN' | translate}}]</a>
                             </div>
                         </div>
-                        <div class="message meMessage" bo-if="(message.type == 'ME')" bo-style="{'color': message.user.color, 'border-color': message.user.color}">
+                        <div class="message meMessage" bo-if="(message.type == 'ME')" bo-style="{'color': message.user.color, 'border-color': message.user.color}" ng-init="msg=message">
                             <div class="time" bo-bind="message.time | date:'HH:mm'"></div>
+                            <div class="btn-group modButtons pull-right" bo-if="showModButtons()">
+                                <div class="btn btn-link btn-x" ng-click="clear()"><span class="fa fa-eraser"></span></div>
+                                <div class="btn btn-link btn-x" ng-click="ban()"><span class="fa fa-ban"></span></div>
+                                <div class="btn btn-link btn-x" ng-click="timeout()"><span class="fa fa-clock-o"></span></div>
+                            </div>
                             <#if like><div class="like" popover-append-to-body="true" popover-template="'likedTemplate.html'" popover-title="Liked this:" popover-trigger="mouseenter" popover-placement="left">
                                     <span class="likeButton btn btn-link btn-xs" ng-click="like(message.id_)" ng-class="{likedButton: message.likes.length &gt; 0}">
                                         <span class="fa fa-heart"></span><!--

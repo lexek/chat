@@ -77,8 +77,7 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
         var showModButtons = (user.role !== levels.ADMIN) &&
             (
                 chat.self &&
-                (chat.self.name !== user.name) &&
-                (msg.type !== "ME")
+                (chat.self.name !== user.name)
             ) && (
                 (
                     (chat.localRole[ctx.room] >= levels.MOD) &&
