@@ -36,8 +36,8 @@ public class EmailService {
             message.addRecipient(Message.RecipientType.TO, new InternetAddress(email.getTo()));
 
             Multipart multipart = new MimeMultipart("alternative");
-            BodyPart messageBodyPart = new MimeBodyPart();
-            messageBodyPart.setText(email.getBody());
+            MimeBodyPart messageBodyPart = new MimeBodyPart();
+            messageBodyPart.setText(email.getBody(), "UTF-8");
             multipart.addBodyPart(messageBodyPart);
 
             message.setContent(multipart);
