@@ -22,6 +22,7 @@
     <script src="/vendor/js/cal-heatmap.js"></script>
     <script src="/vendor/js/twemoji.js"></script>
     <script src="/vendor/js/angular.js"></script>
+    <script src="/vendor/js/angular-sanitize.js"></script>
     <script src="/vendor/js/angular-animate.2.js"></script>
     <script src="/vendor/js/angular-route.js"></script>
     <script src="/vendor/js/angular-ui-utils.js"></script>
@@ -555,10 +556,10 @@
                         </h4>
                         <div class="list-group-item-text">
                                 <div>
-                                    <strong>Text</strong>: {{entry.ticket.text}}
+                                    <strong>Text</strong>: <span ng-bind-html="entry.ticket.text | linky:'_blank'"></span>
                                 </div>
                                 <div ng-if="entry.ticket.adminReply">
-                                    <strong>Reply from {{entry.closedBy}}</strong>: {{entry.ticket.adminReply}}
+                                    <strong>Reply from {{entry.closedBy}}</strong>: <span ng-bind-html="entry.ticket.adminReply | linky:'_blank'"></span>
                                 </div>
                         </div>
                     </div>

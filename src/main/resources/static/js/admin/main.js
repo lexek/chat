@@ -124,7 +124,7 @@ AdminServices.factory("title", TitleServiceFactory);
 AdminServices.factory("tickets", TicketCountServiceFactory);
 
 var AdminApplication = angular.module("AdminApplication", ["ngRoute", "ngAnimate", "AdminServices", "relativeDate",
-    "ui.inflector", "ui.bootstrap", "ui.bootstrap.datetimepicker", "highcharts-ng"]);
+    "ui.inflector", "ui.bootstrap", "ui.bootstrap.datetimepicker", "highcharts-ng", "ngSanitize"]);
 
 Role = function(title, value) {
     this.title = title;

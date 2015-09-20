@@ -227,7 +227,7 @@
                 </h4>
                 <div class="list-group-item-text">
                     <div>
-                        <strong translate="TICKETS_TEXT"></strong>: {{ticket.text}}
+                        <strong translate="TICKETS_TEXT"></strong>: <span ng-bind-html="ticket.text | linky:'_blank'"></span>
                     </div>
                     <div ng-if="ticket.adminReply">
                         <strong translate="TICKETS_ADMIN_REPLY"></strong>: {{ticket.adminReply}}
