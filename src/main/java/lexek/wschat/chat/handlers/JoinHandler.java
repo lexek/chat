@@ -16,7 +16,7 @@ public class JoinHandler extends AbstractRoomMessageHandler {
             ),
             MessageType.JOIN,
             LocalRole.GUEST,
-            true
+            false
         );
         this.notificationService = notificationService;
         this.messageBroadcaster = messageBroadcaster;
