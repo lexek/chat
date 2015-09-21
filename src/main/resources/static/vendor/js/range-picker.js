@@ -75,11 +75,11 @@ angular.module('rgkevin.datetimeRangePicker', ['vr.directives.slider'])
                             '<div class="rg-range-picker-calendars" ng-show="data.hasDatePickers">' +
                                 '<div class="rg-range-picker-calendar-box">' +
                                     '<h5 class="rg-range-picker-calendar-label" ng-bind-template="{{datepickerTitles.from}}"></h5>' +
-                                    '<datepicker ng-model="data.date.from" max-date="data.date.to" min-date="data.date.min" show-weeks="false" class="clean-calendar"></datepicker>' +
+                                    '<datepicker ng-model="data.date.from" max-date="data.date.to" min-date="data.date.min" show-weeks="false" class="clean-calendar" starting-day="1"></datepicker>' +
                                 '</div>' +
                                 '<div class="rg-range-picker-calendar-box right">' +
                                     '<h5 class="rg-range-picker-calendar-label" ng-bind-template="{{datepickerTitles.to}}"></h5>' +
-                                    '<datepicker ng-model="data.date.to" min-date="data.date.from" max-date="data.date.max" show-weeks="false" class="clean-calendar"></datepicker>' +
+                                    '<datepicker ng-model="data.date.to" min-date="data.date.from" max-date="data.date.max" show-weeks="false" class="clean-calendar" starting-day="1"></datepicker>' +
                                 '</div>' +
                             '</div>' +
                             '<div class="rg-range-picker-slider" id="rgRangePickerSliderContainer" ng-show="data.hasTimeSliders">' +
