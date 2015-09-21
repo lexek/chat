@@ -647,6 +647,7 @@
         </div>
         <div class="list-group">
             <div class="list-group-item"
+                 style="word-break: break-word"
                  ng-repeat="message in entries"
                  ng-class="{'list-group-item-warning': message.hidden, 'list-group-item-info': ((message.type==='CLEAR') || (message.type==='BAN') || (message.type==='TIMEOUT'))}">
                 <small>
@@ -657,7 +658,6 @@
                 </strong>
                 <span
                         class="list-group-item-text"
-                        style="word-break: break-word"
                         ng-bind-html="message.message | message"
                         ng-if="(message.type==='MSG') || (message.type==='ME') || (message.type==='MSG_EXT')"></span>
                 <span class="list-group-item-text" ng-if="(message.type==='CLEAR') || (message.type==='BAN') || (message.type==='TIMEOUT')">
@@ -1588,6 +1588,7 @@
                 </div>
                 <div class="list-group">
                     <div class="list-group-item"
+                         style="word-break: break-word"
                          ng-repeat="message in messages"
                          ng-class="{'list-group-item-warning': message.hidden, 'list-group-item-info': ((message.type==='CLEAR') || (message.type==='BAN') || (message.type==='TIMEOUT'))}">
                         <small>
@@ -1598,7 +1599,6 @@
                         </strong>
                         <span
                                 class="list-group-item-text"
-                                style="word-break: break-word"
                                 ng-bind-html="message.message | message"
                                 ng-if="(message.type==='MSG') || (message.type==='ME') || (message.type==='MSG_EXT')"></span>
                         <span class="list-group-item-text" ng-if="(message.type==='CLEAR') || (message.type==='BAN') || (message.type==='TIMEOUT')">
