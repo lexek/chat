@@ -8,6 +8,7 @@
     <link rel="stylesheet" type="text/css" href="/vendor/css/animate.css"/>
     <link rel="stylesheet" type="text/css" href="/vendor/css/bootstrap.css"/>
     <link rel="stylesheet" type="text/css" href="/vendor/css/cal-heatmap.css" />
+    <link rel="stylesheet" type="text/css" href="/vendor/css/range-picker.css" />
     <link rel="stylesheet" type="text/css" href="/css/font-awesome.css">
 
     <base href="/admin/" />
@@ -22,6 +23,7 @@
     <script src="/vendor/js/cal-heatmap.js"></script>
     <script src="/vendor/js/twemoji.js"></script>
     <script src="/vendor/js/angular.js"></script>
+    <script src="/vendor/js/angular-touch.js"></script>
     <script src="/vendor/js/angular-sanitize.js"></script>
     <script src="/vendor/js/angular-animate.2.js"></script>
     <script src="/vendor/js/angular-route.js"></script>
@@ -29,6 +31,8 @@
     <script src="/vendor/js/angular-ui-bootstrap.2.js"></script>
     <script src="/vendor/js/angular-relative-date.js"></script>
     <script src="/vendor/js/angular-datetimepicker.js"></script>
+    <script src="/vendor/js/angular-slider.js"></script>
+    <script src="/vendor/js/range-picker.js"></script>
     <script src="/vendor/js/highcharts.js"></script>
     <script src="/vendor/js/highcharts-ng.js"></script>
     <script src="/js/admin/main.js"></script>
@@ -36,21 +40,6 @@
     <style>
         .table {
             margin-bottom: 0;
-        }
-
-        .datetimepicker-wrapper {
-            vertical-align: middle;
-            display: inline-block;
-        }
-
-        .datetimepicker-wrapper > input {
-            margin-bottom: 0 !important;
-            width: 130px;
-        }
-
-        .datetimepicker-wrapper [ng-model=hours],
-        .datetimepicker-wrapper [ng-model=minutes] {
-            width: 46px !important;
         }
 
         .pager {
@@ -322,6 +311,29 @@
     </style>
 </head>
 <body>
+
+<script type="text/ng-template" id="range_pick.html">
+    <div class="modal-header">
+        <h3 class="modal-title">
+            Choose date range
+        </h3>
+    </div>
+    <div class="modal-body">
+        <div rg-range-picker="range" labels="labels"></div>
+        <div class="row">
+            <div class="col-xs-6">
+                <input class="form-control" type="number" min="0" max="23" ng-model="hours.from"/>
+            </div>
+            <div class="col-xs-6">
+                <input class="form-control" type="number" min="0" max="23" ng-model="hours.to"/>
+            </div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <div class="btn btn-success" ng-click="ok()">ok</div>
+    </div>
+</script>
+
 <script type="text/ng-template" id="dashboard.html">
     <div class="col-xs-8">
         <div class="panel panel-primary">
@@ -598,11 +610,16 @@
 <script type="text/ng-template" id="history.html">
     <div class="modal-header">
         <h3 class="modal-title">
-            History for room {{room.name}} <small>page {{page+1}}/{{totalPages}}</small>
+            History for room {{room.name}} <small>page <a href="" ng-click="goToPage()">{{page+1}}</a>/{{totalPages}}</small>
             <div class="input-group pull-right" style="max-width:200px;">
                 <input ng-model="input.user" type="text" class="form-control" placeholder="User filter">
                 <span class="input-group-btn">
-                    <button class="btn btn-default" type="button" ng-click="addUserFilter(input.user)">add</button>
+                    <div class="btn btn-default" type="button" ng-click="addUserFilter(input.user)">
+                        <i class="fa fa-fw fa-search"></i>
+                    </div>
+                    <div class="btn btn-default" type="button" ng-click="pickRange()">
+                        <i class="fa fa-fw fa-calendar"></i>
+                    </div>
                 </span>
             </div>
             <small ng-if="since || until">
@@ -1312,6 +1329,12 @@
                             <span ng-switch-when="NEW_POLL"><strong>Question:</strong> {{entry.actionDescription}}</span>
                             <span ng-switch-when="CLOSE_POLL"><strong>Question:</strong> {{entry.actionDescription}}</span>
                             <span ng-switch-when="ROOM_ROLE"><strong>New role:</strong> {{entry.actionDescription}}</span>
+                            <span ng-switch-when="NEW_PROXY">
+                                {{entry.actionDescription.providerName}}/{{entry.actionDescription.remoteRoom}}
+                            </span>
+                            <span ng-switch-when="DELETED_PROXY">
+                                {{entry.actionDescription.providerName}}/{{entry.actionDescription.remoteRoom}}
+                            </span>
                             <span ng-switch-default ng-bind="entry.actionDescription"></span>
                         </span>
                     </span>

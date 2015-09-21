@@ -124,7 +124,7 @@ AdminServices.factory("title", TitleServiceFactory);
 AdminServices.factory("tickets", TicketCountServiceFactory);
 
 var AdminApplication = angular.module("AdminApplication", ["ngRoute", "ngAnimate", "AdminServices", "relativeDate",
-    "ui.inflector", "ui.bootstrap", "ui.bootstrap.datetimepicker", "highcharts-ng", "ngSanitize"]);
+    "ui.inflector", "ui.bootstrap", "ui.bootstrap.datetimepicker", "highcharts-ng", "ngSanitize", "rgkevin.datetimeRangePicker"]);
 
 Role = function(title, value) {
     this.title = title;
@@ -156,6 +156,44 @@ var AlertController = function($scope, $timeout, alert) {
 };
 
 AdminApplication.controller("AlertController", AlertController);
+
+var TimeRangePickerController = function($scope, $modalInstance, date) {
+    $scope.hours = {
+        from: date.from.getHours(),
+        to: date.to.getHours()
+    };
+
+    $scope.range = {
+        date: {
+            from: date.from,
+            to: date.to,
+            max: new Date()
+        },
+        "hasDatePickers": true,
+        "hasTimeSliders": false
+    };
+
+    $scope.labels = {
+        date: {
+            from: 'Start date',
+            to: 'End date'
+        }
+    };
+
+    $scope.ok = function() {
+        var f = new Date($scope.range.date.from);
+        f.setHours(0,0,0,0);
+        var t = new Date($scope.range.date.to);
+        t.setHours(0,0,0,0);
+        var result = {
+            from: f.getTime() + $scope.hours.from * 3600000,
+            to: t.getTime() + $scope.hours.to * 3600000
+        };
+        $modalInstance.close(result);
+    }
+};
+
+AdminApplication.controller("TimeRangePickerController", TimeRangePickerController);
 
 var SteamController = function($scope, $http) {
     $scope.inProgress = false;
@@ -1079,11 +1117,14 @@ var RoomJournalModalController = function($scope, $http, $modal, room) {
 
     var classMap = {
         "ROOM_BAN": "warning",
+        "DELETED_PROXY": "warning",
         "ROOM_UNBAN": "success",
         "ROOM_ROLE": "success"
     };
 
     var actionMap = {
+        "NEW_PROXY": "Proxy added",
+        "DELETED_PROXY": "Proxy removed",
         "NEW_ROOM": "Room created",
         "NEW_POLL": "Poll created",
         "CLOSE_POLL": "Poll closed",
@@ -1228,7 +1269,7 @@ var TicketsController = function($scope, $location, $http, $modal, alert, title)
     }
 };
 
-var HistoryController = function($scope, $http, title, options) {
+var HistoryController = function($scope, $http, $modal, title, options) {
     $scope.entries = [];
     $scope.page = 0;
     $scope.totalPages = 0;
@@ -1288,6 +1329,37 @@ var HistoryController = function($scope, $http, title, options) {
 
     $scope.hasNextPage = function() {
         return ($scope.page+1) < $scope.totalPages
+    };
+
+    $scope.pickRange = function() {
+        var modalInstance = $modal.open({
+            templateUrl: "range_pick.html",
+            controller: "TimeRangePickerController",
+            resolve: {
+                date: function () {
+                    return {
+                        from: $scope.since ? new Date($scope.since) : new Date(),
+                        to: $scope.since ? new Date($scope.until) : new Date()
+                    };
+                }
+            }
+        });
+        modalInstance.result.then(function (data) {
+            if (data) {
+                $scope.since = data.from;
+                $scope.until = data.to;
+                $scope.page = 0;
+                loadPage();
+            }
+        });
+    };
+
+    $scope.goToPage = function() {
+        var newPage = parseInt(prompt("Page number", ($scope.page+1).toString()));
+        if ((newPage > 0) && (newPage <= $scope.totalPages)) {
+            $scope.page = newPage-1;
+            loadPage();
+        }
     };
 
     loadPage();
