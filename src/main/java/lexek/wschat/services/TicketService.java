@@ -31,12 +31,13 @@ public class TicketService {
                 notificationService.notifyAdmins(
                     "New bug reported",
                     "New bug reported by " + user.getName() + ": " + ticket.getText(),
-                    true);
+                    true
+                );
             } else {
                 notificationService.notifyAdmins(
                     "New ticket",
                     "New ticket opened by " + user.getName() + ": " + ticket.getText(),
-                    false
+                    true
                 );
             }
         }
