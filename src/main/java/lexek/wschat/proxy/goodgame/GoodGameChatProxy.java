@@ -30,6 +30,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class GoodGameChatProxy implements Proxy {
+    private static final String HOST_NAME = "chat.goodgame.ru";
     private final Cache<String, String> idCache = CacheBuilder.newBuilder().maximumSize(100).build();
     private final String channelName;
     private final MessageBroadcaster messageBroadcaster;
@@ -103,7 +104,7 @@ public class GoodGameChatProxy implements Proxy {
     public void start() {
         this.state = ProxyState.STARTING;
         this.lastError = null;
-        this.channel = this.bootstrap.connect("chat.goodgame.ru", 8081).channel();
+        this.channel = this.bootstrap.connect(HOST_NAME, 8081).channel();
         this.state = ProxyState.RUNNING;
     }
 
@@ -171,7 +172,7 @@ public class GoodGameChatProxy implements Proxy {
         @Override
         public void channelInactive(ChannelHandlerContext ctx) throws Exception {
             if (state == ProxyState.RUNNING) {
-                channel = bootstrap.connect("goodgame.ru", 8081).channel();
+                channel = bootstrap.connect(HOST_NAME, 8081).channel();
             }
         }
 
