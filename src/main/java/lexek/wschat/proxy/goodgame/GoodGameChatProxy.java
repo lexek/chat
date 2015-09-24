@@ -103,7 +103,7 @@ public class GoodGameChatProxy implements Proxy {
     public void start() {
         this.state = ProxyState.STARTING;
         this.lastError = null;
-        this.channel = this.bootstrap.connect("goodgame.ru", 8081).channel();
+        this.channel = this.bootstrap.connect("chat.goodgame.ru", 8081).channel();
         this.state = ProxyState.RUNNING;
     }
 
