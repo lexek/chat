@@ -24,8 +24,8 @@ function($modal, settings, $translate, $http, $timeout, notificationService, msg
         this.lastSent = "";
         this.emoticons = {};
         this.localRole = {};
-        this.activeRoom = settings.getS("lastActiveRoom") || "#main";
-        this.rooms = settings.getRooms();
+        this.activeRoom = DEFAULT_ROOM;
+        this.rooms = [DEFAULT_ROOM];
         this.lastMessageTimeout = null;
         this.state = CHAT_STATE.DISCONNECTED;
         this.idCounter = 0;

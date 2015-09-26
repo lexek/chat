@@ -109,10 +109,6 @@ public class WebSocketChatHandler extends SimpleChannelInboundHandler<WebSocketF
         User user = connection.getUser();
         logger.debug("{}[{}] joined; ip: {}", user.getName(), user.getRole(), connection.getIp());
         connectionGroup.registerConnection(connection);
-        messageReactor.processMessage(connection, new Message(ImmutableMap.of(
-            MessageProperty.TYPE, MessageType.JOIN,
-            MessageProperty.ROOM, "#main"
-        )));
         if (!user.hasRole(GlobalRole.USER)) {
             connection.getChannel().attr(SID_ATTR_KEY).remove();
         }

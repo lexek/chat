@@ -18,11 +18,13 @@ public class ChatHomeHandler extends SimpleHttpHandler {
     @Override
     protected void handle(Request request, Response response) throws Exception {
         boolean debug = request.queryParamAsBoolean("debug");
+        String room = request.queryParam("room");
         response.renderTemplate("chat", ImmutableMap.of(
             "title", TITLE,
             "like", allowLikes,
             "singleRoom", singleRoom,
-            "debug", debug
+            "debug", debug,
+            "room", room != null ? "#" + room : "#main"
         ));
     }
 }

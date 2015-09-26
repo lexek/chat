@@ -48,7 +48,7 @@ module.service("chatSettings", [function() {
         if (s) {
             result =  $.parseJSON(s);
         } else {
-            result = ["#main"];
+            result = [DEFAULT_ROOM];
         }
         return result;
     };

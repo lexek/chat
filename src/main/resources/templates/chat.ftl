@@ -37,6 +37,8 @@
         HOST_NAME = document.location.hostname;
 
         SINGLE_ROOM = ${singleRoom?c};
+
+        DEFAULT_ROOM = "${room}";
     </script>
 
     <script src="https://www.google.com/recaptcha/api.js?onload=vcRecapthaApiLoaded&render=explicit" async defer></script>
@@ -557,7 +559,7 @@
     </div>
     <div class="btn-group btn-group-xxs pull-right">
         <div class="btn btn-default" ng-click="joinRoom()"><span class="fa fa-fw fa-plus"></span></div>
-        <div class="btn btn-default" ng-class="{disabled: getActiveRoom()==='#main'}" ng-click="partRoom()">
+        <div class="btn btn-default" ng-class="{disabled: getActiveRoom()===defaultRoom()}" ng-click="partRoom()">
             <span class="fa fa-fw fa-times"></span>
         </div>
     </div>

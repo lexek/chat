@@ -23,10 +23,10 @@ controlsModule.controller("RoomWidgetController", ["$scope", "chatService", func
     };
 
     $scope.partRoom = function() {
-        if (chatService.activeRoom !== "#main") {
+        if (chatService.activeRoom !== DEFAULT_ROOM) {
             var room = chatService.activeRoom;
             chatService.sendMessage({"type": "PART", "room": chatService.activeRoom});
-            chatService.setActiveRoom("#main");
+            chatService.setActiveRoom(DEFAULT_ROOM);
             chatService.deleteRoom(room);
         }
     };
