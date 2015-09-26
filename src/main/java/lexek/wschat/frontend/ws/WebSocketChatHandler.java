@@ -1,17 +1,14 @@
 package lexek.wschat.frontend.ws;
 
-import com.google.common.collect.ImmutableMap;
 import io.netty.channel.*;
-import io.netty.handler.codec.http.websocketx.CloseWebSocketFrame;
-import io.netty.handler.codec.http.websocketx.PingWebSocketFrame;
-import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
-import io.netty.handler.codec.http.websocketx.WebSocketFrame;
+import io.netty.handler.codec.http.websocketx.*;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.util.AttributeKey;
 import lexek.wschat.chat.*;
 import lexek.wschat.security.AuthenticationCallback;
 import lexek.wschat.security.AuthenticationService;
+import lexek.wschat.util.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -73,6 +70,10 @@ public class WebSocketChatHandler extends SimpleChannelInboundHandler<WebSocketF
                 logger.debug("all_idle {} ", ctx.channel().toString());
                 ctx.writeAndFlush(new CloseWebSocketFrame()).addListener(ChannelFutureListener.CLOSE);
             }
+        }
+        if (evt == WebSocketServerProtocolHandler.ServerHandshakeStateEvent.HANDSHAKE_COMPLETE) {
+            WebSocketConnectionAdapter wrapper = ctx.channel().attr(WRAPPER_ATTR_KEY).get();
+            wrapper.send(Message.protocolMessage(Constants.WEBSOCKET_PROTOCOL_VERSION));
         }
     }
 

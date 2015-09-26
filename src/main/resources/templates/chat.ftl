@@ -39,6 +39,8 @@
         SINGLE_ROOM = ${singleRoom?c};
 
         DEFAULT_ROOM = "${room}";
+
+        PROTOCOL_VERSION = ${protocolVersion};
     </script>
 
     <script src="https://www.google.com/recaptcha/api.js?onload=vcRecapthaApiLoaded&render=explicit" async defer></script>

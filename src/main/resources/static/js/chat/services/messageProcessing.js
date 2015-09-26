@@ -400,6 +400,13 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
                 chat.proxies[ctx.room] = ctx.msg.proxies;
                 console.log(chat.proxies);
                 break;
+            case "PROTOCOL_VERSION":
+                if (ctx.msg.version !== PROTOCOL_VERSION) {
+                    document.location.reload(true);
+                } else {
+                    console.log("protocol version matches");
+                }
+                break;
             default:
                 console.log(message);
                 break;

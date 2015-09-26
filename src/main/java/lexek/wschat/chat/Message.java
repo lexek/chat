@@ -162,6 +162,13 @@ public class Message {
         ));
     }
 
+    public static Message protocolMessage(long version) {
+        return new Message(ImmutableMap.<MessageProperty, Object>of(
+            MessageProperty.TYPE, MessageType.PROTOCOL_VERSION,
+            MessageProperty.VERSION, version
+        ));
+    }
+
     @SuppressWarnings("unchecked")
     public <T> T get(MessageProperty<T> key) {
         return (T) data.get(key);

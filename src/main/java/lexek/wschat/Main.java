@@ -331,7 +331,7 @@ public class Main {
         final RequestDispatcher httpRequestDispatcher = new RequestDispatcher(serverMessageHandler, viewResolvers, authenticationManager, resourceConfig, runtimeMetricRegistry);
         httpRequestDispatcher.add("/.*", new FileSystemStaticHandler(dataDir));
         httpRequestDispatcher.add("/.*", new ClassPathStaticHandler(ClassPathStaticHandler.class, "/static/"));
-        httpRequestDispatcher.add("/chat.html", new ChatHomeHandler(settings.getHttp().isAllowLikes(), settings.getHttp().isSingleRoom()));
+        httpRequestDispatcher.add("/chat.html", new ChatHomeHandler("Yoba chat", settings.getHttp().isAllowLikes(), settings.getHttp().isSingleRoom()));
         httpRequestDispatcher.add("/confirm_email", new ConfirmEmailHandler());
         httpRequestDispatcher.add("/recaptcha/[0-9]+", new RecaptchaHandler(captchaService, reCaptcha));
         httpRequestDispatcher.add("/api/tickets", new UserTicketsHandler(authenticationManager, ticketService));
