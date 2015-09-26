@@ -3,6 +3,7 @@ package lexek.httpserver;
 import lexek.wschat.db.model.e.DomainException;
 import lexek.wschat.db.model.e.EntityNotFoundException;
 import lexek.wschat.db.model.e.InvalidDataException;
+import lexek.wschat.db.model.e.InvalidInputException;
 import lexek.wschat.db.model.rest.ErrorModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +25,9 @@ public class JerseyExceptionMapper implements ExceptionMapper<Throwable> {
             }
             if (exception instanceof InvalidDataException) {
                 return Response.status(400).entity(new ErrorModel(exception.getMessage())).build();
+            }
+            if (exception instanceof InvalidInputException) {
+                return Response.status(400).entity(((InvalidInputException) exception).getData()).build();
             }
             logger.warn("exception", exception);
             return Response.status(500).entity(new ErrorModel(exception.getMessage())).build();

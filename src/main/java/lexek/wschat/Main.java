@@ -34,6 +34,7 @@ import lexek.wschat.db.model.ProxyMessageModel;
 import lexek.wschat.frontend.http.*;
 import lexek.wschat.frontend.http.admin.AdminPageHandler;
 import lexek.wschat.frontend.http.rest.EmailResource;
+import lexek.wschat.frontend.http.rest.PasswordResource;
 import lexek.wschat.frontend.http.rest.ProfileResource;
 import lexek.wschat.frontend.http.rest.admin.*;
 import lexek.wschat.frontend.irc.*;
@@ -323,7 +324,8 @@ public class Main {
                     new EmailResource(authenticationManager),
                     new ProfileResource(userService),
                     new SteamGameResource(steamGameResolver),
-                    new ProxyResource(roomService, proxyManager)
+                    new ProxyResource(roomService, proxyManager),
+                    new PasswordResource(authenticationManager)
                 );
             }
         };
@@ -342,7 +344,6 @@ public class Main {
             twitchAuthService));
         httpRequestDispatcher.add("/setup_profile", new SetupProfileHandler(authenticationManager, reCaptcha));
         httpRequestDispatcher.add("/register", new RegistrationHandler(authenticationManager, reCaptcha, bannedIps));
-        httpRequestDispatcher.add("/password", new SetPasswordHandler(authenticationManager));
         httpRequestDispatcher.add("/token", new TokenHandler(authenticationManager));
 
         HttpServer httpServer = new HttpServer(sslContext, httpRequestDispatcher);

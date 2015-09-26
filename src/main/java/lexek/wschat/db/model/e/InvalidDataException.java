@@ -1,5 +1,9 @@
 package lexek.wschat.db.model.e;
 
+@Deprecated
+/**
+ * @deprecated use {}
+ */
 public class InvalidDataException extends DomainException {
     public InvalidDataException() {
         super();

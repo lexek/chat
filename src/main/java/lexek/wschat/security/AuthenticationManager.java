@@ -1,5 +1,6 @@
 package lexek.wschat.security;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.io.BaseEncoding;
 import io.netty.util.internal.chmv8.ConcurrentHashMapV8;
 import lexek.httpserver.Request;
@@ -10,6 +11,7 @@ import lexek.wschat.db.model.Email;
 import lexek.wschat.db.model.SessionDto;
 import lexek.wschat.db.model.UserAuthDto;
 import lexek.wschat.db.model.UserDto;
+import lexek.wschat.db.model.e.InvalidInputException;
 import lexek.wschat.security.social.SocialAuthProfile;
 import lexek.wschat.services.EmailService;
 import lexek.wschat.util.Colors;
@@ -44,7 +46,7 @@ public class AuthenticationManager {
     public UserAuthDto fastAuth(String name, String password, String ip) {
         AtomicInteger tries = failedLogin.get(ip);
         UserAuthDto auth = userAuthDao.getPasswordAuth(name);
-        if (auth != null && auth.getAuthenticationKey() != null && BCrypt.checkpw(password, auth.getAuthenticationKey())) {
+        if (auth != null && auth.getAuthenticationKey() != null && validatePassword(password, auth.getAuthenticationKey())) {
             return auth;
         } else {
             if (tries == null) {
@@ -55,6 +57,10 @@ public class AuthenticationManager {
             }
             return null;
         }
+    }
+
+    private boolean validatePassword(String password, String hash) {
+        return BCrypt.checkpw(password, hash);
     }
 
     public UserAuthDto fastAuthToken(String token) {
@@ -216,7 +222,11 @@ public class AuthenticationManager {
         return success;
     }
 
-    public void setPassword(UserDto user, String password) {
+    public synchronized void setPassword(UserDto user, String password, String oldPassword) {
+        UserAuthDto auth = getAuthDataForUser(user, "password");
+        if (auth != null && !validatePassword(oldPassword, auth.getAuthenticationKey())) {
+            throw new InvalidInputException(ImmutableMap.of("oldPassword", "invalid"));
+        }
         userAuthDao.setPassword(user.getId(), BCrypt.hashpw(password, BCrypt.gensalt()));
     }
 

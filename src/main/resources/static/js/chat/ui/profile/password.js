@@ -1,22 +1,30 @@
 {
     var module = angular.module("chat.ui.profile.password", []);
-    var PasswordSettingsController = function ($scope, $modalInstance, $http) {
+    var PasswordSettingsController = function ($scope, $modalInstance, $http, hasPassword) {
         makeClosable($scope, $modalInstance);
         makeProgressable($scope);
 
-        $scope.changePassword = function(password) {
-            $.post("/password", $.param({"password": password}), function(data) {
-                if (data["success"]) {
-                    $scope.error = null;
-                    $scope.info = "You have successfuly changed password.";
-                    $scope.$digest();
-                } else {
-                    $scope.info = null;
-                    $scope.error = data["error"];
-                    $scope.$digest();
-                }
+        $scope.errors = {};
+        $scope.hasPassword = hasPassword;
+        $scope.input = {
+            "oldPassword": null,
+            "password": ""
+        };
+        $scope.password2 = "";
+
+        $scope.submit = function() {
+            $http({
+                method: "PUT",
+                url: "/rest/password",
+                data: $scope.input
+            }).success(function() {
+                $modalInstance.close();
+                alert("Password changed.")
+            }).error(function(data) {
+                $scope.info = null;
+                $scope.errors = data;
             });
         };
     };
-    module.controller("PasswordSettingsController", ["$scope", "$modalInstance", "$http", PasswordSettingsController])
+    module.controller("PasswordSettingsController", ["$scope", "$modalInstance", "$http", "hasPassword", PasswordSettingsController])
 }

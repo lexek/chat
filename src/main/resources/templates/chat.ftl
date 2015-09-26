@@ -358,37 +358,60 @@
     <div class='modal-header'>
         <h3><i class='fa fa-key'></i> {{'CONTROLS_CHANGE_PASSWORD' | translate}}</h3>
     </div>
-    <form class='panel-body' name='pwForm' >
+    <form class='panel-body' name='pwForm' ng-submit="submit()" >
         <div class='modal-body'>
-                <div class='alert alert-info' ng-if='info'>
-                    {{info}}
-                    </div>
-                <div class='alert alert-danger' ng-if='error'>
-                    {{error}}
-                    </div>
-                <div class='form-group' ng-class='{"has-error": pwForm.password.$invalid && pwForm.password.$dirty, "has-success": pwForm.password.$dirty && !pwForm.password.$invalid}'>
-                    <label for='password' class='control-label' translate='AUTH_PASSWORD'></label>
-                    <input
-                        ng-model='password'
-                        id='password'
+            <div ng-if="hasPassword" class='form-group' ng-class='{"has-error": pwForm.oldPassword.$invalid && pwForm.oldPassword.$dirty, "has-success": pwForm.oldPassword.$dirty && !pwForm.oldPassword.$invalid}'>
+                <label for='oldPassword' class='control-label' translate='AUTH_OLD_PASSWORD'></label>
+                <input
+                        ng-model='input.oldPassword'
+                        id='oldPassword'
                         type='password'
                         class='form-control'
-                        name='password'
+                        name='oldPassword'
+                        placeholder='{{"AUTH_OLD_PASSWORD" | translate}}'
+                        pattern='.{6,30}'
+                        title='{{"AUTH_PASSWORD_FORMAT" | translate}}'
+                        />
+                <span ng-if="errors.oldPassword" class="help-block" ng-bind="errors.oldPassword"></span>
+            </div>
+            <div class='form-group' ng-class='{"has-error": pwForm.password.$invalid && pwForm.password.$dirty, "has-success": pwForm.password.$dirty && !pwForm.password.$invalid}'>
+                <label for='password' class='control-label' translate='AUTH_PASSWORD'></label>
+                <input
+                    ng-model='input.password'
+                    id='password'
+                    type='password'
+                    class='form-control'
+                    name='password'
+                    placeholder='{{"AUTH_PASSWORD" | translate}}'
+                    pattern='.{6,30}'
+                    title='{{"AUTH_PASSWORD_FORMAT" | translate}}'
+                    required
+                    />
+                <span ng-if="errors.password" class="help-block" ng-bind="errors.password"></span>
+            </div>
+            <div class='form-group' ng-class='{"has-error": pwForm.password2.$invalid && pwForm.password2.$dirty, "has-success": pwForm.password2.$dirty && !pwForm.password2.$invalid}'>
+                <label for='password2' class='control-label' translate='AUTH_PASSWORD'></label>
+                <input
+                        ng-model='password2'
+                        id='password2'
+                        type='password'
+                        class='form-control'
+                        name='password2'
                         placeholder='{{"AUTH_PASSWORD" | translate}}'
                         pattern='.{6,30}'
                         title='{{"AUTH_PASSWORD_FORMAT" | translate}}'
                         required
                         />
-                    </div>
+                <span ng-if="errors.password" class="help-block" ng-bind="errors.password"></span>
             </div>
+        </div>
         <div class='modal-footer'>
             <div class='btn btn-warning pull-left' ng-click='close()' translate='CONTROLS_CLOSE'></div>
             <input
                     type="submit"
                     class="btn btn-primary"
-                    ng-click='changePassword(password)'
                     ng-value="'CONTROLS_CHANGE_PASSWORD' | translate"
-                    ng-disabled='pwForm.$invalid'/>
+                    ng-disabled='pwForm.$invalid || (input.password !== password2)'/>
         </div>
     </form>
 </script>

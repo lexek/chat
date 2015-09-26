@@ -28,7 +28,12 @@
             $modal.open({
                 templateUrl: 'chat/ui/profile/password.html',
                 controller: "PasswordSettingsController",
-                size: "sm"
+                size: "sm",
+                resolve: {
+                    hasPassword: function() {
+                        return $scope.profile.authServices.split(",").indexOf("password") !== -1;
+                    }
+                }
             }).result.then(function() {
                 loadProfile();
             });
