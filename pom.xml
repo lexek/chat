@@ -27,8 +27,8 @@
                 <dependency>
                     <groupId>io.netty</groupId>
                     <artifactId>netty-tcnative</artifactId>
-                    <version>1.1.30.Fork2</version>
-                    <classifier>linux-x86_64</classifier>
+                    <version>1.1.33.Fork6</version>
+                    <classifier>linux-x86_64_debian</classifier>
                 </dependency>
             </dependencies>
         </profile>
