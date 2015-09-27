@@ -611,6 +611,8 @@ messagesModule.controller("UserInputController", ["$scope", "$modal", "chatServi
                 message["room"] = chat.activeRoom;
                 message["name"] = tmp[1];
                 message["role"] = tmp[2];
+            } else if (tmp[0].toUpperCase() === "COLOR") {
+                message["color"] = tmp[1];
             }
         } else {
             if (msg.length > 0) {
