@@ -33,6 +33,7 @@ import lexek.wschat.db.dao.*;
 import lexek.wschat.db.model.ProxyMessageModel;
 import lexek.wschat.frontend.http.*;
 import lexek.wschat.frontend.http.admin.AdminPageHandler;
+import lexek.wschat.frontend.http.rest.CheckUsernameResource;
 import lexek.wschat.frontend.http.rest.EmailResource;
 import lexek.wschat.frontend.http.rest.PasswordResource;
 import lexek.wschat.frontend.http.rest.ProfileResource;
@@ -325,7 +326,8 @@ public class Main {
                     new ProfileResource(userService),
                     new SteamGameResource(steamGameResolver),
                     new ProxyResource(roomService, proxyManager),
-                    new PasswordResource(authenticationManager)
+                    new PasswordResource(authenticationManager),
+                    new CheckUsernameResource(userService)
                 );
             }
         };

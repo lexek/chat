@@ -455,7 +455,7 @@ controlsModule.directive('usernameValidation', function($q, $http) {
 
                 var def = $q.defer();
 
-                $http.post("/checkUsername", {"name": modelValue})
+                $http.post("/rest/checkUsername", {"name": modelValue})
                     .success(function (data) {
                         if (data["available"]) {
                             def.resolve()
