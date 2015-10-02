@@ -16,10 +16,12 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 @ChannelHandler.Sharable
 public class RequestDispatcher extends SimpleChannelInboundHandler<FullHttpRequest> {
+    private final Logger slowRequestLogger = LoggerFactory.getLogger("slow-http");
     private final Logger logger = LoggerFactory.getLogger(RequestDispatcher.class);
     private final List<MatcherEntry> matcherEntries = new ArrayList<>();
     private final ServerMessageHandler serverMessageHandler;
@@ -63,7 +65,18 @@ public class RequestDispatcher extends SimpleChannelInboundHandler<FullHttpReque
                 }
             }
         }
-        timerContext.stop();
+        long millis = TimeUnit.NANOSECONDS.toMillis(timerContext.stop());
+
+        //slow request
+        if (millis > 500) {
+            slowRequestLogger.info(
+                "{} {} ({}) {} ms",
+                request.getUri(),
+                request.getMethod(),
+                response != null ? response.getStatus() : 0,
+                millis
+            );
+        }
 
         if (response == null) {
             response = new DefaultFullHttpResponse(
