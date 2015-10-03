@@ -17,7 +17,12 @@ public class PollService {
     private final MessageBroadcaster messageBroadcaster;
     private final Map<Room, PollState> activePolls = new ConcurrentHashMapV8<>();
 
-    public PollService(PollDao pollDao, MessageBroadcaster messageBroadcaster, RoomManager roomManager, JournalService journalService) {
+    public PollService(
+        PollDao pollDao,
+        MessageBroadcaster messageBroadcaster,
+        RoomManager roomManager,
+        JournalService journalService
+    ) {
         this.pollDao = pollDao;
         this.messageBroadcaster = messageBroadcaster;
         this.journalService = journalService;
@@ -39,8 +44,10 @@ public class PollService {
         if (poll != null) {
             PollState pollState = new PollState(poll);
             this.activePolls.put(room, pollState);
-            this.messageBroadcaster.submitMessage(Message.pollMessage(MessageType.POLL, room.getName(), pollState),
-                Connection.STUB_CONNECTION, room.FILTER);
+            this.messageBroadcaster.submitMessage(
+                Message.pollMessage(MessageType.POLL, room.getName(), pollState),
+                Connection.STUB_CONNECTION,
+                room.FILTER);
             this.journalService.newPoll(admin, room, poll);
             return pollState;
         } else {
@@ -56,7 +63,9 @@ public class PollService {
                 pollState.addVote(pollState.getPoll().getOptions().get(option), user.getId());
                 this.messageBroadcaster.submitMessage(
                     Message.pollMessage(MessageType.POLL_UPDATE, room.getName(), pollState),
-                    Connection.STUB_CONNECTION, room.FILTER);
+                    Connection.STUB_CONNECTION,
+                    room.FILTER
+                );
             }
         }
     }
@@ -65,8 +74,11 @@ public class PollService {
         PollState pollState = activePolls.remove(room);
         if (pollState != null) {
             pollDao.closePoll(pollState.getPoll().getId());
-            this.messageBroadcaster.submitMessage(Message.pollMessage(MessageType.POLL_END, room.getName(), pollState),
-                Connection.STUB_CONNECTION, room.FILTER);
+            this.messageBroadcaster.submitMessage(
+                Message.pollMessage(MessageType.POLL_END, room.getName(), pollState),
+                Connection.STUB_CONNECTION,
+                room.FILTER
+            );
             this.journalService.closedPoll(admin, room, pollState.getPoll());
         }
     }

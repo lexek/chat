@@ -121,6 +121,7 @@ langModule.config(['$translateProvider', function ($translateProvider) {
         "POLL_OPEN_POLL": "Open poll",
         "POLL_VOTE": "vote",
         "POLL_SKIP_VOTE": "skip vote",
+        "POLL_ANNOUNCEMENT": "Poll started: {{question}}",
 
         "ERROR_BAN": "You are banned",
         "ERROR_BAN_DENIED": "You can't ban this user",
@@ -257,6 +258,11 @@ langModule.config(['$translateProvider', function ($translateProvider) {
         "TICKETS_TEXT": "текст",
         "TICKETS_ADMIN_REPLY": "ответ администратора",
         "TICKETS_COMPOSE": "Создать тикет",
+
+        "POLL_OPEN_POLL": "Текущий опрос",
+        "POLL_VOTE": "проголосовать",
+        "POLL_SKIP_VOTE": "не голосовать",
+        "POLL_ANNOUNCEMENT": "Начался опрос: {{question}}",
 
         "ERROR_BAN": "Вы забанены",
         "ERROR_BAN_DENIED": "Вы не можете забанить этого пользователя",
