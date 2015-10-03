@@ -132,7 +132,8 @@ CREATE TABLE `metric` (
   `name`  VARCHAR(255) NOT NULL,
   `time`  BIGINT(20)   NOT NULL,
   `value` DOUBLE       NULL     DEFAULT NULL,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  INDEX `time` (`time`)
 );
 
 CREATE TABLE `pending_confirmation` (
@@ -198,6 +199,7 @@ CREATE TABLE `session` (
   `ip`          VARCHAR(255) NOT NULL,
   PRIMARY KEY (`id`),
   INDEX `FK_SESSION_USERAUTH` (`userauth_id`),
+  INDEX `sid` (`sid`),
   CONSTRAINT `FK_SESSION_USERAUTH` FOREIGN KEY (`userauth_id`) REFERENCES `userauth` (`id`)
     ON UPDATE CASCADE
     ON DELETE CASCADE
