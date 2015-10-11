@@ -32,6 +32,7 @@ public class EmoticonsResource {
 
     @Path("/add")
     @POST
+    @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     public Response add(
         @NotNull @Size(min = 1, max = 50) @FormDataParam("code") String code,
@@ -42,7 +43,7 @@ public class EmoticonsResource {
         if (fileData.getFileName().isEmpty()) {
             throw new InvalidInputException(ImmutableMap.of("file", "You should provide file"));
         }
-        if (emoticonService.add(code, file, fileData.getName(), admin)) {
+        if (emoticonService.add(code, file, fileData.getFileName(), admin)) {
             cachedValue = null;
             return Response.seeOther(new URI("/admin/emoticons")).build();
         } else {
