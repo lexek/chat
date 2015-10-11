@@ -5,6 +5,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class CoreConfiguration {
     private final int poolSize;
     private final int wsPort;
+    private final int maxEmoticonHeight;
+    private final int maxEmoticonWidth;
     private final String graphiteServer;
     private final String graphitePrefix;
     private final String host;
@@ -12,12 +14,16 @@ public class CoreConfiguration {
 
     public CoreConfiguration(@JsonProperty("poolSize") int poolSize,
                              @JsonProperty("wsPort") int wsPort,
+                             @JsonProperty("maxEmoticonHeight") int maxEmoticonHeight,
+                             @JsonProperty("maxEmoticonWidth") int maxEmoticonWidth,
                              @JsonProperty("graphiteServer") String graphiteServer,
                              @JsonProperty("graphitePrefix") String graphitePrefix,
                              @JsonProperty("host") String host,
                              @JsonProperty("dataDir") String dataDir) {
         this.poolSize = poolSize;
         this.wsPort = wsPort;
+        this.maxEmoticonHeight = maxEmoticonHeight;
+        this.maxEmoticonWidth = maxEmoticonWidth;
         this.graphiteServer = graphiteServer;
         this.graphitePrefix = graphitePrefix;
         this.host = host;
@@ -30,6 +36,14 @@ public class CoreConfiguration {
 
     public int getWsPort() {
         return wsPort;
+    }
+
+    public int getMaxEmoticonHeight() {
+        return maxEmoticonHeight;
+    }
+
+    public int getMaxEmoticonWidth() {
+        return maxEmoticonWidth;
     }
 
     public String getHost() {

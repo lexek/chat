@@ -73,6 +73,7 @@ import org.slf4j.LoggerFactory;
 import javax.inject.Singleton;
 import javax.mail.internet.InternetAddress;
 import javax.sql.DataSource;
+import java.awt.*;
 import java.io.File;
 import java.lang.management.ManagementFactory;
 import java.nio.file.Paths;
@@ -103,6 +104,7 @@ public class Main {
 
         ObjectMapper objectMapper = new ObjectMapper();
         Configuration settings = objectMapper.readValue(Paths.get("./settings.json").toFile(), Configuration.class);
+        CoreConfiguration coreSettings = settings.getCore();
 
         int wsPort = settings.getCore().getWsPort();
         String ircHost = settings.getCore().getHost();
@@ -170,7 +172,12 @@ public class Main {
         AuthenticationService authenticationService = new AuthenticationService(authenticationManager, userService, captchaService);
         NotificationService notificationService = new NotificationService(connectionManager, userService, messageBroadcaster, emailService, pendingNotificationDao);
         TicketService ticketService = new TicketService(userService, notificationService, new TicketDao(dataSource));
-        EmoticonService emoticonService = new EmoticonService(emoticonDao, journalService);
+        EmoticonService emoticonService = new EmoticonService(
+            new Dimension(coreSettings.getMaxEmoticonWidth(), coreSettings.getMaxEmoticonHeight()),
+            dataDir,
+            emoticonDao,
+            journalService
+        );
         SteamGameDao steamGameDao = new SteamGameDao(dataSource);
         SteamGameResolver steamGameResolver = new SteamGameResolver(steamGameDao, HttpClients.createMinimal());
         TwitchTvSocialAuthService twitchAuthService = new TwitchTvSocialAuthService(settings.getHttp().getTwitchClientId(),
@@ -314,7 +321,7 @@ public class Main {
                     new StatisticsResource(new StatisticsDao(dataSource), runtimeMetricRegistry, healthCheckRegistry),
                     new AnnouncementResource(announcementService, roomService),
                     new ChattersResource(chatterDao, roomService),
-                    new EmoticonsResource(dataDir, emoticonService),
+                    new EmoticonsResource(emoticonService),
                     new HistoryResource(historyService),
                     new IpBlockResource(bannedIps),
                     new JournalResource(journalDao),
