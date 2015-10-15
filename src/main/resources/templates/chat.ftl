@@ -750,7 +750,7 @@
 
 <div id="inputDiv" ng-controller="UserInputController">
     <div class="left-part input-group" style="text-align: center">
-        <form ng-show="isConnected()"  ng-submit="sendMessage()">
+        <form ng-show="isConnected()"  ng-submit="sendMessage()" autocomplete="off">
             <textcomplete members='members' message='message' class="dropup"></textcomplete>
         </form>
         <div ng-if="isConnecting()" class="connectionState connecting">
