@@ -4,7 +4,6 @@ import com.codahale.metrics.Gauge;
 import com.codahale.metrics.MetricRegistry;
 import com.lmax.disruptor.EventHandler;
 import io.netty.util.internal.RecyclableArrayList;
-import lexek.wschat.services.MessageConsumerService;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -15,7 +14,6 @@ public class ConnectionManager implements EventHandler<MessageEvent> {
     private static final long FIVE_MIN_MS = TimeUnit.MILLISECONDS.convert(5, TimeUnit.MINUTES);
 
     private final Set<ConnectionGroup> connectionGroups = new LinkedHashSet<>();
-    private final Set<MessageConsumerService> services = new LinkedHashSet<>();
 
     public ConnectionManager(MetricRegistry metricRegistry) {
         metricRegistry.register("online", (Gauge<Map<String, Long>>) ConnectionManager.this::online);
@@ -24,9 +22,6 @@ public class ConnectionManager implements EventHandler<MessageEvent> {
     @Override
     public void onEvent(MessageEvent event, long sequence, boolean endOfBatch) throws Exception {
         BroadcastFilter<?> predicate = event.getBroadcastFilter();
-        for (MessageConsumerService service : services) {
-            service.consume(event.getConnection(), event.getMessage(), event.getBroadcastFilter());
-        }
         if (predicate != null) {
             sendAll(event.getMessage(), event.getConnection(), predicate);
         } else {
@@ -36,14 +31,6 @@ public class ConnectionManager implements EventHandler<MessageEvent> {
 
     public void registerGroup(ConnectionGroup connectionGroup) {
         connectionGroups.add(connectionGroup);
-    }
-
-    public void registerService(MessageConsumerService service) {
-        services.add(service);
-    }
-
-    public void deregisterService(MessageConsumerService service) {
-        services.remove(service);
     }
 
     private void sendAll(Message message, final Connection connection) {

@@ -6,11 +6,11 @@ import com.codahale.metrics.health.HealthCheck;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.lmax.disruptor.BlockingWaitStrategy;
 import com.lmax.disruptor.EventFactory;
+import com.lmax.disruptor.EventHandler;
 import com.lmax.disruptor.RingBuffer;
 import com.lmax.disruptor.dsl.Disruptor;
 import com.lmax.disruptor.dsl.ProducerType;
 import lexek.wschat.services.AbstractService;
-import lexek.wschat.services.HistoryService;
 import lexek.wschat.util.LoggingExceptionHandler;
 
 import java.util.concurrent.Executors;
@@ -20,20 +20,19 @@ public class MessageBroadcaster extends AbstractService {
     private final Disruptor<MessageEvent> disruptor;
     private final RingBuffer<MessageEvent> ringBuffer;
 
-    public MessageBroadcaster(HistoryService historyService, ConnectionManager connectionManager) {
+    public MessageBroadcaster() {
         super("messageBroadcaster");
         EventFactory<MessageEvent> eventFactory = MessageEvent::new;
         ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("MESSAGE_BROADCASTER_%d").build();
         this.disruptor = new Disruptor<>(
             eventFactory,
             64,
-            Executors.newFixedThreadPool(2, threadFactory),
+            Executors.newCachedThreadPool(threadFactory),
             ProducerType.MULTI,
             new BlockingWaitStrategy()
         );
         this.ringBuffer = this.disruptor.getRingBuffer();
         this.disruptor.handleExceptionsWith(new LoggingExceptionHandler());
-        this.disruptor.handleEventsWith(historyService, connectionManager);
     }
 
     public void submitMessage(Message message, Connection connection, BroadcastFilter filter) {
@@ -47,6 +46,10 @@ public class MessageBroadcaster extends AbstractService {
 
     public void submitMessage(Message message, Connection connection) {
         submitMessage(message, connection, BroadcastFilter.NO_FILTER);
+    }
+
+    public void registerConsumer(EventHandler<MessageEvent> consumer) {
+        this.disruptor.handleEventsWith((EventHandler) consumer);
     }
 
     @Override

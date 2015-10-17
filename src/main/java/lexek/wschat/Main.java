@@ -164,7 +164,11 @@ public class Main {
         ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(scheduledThreadFactory);
         AtomicLong messageId = new AtomicLong(0);
         HistoryService historyService = new HistoryService(20, historyDao);
-        MessageBroadcaster messageBroadcaster = new MessageBroadcaster(historyService, connectionManager);
+        MessageConsumerServiceHandler messageConsumerServiceHandler = new MessageConsumerServiceHandler();
+        MessageBroadcaster messageBroadcaster = new MessageBroadcaster();
+        messageBroadcaster.registerConsumer(historyService);
+        messageBroadcaster.registerConsumer(connectionManager);
+        messageBroadcaster.registerConsumer(messageConsumerServiceHandler);
         RoomManager roomManager = new RoomManager(userService, messageBroadcaster, roomDao, chatterService, journalService);
         RoomService roomService = new RoomService(roomManager);
         AnnouncementService announcementService = new AnnouncementService(new AnnouncementDao(dataSource), journalService, roomManager, messageBroadcaster, scheduledExecutorService);
@@ -199,7 +203,7 @@ public class Main {
         proxyManager.registerProvider(new TwitchTvProxyProvider(messageId, messageBroadcaster, authenticationManager, proxyEventLoopGroup, twitchAuthService));
         proxyManager.registerProvider(new Sc2tvProxyProvider(proxyEventLoopGroup, messageBroadcaster, messageId));
         proxyManager.registerProvider(new CybergameTvProxyProvider(proxyEventLoopGroup, messageBroadcaster, messageId));
-        connectionManager.registerService(proxyManager);
+        messageConsumerServiceHandler.register(proxyManager);
         roomJoinNotificationService.registerListener((connection, chatter, room) ->
                 connection.send(Message.proxyListMessage(
                     proxyManager.getProxiesByRoom(room)
