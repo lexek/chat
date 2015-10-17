@@ -21,6 +21,8 @@ module.service("linkResolver", ["$q", "$http", function($q, $http) {
                 var text = "<span style=\"color:#cd201f;\" class=\"fa fa-youtube-play\"></span> "
                     + htmlEscape(data.items[0].snippet.title);
                 deferred.resolve(genLink(prefix, link, text));
+            } else {
+                deferred.resolve(genLink(prefix, link, linkText))
             }
         }).error(function(){
             deferred.resolve(genLink(prefix, link, linkText));
