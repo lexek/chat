@@ -346,7 +346,7 @@
         </div>
     </div>
     <div class="col-xs-4">
-        <div class="panel panel-primary">
+        <div class="panel panel-primary" ng-controller="RoomsController">
             <div class="panel-heading">
                 <h4 class="panel-title">
                     <i class="fa fa-comments-o"></i> rooms
@@ -369,7 +369,29 @@
             </div>
             <#if user.role == "SUPERADMIN">
                 <div class="panel-footer">
-                    <div class="btn btn-primary">create room</div>
+                    <div class="btn btn-primary" ng-if="!showForm" ng-click="toggleForm(true)">
+                        Create new room
+                    </div>
+                    <form ng-submit="submitForm()" class="form-horizontal" ng-if="showForm" name="form">
+                        <div class="form-group" ng-class="{'has-error': form.name.$invalid && form.name.$dirty, 'has-success': form.name.$dirty && !form.name.$invalid}">
+                            <div class="col-xs-12">
+                                <input
+                                        type="text"
+                                        class="form-control"
+                                        name="name"
+                                        placeholder="Room name"
+                                        pattern="^#[a-z]{3,10}$"
+                                        ng-model="input.name"
+                                        required
+                                        nd-disabled="inProgress"
+                                        >
+                            </div>
+                        </div>
+                        <div>
+                            <button type="submit" class="btn btn-primary" ng-disabled="form.$invalid || inProgress">Create new room</button>
+                            <button type="reset" class="btn btn-warning pull-right" ng-click="toggleForm(false)">Cancel</button>
+                        </div>
+                    </form>
                 </div>
             </#if>
         </div>
@@ -483,6 +505,12 @@
                             <div ng-switch-when="DELETED_EMOTICON">
                                 <img ng-src="/emoticons/{{entry.actionDescription.fileName}}">
                                 <code ng-bind="entry.actionDescription.code"></code>
+                            </div>
+                            <div ng-switch-when="DELETED_ROOM">
+                                <code ng-bind="entry.actionDescription.name"></code>
+                            </div>
+                            <div ng-switch-when="NEW_ROOM">
+                                <code ng-bind="entry.actionDescription.name"></code>
                             </div>
                             <div ng-switch-when="NAME_CHANGE">
                                 <code ng-bind="entry.actionDescription.oldName"></code>
@@ -1822,7 +1850,23 @@
                 </div>
             </div>
         </div>
-    </div>
+        <#if user.role == "SUPERADMIN">
+            <div class="col-lg-3" ng-if="roomData.name !== '#main'">
+                    <div class="panel panel-danger">
+                        <div class="panel-heading">
+                            <h4 class="panel-title">
+                                <i class="fa fa-fw fa-trash"></i> Delete room
+                            </h4>
+                        </div>
+                        <div class="panel-body">
+                            <div class="btn btn-danger" ng-click="deleteRoom()">
+                                <i class="fa fa-fw fa-trash"></i> Delete room
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </#if>
 </script>
 
 <script type="text/ng-template" id="new_proxy.html">

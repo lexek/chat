@@ -8,8 +8,7 @@ import javax.validation.constraints.Size;
 
 public class RoomForm {
     @NotNull
-    @Pattern(regexp = "#.+")
-    @Size(min = 3, max = 10)
+    @Pattern(regexp = "#[a-z]{3,10}", message = "name must start with hash and length must be betweeen 3 and 10")
     private final String name;
     @NotNull
     @Size(max = 50)

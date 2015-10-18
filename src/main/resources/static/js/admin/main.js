@@ -350,9 +350,17 @@ var DashboardController = function($scope, $http, alert) {
             });
     };
 
+    loadMetrics();
+};
+
+var RoomsController = function($scope, $http) {
+    $scope.showForm = false;
     $scope.entries = [];
-    $scope.input = {};
     $scope.filter = "";
+    $scope.inProgress = false;
+    $scope.input = {
+        name: ""
+    };
 
     var loadRooms = function() {
         $http({
@@ -363,32 +371,35 @@ var DashboardController = function($scope, $http, alert) {
         });
     };
 
-    $scope.add = function() {
-        var data = $scope.input;
-        data["topic"] = "";
-        $scope.input = {};
+    $scope.toggleForm = function(value) {
+        $scope.showForm = value;
+    };
+
+    $scope.submitForm = function() {
+        var data = {
+            "topic": "",
+            "name": $scope.input.name
+        };
+        $scope.inProgress = true;
         $http({
             method: "POST",
             data: data,
             url: "/rest/rooms/new"
         }).success(function () {
             loadRooms();
-        });
-    };
-
-    $scope.remove = function(id) {
-        $http({
-            method: "DELETE",
-            data: data,
-            url: "/rest/rooms/" + id
-        }).success(function () {
-            loadRooms();
+            $scope.input.name = "";
+            $scope.showForm = false;
+            $scope.inProgress = false;
+        }).error(function(data) {
+            alert(data);
+            $scope.inProgress = false;
         });
     };
 
     loadRooms();
-    loadMetrics();
 };
+
+AdminApplication.controller("RoomsController", RoomsController);
 
 var EmoticonsController = function($scope, $http, alert) {
     $scope.emoticons = [];
@@ -1045,7 +1056,9 @@ var JournalController = function($scope, $location, $http, $modal, alert, title)
         "USER_UPDATE": "User changed",
         "NAME_CHANGE": "User name changed",
         "NEW_EMOTICON": "New emoticon",
-        "DELETED_EMOTICON": "Deleted emoticon"
+        "DELETED_EMOTICON": "Deleted emoticon",
+        "NEW_ROOM": "Created room",
+        "DELETED_ROOM": "Deleted room"
     };
 
     $scope.getClassForJournalAction = function(action) {
@@ -1922,7 +1935,6 @@ var RoomController = function($scope, $location, $http, $sce, $modal, alert, tit
     var actionMap = {
         "NEW_PROXY": "Proxy added",
         "DELETED_PROXY": "Proxy removed",
-        "NEW_ROOM": "Room created",
         "NEW_POLL": "Poll created",
         "CLOSE_POLL": "Poll closed",
         "ROOM_BAN": "User banned",
@@ -1953,6 +1965,16 @@ var RoomController = function($scope, $location, $http, $sce, $modal, alert, tit
                     }
                 }
             }
+        });
+    };
+
+    $scope.deleteRoom = function() {
+        $http({
+            method: "DELETE",
+            url: "/rest/rooms/" + $scope.roomId
+        }).success(function() {
+            $location.path("/");
+            $location.url($location.path());
         });
     };
 

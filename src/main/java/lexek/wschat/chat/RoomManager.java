@@ -59,6 +59,7 @@ public class RoomManager {
             roomDao.add(pojo);
             Room room = new Room(userService, chatterService, pojo.getId(), pojo.getName(), pojo.getTopic());
             rooms.put(pojo.getName(), room);
+            roomIds.put(room.getId(), room);
             journalService.newRoom(admin, room);
         }
     }
@@ -67,6 +68,7 @@ public class RoomManager {
         if (!room.getName().equals("#main")) {
             roomDao.delete(room.getId());
             roomIds.remove(room.getId());
+            rooms.remove(room.getName());
             journalService.deletedRoom(admin, room);
         }
     }

@@ -65,7 +65,8 @@ public class JournalService {
 
     public void newRoom(UserDto admin, Room room) {
         try {
-            journalDao.add(new JournalEntry(null, admin, "NEW_ROOM", objectMapper.writeValueAsString(room.getName()), now(), room.getId()));
+            String description = objectMapper.writeValueAsString(ImmutableMap.of("name", room.getName()));
+            journalDao.add(new JournalEntry(null, admin, "NEW_ROOM", description, now(), null));
         } catch (JsonProcessingException e) {
             logger.warn("", e);
         }
@@ -73,7 +74,8 @@ public class JournalService {
 
     public void deletedRoom(UserDto admin, Room room) {
         try {
-            journalDao.add(new JournalEntry(null, admin, "DELETED_ROOM", objectMapper.writeValueAsString(room.getName()), now(), room.getId()));
+            String description = objectMapper.writeValueAsString(ImmutableMap.of("name", room.getName()));
+            journalDao.add(new JournalEntry(null, admin, "DELETED_ROOM", description, now(), null));
         } catch (JsonProcessingException e) {
             logger.warn("", e);
         }
