@@ -762,7 +762,7 @@
             <i class="fa fa-fw fa-circle-o-notch fa-spin"></i> {{"CHAT_AUTHENTICATING" | translate}}
         </div>
         <div ng-if="isDisconnected()" class="connectionState disconnected">
-            <i class="fa fa-fw fa-exclamation"></i> {{"CHAT_LOST_CONNECTION" | translate}} ({{"CHAT_RECONNECT_CD" | translate}} <timer until="getReconnectTime()"></timer>)
+            <i class="fa fa-fw fa-exclamation"></i> {{"CHAT_RECONNECT_CD" | translate}} <timer until="getReconnectTime()"></timer>
         </div>
     </div>
     <div class="right-part">

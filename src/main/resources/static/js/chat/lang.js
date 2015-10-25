@@ -53,7 +53,7 @@ langModule.config(['$translateProvider', function ($translateProvider) {
         "CHAT_CLEAR_USER": "{{mod}} cleared messages by {{user}}",
         "CHAT_TIMEOUT_USER": "{{user}} timed out by {{mod}}",
         "CHAT_BAN_USER": "{{user}} banned by {{mod}}",
-        "CHAT_RECONNECT_CD": "Reconnecting in",
+        "CHAT_RECONNECT_CD": "reconnecting in",
         "CHAT_AUTHENTICATING": "waiting for authentication",
 
         "USERS_MODS": "mods",
@@ -193,7 +193,7 @@ langModule.config(['$translateProvider', function ($translateProvider) {
         "CHAT_CLEAR_USER": "{{mod}} стёр сообщения от {{user}}",
         "CHAT_TIMEOUT_USER": "{{mod}} дал таймаут {{user}}",
         "CHAT_BAN_USER": "{{mod}} забанил {{user}}",
-        "CHAT_RECONNECT_CD": "Переподключение через",
+        "CHAT_RECONNECT_CD": "переподключение через",
         "CHAT_AUTHENTICATING": "ожидание аутентификации",
 
         "PROFILE_EMAIL_SETTINGS": "Настройки email",
