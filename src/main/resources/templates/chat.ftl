@@ -752,9 +752,14 @@
 
 <div id="inputDiv" ng-controller="UserInputController">
     <div class="left-part input-group" style="text-align: center">
-        <form ng-show="isConnected()"  ng-submit="sendMessage()" autocomplete="off">
+        <form ng-show="isConnected() && isAuthenticated()"  ng-submit="sendMessage()" autocomplete="off">
             <textcomplete members='members' message='message' class="dropup"></textcomplete>
         </form>
+        <div ng-if="isConnected() && !isAuthenticated()" class="connectionState">
+            <span class="btn btn-link-default btn-link-xs" ng-click="showSignIn()">
+                <i class="fa fa-fw fa-sign-in"></i> {{"CONTROLS_MENU_SIGN_IN" | translate}}
+            </span>
+        </div>
         <div ng-if="isConnecting()" class="connectionState connecting">
             <i class="fa fa-fw fa-circle-o-notch fa-spin"></i> {{"CHAT_CONNECTING" | translate}}
         </div>

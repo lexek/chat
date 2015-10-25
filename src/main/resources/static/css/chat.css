@@ -76,6 +76,10 @@ img.emoji {
     color: white;
 }
 
+.btn-link-xs {
+    font-size: 16px;
+}
+
 .dark .btn-link-default:hover,
 .dark .btn-link-default:focus {
     background-color: #878787;

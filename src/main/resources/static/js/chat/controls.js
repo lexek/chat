@@ -540,6 +540,10 @@ messagesModule.controller("UserInputController", ["$scope", "$modal", "chatServi
         return chat.state === CHAT_STATE.AUTHENTICATED;
     };
 
+    $scope.isAuthenticated = function() {
+        return chat.self && (chat.self.role >= globalLevels.USER)
+    };
+
     $scope.isConnecting = function() {
         return chat.state === CHAT_STATE.CONNECTING;
     };
@@ -554,6 +558,18 @@ messagesModule.controller("UserInputController", ["$scope", "$modal", "chatServi
 
     $scope.getReconnectTime = function() {
         return chat.reconnectAt;
+    };
+
+
+    $scope.showSignIn = function () {
+        $modal.open({
+            templateUrl: 'authentication.html',
+            controller: AuthenticationController,
+            resolve: {
+                "action": function () { return "sign_in"; },
+                "chat": function () { return chat; }
+            }
+        });
     };
 
     $scope.sendMessage = function(e) {
