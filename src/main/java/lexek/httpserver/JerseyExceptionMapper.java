@@ -1,9 +1,9 @@
 package lexek.httpserver;
 
-import lexek.wschat.db.model.e.DomainException;
-import lexek.wschat.db.model.e.EntityNotFoundException;
-import lexek.wschat.db.model.e.InvalidDataException;
-import lexek.wschat.db.model.e.InvalidInputException;
+import lexek.wschat.chat.e.DomainException;
+import lexek.wschat.chat.e.EntityNotFoundException;
+import lexek.wschat.chat.e.InvalidDataException;
+import lexek.wschat.chat.e.InvalidInputException;
 import lexek.wschat.db.model.rest.ErrorModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

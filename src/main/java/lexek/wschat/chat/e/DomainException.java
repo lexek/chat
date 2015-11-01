@@ -1,4 +1,4 @@
-package lexek.wschat.db.model.e;
+package lexek.wschat.chat.e;
 
 public class DomainException extends RuntimeException {
     public DomainException() {

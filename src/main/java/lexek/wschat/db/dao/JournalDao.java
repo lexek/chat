@@ -1,10 +1,10 @@
 package lexek.wschat.db.dao;
 
 import com.google.common.collect.ImmutableSet;
+import lexek.wschat.chat.e.InternalErrorException;
 import lexek.wschat.db.model.DataPage;
 import lexek.wschat.db.model.JournalEntry;
 import lexek.wschat.db.model.UserDto;
-import lexek.wschat.db.model.e.InternalErrorException;
 import lexek.wschat.util.Pages;
 import org.jooq.exception.DataAccessException;
 import org.jooq.impl.DSL;

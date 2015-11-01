@@ -1,9 +1,9 @@
 package lexek.wschat.db.dao;
 
+import lexek.wschat.chat.e.InternalErrorException;
 import lexek.wschat.db.jooq.tables.pojos.Ticket;
 import lexek.wschat.db.model.DataPage;
 import lexek.wschat.db.model.UserDto;
-import lexek.wschat.db.model.e.InternalErrorException;
 import lexek.wschat.db.model.rest.TicketRestModel;
 import org.jooq.DSLContext;
 import org.jooq.exception.DataAccessException;

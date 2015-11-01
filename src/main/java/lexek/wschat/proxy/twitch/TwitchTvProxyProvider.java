@@ -3,7 +3,7 @@ package lexek.wschat.proxy.twitch;
 import io.netty.channel.EventLoopGroup;
 import lexek.wschat.chat.MessageBroadcaster;
 import lexek.wschat.chat.Room;
-import lexek.wschat.db.model.e.InternalErrorException;
+import lexek.wschat.chat.e.InternalErrorException;
 import lexek.wschat.proxy.ModerationOperation;
 import lexek.wschat.proxy.Proxy;
 import lexek.wschat.proxy.ProxyProvider;

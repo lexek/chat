@@ -598,14 +598,12 @@ messagesModule.controller("UserInputController", ["$scope", "$modal", "chatServi
                 message['name'] = msg.substr(msg.indexOf(" ") + 1);
             } else if (tmp[0].toUpperCase() === 'IGNORE') {
                 if (tmp[1]) {
-                    settings.addIgnored(tmp[1].toLowerCase());
+                    message["name"] = tmp[1].toLowerCase();
                 }
-                send = false;
             } else if (tmp[0].toUpperCase() === "UNIGNORE") {
                 if (tmp[1]) {
-                    settings.deleteIgnored(tmp[1].toLowerCase());
+                    message["name"] = tmp[1].toLowerCase();
                 }
-                send = false;
             } else if (tmp[0].toUpperCase() === "CLEAR") {
                 message["room"] = chat.activeRoom;
                 if (tmp[1]) {

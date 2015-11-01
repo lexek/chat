@@ -1,7 +1,7 @@
 package lexek.wschat.db.dao;
 
+import lexek.wschat.chat.e.InternalErrorException;
 import lexek.wschat.db.jooq.tables.pojos.Emoticon;
-import lexek.wschat.db.model.e.InternalErrorException;
 import org.jooq.DSLContext;
 import org.jooq.exception.DataAccessException;
 import org.jooq.impl.DSL;

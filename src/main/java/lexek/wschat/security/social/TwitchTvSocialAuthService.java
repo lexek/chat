@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.net.HttpHeaders;
 import io.netty.util.CharsetUtil;
-import lexek.wschat.db.model.e.InvalidDataException;
+import lexek.wschat.chat.e.InvalidDataException;
 import lexek.wschat.util.JsonResponseHandler;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.entity.UrlEncodedFormEntity;

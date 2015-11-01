@@ -13,35 +13,6 @@ module.service("chatSettings", [function() {
         return $.cookie(name);
     };
 
-    SettingsService.prototype.getIgnored = function() {
-        var s = this.getS("ignored");
-        var result;
-        if (s) {
-            result =  $.parseJSON(s);
-        } else {
-            result = [];
-        }
-        return result;
-    };
-
-    SettingsService.prototype.addIgnored = function(name) {
-        var ignored = this.getIgnored();
-        if (ignored) {
-            ignored.push(name);
-        } else {
-            ignored = [name];
-        }
-        this.setS("ignored", JSON.stringify(ignored));
-    };
-
-    SettingsService.prototype.deleteIgnored = function(name) {
-        var ignored = this.getIgnored();
-        if (ignored) {
-            ignored.remove(name);
-        }
-        this.setS("ignored", JSON.stringify(ignored));
-    };
-
     SettingsService.prototype.getRooms = function() {
         var s = this.getS("rooms");
         var result;

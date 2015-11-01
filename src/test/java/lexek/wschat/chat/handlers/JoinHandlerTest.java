@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import lexek.wschat.chat.*;
 import lexek.wschat.db.model.UserDto;
-import lexek.wschat.services.RoomJoinNotificationService;
+import lexek.wschat.services.EventDispatcher;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -34,10 +34,10 @@ public class JoinHandlerTest {
 
     @Test
     public void should() {
-        RoomJoinNotificationService roomJoinNotificationService = mock(RoomJoinNotificationService.class);
+        EventDispatcher eventDispatcher = mock(EventDispatcher.class);
         Room room = mock(Room.class);
         MessageBroadcaster messageBroadcaster = mock(MessageBroadcaster.class);
-        JoinHandler handler = new JoinHandler(roomJoinNotificationService, messageBroadcaster);
+        JoinHandler handler = new JoinHandler(eventDispatcher, messageBroadcaster);
 
         UserDto userDto = new UserDto(0L, "user", GlobalRole.USER, "#ffffff", false, false, null, false);
         User user = new User(userDto);
@@ -57,15 +57,15 @@ public class JoinHandlerTest {
         verify(room).join(connection);
         verify(messageBroadcaster).submitMessage(eq(Message.joinMessage("#main", userDto)), eq(connection), eq(room.FILTER));
         verify(connection).send(eq(Message.selfJoinMessage("#main", chatter)));
-        verify(roomJoinNotificationService).joinedRoom(eq(connection), eq(chatter), eq(room));
+        verify(eventDispatcher).joinedRoom(eq(connection), eq(chatter), eq(room));
     }
 
     @Test
     public void shouldNotBroadcastMessageWhenOtherSessionActive() {
-        RoomJoinNotificationService roomJoinNotificationService = mock(RoomJoinNotificationService.class);
+        EventDispatcher eventDispatcher = mock(EventDispatcher.class);
         Room room = mock(Room.class);
         MessageBroadcaster messageBroadcaster = mock(MessageBroadcaster.class);
-        JoinHandler handler = new JoinHandler(roomJoinNotificationService, messageBroadcaster);
+        JoinHandler handler = new JoinHandler(eventDispatcher, messageBroadcaster);
 
         UserDto userDto = new UserDto(0L, "user", GlobalRole.USER, "#ffffff", false, false, null, false);
         User user = new User(userDto);
@@ -85,15 +85,15 @@ public class JoinHandlerTest {
         verify(room).join(connection);
         verify(messageBroadcaster, never()).submitMessage(any(Message.class), any(Connection.class), any(BroadcastFilter.class));
         verify(connection).send(eq(Message.selfJoinMessage("#main", chatter)));
-        verify(roomJoinNotificationService).joinedRoom(eq(connection), eq(chatter), eq(room));
+        verify(eventDispatcher).joinedRoom(eq(connection), eq(chatter), eq(room));
     }
 
     @Test
     public void shouldNotBroadcastMessageWhenRoleLowerThanUser() {
-        RoomJoinNotificationService roomJoinNotificationService = mock(RoomJoinNotificationService.class);
+        EventDispatcher eventDispatcher = mock(EventDispatcher.class);
         Room room = mock(Room.class);
         MessageBroadcaster messageBroadcaster = mock(MessageBroadcaster.class);
-        JoinHandler handler = new JoinHandler(roomJoinNotificationService, messageBroadcaster);
+        JoinHandler handler = new JoinHandler(eventDispatcher, messageBroadcaster);
 
         UserDto userDto = new UserDto(0L, "user", GlobalRole.UNAUTHENTICATED, "#ffffff", false, false, null, false);
         User user = new User(userDto);
@@ -113,15 +113,15 @@ public class JoinHandlerTest {
         verify(room).join(connection);
         verify(messageBroadcaster, never()).submitMessage(any(Message.class), any(Connection.class), any(BroadcastFilter.class));
         verify(connection).send(eq(Message.selfJoinMessage("#main", chatter)));
-        verify(roomJoinNotificationService).joinedRoom(eq(connection), eq(chatter), eq(room));
+        verify(eventDispatcher).joinedRoom(eq(connection), eq(chatter), eq(room));
     }
 
     @Test
     public void shouldReturnErrorIfAlreadyInRoom() {
-        RoomJoinNotificationService roomJoinNotificationService = mock(RoomJoinNotificationService.class);
+        EventDispatcher eventDispatcher = mock(EventDispatcher.class);
         Room room = mock(Room.class);
         MessageBroadcaster messageBroadcaster = mock(MessageBroadcaster.class);
-        JoinHandler handler = new JoinHandler(roomJoinNotificationService, messageBroadcaster);
+        JoinHandler handler = new JoinHandler(eventDispatcher, messageBroadcaster);
 
         UserDto userDto = new UserDto(0L, "user", GlobalRole.USER, "#ffffff", false, false, null, false);
         User user = new User(userDto);
@@ -141,7 +141,7 @@ public class JoinHandlerTest {
         verify(room, never()).join(connection);
         verify(messageBroadcaster, never()).submitMessage(any(Message.class), any(Connection.class), any(BroadcastFilter.class));
         verify(connection, never()).send(eq(Message.selfJoinMessage("#main", chatter)));
-        verify(roomJoinNotificationService, never()).joinedRoom(any(Connection.class), any(Chatter.class), any(Room.class));
+        verify(eventDispatcher, never()).joinedRoom(any(Connection.class), any(Chatter.class), any(Room.class));
         verify(connection).send(eq(Message.errorMessage("ROOM_ALREADY_JOINED")));
     }
 }

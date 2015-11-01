@@ -1,10 +1,10 @@
 package lexek.wschat.db.dao;
 
 import lexek.wschat.chat.MessageType;
+import lexek.wschat.chat.e.InternalErrorException;
 import lexek.wschat.db.jooq.tables.pojos.History;
 import lexek.wschat.db.model.DataPage;
 import lexek.wschat.db.model.HistoryData;
-import lexek.wschat.db.model.e.InternalErrorException;
 import lexek.wschat.util.Pages;
 import org.jooq.Condition;
 import org.jooq.exception.DataAccessException;

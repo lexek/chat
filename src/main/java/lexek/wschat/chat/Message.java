@@ -63,7 +63,7 @@ public class Message {
     }
 
     public static Message namesMessage(String room, List<Chatter> users) {
-        return new Message(ImmutableMap.<MessageProperty, Object>of(MessageProperty.TYPE, MessageType.NAMES, MessageProperty.ROOM, room, MessageProperty.NAMES, users));
+        return new Message(ImmutableMap.<MessageProperty, Object>of(MessageProperty.TYPE, MessageType.NAMES, MessageProperty.ROOM, room, MessageProperty.CHATTERS, users));
     }
 
     public static Message moderationMessage(MessageType messageType, String room, String mod, String user) {
@@ -166,6 +166,13 @@ public class Message {
         return new Message(ImmutableMap.<MessageProperty, Object>of(
             MessageProperty.TYPE, MessageType.PROTOCOL_VERSION,
             MessageProperty.VERSION, version
+        ));
+    }
+
+    public static Message ignoredMessage(List<String> ignoredNames) {
+        return new Message(ImmutableMap.<MessageProperty, Object>of(
+            MessageProperty.TYPE, MessageType.IGNORED,
+            MessageProperty.NAMES, ignoredNames
         ));
     }
 

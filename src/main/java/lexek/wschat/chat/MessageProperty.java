@@ -23,8 +23,9 @@ public class MessageProperty<T> {
     public static final MessageProperty<String> TEXT = valueOf("text");
     public static final MessageProperty<UserDto> USER = valueOf("user");
     public static final MessageProperty<Chatter> CHATTER = valueOf("chatter");
+    public static final MessageProperty<List<String>> NAMES = valueOf("names");
     public static final MessageProperty<List<Message>> HISTORY_DATA = valueOf("history");
-    public static final MessageProperty<List<Chatter>> NAMES = valueOf("names");
+    public static final MessageProperty<List<Chatter>> CHATTERS = valueOf("chatters");
     public static final MessageProperty<String> ERROR_DATA = valueOf("errorData");
     public static final MessageProperty<String> SERVICE = valueOf("service");
     public static final MessageProperty<String> SERVICE_RESOURCE = valueOf("serviceResource");

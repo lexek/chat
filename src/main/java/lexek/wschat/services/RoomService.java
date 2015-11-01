@@ -2,8 +2,8 @@ package lexek.wschat.services;
 
 import lexek.wschat.chat.Room;
 import lexek.wschat.chat.RoomManager;
+import lexek.wschat.chat.e.EntityNotFoundException;
 import lexek.wschat.db.model.UserDto;
-import lexek.wschat.db.model.e.EntityNotFoundException;
 
 import java.util.Collection;
 

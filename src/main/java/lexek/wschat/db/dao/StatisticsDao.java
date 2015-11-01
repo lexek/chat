@@ -1,9 +1,9 @@
 package lexek.wschat.db.dao;
 
 import com.google.common.collect.ImmutableList;
+import lexek.wschat.chat.e.InternalErrorException;
 import lexek.wschat.db.jooq.tables.pojos.Metric;
 import lexek.wschat.db.model.UserMessageCount;
-import lexek.wschat.db.model.e.InternalErrorException;
 import org.jooq.Record1;
 import org.jooq.Record3;
 import org.jooq.Table;

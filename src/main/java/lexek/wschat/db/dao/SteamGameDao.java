@@ -1,7 +1,7 @@
 package lexek.wschat.db.dao;
 
+import lexek.wschat.chat.e.InternalErrorException;
 import lexek.wschat.db.jooq.tables.pojos.SteamGame;
-import lexek.wschat.db.model.e.InternalErrorException;
 import org.jooq.DSLContext;
 import org.jooq.Record1;
 import org.jooq.exception.DataAccessException;

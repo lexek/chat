@@ -271,3 +271,16 @@ CREATE TABLE `chat_proxy` (
     ON UPDATE CASCADE
     ON DELETE CASCADE
 );
+
+CREATE TABLE `ignore_list` (
+  `id`         BIGINT(20) NOT NULL AUTO_INCREMENT,
+  `user_id`    BIGINT(20) NOT NULL,
+  `ignored_id` BIGINT(20) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `user_id_ignored_id` (`user_id`, `ignored_id`),
+  INDEX `FK_ignore_user_2` (`ignored_id`),
+  CONSTRAINT `FK_ignore_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`)
+    ON UPDATE CASCADE
+    ON DELETE CASCADE,
+  CONSTRAINT `FK_ignore_user_2` FOREIGN KEY (`ignored_id`) REFERENCES `user` (`id`)
+);

@@ -90,7 +90,7 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
             ) && (
                 (msg.type !== "MSG_EXT") || chat.isProxyModerationEnabled(ctx.room, service, serviceRes)
             );
-        var ignored = settings.getIgnored().indexOf(user.name.toLowerCase()) != -1;
+        var ignored = chat.ignoredNames.indexOf(user.name.toLowerCase()) != -1;
         var showIgnored = settings.getS("showIgnored");
         var hideExt = settings.getS("hideExt");
         var hidden = ignored && showIgnored;
@@ -414,6 +414,9 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
                 } else {
                     console.log("protocol version matches");
                 }
+                break;
+            case "IGNORED":
+                chat.ignoredNames = ctx.msg.names;
                 break;
             default:
                 console.log(message);

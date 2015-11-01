@@ -20,12 +20,12 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 
-public class RoomJoinNotificationService extends AbstractService {
+public class EventDispatcher extends AbstractService {
     private final Disruptor<JoinedRoomEvent> disruptor;
     private final RingBuffer<JoinedRoomEvent> ringBuffer;
     private final List<RoomJoinedEventListener> listeners = new CopyOnWriteArrayList<>();
 
-    public RoomJoinNotificationService() {
+    public EventDispatcher() {
         super("notificationService");
         EventFactory<JoinedRoomEvent> eventFactory = JoinedRoomEvent::new;
         ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("NOTIFICATIONS_%d").build();

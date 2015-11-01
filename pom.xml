@@ -174,7 +174,8 @@
                                 pending_confirmation|
                                 pending_notification|
                                 steam_game|
-                                chat_proxy
+                                chat_proxy|
+                                ignore_list
                             </includes>
                             <excludes></excludes>
                             <inputSchema>chat</inputSchema>

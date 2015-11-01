@@ -2,10 +2,10 @@ package lexek.wschat.services;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.hash.Hashing;
+import lexek.wschat.chat.e.InvalidInputException;
 import lexek.wschat.db.dao.EmoticonDao;
 import lexek.wschat.db.jooq.tables.pojos.Emoticon;
 import lexek.wschat.db.model.UserDto;
-import lexek.wschat.db.model.e.InvalidInputException;
 
 import javax.imageio.ImageIO;
 import java.awt.*;

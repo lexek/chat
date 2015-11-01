@@ -52,7 +52,7 @@ public class IrcCodec implements Codec {
                 return ":server PRIVMSG " + user.getName() + " :https://" + serverName + ":1337/recaptcha/" + captchaId;
             }
             case NAMES: {
-                List<Chatter> users = message.get(MessageProperty.NAMES);
+                List<Chatter> users = message.get(MessageProperty.CHATTERS);
                 String room = message.get(MessageProperty.ROOM);
                 StringBuilder sb = new StringBuilder();
                 for (Chatter u : users) {

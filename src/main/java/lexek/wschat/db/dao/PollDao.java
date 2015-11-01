@@ -2,10 +2,10 @@ package lexek.wschat.db.dao;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
+import lexek.wschat.chat.e.InternalErrorException;
 import lexek.wschat.db.jooq.tables.records.PollOptionRecord;
 import lexek.wschat.db.jooq.tables.records.PollRecord;
 import lexek.wschat.db.model.DataPage;
-import lexek.wschat.db.model.e.InternalErrorException;
 import lexek.wschat.services.poll.Poll;
 import lexek.wschat.services.poll.PollOption;
 import lexek.wschat.services.poll.PollState;

@@ -31,6 +31,7 @@ function($modal, settings, $translate, $http, $timeout, notificationService, msg
         this.idCounter = 0;
         this.limit = document.IS_MOBILE ? 20 : 50;
         this.proxies = {};
+        this.ignoredNames = [];
 
         var c = this;
 

@@ -2,7 +2,7 @@ package lexek.wschat.frontend.http.rest.admin;
 
 import com.google.common.collect.ImmutableMap;
 import lexek.wschat.chat.GlobalRole;
-import lexek.wschat.db.model.e.EntityNotFoundException;
+import lexek.wschat.chat.e.EntityNotFoundException;
 import lexek.wschat.security.jersey.RequiredRole;
 import lexek.wschat.services.SteamGameResolver;
 

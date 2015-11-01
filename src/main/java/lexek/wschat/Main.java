@@ -154,6 +154,7 @@ public class Main {
         PendingNotificationDao pendingNotificationDao = new PendingNotificationDao(dataSource);
         UserAuthDao userAuthDao = new UserAuthDao(dataSource);
         ProxyDao proxyDao = new ProxyDao(dataSource);
+        IgnoreDao ignoreDao = new IgnoreDao(dataSource);
 
         ConnectionManager connectionManager = new ConnectionManager(metricRegistry);
         UserService userService = new UserService(connectionManager, userDao, journalService);
@@ -187,8 +188,9 @@ public class Main {
         TwitchTvSocialAuthService twitchAuthService = new TwitchTvSocialAuthService(settings.getHttp().getTwitchClientId(),
             settings.getHttp().getTwitchSecret(),
             settings.getHttp().getTwitchUrl());
+        IgnoreService ignoreService = new IgnoreService(ignoreDao);
 
-        RoomJoinNotificationService roomJoinNotificationService = new RoomJoinNotificationService();
+        EventDispatcher eventDispatcher = new EventDispatcher();
 
         Set<String> bannedIps = new CopyOnWriteArraySet<>();
 
@@ -204,7 +206,7 @@ public class Main {
         proxyManager.registerProvider(new Sc2tvProxyProvider(proxyEventLoopGroup, messageBroadcaster, messageId));
         proxyManager.registerProvider(new CybergameTvProxyProvider(proxyEventLoopGroup, messageBroadcaster, messageId));
         messageConsumerServiceHandler.register(proxyManager);
-        roomJoinNotificationService.registerListener((connection, chatter, room) ->
+        eventDispatcher.registerListener((connection, chatter, room) ->
                 connection.send(Message.proxyListMessage(
                     proxyManager.getProxiesByRoom(room)
                         .stream()
@@ -219,7 +221,7 @@ public class Main {
                     room.getName()
                 ))
         );
-        roomJoinNotificationService.registerListener((connection, chatter, room) -> {
+        eventDispatcher.registerListener((connection, chatter, room) -> {
             PollState activePoll = pollService.getActivePoll(room);
             if (activePoll != null) {
                 connection.send(Message.pollMessage(MessageType.POLL, room.getName(), activePoll));
@@ -228,25 +230,26 @@ public class Main {
                 }
             }
         });
-        roomJoinNotificationService.registerListener((connection, chatter, room) ->
+        eventDispatcher.registerListener((connection, chatter, room) ->
             announcementService.sendAnnouncements(connection, room));
-        roomJoinNotificationService.registerListener((connection, chatter, room) -> {
+        eventDispatcher.registerListener((connection, chatter, room) -> {
             if (connection.isNeedNames()) {
                 ImmutableList.Builder<Chatter> users = ImmutableList.builder();
                 room.getOnlineChatters().stream().filter(c -> c.hasRole(LocalRole.USER)).forEach(users::add);
                 connection.send(Message.namesMessage(room.getName(), users.build()));
             }
         });
-        roomJoinNotificationService.registerListener(((connection, chatter, room) ->
+        eventDispatcher.registerListener(((connection, chatter, room) ->
             connection.send(Message.historyMessage(room.getHistory()))));
-        roomJoinNotificationService.registerListener(notificationService);
+        eventDispatcher.registerListener(notificationService);
+        eventDispatcher.registerListener(new IgnoreJoinListener(ignoreService));
 
         HandlerInvoker handlerInvoker = new HandlerInvoker(roomManager, chatterService, bannedIps, captchaService);
         MessageReactor messageReactor = new DefaultMessageReactor(handlerInvoker);
         handlerInvoker.register(new BanHandler(messageBroadcaster, chatterService));
         handlerInvoker.register(new ClearUserHandler(messageBroadcaster));
         handlerInvoker.register(new ColorHandler(userDao));
-        handlerInvoker.register(new JoinHandler(roomJoinNotificationService, messageBroadcaster));
+        handlerInvoker.register(new JoinHandler(eventDispatcher, messageBroadcaster));
         handlerInvoker.register(new MsgHandler(messageId, messageBroadcaster));
         handlerInvoker.register(new MeHandler(messageBroadcaster, messageId));
         handlerInvoker.register(new PartHandler(messageBroadcaster));
@@ -258,12 +261,14 @@ public class Main {
         handlerInvoker.register(new ClearRoomHandler(messageBroadcaster));
         handlerInvoker.register(new VoteHandler(pollService));
         handlerInvoker.register(new ProxyModerationHandler(proxyManager));
+        handlerInvoker.register(new IgnoreHandler(ignoreService));
+        handlerInvoker.register(new UnignoreHandler(ignoreService));
 
         serviceManager.registerService(announcementService);
         serviceManager.registerService(messageBroadcaster);
         serviceManager.registerService(messageReactor);
         serviceManager.registerService(authenticationService);
-        serviceManager.registerService(roomJoinNotificationService);
+        serviceManager.registerService(eventDispatcher);
         serviceManager.registerService(proxyManager);
 
         EventLoopGroup bossGroup;
