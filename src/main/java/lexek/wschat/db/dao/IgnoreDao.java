@@ -53,7 +53,7 @@ public class IgnoreDao {
         }
     }
 
-    public List<String> getIgnoreList(UserDto user) {
+    public List<String> fetchIgnoreList(UserDto user) {
         try (Connection connection = dataSource.getConnection()) {
             return DSL.using(connection)
                 .select(USER.NAME)
@@ -63,6 +63,14 @@ public class IgnoreDao {
                 .stream()
                 .map(Record1::value1)
                 .collect(Collectors.toList());
+        } catch (SQLException e) {
+            throw new InternalErrorException(e);
+        }
+    }
+
+    public int fetchIgnoreCount(UserDto user) {
+        try (Connection connection = dataSource.getConnection()) {
+            return DSL.using(connection).fetchCount(IGNORE_LIST, IGNORE_LIST.USER_ID.equal(user.getId()));
         } catch (SQLException e) {
             throw new InternalErrorException(e);
         }
