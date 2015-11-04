@@ -125,6 +125,10 @@ langModule.config(['$translateProvider', function ($translateProvider) {
         "POLL_SKIP_VOTE": "skip vote",
         "POLL_ANNOUNCEMENT": "Poll started: {{question}}",
 
+        "IGNORE_OK": "You have ignored <b>{{name}}</b>",
+        "UNIGNORE_OK": "You have removed <b>{{name}}</b> from your ignore list",
+        "IGNORE_LIST": "You are ignoring: {{names}}",
+
         "ERROR_BAN": "You are banned",
         "ERROR_BAN_DENIED": "You can't ban this user",
         "ERROR_CLEAR_DENIED": "You can't clear this user messages",
@@ -141,7 +145,8 @@ langModule.config(['$translateProvider', function ($translateProvider) {
         "ERROR_UNKNOWN_ROLE": "Unknown role",
         "ERROR_UNKNOWN_USER": "Unknown user",
         "ERROR_UNVERIFIED_EMAIL": "You must verify your email before you can send any messages",
-        "ERROR_WRONG_COLOR": "You can't use this color"
+        "ERROR_WRONG_COLOR": "You can't use this color",
+        "ERROR_ALREADY_IGNORED": "That user is already in ignore list"
     });
 
     $translateProvider.translations("ru", {
@@ -268,6 +273,10 @@ langModule.config(['$translateProvider', function ($translateProvider) {
         "POLL_SKIP_VOTE": "не голосовать",
         "POLL_ANNOUNCEMENT": "Начался опрос: {{question}}",
 
+        "IGNORE_OK": "<b>{{name}}</b> добавлен игнор",
+        "UNIGNORE_OK": "<b>{{name}}</b> удалён из игнора",
+        "IGNORE_LIST": "Ты игнорируешь: {{names}}",
+
         "ERROR_BAN": "Вы забанены",
         "ERROR_BAN_DENIED": "Вы не можете забанить этого пользователя",
         "ERROR_CLEAR_DENIED": "Вы не можете стереть сообщения этого пользователя",
@@ -284,7 +293,8 @@ langModule.config(['$translateProvider', function ($translateProvider) {
         "ERROR_UNKNOWN_ROLE": "Неизвестная роль",
         "ERROR_UNKNOWN_USER": "Неизвестный пользователь",
         "ERROR_UNVERIFIED_EMAIL": "Вы должны подтвердить свой email перед тем, как вы сможете отправлять сообщения",
-        "ERROR_WRONG_COLOR": "Вы не можете использовать этот цвет"
+        "ERROR_WRONG_COLOR": "Вы не можете использовать этот цвет",
+        "ERROR_ALREADY_IGNORED": "Этот пользователь уже в игноре"
     });
 
     $translateProvider.translations("ua", {

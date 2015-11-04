@@ -136,6 +136,13 @@ function($modal, settings, $translate, $http, $timeout, notificationService, msg
         })
     };
 
+    chatService.prototype.showIgnoreList = function() {
+        var message = {
+            type: "INTERNAL_IGNORE_LIST"
+        };
+        msgs.processMessage(this, message, false);
+    };
+
     /**
      * @param {Level} role
      * @param {String} roomName

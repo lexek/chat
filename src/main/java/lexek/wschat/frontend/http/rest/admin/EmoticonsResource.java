@@ -1,6 +1,5 @@
 package lexek.wschat.frontend.http.rest.admin;
 
-import com.google.common.collect.ImmutableMap;
 import lexek.wschat.chat.GlobalRole;
 import lexek.wschat.chat.e.InvalidInputException;
 import lexek.wschat.db.model.UserDto;
@@ -41,7 +40,7 @@ public class EmoticonsResource {
         @Auth UserDto admin
     ) throws URISyntaxException, IOException {
         if (fileData.getFileName().isEmpty()) {
-            throw new InvalidInputException(ImmutableMap.of("file", "You should provide file"));
+            throw new InvalidInputException("file", "You should provide file");
         }
         if (emoticonService.add(code, file, fileData.getFileName(), admin)) {
             cachedValue = null;

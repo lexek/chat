@@ -599,6 +599,9 @@ messagesModule.controller("UserInputController", ["$scope", "$modal", "chatServi
             } else if (tmp[0].toUpperCase() === 'IGNORE') {
                 if (tmp[1]) {
                     message["name"] = tmp[1].toLowerCase();
+                } else {
+                    send = false;
+                    chat.showIgnoreList();
                 }
             } else if (tmp[0].toUpperCase() === "UNIGNORE") {
                 if (tmp[1]) {

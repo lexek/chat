@@ -17,6 +17,10 @@ public class Message {
         this.data = data;
     }
 
+    public static Message ignoreMessage(MessageType type, String name) {
+        return new Message(ImmutableMap.<MessageProperty, Object>of(MessageProperty.TYPE, type, MessageProperty.NAME, name));
+    }
+
     public static Message errorMessage(String text) {
         return new Message(ImmutableMap.<MessageProperty, Object>of(MessageProperty.TYPE, MessageType.ERROR, MessageProperty.TEXT, text));
     }

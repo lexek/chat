@@ -1,10 +1,11 @@
 package lexek.wschat.db.dao;
 
-import com.google.common.collect.ImmutableMap;
+import com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException;
 import lexek.wschat.chat.e.InternalErrorException;
 import lexek.wschat.chat.e.InvalidInputException;
 import lexek.wschat.db.model.UserDto;
 import org.jooq.Record1;
+import org.jooq.exception.DataAccessException;
 import org.jooq.impl.DSL;
 
 import javax.sql.DataSource;
@@ -30,10 +31,17 @@ public class IgnoreDao {
                 .select(DSL.select(DSL.inline(user.getId()), USER.ID).from(USER).where(USER.NAME.equal(name)))
                 .execute();
             if (result != 1) {
-                throw new InvalidInputException(ImmutableMap.of("name", "UNKNOWN_USER"));
+                throw new InvalidInputException("name", "UNKNOWN_USER");
             }
         } catch (SQLException e) {
             throw new InternalErrorException(e);
+        } catch (DataAccessException e) {
+            Throwable cause = e.getCause();
+            if (cause != null && cause instanceof MySQLIntegrityConstraintViolationException) {
+                throw new InvalidInputException("name", "ALREADY_IGNORED");
+            } else {
+                throw e;
+            }
         }
     }
 
@@ -46,7 +54,7 @@ public class IgnoreDao {
                     "where ignore_list.user_id = ? and ignored.name = ?";
             int result = DSL.using(connection).execute(query, user.getId(), name);
             if (result != 1) {
-                throw new InvalidInputException(ImmutableMap.of("name", "UNKNOWN_USER"));
+                throw new InvalidInputException("name", "UNKNOWN_USER");
             }
         } catch (SQLException e) {
             throw new InternalErrorException(e);

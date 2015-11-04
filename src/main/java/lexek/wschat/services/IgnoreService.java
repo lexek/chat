@@ -1,6 +1,5 @@
 package lexek.wschat.services;
 
-import com.google.common.collect.ImmutableMap;
 import lexek.wschat.chat.User;
 import lexek.wschat.chat.e.InvalidInputException;
 import lexek.wschat.chat.e.LimitExceededException;
@@ -32,7 +31,7 @@ public class IgnoreService {
         }
         String trimmedName = name.trim();
         if (trimmedName.isEmpty()) {
-            throw new InvalidInputException(ImmutableMap.of("name", "EMPTY_NAME"));
+            throw new InvalidInputException("name", "EMPTY_NAME");
         }
         if (ignoreDao.fetchIgnoreCount(user.getWrappedObject()) >= MAX_IGNORED) {
             throw new LimitExceededException("ignored");
@@ -49,7 +48,10 @@ public class IgnoreService {
         }
         String trimmedName = name.trim();
         if (trimmedName.isEmpty()) {
-            throw new InvalidInputException(ImmutableMap.of("name", "EMPTY_NAME"));
+            throw new InvalidInputException("name", "EMPTY_NAME");
+        }
+        if (trimmedName.length() > 16) {
+            throw new InvalidInputException("name", "NAME_TOO_LONG");
         }
         ignoreDao.deleteIgnore(user.getWrappedObject(), trimmedName);
     }

@@ -1,6 +1,5 @@
 package lexek.wschat.security;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.io.BaseEncoding;
 import io.netty.util.internal.chmv8.ConcurrentHashMapV8;
 import lexek.httpserver.Request;
@@ -225,7 +224,7 @@ public class AuthenticationManager {
     public synchronized void setPassword(UserDto user, String password, String oldPassword) {
         UserAuthDto auth = getAuthDataForUser(user, "password");
         if (auth != null && !validatePassword(oldPassword, auth.getAuthenticationKey())) {
-            throw new InvalidInputException(ImmutableMap.of("oldPassword", "invalid"));
+            throw new InvalidInputException("oldPassword", "invalid");
         }
         userAuthDao.setPassword(user.getId(), BCrypt.hashpw(password, BCrypt.gensalt()));
     }

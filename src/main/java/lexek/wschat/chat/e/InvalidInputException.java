@@ -1,16 +1,27 @@
 package lexek.wschat.chat.e;
 
+import com.google.common.collect.ImmutableMap;
+
 import java.util.Map;
 
 public class InvalidInputException extends DomainException {
-    private final Map<String, String> data;
+    private final String name;
+    private final String message;
 
-    public InvalidInputException(Map<String, String> data) {
-        super();
-        this.data = data;
+    public InvalidInputException(String name, String message) {
+        this.name = name;
+        this.message = message;
+    }
+
+    public String name() {
+        return name;
+    }
+
+    public String message() {
+        return message;
     }
 
     public Map<String, String> getData() {
-        return data;
+        return ImmutableMap.of("name", name, "message", message);
     }
 }

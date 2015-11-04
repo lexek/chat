@@ -18,8 +18,10 @@ public class UnignoreHandler extends AbstractGlobalMessageHandler {
     @Override
     public void handle(Connection connection, User user, Message message) {
         try {
-            ignoreService.unignore(user, message.get(MessageProperty.NAME));
+            String name = message.get(MessageProperty.NAME);
+            ignoreService.unignore(user, name);
             connection.send(Message.ignoredMessage(ignoreService.getIgnoredNames(user)));
+            connection.send(Message.ignoreMessage(MessageType.UNIGNORE, name));
         } catch (LimitExceededException e) {
             connection.send(Message.errorMessage("IGNORE_LIMIT_REACHED"));
         } catch (InvalidInputException e) {

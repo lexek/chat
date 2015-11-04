@@ -1,6 +1,5 @@
 package lexek.wschat.services;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.hash.Hashing;
 import lexek.wschat.chat.e.InvalidInputException;
 import lexek.wschat.db.dao.EmoticonDao;
@@ -36,7 +35,7 @@ public class EmoticonService {
         int width = image.getWidth();
         int height = image.getHeight();
         if (width > maxSize.getWidth() || height > maxSize.getHeight()) {
-            throw new InvalidInputException(ImmutableMap.of("file", "Image is too big"));
+            throw new InvalidInputException("file", "Image is too big");
         } else {
             boolean success = true;
             try {

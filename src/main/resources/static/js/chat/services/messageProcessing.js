@@ -418,6 +418,23 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
             case "IGNORED":
                 chat.ignoredNames = ctx.msg.names;
                 break;
+            case "IGNORE":
+                chat.addMessage(new Message("INFO", $translate.instant("IGNORE_OK", {
+                    "name": message.name
+                }), ctx.room));
+                chat.messagesUpdated();
+                break;
+            case "UNIGNORE":
+                chat.addMessage(new Message("INFO", $translate.instant("UNIGNORE_OK", {
+                    "name": message.name
+                }), ctx.room));
+                chat.messagesUpdated();
+                break;
+            case "INTERNAL_IGNORE_LIST":
+                chat.addMessage(new Message("INFO", $translate.instant("IGNORE_LIST", {
+                    "names": chat.ignoredNames.join(", ")
+                }), ctx.room));
+                break;
             default:
                 console.log(message);
                 break;
@@ -432,9 +449,9 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
             ext: ".png",
             callback: function(icon, options) {
                 switch ( icon ) {
-                    case 'a9':      // � copyright
-                    case 'ae':      // � registered trademark
-                    case '2122':    // � trademark
+                    case 'a9':      // copyright
+                    case 'ae':      // registered trademark
+                    case '2122':    // trademark
                         return false;
                 }
                 return ''.concat(options.base, options.size, '/', icon, options.ext);
