@@ -206,6 +206,7 @@ public class Main {
         proxyManager.registerProvider(new Sc2tvProxyProvider(proxyEventLoopGroup, messageBroadcaster, messageId));
         proxyManager.registerProvider(new CybergameTvProxyProvider(proxyEventLoopGroup, messageBroadcaster, messageId));
         messageConsumerServiceHandler.register(proxyManager);
+        eventDispatcher.registerListener(new IgnoreJoinListener(ignoreService));
         eventDispatcher.registerListener((connection, chatter, room) ->
                 connection.send(Message.proxyListMessage(
                     proxyManager.getProxiesByRoom(room)
@@ -242,7 +243,6 @@ public class Main {
         eventDispatcher.registerListener(((connection, chatter, room) ->
             connection.send(Message.historyMessage(room.getHistory()))));
         eventDispatcher.registerListener(notificationService);
-        eventDispatcher.registerListener(new IgnoreJoinListener(ignoreService));
 
         HandlerInvoker handlerInvoker = new HandlerInvoker(roomManager, chatterService, bannedIps, captchaService);
         MessageReactor messageReactor = new DefaultMessageReactor(handlerInvoker);
