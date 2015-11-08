@@ -7,9 +7,9 @@ before_install:
   - mysql -u root -e "GRANT ALL ON chat.* TO chat@localhost; FLUSH PRIVILEGES;"
   - mysql chat < database.sql
 install:
-  - mvn assembly:assembly -DskipTests -P netty-native-linux
+  - mvn -B assembly:assembly -DskipTests -P netty-native-linux
 script:
-  - mvn surefire:test
+  - mvn -B surefire:test
 notifications:
   email:
     recipients:
