@@ -8,6 +8,7 @@ import lexek.wschat.services.EventDispatcher;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.mockito.Mockito.*;
 
 public class JoinHandlerTest {
@@ -24,12 +25,18 @@ public class JoinHandlerTest {
     }
 
     @Test
-    public void shouldHaveRequiredProperties() throws Exception {
+    public void shouldHaveRequiredProperties() {
         JoinHandler handler = new JoinHandler(null, null);
         assertEquals(
             handler.requiredProperties(),
             ImmutableSet.of(MessageProperty.ROOM)
         );
+    }
+
+    @Test
+    public void shouldNotRequireJoin() {
+        JoinHandler handler = new JoinHandler(null, null);
+        assertFalse(handler.joinRequired());
     }
 
     @Test

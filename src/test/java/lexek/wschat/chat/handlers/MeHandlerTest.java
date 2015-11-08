@@ -11,6 +11,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import static lexek.wschat.chat.TextMessageMatcher.textMessage;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
@@ -34,6 +35,12 @@ public class MeHandlerTest {
             handler.requiredProperties(),
             ImmutableSet.of(MessageProperty.ROOM, MessageProperty.TEXT)
         );
+    }
+
+    @Test
+    public void shouldRequireJoin() {
+        MeHandler handler = new MeHandler(null, null);
+        assertTrue(handler.joinRequired());
     }
 
     @Test

@@ -7,6 +7,7 @@ import lexek.wschat.db.model.UserDto;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
@@ -31,6 +32,12 @@ public class PartHandlerTest {
             handler.requiredProperties(),
             ImmutableSet.of(MessageProperty.ROOM)
         );
+    }
+
+    @Test
+    public void shouldRequireJoin() {
+        PartHandler handler = new PartHandler(null);
+        assertTrue(handler.joinRequired());
     }
 
     @Test
