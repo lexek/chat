@@ -35,10 +35,6 @@ public class SetRoleHandler extends AbstractRoomMessageHandler {
     @Override
     public void handle(Connection connection, User user, Room room, Chatter adminChatter, Message message) {
         LocalRole newRole = message.get(MessageProperty.LOCAL_ROLE);
-        if (newRole == null) {
-            connection.send(Message.errorMessage("UNKNOWN_ROLE"));
-            return;
-        }
         Chatter userChatter = room.getChatter(message.get(MessageProperty.NAME));
         if (userChatter != null && userChatter.getId() != null) {
             if (canChangeRole(adminChatter, userChatter)) {
