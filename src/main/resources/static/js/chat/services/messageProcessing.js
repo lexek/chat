@@ -417,6 +417,16 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
                 break;
             case "IGNORED":
                 chat.ignoredNames = ctx.msg.names;
+                //todo: remove later
+                angular.forEach(settings.getIgnored(), function(name) {
+                    if (chat.ignoredNames.indexOf(name) === -1) {
+                        chat.sendMessage({
+                            "type": "IGNORE",
+                            "name": name
+                        });
+                    }
+                    settings.deleteIgnored(name);
+                });
                 break;
             case "IGNORE":
                 chat.addMessage(new Message("INFO", $translate.instant("IGNORE_OK", {
