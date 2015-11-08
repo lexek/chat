@@ -7,7 +7,7 @@
     <groupId>lexek</groupId>
     <artifactId>wschat</artifactId>
     <packaging>jar</packaging>
-    <version>19-Final</version>
+    <version>20-SNAPSHOT</version>
     <name>Yoba chat server</name>
 
     <properties>
