@@ -9,7 +9,7 @@ before_install:
 install:
   - mvn -B package -DskipTests -P netty-native-linux
 script:
-  - mvn -B surefire:test
+  - mvn -B test jacoco:report coveralls:report
 notifications:
   email:
     recipients:
