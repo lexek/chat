@@ -231,8 +231,6 @@ public class Main {
                 }
             }
         });
-        eventDispatcher.registerListener((connection, chatter, room) ->
-            announcementService.sendAnnouncements(connection, room));
         eventDispatcher.registerListener((connection, chatter, room) -> {
             if (connection.isNeedNames()) {
                 ImmutableList.Builder<Chatter> users = ImmutableList.builder();
@@ -242,6 +240,8 @@ public class Main {
         });
         eventDispatcher.registerListener(((connection, chatter, room) ->
             connection.send(Message.historyMessage(room.getHistory()))));
+        eventDispatcher.registerListener((connection, chatter, room) ->
+            announcementService.sendAnnouncements(connection, room));
         eventDispatcher.registerListener(notificationService);
 
         HandlerInvoker handlerInvoker = new HandlerInvoker(roomManager, chatterService, bannedIps, captchaService);
