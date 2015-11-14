@@ -235,8 +235,7 @@ controlsModule.controller("SettingsController", ["$scope", "chatService", "$moda
     $scope.showHelp = function() {
         $modal.open({
             templateUrl: 'help.html',
-            controller: HelpController,
-            size: "sm"
+            controller: HelpController
         });
     };
 

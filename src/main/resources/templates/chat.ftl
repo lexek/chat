@@ -121,7 +121,7 @@
         <h3><i class='fa fa-info'></i> {{'CONTROLS_MENU_HELP' | translate}}</h3>
     </div>
     <div class="modal-body">
-        <div style="max-height: 300px; overflow-y: auto; text-align: left">
+        <div style="max-overflow-y: auto; text-align: left">
             <h4 translate="HELP_ABOUT"></h4>
             <p translate="HELP_ABOUT_TEXT"></p>
             <h4>{{'HELP_MARKUP' | translate}}</h4>
