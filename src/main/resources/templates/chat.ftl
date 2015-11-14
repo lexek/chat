@@ -142,6 +142,8 @@
                     {{'HELP_MENTION_NOTE' | translate}}
                 </li>
             </ul>
+            <h4 translate="HELP_IGNORE"></h4>
+            <p translate="HELP_IGNORE_TEXT"></p>
             <h4>{{'HELP_RENAME' | translate}}</h4>
             <p>
                 {{'HELP_RENAME_TEXT1' | translate}}:<br/>

@@ -106,6 +106,10 @@ langModule.config(['$translateProvider', function ($translateProvider) {
         "HELP_BUG": "I found a bug, what to do?",
         "HELP_BUG_TEXT1": "Submit a ticket with bug description. If you want to provide an image, use",
         "HELP_BUG_TEXT2": "image service to host it.",
+        "HELP_IGNORE": "How to ignore someone?",
+        "HELP_IGNORE_TEXT":
+            "To ignore someone, use <code>/ignore <strong>name</strong></code> command.<br/>" +
+            "To see messages from ignored users as hidden messages, check \"show ignored as hidden\" option in settings.",
 
         "TICKETS_MINE": "My tickets",
         "TICKETS_TYPE": "type",
@@ -254,6 +258,10 @@ langModule.config(['$translateProvider', function ($translateProvider) {
         "HELP_BUG": "Я нашёл баг, что делать?",
         "HELP_BUG_TEXT1": "Создайте тикет с описанием этого бага. Если вы хотите добавить изображение, используйте",
         "HELP_BUG_TEXT2": "для хранения этого изображения.",
+        "HELP_IGNORE": "Как добавить пользователя в игнор?",
+        "HELP_IGNORE_TEXT":
+            "Для того, чтобы добавить пользователя в игор воспользуйся командой <code>/ignore <strong>name</strong></code>.<br/>" +
+            "Если ты хочешь видеть сообщения от игнорируемых людей как скрытые, отметь \"скрыть игнорируемых\" в настройках.",
 
         "TICKETS_MINE": "Мои тикеты",
         "TICKETS_TYPE": "тип",
