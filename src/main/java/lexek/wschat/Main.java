@@ -223,15 +223,6 @@ public class Main {
                 ))
         );
         eventDispatcher.registerListener((connection, chatter, room) -> {
-            PollState activePoll = pollService.getActivePoll(room);
-            if (activePoll != null) {
-                connection.send(Message.pollMessage(MessageType.POLL, room.getName(), activePoll));
-                if (activePoll.getVoted().contains(connection.getUser().getId())) {
-                    connection.send(Message.pollVotedMessage(room.getName()));
-                }
-            }
-        });
-        eventDispatcher.registerListener((connection, chatter, room) -> {
             if (connection.isNeedNames()) {
                 ImmutableList.Builder<Chatter> users = ImmutableList.builder();
                 room.getOnlineChatters().stream().filter(c -> c.hasRole(LocalRole.USER)).forEach(users::add);
@@ -242,6 +233,15 @@ public class Main {
             connection.send(Message.historyMessage(room.getHistory()))));
         eventDispatcher.registerListener((connection, chatter, room) ->
             announcementService.sendAnnouncements(connection, room));
+        eventDispatcher.registerListener((connection, chatter, room) -> {
+            PollState activePoll = pollService.getActivePoll(room);
+            if (activePoll != null) {
+                connection.send(Message.pollMessage(MessageType.POLL, room.getName(), activePoll));
+                if (activePoll.getVoted().contains(connection.getUser().getId())) {
+                    connection.send(Message.pollVotedMessage(room.getName()));
+                }
+            }
+        });
         eventDispatcher.registerListener(notificationService);
 
         HandlerInvoker handlerInvoker = new HandlerInvoker(roomManager, chatterService, bannedIps, captchaService);
