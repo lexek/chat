@@ -60,27 +60,25 @@ var TicketCountServiceFactory = function($http) {
 var MessageFilter = function($http, $sce) {
     var emoticons = {};
     var emoticonRegExp = null;
-    $http({method: 'GET', url: '/rest/emoticons/all'})
-        .success(function(d, status, headers, config) {
-            var data = d["records"];
-            var emoticonCodeList = [];
-            angular.forEach(data, function (e) {
-                emoticons[e[1]] = {
-                    "id": e[0],
-                    "code": e[1],
-                    "fileName": e[2],
-                    "height": e[3],
-                    "width": e[4]
-                };
-                emoticonCodeList.push(e[1]
+    $http({
+        method: 'GET',
+        url: '/rest/emoticons/all'
+    }).success(function(data) {
+        emoticons = {};
+        var emoticonCodeList = [];
+        angular.forEach(data, function (e) {
+            emoticons[e.code] = e;
+            emoticonCodeList.push(
+                e.code
                     .replace("\\", "\\\\")
                     .replace(")", "\\)")
                     .replace("(", "\\(")
                     .replace(".", "\\.")
-                    .replace("*", "\\*"));
-            });
-            emoticonRegExp = new RegExp(emoticonCodeList.join("|"), "g");
+                    .replace("*", "\\*")
+            );
         });
+        emoticonRegExp = new RegExp(emoticonCodeList.join("|"), "g");
+    });
 
     return function(input) {
         var text = input.replace(/</gi, '&lt;');
@@ -409,32 +407,25 @@ var EmoticonsController = function($scope, $http, alert) {
 
     var loadEmoticons = function() {
         $scope.emoticons.length = 0;
-        $http({method: "GET", url: "/rest/emoticons/all"})
-            .success(function (d, status, headers, config) {
-                var data = d["records"];
-                angular.forEach(data, function (e) {
-                    $scope.emoticons.push({
-                        "id": e[0],
-                        "code": e[1],
-                        "fileName": e[2],
-                        "height": e[3],
-                        "width": e[4]
-                    });
-                });
-            })
-            .error(function (data, status, headers, config) {
-                alert.alert("danger", data);
-            });
+        $http({
+            method: "GET",
+            url: "/rest/emoticons/all"
+        }).success(function (d) {
+            $scope.emoticons = d;
+        }).error(function (data) {
+            alert.alert("danger", data);
+        });
     };
 
     $scope.requestDelete = function(id) {
-        $http({method: "DELETE", url: "/rest/emoticons/"+id})
-            .success(function(data, status, headers, config) {
-                loadEmoticons();
-            })
-            .error(function(data, status, headers, config) {
-                alert.alert("danger", data);
-            });
+        $http({
+            method: "DELETE",
+            url: "/rest/emoticons/"+id
+        }).success(function() {
+            loadEmoticons();
+        }).error(function(data) {
+            alert.alert("danger", data);
+        });
     };
 
     $scope.submitForm = function() {
@@ -443,10 +434,9 @@ var EmoticonsController = function($scope, $http, alert) {
             url     : "/rest/emoticons/add",
             data    : $scope.formData,
             headers : { "Content-Type": "multipart/form-data" }
-        })
-            .success(function() {
-                loadEmoticons();
-            });
+        }).success(function() {
+            loadEmoticons();
+        });
     };
 
     $scope.orderBy = function(orderVar) {

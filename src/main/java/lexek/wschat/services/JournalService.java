@@ -7,7 +7,7 @@ import lexek.wschat.chat.LocalRole;
 import lexek.wschat.chat.Room;
 import lexek.wschat.db.dao.JournalDao;
 import lexek.wschat.db.jooq.tables.pojos.Announcement;
-import lexek.wschat.db.jooq.tables.pojos.Emoticon;
+import lexek.wschat.db.model.Emoticon;
 import lexek.wschat.db.model.JournalEntry;
 import lexek.wschat.db.model.UserDto;
 import lexek.wschat.db.model.form.UserChangeSet;

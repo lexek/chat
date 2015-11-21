@@ -15,7 +15,7 @@ public class SendNotificationsOnEventListener implements EventListener {
 
     @Override
     public void onEvent(Connection connection, Chatter chatter, Room room) {
-        if (chatter.hasRole(LocalRole.USER)) {
+        if (connection.getUser().hasRole(GlobalRole.USER)) {
             List<String> notifications = notificationService.getPendingNotifications(connection.getUser());
             if (notifications != null) {
                 for (String notification : notifications) {

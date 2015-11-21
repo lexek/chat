@@ -160,6 +160,7 @@ public class Main {
         UserService userService = new UserService(connectionManager, userDao, journalService);
         ChatterService chatterService = new ChatterService(chatterDao, journalService);
         AuthenticationManager authenticationManager = new AuthenticationManager(ircHost, emailService, connectionManager, userAuthDao);
+        EventDispatcher eventDispatcher = new EventDispatcher();
 
         ThreadFactory scheduledThreadFactory = new ThreadFactoryBuilder().setNameFormat("ANNOUNCEMENT_SCHEDULER_%d").build();
         ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(scheduledThreadFactory);
@@ -174,23 +175,21 @@ public class Main {
         RoomService roomService = new RoomService(roomManager);
         AnnouncementService announcementService = new AnnouncementService(new AnnouncementDao(dataSource), journalService, roomManager, messageBroadcaster, scheduledExecutorService);
         PollService pollService = new PollService(new PollDao(dataSource), messageBroadcaster, roomManager, journalService);
-        AuthenticationService authenticationService = new AuthenticationService(authenticationManager, userService, captchaService);
+        AuthenticationService authenticationService = new AuthenticationService(authenticationManager, userService, captchaService, eventDispatcher);
         NotificationService notificationService = new NotificationService(connectionManager, userService, messageBroadcaster, emailService, pendingNotificationDao);
         TicketService ticketService = new TicketService(userService, notificationService, new TicketDao(dataSource));
         EmoticonService emoticonService = new EmoticonService(
             new Dimension(coreSettings.getMaxEmoticonWidth(), coreSettings.getMaxEmoticonHeight()),
             dataDir,
             emoticonDao,
-            journalService
-        );
+            journalService,
+            messageBroadcaster);
         SteamGameDao steamGameDao = new SteamGameDao(dataSource);
         SteamGameResolver steamGameResolver = new SteamGameResolver(steamGameDao, HttpClients.createMinimal());
         TwitchTvSocialAuthService twitchAuthService = new TwitchTvSocialAuthService(settings.getHttp().getTwitchClientId(),
             settings.getHttp().getTwitchSecret(),
             settings.getHttp().getTwitchUrl());
         IgnoreService ignoreService = new IgnoreService(ignoreDao);
-
-        EventDispatcher eventDispatcher = new EventDispatcher();
 
         Set<String> bannedIps = new CopyOnWriteArraySet<>();
 
@@ -207,6 +206,7 @@ public class Main {
         proxyManager.registerProvider(new CybergameTvProxyProvider(proxyEventLoopGroup, messageBroadcaster, messageId));
         messageConsumerServiceHandler.register(proxyManager);
         eventDispatcher.registerListener(ChatEventType.CONNECT, new SendIgnoreListOnEventListener(ignoreService));
+        eventDispatcher.registerListener(ChatEventType.CONNECT, new SendEmoticonsOnEventListener(emoticonService));
         eventDispatcher.registerListener(ChatEventType.JOIN, new SendProxyListOnEventListener(proxyManager));
         eventDispatcher.registerListener(ChatEventType.JOIN, new SendNamesOnEventListener());
         eventDispatcher.registerListener(ChatEventType.JOIN, new SendHistoryOnEventListener());

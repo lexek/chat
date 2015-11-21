@@ -1,9 +1,12 @@
 package lexek.wschat.services;
 
 import com.google.common.hash.Hashing;
+import lexek.wschat.chat.Connection;
+import lexek.wschat.chat.Message;
+import lexek.wschat.chat.MessageBroadcaster;
 import lexek.wschat.chat.e.InvalidInputException;
 import lexek.wschat.db.dao.EmoticonDao;
-import lexek.wschat.db.jooq.tables.pojos.Emoticon;
+import lexek.wschat.db.model.Emoticon;
 import lexek.wschat.db.model.UserDto;
 
 import javax.imageio.ImageIO;
@@ -14,14 +17,24 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 
 public class EmoticonService {
     private final Path emoticonsDir;
     private final Dimension maxSize;
     private final EmoticonDao emoticonDao;
     private final JournalService journalService;
+    private final MessageBroadcaster messageBroadcaster;
+    private volatile List<Emoticon> cachedEmoticons = null;
 
-    public EmoticonService(Dimension maxSize, File dataDir, EmoticonDao emoticonDao, JournalService journalService) {
+    public EmoticonService(
+        Dimension maxSize,
+        File dataDir,
+        EmoticonDao emoticonDao,
+        JournalService journalService,
+        MessageBroadcaster messageBroadcaster
+    ) {
+        this.messageBroadcaster = messageBroadcaster;
         this.emoticonsDir = Paths.get(dataDir.toURI()).resolve("emoticons");
         this.maxSize = maxSize;
         this.emoticonDao = emoticonDao;
@@ -45,8 +58,32 @@ public class EmoticonService {
             } catch (Exception e) {
                 success = false;
             }
+            synchronized (this) {
+                cachedEmoticons = null;
+            }
+            sendEmoticons();
             return success;
         }
+    }
+
+    public void delete(long emoticonId, UserDto admin) {
+        Emoticon emoticon = emoticonDao.delete(emoticonId);
+        journalService.deletedEmoticon(admin, emoticon);
+        synchronized (this) {
+            cachedEmoticons = null;
+        }
+        sendEmoticons();
+    }
+
+    public List<Emoticon> getEmoticons() {
+        if (cachedEmoticons == null) {
+            synchronized (this) {
+                if (cachedEmoticons == null) {
+                    cachedEmoticons = emoticonDao.getAll();
+                }
+            }
+        }
+        return cachedEmoticons;
     }
 
     private Path createEmoticonFile(String originalName) throws IOException {
@@ -59,12 +96,7 @@ public class EmoticonService {
         return emoticonsDir.resolve(newName);
     }
 
-    public void delete(long emoticonId, UserDto admin) {
-        Emoticon emoticon = emoticonDao.delete(emoticonId);
-        journalService.deletedEmoticon(admin, emoticon);
-    }
-
-    public String getAllAsJson() {
-        return emoticonDao.getAllAsJson();
+    private void sendEmoticons() {
+        messageBroadcaster.submitMessage(Message.emoticonsMessage(getEmoticons()));
     }
 }

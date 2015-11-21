@@ -1,6 +1,7 @@
 package lexek.wschat.chat;
 
 import com.google.common.collect.ImmutableMap;
+import lexek.wschat.db.model.Emoticon;
 import lexek.wschat.db.model.ProxyMessageModel;
 import lexek.wschat.db.model.UserDto;
 import lexek.wschat.services.poll.PollState;
@@ -177,6 +178,13 @@ public class Message {
         return new Message(ImmutableMap.<MessageProperty, Object>of(
             MessageProperty.TYPE, MessageType.IGNORED,
             MessageProperty.NAMES, ignoredNames
+        ));
+    }
+
+    public static Message emoticonsMessage(List<Emoticon> emoticons) {
+        return new Message(ImmutableMap.<MessageProperty, Object>of(
+            MessageProperty.TYPE, MessageType.EMOTICONS,
+            MessageProperty.EMOTICONS, emoticons
         ));
     }
 

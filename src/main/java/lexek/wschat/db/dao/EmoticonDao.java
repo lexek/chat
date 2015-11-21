@@ -1,7 +1,7 @@
 package lexek.wschat.db.dao;
 
 import lexek.wschat.chat.e.InternalErrorException;
-import lexek.wschat.db.jooq.tables.pojos.Emoticon;
+import lexek.wschat.db.model.Emoticon;
 import org.jooq.DSLContext;
 import org.jooq.exception.DataAccessException;
 import org.jooq.impl.DSL;
@@ -9,6 +9,7 @@ import org.jooq.impl.DSL;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.List;
 
 import static lexek.wschat.db.jooq.tables.Emoticon.EMOTICON;
 
@@ -17,20 +18,6 @@ public class EmoticonDao {
 
     public EmoticonDao(DataSource dataSource) {
         this.dataSource = dataSource;
-    }
-
-    public String getAllAsJson() {
-        String result;
-        try (Connection connection = dataSource.getConnection()) {
-            result = DSL.using(connection)
-                .select()
-                .from(EMOTICON)
-                .orderBy(EMOTICON.CODE.desc())
-                .fetch().formatJSON();
-        } catch (DataAccessException | SQLException e) {
-            throw new InternalErrorException(e);
-        }
-        return result;
     }
 
     public void addEmoticon(Emoticon emoticon) {
@@ -62,5 +49,17 @@ public class EmoticonDao {
             throw new InternalErrorException(e);
         }
         return emoticon;
+    }
+
+    public List<Emoticon> getAll() {
+        try (Connection connection = dataSource.getConnection()) {
+            return DSL.using(connection)
+                .select()
+                .from(EMOTICON)
+                .orderBy(EMOTICON.CODE.desc())
+                .fetchInto(Emoticon.class);
+        } catch (DataAccessException | SQLException e) {
+            throw new InternalErrorException(e);
+        }
     }
 }

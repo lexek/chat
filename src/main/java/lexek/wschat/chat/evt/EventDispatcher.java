@@ -17,11 +17,14 @@ import lexek.wschat.chat.Connection;
 import lexek.wschat.chat.Room;
 import lexek.wschat.services.AbstractService;
 import lexek.wschat.util.LoggingExceptionHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 
 public class EventDispatcher extends AbstractService {
+    private final Logger logger = LoggerFactory.getLogger(EventDispatcher.class);
     private final Disruptor<Event> disruptor;
     private final RingBuffer<Event> ringBuffer;
     private final Multimap<ChatEventType, EventListener> listeners = HashMultimap.create();
@@ -82,6 +85,16 @@ public class EventDispatcher extends AbstractService {
         ringBuffer.publish(sequence);
     }
 
+    public void connected(Connection connection) {
+        long sequence = ringBuffer.next();
+        Event event = ringBuffer.get(sequence);
+        event.setEventType(ChatEventType.CONNECT);
+        event.setConnection(connection);
+        event.setChatter(null);
+        event.setRoom(null);
+        ringBuffer.publish(sequence);
+    }
+
     private static class Event {
         private ChatEventType eventType;
         private Connection connection;
@@ -126,7 +139,13 @@ public class EventDispatcher extends AbstractService {
         public void onEvent(final Event event, long l, boolean b) throws Exception {
             listeners
                 .get(event.getEventType())
-                .forEach(listener -> listener.onEvent(event.getConnection(), event.getChatter(), event.getRoom()));
+                .forEach(listener -> {
+                    try {
+                        listener.onEvent(event.getConnection(), event.getChatter(), event.getRoom());
+                    } catch (Exception e) {
+                        logger.warn("There was exception while processing event {}", event, e);
+                    }
+                });
         }
     }
 }

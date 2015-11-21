@@ -235,6 +235,23 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
         }
     };
 
+    var processEmoticons = function(chat, emoticons) {
+        chat.emoticons = {};
+        var emoticonCodeList = [];
+        angular.forEach(emoticons, function (e) {
+            chat.emoticons[e.code] = e;
+            emoticonCodeList.push(
+                e.code
+                    .replace("\\", "\\\\")
+                    .replace(")", "\\)")
+                    .replace("(", "\\(")
+                    .replace(".", "\\.")
+                    .replace("*", "\\*")
+            );
+        });
+        chat.emoticonRegExp = new RegExp(emoticonCodeList.join("|"), "g");
+    };
+
     var MessageProcessingService = function() {
 
     };
@@ -444,6 +461,9 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
                 chat.addMessage(new Message("INFO", $translate.instant("IGNORE_LIST", {
                     "names": chat.ignoredNames.join(", ")
                 }), ctx.room));
+                break;
+            case "EMOTICONS":
+                processEmoticons(chat, ctx.msg.emoticons);
                 break;
             default:
                 console.log(message);
