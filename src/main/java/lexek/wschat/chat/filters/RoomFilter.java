@@ -1,5 +1,7 @@
-package lexek.wschat.chat;
+package lexek.wschat.chat.filters;
 
+import lexek.wschat.chat.Connection;
+import lexek.wschat.chat.Room;
 import org.jetbrains.annotations.NotNull;
 
 public class RoomFilter implements BroadcastFilter<Room> {

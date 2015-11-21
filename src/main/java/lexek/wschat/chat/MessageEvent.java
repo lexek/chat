@@ -1,5 +1,7 @@
 package lexek.wschat.chat;
 
+import lexek.wschat.chat.filters.BroadcastFilter;
+
 public class MessageEvent {
     private Connection connection;
     private Message message;

@@ -6,6 +6,7 @@ import com.google.common.collect.Multimap;
 import lexek.wschat.chat.*;
 import lexek.wschat.chat.e.EntityNotFoundException;
 import lexek.wschat.chat.e.InvalidDataException;
+import lexek.wschat.chat.filters.BroadcastFilter;
 import lexek.wschat.db.dao.ProxyDao;
 import lexek.wschat.db.jooq.tables.pojos.ChatProxy;
 import lexek.wschat.db.model.UserDto;

@@ -1,5 +1,8 @@
 package lexek.wschat.chat;
 
+import lexek.wschat.chat.filters.BroadcastFilter;
+import lexek.wschat.chat.filters.GlobalRoleFilter;
+
 public enum GlobalRole {
     UNAUTHENTICATED(300),
     USER_UNCONFIRMED(30000),

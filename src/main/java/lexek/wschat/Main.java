@@ -225,7 +225,7 @@ public class Main {
         handlerInvoker.register(new PartHandler(messageBroadcaster));
         handlerInvoker.register(new SetRoleHandler(chatterService));
         handlerInvoker.register(new TimeOutHandler(messageBroadcaster, chatterService));
-        handlerInvoker.register(new UnbanHandler(chatterService));
+        handlerInvoker.register(new UnbanHandler(chatterService, messageBroadcaster));
         handlerInvoker.register(new NameHandler(userService));
         handlerInvoker.register(new LikeHandler(messageBroadcaster));
         handlerInvoker.register(new ClearRoomHandler(messageBroadcaster));

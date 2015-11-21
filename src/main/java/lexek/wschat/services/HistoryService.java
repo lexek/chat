@@ -3,6 +3,7 @@ package lexek.wschat.services;
 import com.google.common.collect.ImmutableSet;
 import com.lmax.disruptor.EventHandler;
 import lexek.wschat.chat.*;
+import lexek.wschat.chat.filters.BroadcastFilter;
 import lexek.wschat.db.dao.HistoryDao;
 import lexek.wschat.db.jooq.tables.pojos.History;
 import lexek.wschat.db.model.DataPage;

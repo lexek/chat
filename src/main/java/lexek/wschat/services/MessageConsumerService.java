@@ -1,6 +1,6 @@
 package lexek.wschat.services;
 
-import lexek.wschat.chat.BroadcastFilter;
+import lexek.wschat.chat.filters.BroadcastFilter;
 import lexek.wschat.chat.Connection;
 import lexek.wschat.chat.Message;
 

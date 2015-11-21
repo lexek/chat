@@ -1,5 +1,6 @@
-package lexek.wschat.chat;
+package lexek.wschat.chat.filters;
 
+import lexek.wschat.chat.Connection;
 import org.jetbrains.annotations.NotNull;
 
 public class NoFilter implements BroadcastFilter<Void> {

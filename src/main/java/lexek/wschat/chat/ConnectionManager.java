@@ -4,6 +4,7 @@ import com.codahale.metrics.Gauge;
 import com.codahale.metrics.MetricRegistry;
 import com.lmax.disruptor.EventHandler;
 import io.netty.util.internal.RecyclableArrayList;
+import lexek.wschat.chat.filters.BroadcastFilter;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;

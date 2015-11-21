@@ -3,6 +3,7 @@ package lexek.wschat.chat.handlers;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import lexek.wschat.chat.*;
+import lexek.wschat.chat.filters.UserFilter;
 import lexek.wschat.db.model.UserDto;
 import lexek.wschat.services.ChatterService;
 import org.junit.Before;
@@ -17,13 +18,14 @@ public class UnbanHandlerTest {
     private User user = new User(userDto);
     private Chatter chatter = new Chatter(0L, LocalRole.MOD, false, null, user);
     private Connection connection = spy(new TestConnection(user));
+    private MessageBroadcaster messageBroadcaster = mock(MessageBroadcaster.class);
     private Room room = mock(Room.class);
     private ChatterService chatterService = mock(ChatterService.class);
-    private UnbanHandler handler = new UnbanHandler(chatterService);
+    private UnbanHandler handler = new UnbanHandler(chatterService, messageBroadcaster);
 
     @Before
     public void resetMocks() {
-        reset(connection, room, chatterService);
+        reset(connection, room, chatterService, messageBroadcaster);
     }
 
     @Test
@@ -66,6 +68,10 @@ public class UnbanHandlerTest {
         )));
         verify(chatterService).unbanChatter(room, otherChatter, chatter);
         verify(connection).send(Message.infoMessage("OK"));
+        verify(messageBroadcaster, times(1)).submitMessage(
+            eq(Message.moderationMessage(MessageType.BAN, "#main", "user", "username")),
+            eq(connection),
+            eq(new UserFilter(otherUser)));
     }
 
     @Test

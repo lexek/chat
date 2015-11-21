@@ -1,6 +1,7 @@
 package lexek.wschat.services;
 
 import lexek.wschat.chat.*;
+import lexek.wschat.chat.filters.UserFilter;
 import lexek.wschat.db.dao.PendingNotificationDao;
 import lexek.wschat.db.model.Email;
 import lexek.wschat.db.model.UserDto;
@@ -31,7 +32,8 @@ public class NotificationService {
             messageBroadcaster.submitMessage(
                 Message.infoMessage(description),
                 Connection.STUB_CONNECTION,
-                new UserIdFilter(user.getId()));
+                new UserFilter(user)
+            );
         } else {
             pendingNotificationDao.add(user.getId(), description);
         }
