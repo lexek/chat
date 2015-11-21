@@ -45,7 +45,9 @@ public class MessageProperty<T> {
     }
 
     public static <T> MessageProperty<T> valueOf(String name) {
-        return new MessageProperty<>(name);
+        MessageProperty<T> messageProperty = new MessageProperty<>(name);
+        KEYS.put(messageProperty.name, messageProperty);
+        return messageProperty;
     }
 
     public static boolean exists(String name) {
