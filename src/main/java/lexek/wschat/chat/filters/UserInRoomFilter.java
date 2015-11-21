@@ -32,4 +32,21 @@ public class UserInRoomFilter implements BroadcastFilter<Void> {
             (userId != null) && (user1.getId() != null) && (user1.getId().equals(userId));
         return userMatch && room.inRoom(connection);
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        UserInRoomFilter that = (UserInRoomFilter) o;
+
+        return userId.equals(that.userId) && room.equals(that.room);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = userId.hashCode();
+        result = 31 * result + room.hashCode();
+        return result;
+    }
 }
