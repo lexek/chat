@@ -38,9 +38,10 @@ public class MessageBroadcaster extends AbstractService {
 
     /**
      * submits message to broadcast
-     * @param message message to send
+     *
+     * @param message    message to send
      * @param connection connection which triggered the message
-     * @param filter how to filter connections
+     * @param filter     how to filter connections
      */
     public void submitMessage(Message message, Connection connection, BroadcastFilter filter) {
         long sequence = ringBuffer.next();
@@ -53,7 +54,8 @@ public class MessageBroadcaster extends AbstractService {
 
     /**
      * Will submit message with {@link BroadcastFilter#NO_FILTER} as filter
-     * @param message message to send
+     *
+     * @param message    message to send
      * @param connection connection which triggered the message
      */
     public void submitMessage(Message message, Connection connection) {
@@ -62,8 +64,9 @@ public class MessageBroadcaster extends AbstractService {
 
     /**
      * Will submit message with {@link Connection#STUB_CONNECTION} as connection
+     *
      * @param message message to send
-     * @param filter how to filter connections
+     * @param filter  how to filter connections
      */
     public void submitMessage(Message message, BroadcastFilter filter) {
         submitMessage(message, Connection.STUB_CONNECTION, filter);
@@ -72,6 +75,7 @@ public class MessageBroadcaster extends AbstractService {
     /**
      * Will submit message with {@link BroadcastFilter#NO_FILTER} as filter
      * and {@link Connection#STUB_CONNECTION} as connection
+     *
      * @param message message to send
      */
     public void submitMessage(Message message) {

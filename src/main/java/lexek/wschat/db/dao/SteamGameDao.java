@@ -30,9 +30,9 @@ public class SteamGameDao {
                     steamGames
                         .stream()
                         .map(game -> create
-                                .insertInto(STEAM_GAME, STEAM_GAME.ID, STEAM_GAME.NAME)
-                                .values(game.getId(), game.getName())
-                                .onDuplicateKeyIgnore()
+                            .insertInto(STEAM_GAME, STEAM_GAME.ID, STEAM_GAME.NAME)
+                            .values(game.getId(), game.getName())
+                            .onDuplicateKeyIgnore()
                         ).collect(Collectors.toList())
                 ).execute();
             });

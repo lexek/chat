@@ -2,7 +2,6 @@ package lexek.wschat.chat.filters;
 
 import lexek.wschat.chat.Connection;
 import lexek.wschat.chat.GlobalRole;
-import lexek.wschat.chat.filters.BroadcastFilter;
 import org.jetbrains.annotations.NotNull;
 
 public class GlobalRoleFilter implements BroadcastFilter<GlobalRole> {

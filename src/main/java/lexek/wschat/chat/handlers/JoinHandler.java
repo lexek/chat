@@ -2,8 +2,8 @@ package lexek.wschat.chat.handlers;
 
 import com.google.common.collect.ImmutableSet;
 import lexek.wschat.chat.*;
-import lexek.wschat.chat.processing.AbstractRoomMessageHandler;
 import lexek.wschat.chat.evt.EventDispatcher;
+import lexek.wschat.chat.processing.AbstractRoomMessageHandler;
 
 public class JoinHandler extends AbstractRoomMessageHandler {
     private final EventDispatcher notificationService;

@@ -1,7 +1,6 @@
 package lexek.wschat.chat.handlers;
 
 import lexek.wschat.chat.*;
-import lexek.wschat.chat.filters.UserFilter;
 import lexek.wschat.chat.filters.UserInRoomFilter;
 import lexek.wschat.services.ChatterService;
 

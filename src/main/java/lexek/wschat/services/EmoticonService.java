@@ -1,7 +1,6 @@
 package lexek.wschat.services;
 
 import com.google.common.hash.Hashing;
-import lexek.wschat.chat.Connection;
 import lexek.wschat.chat.Message;
 import lexek.wschat.chat.MessageBroadcaster;
 import lexek.wschat.chat.e.InvalidInputException;
