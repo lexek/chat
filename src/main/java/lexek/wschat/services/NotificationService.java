@@ -7,7 +7,7 @@ import lexek.wschat.db.model.UserDto;
 
 import java.util.List;
 
-public class NotificationService implements RoomJoinedEventListener {
+public class NotificationService {
     private final ConnectionManager connectionManager;
     private final UserService userService;
     private final MessageBroadcaster messageBroadcaster;
@@ -48,15 +48,7 @@ public class NotificationService implements RoomJoinedEventListener {
         userService.getAdmins().forEach(admin -> notify(admin, summary, description, sendEmail));
     }
 
-    @Override
-    public void joined(Connection connection, Chatter chatter, Room room) {
-        if (chatter.hasRole(LocalRole.USER)) {
-            List<String> notifications = pendingNotificationDao.getPendingNotifications(connection.getUser().getId());
-            if (notifications != null) {
-                for (String notification : notifications) {
-                    connection.send(Message.infoMessage(notification));
-                }
-            }
-        }
+    public List<String> getPendingNotifications(User user) {
+        return this.pendingNotificationDao.getPendingNotifications(user.getId());
     }
 }

@@ -984,9 +984,9 @@
                 <h4 class="list-group-item-heading">
                     <span
                             class="fa fa-fw"
-                            ng-style="{'color': isHealthy('notificationService') ? 'green' : 'red'}"
-                            ng-class="{'fa-check' : isHealthy('notificationService'), 'fa-times' : !isHealthy('notificationService')}"
-                            ></span> Notification service
+                            ng-style="{'color': isHealthy('eventDispatcher') ? 'green' : 'red'}"
+                            ng-class="{'fa-check' : isHealthy('eventDispatcher'), 'fa-times' : !isHealthy('eventDispatcher')}"
+                            ></span> Event dispatcher
                 </h4>
                 <table class="table">
                     <tr>

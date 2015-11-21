@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import lexek.wschat.chat.*;
 import lexek.wschat.db.model.UserDto;
-import lexek.wschat.services.EventDispatcher;
+import lexek.wschat.chat.evt.EventDispatcher;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

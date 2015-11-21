@@ -13,7 +13,6 @@ import com.codahale.metrics.jvm.BufferPoolMetricSet;
 import com.codahale.metrics.jvm.GarbageCollectorMetricSet;
 import com.codahale.metrics.jvm.MemoryUsageGaugeSet;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
@@ -27,10 +26,12 @@ import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import lexek.httpserver.*;
 import lexek.wschat.chat.*;
+import lexek.wschat.chat.evt.ChatEventType;
+import lexek.wschat.chat.evt.EventDispatcher;
 import lexek.wschat.chat.handlers.*;
+import lexek.wschat.chat.listeners.*;
 import lexek.wschat.chat.processing.HandlerInvoker;
 import lexek.wschat.db.dao.*;
-import lexek.wschat.db.model.ProxyMessageModel;
 import lexek.wschat.frontend.http.*;
 import lexek.wschat.frontend.http.admin.AdminPageHandler;
 import lexek.wschat.frontend.http.rest.CheckUsernameResource;
@@ -44,6 +45,7 @@ import lexek.wschat.frontend.ws.WebSocketChatServer;
 import lexek.wschat.frontend.ws.WebSocketConnectionGroup;
 import lexek.wschat.frontend.ws.WebSocketProtocol;
 import lexek.wschat.proxy.ProxyManager;
+import lexek.wschat.proxy.SendProxyListOnEventListener;
 import lexek.wschat.proxy.cybergame.CybergameTvProxyProvider;
 import lexek.wschat.proxy.goodgame.GoodGameProxyProvider;
 import lexek.wschat.proxy.sc2tv.Sc2tvProxyProvider;
@@ -58,7 +60,6 @@ import lexek.wschat.security.jersey.UserParamValueFactoryProvider;
 import lexek.wschat.security.social.TwitchTvSocialAuthService;
 import lexek.wschat.services.*;
 import lexek.wschat.services.poll.PollService;
-import lexek.wschat.services.poll.PollState;
 import org.apache.http.impl.client.HttpClients;
 import org.glassfish.hk2.api.InjectionResolver;
 import org.glassfish.hk2.api.TypeLiteral;
@@ -81,7 +82,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Collectors;
 
 public class Main {
     private Main() {
@@ -206,43 +206,13 @@ public class Main {
         proxyManager.registerProvider(new Sc2tvProxyProvider(proxyEventLoopGroup, messageBroadcaster, messageId));
         proxyManager.registerProvider(new CybergameTvProxyProvider(proxyEventLoopGroup, messageBroadcaster, messageId));
         messageConsumerServiceHandler.register(proxyManager);
-        eventDispatcher.registerListener(new IgnoreJoinListener(ignoreService));
-        eventDispatcher.registerListener((connection, chatter, room) ->
-                connection.send(Message.proxyListMessage(
-                    proxyManager.getProxiesByRoom(room)
-                        .stream()
-                        .map(proxy -> new ProxyMessageModel(
-                            proxy.provider().getName(),
-                            proxy.remoteRoom(),
-                            proxy.outboundEnabled(),
-                            proxy.moderationEnabled()
-                        ))
-                        .collect(Collectors.toList())
-                    ,
-                    room.getName()
-                ))
-        );
-        eventDispatcher.registerListener((connection, chatter, room) -> {
-            if (connection.isNeedNames()) {
-                ImmutableList.Builder<Chatter> users = ImmutableList.builder();
-                room.getOnlineChatters().stream().filter(c -> c.hasRole(LocalRole.USER)).forEach(users::add);
-                connection.send(Message.namesMessage(room.getName(), users.build()));
-            }
-        });
-        eventDispatcher.registerListener(((connection, chatter, room) ->
-            connection.send(Message.historyMessage(room.getHistory()))));
-        eventDispatcher.registerListener((connection, chatter, room) ->
-            announcementService.sendAnnouncements(connection, room));
-        eventDispatcher.registerListener((connection, chatter, room) -> {
-            PollState activePoll = pollService.getActivePoll(room);
-            if (activePoll != null) {
-                connection.send(Message.pollMessage(MessageType.POLL, room.getName(), activePoll));
-                if (activePoll.getVoted().contains(connection.getUser().getId())) {
-                    connection.send(Message.pollVotedMessage(room.getName()));
-                }
-            }
-        });
-        eventDispatcher.registerListener(notificationService);
+        eventDispatcher.registerListener(ChatEventType.CONNECT, new SendIgnoreListOnEventListener(ignoreService));
+        eventDispatcher.registerListener(ChatEventType.JOIN, new SendProxyListOnEventListener(proxyManager));
+        eventDispatcher.registerListener(ChatEventType.JOIN, new SendNamesOnEventListener());
+        eventDispatcher.registerListener(ChatEventType.JOIN, new SendHistoryOnEventListener());
+        eventDispatcher.registerListener(ChatEventType.JOIN, new SendAnnouncementsOnEventListener(announcementService));
+        eventDispatcher.registerListener(ChatEventType.JOIN, new SendPollOnEventListener(pollService));
+        eventDispatcher.registerListener(ChatEventType.JOIN, new SendNotificationsOnEventListener(notificationService));
 
         HandlerInvoker handlerInvoker = new HandlerInvoker(roomManager, chatterService, bannedIps, captchaService);
         MessageReactor messageReactor = new DefaultMessageReactor(handlerInvoker);

@@ -1,8 +1,10 @@
-package lexek.wschat.services;
+package lexek.wschat.chat.evt;
 
 import com.codahale.metrics.Gauge;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.health.HealthCheck;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.lmax.disruptor.BlockingWaitStrategy;
 import com.lmax.disruptor.EventFactory;
@@ -13,21 +15,20 @@ import com.lmax.disruptor.dsl.ProducerType;
 import lexek.wschat.chat.Chatter;
 import lexek.wschat.chat.Connection;
 import lexek.wschat.chat.Room;
+import lexek.wschat.services.AbstractService;
 import lexek.wschat.util.LoggingExceptionHandler;
 
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 
 public class EventDispatcher extends AbstractService {
-    private final Disruptor<JoinedRoomEvent> disruptor;
-    private final RingBuffer<JoinedRoomEvent> ringBuffer;
-    private final List<RoomJoinedEventListener> listeners = new CopyOnWriteArrayList<>();
+    private final Disruptor<Event> disruptor;
+    private final RingBuffer<Event> ringBuffer;
+    private final Multimap<ChatEventType, EventListener> listeners = HashMultimap.create();
 
     public EventDispatcher() {
-        super("notificationService");
-        EventFactory<JoinedRoomEvent> eventFactory = JoinedRoomEvent::new;
+        super("eventDispatcher");
+        EventFactory<Event> eventFactory = Event::new;
         ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("NOTIFICATIONS_%d").build();
         this.disruptor = new Disruptor<>(
             eventFactory,
@@ -67,23 +68,33 @@ public class EventDispatcher extends AbstractService {
         metricRegistry.register(this.getName() + ".queue.bufferSize", (Gauge<Integer>) ringBuffer::getBufferSize);
     }
 
-    public void registerListener(RoomJoinedEventListener listener) {
-        this.listeners.add(listener);
+    public void registerListener(ChatEventType eventType, EventListener listener) {
+        this.listeners.put(eventType, listener);
     }
 
     public void joinedRoom(Connection connection, Chatter chatter, Room room) {
         long sequence = ringBuffer.next();
-        JoinedRoomEvent event = ringBuffer.get(sequence);
+        Event event = ringBuffer.get(sequence);
+        event.setEventType(ChatEventType.JOIN);
         event.setConnection(connection);
         event.setChatter(chatter);
         event.setRoom(room);
         ringBuffer.publish(sequence);
     }
 
-    private static class JoinedRoomEvent {
+    private static class Event {
+        private ChatEventType eventType;
         private Connection connection;
         private Chatter chatter;
         private Room room;
+
+        public ChatEventType getEventType() {
+            return eventType;
+        }
+
+        public void setEventType(ChatEventType eventType) {
+            this.eventType = eventType;
+        }
 
         public Connection getConnection() {
             return connection;
@@ -110,10 +121,12 @@ public class EventDispatcher extends AbstractService {
         }
     }
 
-    private class NotificationServiceWorker implements EventHandler<JoinedRoomEvent> {
+    private class NotificationServiceWorker implements EventHandler<Event> {
         @Override
-        public void onEvent(final JoinedRoomEvent event, long l, boolean b) throws Exception {
-            listeners.forEach(listener -> listener.joined(event.getConnection(), event.getChatter(), event.getRoom()));
+        public void onEvent(final Event event, long l, boolean b) throws Exception {
+            listeners
+                .get(event.getEventType())
+                .forEach(listener -> listener.onEvent(event.getConnection(), event.getChatter(), event.getRoom()));
         }
     }
 }
