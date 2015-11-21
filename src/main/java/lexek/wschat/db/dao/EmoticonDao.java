@@ -62,4 +62,18 @@ public class EmoticonDao {
             throw new InternalErrorException(e);
         }
     }
+
+    public void changeFile(Long id, String fileName, int width, int height) {
+        try (Connection connection = dataSource.getConnection()) {
+            DSL.using(connection)
+                .update(EMOTICON)
+                .set(EMOTICON.FILE_NAME, fileName)
+                .set(EMOTICON.WIDTH, width)
+                .set(EMOTICON.HEIGHT, height)
+                .where(EMOTICON.ID.equal(id))
+                .execute();
+        } catch (DataAccessException | SQLException e) {
+            throw new InternalErrorException(e);
+        }
+    }
 }

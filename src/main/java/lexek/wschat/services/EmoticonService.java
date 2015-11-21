@@ -49,18 +49,34 @@ public class EmoticonService {
         if (width > maxSize.getWidth() || height > maxSize.getHeight()) {
             throw new InvalidInputException("file", "Image is too big");
         } else {
+            Emoticon existingEmoticon = cachedEmoticons
+                .stream()
+                .filter(e -> e.getCode().equals(code))
+                .findAny()
+                .orElse(null);
             boolean success = true;
             try {
-                Emoticon emoticon = new Emoticon(null, code, emoticonFile.getFileName().toString(), height, width);
-                emoticonDao.addEmoticon(emoticon);
-                journalService.newEmoticon(admin, emoticon);
+                if (existingEmoticon == null) {
+                    Emoticon emoticon = new Emoticon(null, code, emoticonFile.getFileName().toString(), height, width);
+                    emoticonDao.addEmoticon(emoticon);
+                    journalService.newEmoticon(admin, emoticon);
+                } else {
+                    emoticonDao.changeFile(
+                        existingEmoticon.getId(),
+                        emoticonFile.getFileName().toString(),
+                        width, height
+                    );
+                }
             } catch (Exception e) {
                 success = false;
             }
-            synchronized (this) {
-                cachedEmoticons = null;
+
+            if (success) {
+                synchronized (this) {
+                    cachedEmoticons = null;
+                }
+                sendEmoticons();
             }
-            sendEmoticons();
             return success;
         }
     }
