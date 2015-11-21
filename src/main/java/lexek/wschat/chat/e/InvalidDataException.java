@@ -2,7 +2,7 @@ package lexek.wschat.chat.e;
 
 @Deprecated
 /**
- * @deprecated use {}
+ * @deprecated use {@link InvalidInputException}
  */
 public class InvalidDataException extends DomainException {
     public InvalidDataException() {
