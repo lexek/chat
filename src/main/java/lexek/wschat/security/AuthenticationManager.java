@@ -54,6 +54,7 @@ public class AuthenticationManager {
             } else {
                 tries.incrementAndGet();
             }
+            logger.info("failed login with password for user {} with {} tries for ip {}", name, tries, ip);
             return null;
         }
     }
