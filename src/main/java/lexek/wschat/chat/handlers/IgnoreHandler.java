@@ -11,7 +11,7 @@ public class IgnoreHandler extends AbstractGlobalMessageHandler {
     private final IgnoreService ignoreService;
 
     public IgnoreHandler(IgnoreService ignoreService) {
-        super(ImmutableSet.of(MessageProperty.NAME), MessageType.IGNORE, GlobalRole.USER, false);
+        super(ImmutableSet.of(MessageProperty.NAME), MessageType.IGNORE, GlobalRole.USER, true);
         this.ignoreService = ignoreService;
     }
 

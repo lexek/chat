@@ -13,27 +13,6 @@ module.service("chatSettings", [function() {
         return $.cookie(name);
     };
 
-    //todo: remove later
-    SettingsService.prototype.getIgnored = function() {
-        var s = this.getS("ignored");
-        var result;
-        if (s) {
-            result =  $.parseJSON(s);
-        } else {
-            result = [];
-        }
-        return result;
-    };
-
-    //todo: remove later
-    SettingsService.prototype.deleteIgnored = function(name) {
-        var ignored = this.getIgnored();
-        if (ignored) {
-            ignored.remove(name);
-        }
-        this.setS("ignored", JSON.stringify(ignored));
-    };
-
     SettingsService.prototype.getRooms = function() {
         var s = this.getS("rooms");
         var result;
