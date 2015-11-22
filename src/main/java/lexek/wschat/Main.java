@@ -229,7 +229,7 @@ public class Main {
         handlerInvoker.register(new NameHandler(userService));
         handlerInvoker.register(new LikeHandler(messageBroadcaster));
         handlerInvoker.register(new ClearRoomHandler(messageBroadcaster));
-        handlerInvoker.register(new VoteHandler(pollService));
+        handlerInvoker.register(new VoteHandler(pollService, messageBroadcaster));
         handlerInvoker.register(new ProxyModerationHandler(proxyManager));
         handlerInvoker.register(new IgnoreHandler(ignoreService));
         handlerInvoker.register(new UnignoreHandler(ignoreService));
