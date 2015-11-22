@@ -35,6 +35,9 @@ public class JerseyExceptionMapper implements ExceptionMapper<Throwable> {
         if (exception instanceof WebApplicationException) {
             WebApplicationException webApplicationException = (WebApplicationException) exception;
             if (webApplicationException.getResponse() != null) {
+                if (webApplicationException.getResponse().getStatus() == 500) {
+                    logger.warn("exception", exception);
+                }
                 if (webApplicationException.getResponse().hasEntity()) {
                     return webApplicationException.getResponse();
                 } else {
