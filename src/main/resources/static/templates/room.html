@@ -1,0 +1,234 @@
+<div>
+    <div class="col-lg-7">
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <h4 class="panel-title">
+                    <i class="fa fa-fw fa-book"></i> journal
+                </h4>
+            </div>
+            <div class="panel-body" ng-if="journal.length === 0">
+                <div class="alert alert-info">
+                    Journal is empty.
+                </div>
+            </div>
+            <div class="list-group">
+                <div class="list-group-item" ng-repeat="entry in journal" ng-class="getClassForJournalAction(entry.action)">
+                    <h4 class="list-group-item-heading">
+                        {{translateAction(entry.action)}}
+                        <small ng-if="entry.admin">
+                            <i class="fa fa-fw fa-wrench" tooltip="admin"></i><!--
+                                --><a href="" ng-click="showUser(entry.admin.id)">{{entry.admin.name}}</a>
+                        </small>
+                        <small ng-if="entry.user">
+                            <i class="fa fa-fw fa-user" tooltip="user"></i><!--
+                                --><a href="" ng-click="showUser(entry.user.id)">{{entry.user.name}}</a>
+                        </small>
+                        <small class="pull-right">
+                            <a href="" ng-click="showBanContext(entry.time)" ng-if="entry.action==='ROOM_BAN'"><!--
+                                    --><span class="fa fa-fw fa-comments"></span><!--
+                                --></a>
+                            <abbr title="{{entry.time | date:'dd.MM.yyyy HH:mm'}}">{{entry.time | relativeDate}}</abbr>
+                        </small>
+                    </h4>
+                    <p class="list-group-item-text">
+                            <span class="" ng-if="entry.actionDescription">
+                                <span ng-switch="entry.action">
+                                    <span ng-switch-when="NEW_POLL"><strong>Question:</strong> {{entry.actionDescription}}</span>
+                                    <span ng-switch-when="CLOSE_POLL"><strong>Question:</strong> {{entry.actionDescription}}</span>
+                                    <span ng-switch-when="ROOM_ROLE"><strong>New role:</strong> {{entry.actionDescription}}</span>
+                                    <span ng-switch-when="NEW_PROXY">
+                                        {{entry.actionDescription.providerName}}/{{entry.actionDescription.remoteRoom}}
+                                    </span>
+                                    <span ng-switch-when="DELETED_PROXY">
+                                        {{entry.actionDescription.providerName}}/{{entry.actionDescription.remoteRoom}}
+                                    </span>
+                                    <span ng-switch-default ng-bind="entry.actionDescription"></span>
+                                </span>
+                            </span>
+                    </p>
+                </div>
+            </div>
+            <div class="panel-footer">
+                <div class="btn btn-default" ng-click="showJournal()">all journal</div>
+            </div>
+        </div>
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <h4 class="panel-title">
+                    <i class="fa fa-fw fa-comment-o"></i> recent messages
+                </h4>
+            </div>
+            <div class="list-group">
+                <div class="list-group-item"
+                     ng-repeat="message in messages"
+                     ng-class="{'list-group-item-warning': message.hidden, 'list-group-item-info': ((message.type==='CLEAR') || (message.type==='BAN') || (message.type==='TIMEOUT'))}">
+                    <small>
+                        <abbr title="{{message.timestamp | date:'dd.MM.yyyy HH:mm'}}">{{message.timestamp | relativeDate}}</abbr>
+                    </small>
+                    <strong class="list-group-item-heading">
+                        &lt;{{message.userName}}&gt;
+                    </strong>
+                        <span
+                                class="list-group-item-text"
+                                ng-bind-html="message.message | message"
+                                ng-if="(message.type==='MSG') || (message.type==='ME') || (message.type==='MSG_EXT')"></span>
+                        <span class="list-group-item-text" ng-if="(message.type==='CLEAR') || (message.type==='BAN') || (message.type==='TIMEOUT')">
+                            cleared messages of {{message.message}}
+                        </span>
+                </div>
+            </div>
+            <div class="panel-footer">
+                <div class="btn btn-default" ng-click="showHistory()">all messages</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-5">
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <h4 class="panel-title">
+                    <i class="fa fa-fw fa-users"></i> chatters
+                </h4>
+            </div>
+            <div class="list-group">
+                <a class="list-group-item" href="" ng-click="showTopChatters()">
+                    <h4 class="list-group-item-heading">
+                        <i class="fa fa-fw fa-trophy"></i> top chatters
+                    </h4>
+                </a>
+                <a class="list-group-item" href="" ng-click="showOnlineChatters()">
+                    <h4 class="list-group-item-heading">
+                        online chatters
+                    </h4>
+                </a>
+                <a class="list-group-item" href="" ng-click="showChatters()">
+                    <h4 class="list-group-item-heading">
+                        all chatters
+                    </h4>
+                </a>
+            </div>
+        </div>
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <h4 class="panel-title">
+                    <i class="fa fa-fw fa-exchange"></i> proxies
+                </h4>
+            </div>
+            <div class="panel-body" ng-if="proxies.length === 0">
+                <div class="alert alert-info">
+                    There are no proxies for this room.
+                </div>
+            </div>
+            <div class="list-group">
+                <div class="list-group-item" ng-repeat="proxy in proxies | orderBy:'providerName'">
+                    <h4 class="list-group-item-heading">
+                        {{proxy.providerName}}
+                        <small ng-bind="proxy.remoteRoom"></small>
+                    <span class="btn btn-xs btn-link-danger pull-right" ng-click="removeProxy(proxy)">
+                        <span class="fa fa-fw fa-trash"></span>
+                    </span>
+                    </h4>
+                    <p class="list-group-item-text">
+                    <span
+                            class="fa fa-fw fa-arrow-down"
+                            tooltip="inbound"></span>
+                    <span
+                            class="fa fa-fw fa-arrow-up"
+                            ng-class="{'text-muted': !proxy.outboundEnabled}"
+                            tooltip="outbound"
+                    ></span>
+                    <span
+                            class="fa fa-fw fa-shield"
+                            ng-class="{'text-muted': !proxy.moderationEnabled}"
+                            tooltip="moderation"
+                    ></span>
+                    <span
+                            class="label"
+                            ng-class="proxyStateClass(proxy.state)"
+                            tooltip-enable="proxy.lastError"
+                            tooltip="{{proxy.lastError}}"
+                    >{{proxy.state}}</span>
+                    <span
+                            class="btn btn-xs btn-link-danger"
+                            tooltip="stop"
+                            ng-if="proxy.state === 'RUNNING'"
+                            ng-click="stopProxy(proxy)">
+                        <span class="fa fa-fw fa-stop"></span>
+                    </span>
+                    <span class="btn btn-xs btn-link-success"
+                          ng-if="proxy.state === 'STOPPED' || proxy.state === 'FAILED'"
+                          tooltip="start"
+                          ng-click="startProxy(proxy)">
+                        <span class="fa fa-fw fa-play"></span>
+                    </span>
+                    </p>
+                </div>
+            </div>
+            <div class="panel-footer">
+                <div class="btn btn-default" ng-click="newProxy()">add proxy</div>
+            </div>
+        </div>
+        <div class="panel panel-info">
+            <div class="panel-heading">
+                <h4 class="panel-title">
+                    <i class="fa fa-fw fa-bar-chart"></i> poll<span ng-if="poll.poll">: <strong>{{poll.poll.question}}</strong></span>
+                </h4>
+            </div>
+            <div class="panel-body" ng-if="poll.poll">
+                <div ng-repeat="option in poll.poll.options">
+                    <small>{{option.text}}</small>
+                    <progressbar value="poll.votes[option.optionId]" max="maxPollVotes" type="success">{{poll.votes[option.optionId]}}</progressbar>
+                </div>
+            </div>
+            <div class="panel-footer">
+                <div class="btn btn-default" ng-if="!poll.poll" ng-click="composePoll()">create poll</div>
+                <div class="btn btn-warning" ng-if="poll.poll" ng-click="closePoll()">close poll</div>
+                <div class="btn btn-default pull-right" ng-click="showPolls()">old polls</div>
+            </div>
+        </div>
+        <div class="panel panel-info">
+            <div class="panel-heading">
+                <h4 class="panel-title">
+                    <i class="fa fa-fw fa-bullhorn"></i> announcements
+                </h4>
+            </div>
+            <table class="table table-hover" ng-if="announcements.length > 0">
+                <thead>
+                <tr>
+                    <th>
+                        Announcement
+                    </th>
+                    <th style="width: 50px">
+                        remove
+                    </th>
+                </tr>
+                </thead>
+                <tr ng-repeat="announcement in announcements | orderBy:id">
+                    <td>
+                        <div class="announcementContainer" ng-bind-html="safe(announcement.text)">
+                        </div>
+                    </td>
+                    <td style="text-align: center;">
+                        <div class="btn btn-link btn-link-danger btn-xs" ng-click="setAnnouncementInactive(announcement.id)">
+                            <span class="fa fa-trash fa-fw"></span>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+            <div class="panel-footer">
+                <div class="btn btn-default" ng-click="composeAnnouncement()">create announcement</div>
+            </div>
+        </div>
+        <div class="panel panel-danger" ng-if="(roomData.name !== '#main') && (SELF_ROLE==='SUPERADMIN')">
+                    <div class="panel-heading">
+                        <h4 class="panel-title">
+                            <i class="fa fa-fw fa-trash"></i> Delete room
+                        </h4>
+                    </div>
+                    <div class="panel-body">
+                        <div class="btn btn-danger" ng-click="deleteRoom()">
+                            <i class="fa fa-fw fa-trash"></i> Delete room
+                        </div>
+                    </div>
+                </div>
+    </div>
+</div>

@@ -103,7 +103,7 @@ public class HistoryDao {
         return result;
     }
 
-    public List<HistoryData> getLast20(long roomId) {
+    public List<HistoryData> getLastN(long roomId, int count) {
         List<HistoryData> result;
         try (Connection connection = dataSource.getConnection()) {
             result = DSL.using(connection)
@@ -111,7 +111,7 @@ public class HistoryDao {
                 .from(HISTORY.join(USER).on(HISTORY.USER_ID.equal(USER.ID)))
                 .where(HISTORY.ROOM_ID.equal(roomId))
                 .orderBy(HISTORY.TIMESTAMP.desc())
-                .limit(20)
+                .limit(count)
                 .fetch()
                 .stream()
                 .map(record -> new HistoryData(

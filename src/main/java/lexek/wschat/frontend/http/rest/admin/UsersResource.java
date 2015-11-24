@@ -11,6 +11,7 @@ import lexek.wschat.db.model.rest.ErrorModel;
 import lexek.wschat.security.jersey.Auth;
 import lexek.wschat.security.jersey.RequiredRole;
 import lexek.wschat.services.UserService;
+import lexek.wschat.util.Pages;
 
 import javax.validation.constraints.Min;
 import javax.ws.rs.*;
@@ -50,11 +51,7 @@ public class UsersResource {
         @QueryParam("search") String search
     ) {
         if (search != null) {
-            search = search.replace("!", "!!");
-            search = search.replace("%", "!%");
-            search = search.replace("_", "!_");
-            search = '%' + search + '%';
-            return userService.searchPaged(page, PAGE_LENGTH, search);
+            return userService.searchPaged(page, PAGE_LENGTH, Pages.escapeSearch(search));
         } else {
             return userService.getAllPaged(page, PAGE_LENGTH);
         }

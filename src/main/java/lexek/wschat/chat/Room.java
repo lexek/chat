@@ -41,6 +41,10 @@ public class Room {
         this.topic = topic;
     }
 
+    public Chatter getOnlineChatter(User user) {
+        return getOnlineChatter(user.getWrappedObject());
+    }
+
     public Chatter getOnlineChatter(UserDto user) {
         if (user.getId() == null) {
             return Chatter.GUEST_CHATTER;

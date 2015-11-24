@@ -27,7 +27,7 @@ public class JournalResource {
     public DataPage<JournalEntry> peekRoomJournal(
         @PathParam("roomId") @Min(0) long roomId
     ) {
-        return journalDao.fetchAllForRoom(0, 6, roomId);
+        return journalDao.fetchAllForRoom(0, 3, roomId);
     }
 
     @Path("/room/{roomId}")

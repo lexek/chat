@@ -45,6 +45,6 @@ public class HistoryResource {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public List<HistoryData> peekRoomHistory(@PathParam("roomId") @Min(0) long roomId) {
-        return historyService.getLast20(roomId);
+        return historyService.getLastN(roomId, 10);
     }
 }

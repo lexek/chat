@@ -1518,11 +1518,14 @@ var ChattersController = function($scope, $location, $http, $modal, room) {
             page: $scope.page,
             search: $scope.search
         };
-        $http({method: "GET", url: StringFormatter.format("/rest/rooms/{number}/chatters/all", room.id), params: params})
-            .success(function (d, status, headers, config) {
-                $scope.users = d["data"];
-                $scope.totalPages = d["pageCount"];
-            });
+        $http({
+            method: "GET",
+            url: StringFormatter.format("/rest/rooms/{number}/chatters/all", room.id),
+            params: params
+        }).success(function (d) {
+            $scope.users = d["data"];
+            $scope.totalPages = d["pageCount"];
+        });
     };
 
     $scope.previousPage = function() {
@@ -1574,6 +1577,78 @@ var ChattersController = function($scope, $location, $http, $modal, room) {
                 }
             }
         });
+    };
+
+    $scope.toggleBan = function(chatter) {
+        $http({
+            method: "PUT",
+            url: StringFormatter.format("/rest/rooms/{number}/chatters/{string}", room.id, chatter.userName),
+            data: {
+                "banned": !chatter.banned
+            }
+        }).success(function () {
+            chatter.banned = !chatter.banned;
+        });
+    };
+
+    $scope.canBan = function(chatter) {
+        return (ROLES[chatter.role] <= ROLES.MOD) && (ROLES[chatter.globalRole] < ROLES[document.SELF_ROLE]);
+    };
+
+    loadPage();
+};
+
+var OnlineChattersController = function($scope, $location, $http, $modal, room) {
+    $scope.users = [];
+    $scope.search = null;
+    $scope.room = room;
+    $scope.filter = '';
+
+    var loadPage = function() {
+        $scope.users.length = 0;
+        var params = {
+            page: $scope.page,
+            search: $scope.search
+        };
+        $http({
+            method: "GET",
+            url: StringFormatter.format("/rest/rooms/{number}/chatters/online", room.id),
+            params: params
+        }).success(function (d) {
+            $scope.users = d;
+        });
+    };
+
+    $scope.showUser = function(id, evt) {
+        if (evt) {
+            evt.preventDefault();
+        }
+        $modal.open({
+            templateUrl: "user.html",
+            controller: UserModalController,
+            size: "sm",
+            resolve: {
+                id: function () {
+                    return id;
+                }
+            }
+        });
+    };
+
+    $scope.toggleBan = function(chatter) {
+        $http({
+            method: "PUT",
+            url: StringFormatter.format("/rest/rooms/{number}/chatters/{string}", room.id, chatter.userName),
+            data: {
+                "banned": !chatter.banned
+            }
+        }).success(function () {
+            chatter.banned = !chatter.banned;
+        });
+    };
+
+    $scope.canBan = function(chatter) {
+        return (ROLES[chatter.role] <= ROLES.MOD) && (ROLES[chatter.globalRole] < ROLES[document.SELF_ROLE]);
     };
 
     loadPage();
@@ -1721,9 +1796,20 @@ var RoomController = function($scope, $location, $http, $sce, $modal, alert, tit
 
     $scope.showChatters = function() {
         $modal.open({
-            templateUrl: 'chatters.html',
+            templateUrl: '/templates/chatters.html',
             controller: ChattersController,
-            size: "lg",
+            resolve: {
+                room: function () {
+                    return $scope.roomData;
+                }
+            }
+        });
+    };
+
+    $scope.showOnlineChatters = function() {
+        $modal.open({
+            templateUrl: '/templates/online_chatters.html',
+            controller: OnlineChattersController,
             resolve: {
                 room: function () {
                     return $scope.roomData;
@@ -2080,7 +2166,7 @@ AdminApplication.config(["$routeProvider", "$locationProvider", function($routeP
     });
     $routeProvider.when("/room", {
         "title": "room",
-        "templateUrl": "room.html",
+        "templateUrl": "/templates/room.html",
         "controller": RoomController,
         "menuId": "room"
     });
@@ -2093,6 +2179,7 @@ AdminApplication.config(["$routeProvider", "$locationProvider", function($routeP
 }]);
 
 AdminApplication.run(['$location', '$rootScope', "$route", "title", "tickets", function($location, $rootScope, $route, title, tickets) {
+    $rootScope.SELF_ROLE = document.SELF_ROLE;
     $rootScope.reloadCurrentRoute = function() {
         $route.reload();
     };

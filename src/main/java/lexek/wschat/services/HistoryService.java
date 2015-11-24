@@ -39,8 +39,8 @@ public class HistoryService implements EventHandler<MessageEvent> {
         return historyDao.getAllForUsers(roomId, page, pageLength, users, since, until);
     }
 
-    public List<HistoryData> getLast20(long roomId) {
-        return historyDao.getLast20(roomId);
+    public List<HistoryData> getLastN(long roomId, int count) {
+        return historyDao.getLastN(roomId, count);
     }
 
     @Override

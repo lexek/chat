@@ -158,7 +158,7 @@ public class Main {
 
         ConnectionManager connectionManager = new ConnectionManager(metricRegistry);
         UserService userService = new UserService(connectionManager, userDao, journalService);
-        ChatterService chatterService = new ChatterService(chatterDao, journalService);
+        ChatterService chatterService = new ChatterService(chatterDao, journalService, userService);
         AuthenticationManager authenticationManager = new AuthenticationManager(ircHost, emailService, connectionManager, userAuthDao);
         EventDispatcher eventDispatcher = new EventDispatcher();
 
@@ -299,7 +299,7 @@ public class Main {
                 registerInstances(
                     new StatisticsResource(new StatisticsDao(dataSource), runtimeMetricRegistry, healthCheckRegistry),
                     new AnnouncementResource(announcementService, roomService),
-                    new ChattersResource(chatterDao, roomService),
+                    new ChattersResource(chatterDao, roomService, chatterService, userService),
                     new EmoticonsResource(emoticonService),
                     new HistoryResource(historyService),
                     new IpBlockResource(bannedIps),

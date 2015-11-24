@@ -30,6 +30,10 @@ public class UserService {
         return userDao.getById(id);
     }
 
+    public UserDto fetchByName(String name) {
+        return userDao.getByName(name);
+    }
+
     public void update(UserDto user, UserDto admin, UserChangeSet changeSet) {
         UserDto updatedUser = userDao.update(user.getId(), changeSet);
         if (updatedUser != null) {
@@ -76,20 +80,6 @@ public class UserService {
 
     public User getCached(String name) {
         return userCache.getIfPresent(name);
-    }
-
-    public UserDto getByNameWithCache(String name) {
-        UserDto userDto = null;
-        {
-            User u = userCache.getIfPresent(name);
-            if (u != null) {
-                userDto = u.getWrappedObject();
-            }
-        }
-        if (userDto == null) {
-            userDto = userDao.getByName(name);
-        }
-        return userDto;
     }
 
     public DataPage<UserData> searchPaged(int page, int pageLength, String search) {

@@ -9,14 +9,16 @@ import lexek.wschat.db.dao.ChatterDao;
 public class ChatterService {
     private final ChatterDao chatterDao;
     private final JournalService journalService;
+    private final UserService userService;
 
-    public ChatterService(ChatterDao chatterDao, JournalService journalService) {
+    public ChatterService(ChatterDao chatterDao, JournalService journalService, UserService userService) {
         this.chatterDao = chatterDao;
         this.journalService = journalService;
+        this.userService = userService;
     }
 
     public Chatter getChatter(Room room, String name) {
-        return chatterDao.getChatter(name, room.getId());
+        return chatterDao.getChatter(userService.cache(userService.fetchByName(name)), room.getId());
     }
 
     public Chatter getChatter(Room room, User user) {
