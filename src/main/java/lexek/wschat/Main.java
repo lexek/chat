@@ -158,7 +158,6 @@ public class Main {
 
         ConnectionManager connectionManager = new ConnectionManager(metricRegistry);
         UserService userService = new UserService(connectionManager, userDao, journalService);
-        ChatterService chatterService = new ChatterService(chatterDao, journalService, userService);
         AuthenticationManager authenticationManager = new AuthenticationManager(ircHost, emailService, connectionManager, userAuthDao);
         EventDispatcher eventDispatcher = new EventDispatcher();
 
@@ -171,6 +170,7 @@ public class Main {
         messageBroadcaster.registerConsumer(historyService);
         messageBroadcaster.registerConsumer(connectionManager);
         messageBroadcaster.registerConsumer(messageConsumerServiceHandler);
+        ChatterService chatterService = new ChatterService(chatterDao, journalService, userService, messageBroadcaster);
         RoomManager roomManager = new RoomManager(userService, messageBroadcaster, roomDao, chatterService, journalService);
         RoomService roomService = new RoomService(roomManager);
         AnnouncementService announcementService = new AnnouncementService(new AnnouncementDao(dataSource), journalService, roomManager, messageBroadcaster, scheduledExecutorService);
@@ -216,7 +216,7 @@ public class Main {
 
         HandlerInvoker handlerInvoker = new HandlerInvoker(roomManager, chatterService, bannedIps, captchaService);
         MessageReactor messageReactor = new DefaultMessageReactor(handlerInvoker);
-        handlerInvoker.register(new BanHandler(messageBroadcaster, chatterService));
+        handlerInvoker.register(new BanHandler(chatterService));
         handlerInvoker.register(new ClearUserHandler(messageBroadcaster));
         handlerInvoker.register(new ColorHandler(userDao));
         handlerInvoker.register(new JoinHandler(eventDispatcher, messageBroadcaster));
@@ -224,8 +224,8 @@ public class Main {
         handlerInvoker.register(new MeHandler(messageBroadcaster, messageId));
         handlerInvoker.register(new PartHandler(messageBroadcaster));
         handlerInvoker.register(new SetRoleHandler(chatterService));
-        handlerInvoker.register(new TimeOutHandler(messageBroadcaster, chatterService));
-        handlerInvoker.register(new UnbanHandler(chatterService, messageBroadcaster));
+        handlerInvoker.register(new TimeOutHandler(chatterService));
+        handlerInvoker.register(new UnbanHandler(chatterService));
         handlerInvoker.register(new NameHandler(userService));
         handlerInvoker.register(new LikeHandler(messageBroadcaster));
         handlerInvoker.register(new ClearRoomHandler(messageBroadcaster));

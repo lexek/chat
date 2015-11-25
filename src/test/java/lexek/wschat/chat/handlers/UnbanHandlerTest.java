@@ -3,8 +3,6 @@ package lexek.wschat.chat.handlers;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import lexek.wschat.chat.*;
-import lexek.wschat.chat.filters.BroadcastFilter;
-import lexek.wschat.chat.filters.UserInRoomFilter;
 import lexek.wschat.db.model.UserDto;
 import lexek.wschat.services.ChatterService;
 import org.junit.Before;
@@ -19,14 +17,13 @@ public class UnbanHandlerTest {
     private User user = new User(userDto);
     private Chatter chatter = new Chatter(0L, LocalRole.MOD, false, null, user);
     private Connection connection = spy(new TestConnection(user));
-    private MessageBroadcaster messageBroadcaster = mock(MessageBroadcaster.class);
     private Room room = mock(Room.class);
     private ChatterService chatterService = mock(ChatterService.class);
-    private UnbanHandler handler = new UnbanHandler(chatterService, messageBroadcaster);
+    private UnbanHandler handler = new UnbanHandler(chatterService);
 
     @Before
     public void resetMocks() {
-        reset(connection, room, chatterService, messageBroadcaster);
+        reset(connection, room, chatterService);
     }
 
     @Test
@@ -69,9 +66,6 @@ public class UnbanHandlerTest {
         )));
         verify(chatterService).unbanChatter(room, otherChatter, chatter);
         verify(connection).send(Message.infoMessage("OK"));
-        verify(messageBroadcaster, times(1)).submitMessage(
-            eq(Message.infoMessage("You have been unbanned", "#main")),
-            eq(new UserInRoomFilter(otherUser, room)));
     }
 
     @Test
@@ -91,7 +85,6 @@ public class UnbanHandlerTest {
         )));
         verify(chatterService).unbanChatter(room, otherChatter, chatter);
         verify(connection, times(1)).send(eq(Message.errorMessage("INTERNAL_ERROR")));
-        verify(messageBroadcaster, never()).submitMessage(any(Message.class), any(BroadcastFilter.class));
     }
 
 
@@ -111,7 +104,6 @@ public class UnbanHandlerTest {
         )));
         verify(chatterService, never()).unbanChatter(room, otherChatter, chatter);
         verify(connection, times(1)).send(eq(Message.errorMessage("UNBAN_DENIED")));
-        verify(messageBroadcaster, never()).submitMessage(any(Message.class), any(BroadcastFilter.class));
     }
 
     @Test
@@ -130,7 +122,6 @@ public class UnbanHandlerTest {
         )));
         verify(chatterService, never()).unbanChatter(room, otherChatter, chatter);
         verify(connection, times(1)).send(eq(Message.errorMessage("UNBAN_DENIED")));
-        verify(messageBroadcaster, never()).submitMessage(any(Message.class), any(BroadcastFilter.class));
     }
 
     @Test
@@ -146,6 +137,5 @@ public class UnbanHandlerTest {
         )));
         verify(chatterService, never()).unbanChatter(eq(room), any(Chatter.class), any(Chatter.class));
         verify(connection, times(1)).send(eq(Message.errorMessage("UNKNOWN_USER")));
-        verify(messageBroadcaster, never()).submitMessage(any(Message.class), any(BroadcastFilter.class));
     }
 }

@@ -17,14 +17,13 @@ public class BanHandlerTest {
     private User user = new User(userDto);
     private Chatter chatter = new Chatter(0L, LocalRole.MOD, false, null, user);
     private Connection connection = spy(new TestConnection(user));
-    private MessageBroadcaster messageBroadcaster = mock(MessageBroadcaster.class);
     private ChatterService chatterService = mock(ChatterService.class);
     private Room room = mock(Room.class);
-    private BanHandler handler = new BanHandler(messageBroadcaster, chatterService);
+    private BanHandler handler = new BanHandler(chatterService);
 
     @Before
     public void resetMocks() {
-        reset(messageBroadcaster, chatterService, connection, room);
+        reset(chatterService, connection, room);
     }
 
     @Test
@@ -66,10 +65,6 @@ public class BanHandlerTest {
             MessageProperty.NAME, "username"
         )));
         verify(chatterService).banChatter(room, otherChatter, chatter);
-        verify(messageBroadcaster, times(1)).submitMessage(
-            eq(Message.moderationMessage(MessageType.BAN, "#main", "user", "username")),
-            eq(connection),
-            eq(room.FILTER));
     }
 
     @Test
@@ -88,7 +83,6 @@ public class BanHandlerTest {
             MessageProperty.NAME, "username"
         )));
         verify(chatterService).banChatter(room, otherChatter, chatter);
-        verifyZeroInteractions(messageBroadcaster);
         verify(connection, times(1)).send(eq(Message.errorMessage("INTERNAL_ERROR")));
     }
 
@@ -108,7 +102,6 @@ public class BanHandlerTest {
             MessageProperty.NAME, "username"
         )));
         verify(chatterService, never()).banChatter(room, otherChatter, chatter);
-        verifyZeroInteractions(messageBroadcaster);
         verify(connection, times(1)).send(eq(Message.errorMessage("BAN_DENIED")));
     }
 
@@ -127,7 +120,6 @@ public class BanHandlerTest {
             MessageProperty.NAME, "username"
         )));
         verify(chatterService, never()).banChatter(room, otherChatter, chatter);
-        verifyZeroInteractions(messageBroadcaster);
         verify(connection, times(1)).send(eq(Message.errorMessage("BAN_DENIED")));
     }
 
@@ -143,7 +135,6 @@ public class BanHandlerTest {
             MessageProperty.NAME, "username"
         )));
         verify(chatterService, never()).banChatter(eq(room), any(Chatter.class), any(Chatter.class));
-        verifyZeroInteractions(messageBroadcaster);
         verify(connection, times(1)).send(eq(Message.errorMessage("UNKNOWN_USER")));
     }
 }
