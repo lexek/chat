@@ -99,7 +99,12 @@ public class ChattersResource {
     @PUT
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Chatter setBanned(JsonNode node, @Min(0) @PathParam("roomId") long roomId, @Auth UserDto admin, @PathParam("name") String name) {
+    public ChatterData setBanned(
+        JsonNode node,
+        @Min(0) @PathParam("roomId") long roomId,
+        @Auth UserDto admin,
+        @PathParam("name") String name
+    ) {
         boolean value = node.get("banned").booleanValue();
         Room room = roomService.getRoomInstance(roomId);
 
@@ -134,7 +139,15 @@ public class ChattersResource {
         } else {
             throw new WebApplicationException("You can't ban this user", 401);
         }
-        return null;
+        return new ChatterData(
+            userChatter.getId(),
+            chatUser.getId(),
+            chatUser.getName(),
+            userChatter.getRole(),
+            chatUser.getRole(),
+            userChatter.getTimeout() != null,
+            userChatter.isBanned()
+        );
     }
 
     private static boolean canBan(Chatter modChatter, Chatter userChatter) {
