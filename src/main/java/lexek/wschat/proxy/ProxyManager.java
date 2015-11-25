@@ -5,7 +5,8 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import lexek.wschat.chat.*;
 import lexek.wschat.chat.e.EntityNotFoundException;
-import lexek.wschat.chat.e.InvalidDataException;
+import lexek.wschat.chat.e.InvalidInputException;
+import lexek.wschat.chat.e.InvalidStateException;
 import lexek.wschat.chat.filters.BroadcastFilter;
 import lexek.wschat.db.dao.ProxyDao;
 import lexek.wschat.db.jooq.tables.pojos.ChatProxy;
@@ -42,7 +43,7 @@ public class ProxyManager extends AbstractService implements MessageConsumerServ
     public Proxy newProxy(UserDto admin, Room room, String providerName, String remoteRoom, String name, String token, boolean outbound) {
         ProxyProvider provider = providers.get(providerName);
         if (token != null && name != null && provider.isSupportsAuthentication() && !provider.validateCredentials(name, token)) {
-            throw new InvalidDataException("Invalid credentials.");
+            throw new InvalidInputException("token", "Invalid credentials.");
         }
         ChatProxy chatProxy = new ChatProxy(null, room.getId(), providerName, name, token, remoteRoom, outbound);
         proxyDao.store(chatProxy);
@@ -53,7 +54,7 @@ public class ProxyManager extends AbstractService implements MessageConsumerServ
             proxy.start();
             return proxy;
         } else {
-            throw new InvalidDataException("Unknown proxy name");
+            throw new InvalidInputException("name", "Unknown proxy name");
         }
     }
 
@@ -75,7 +76,7 @@ public class ProxyManager extends AbstractService implements MessageConsumerServ
             if (proxy.state() == ProxyState.RUNNING) {
                 proxy.stop();
             } else {
-                throw new InvalidDataException("You can stop only running proxy.");
+                throw new InvalidStateException("You can stop only running proxy.");
             }
         } else {
             throw new EntityNotFoundException("Proxy doesn't exist.");
@@ -88,7 +89,7 @@ public class ProxyManager extends AbstractService implements MessageConsumerServ
             if (proxy.state() == ProxyState.STOPPED || proxy.state() == ProxyState.FAILED) {
                 proxy.start();
             } else {
-                throw new InvalidDataException("You can start only stopped or failed proxy.");
+                throw new InvalidStateException("You can start only stopped or failed proxy.");
             }
         } else {
             throw new EntityNotFoundException("Proxy doesn't exist.");

@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.net.HttpHeaders;
 import io.netty.util.CharsetUtil;
-import lexek.wschat.chat.e.InvalidDataException;
+import lexek.wschat.chat.e.InvalidInputException;
 import lexek.wschat.util.JsonResponseHandler;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
@@ -84,7 +84,7 @@ public class TwitchTvSocialAuthService implements SocialAuthService {
         JsonNode tokenData = root.get("token");
         boolean isValid = tokenData.get("valid").asBoolean();
         if (!isValid) {
-            throw new InvalidDataException("invalid token");
+            throw new InvalidInputException("token", "invalid token");
         }
         JsonNode authNode = tokenData.get("authorization");
         return StreamSupport.stream(authNode.get("scopes").spliterator(), false)
