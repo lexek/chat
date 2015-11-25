@@ -86,9 +86,10 @@ public abstract class AbstractStaticHandler implements HttpHandler {
     private String withoutQuery(String path) {
         int queryStart = path.indexOf('?');
         if (queryStart > -1) {
-            path = path.substring(0, queryStart);
+            return path.substring(0, queryStart);
+        } else {
+            return path;
         }
-        return path;
     }
 
     protected String guessMimeType(String path) {
@@ -107,5 +108,5 @@ public abstract class AbstractStaticHandler implements HttpHandler {
         return mimeType;
     }
 
-    abstract StaticHandlerContext getContext(String uri);
+    protected abstract StaticHandlerContext getContext(String uri);
 }

@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit;
 @Provider
 public class ObjectMapperProvider implements ContextResolver<ObjectMapper> {
 
-    final ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper;
 
     public ObjectMapperProvider() {
         objectMapper = new ObjectMapper();

@@ -10,8 +10,6 @@ import org.jooq.Condition;
 import org.jooq.Record;
 import org.jooq.exception.DataAccessException;
 import org.jooq.impl.DSL;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -26,7 +24,6 @@ import static lexek.wschat.db.jooq.tables.Userauth.USERAUTH;
 
 public class UserDao {
     private final DataSource dataSource;
-    private final Logger logger = LoggerFactory.getLogger(UserDao.class);
 
     public UserDao(DataSource dataSource) {
         this.dataSource = dataSource;

@@ -68,6 +68,7 @@ public class GoodGameCodec extends MessageToMessageCodec<JsonNode, GoodGameEvent
             }
             default: {
                 logger.debug("unsupported message type {}: {}", type, data);
+                break;
             }
         }
     }
@@ -111,6 +112,9 @@ public class GoodGameCodec extends MessageToMessageCodec<JsonNode, GoodGameEvent
                 out.add(rootObject);
                 break;
             }
+            default:
+                logger.warn("Unsupported type {}", msg.getType());
+                break;
         }
     }
 }

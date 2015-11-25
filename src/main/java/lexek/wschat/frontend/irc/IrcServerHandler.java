@@ -78,6 +78,10 @@ public class IrcServerHandler extends ChannelInboundHandlerAdapter implements Au
                     } else {
                         authenticationService.authenticateWithPassword(connection, username, connection.getPassword(), this);
                     }
+                    break;
+                default:
+                    logger.warn("usupported type {}", msg.getType());
+                    break;
             }
         }
     }

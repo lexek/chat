@@ -20,7 +20,7 @@ public class ClassPathStaticHandler extends AbstractStaticHandler {
     }
 
     @Override
-    StaticHandlerContext getContext(String uri) {
+    protected StaticHandlerContext getContext(String uri) {
         return new ClassPathContext(uri);
     }
 

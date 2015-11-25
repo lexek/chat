@@ -14,11 +14,12 @@ public class IrcCodec implements Codec {
         this.serverName = serverName;
     }
 
-    private static ParsedMessage parseMessage(String msg) {
+    private static ParsedMessage parseMessage(String message) {
         String prefix = null;
         String trailing;
         String arg[];
 
+        String msg = message;
         if (msg.startsWith(":")) {
             String tmp[] = msg.substring(1).split(" ", 2);
             prefix = tmp[0];
