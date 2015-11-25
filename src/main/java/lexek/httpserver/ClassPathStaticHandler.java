@@ -27,7 +27,7 @@ public class ClassPathStaticHandler extends AbstractStaticHandler {
     private class ClassPathContext implements StaticHandlerContext {
         private String jarFileName = null;
         private InputStream resource;
-        private File file;
+        private final File file;
 
         private ClassPathContext(String uri) {
             this.file = new File(root, uri);
@@ -48,20 +48,27 @@ public class ClassPathStaticHandler extends AbstractStaticHandler {
         public long lastModified() {
             URL url = clazz.getClassLoader().getResource(path());
             String fileName;
-            if (url.getProtocol().equals("file")) {
-                fileName = url.getFile();
-            } else if (url.getProtocol().equals("jar")) {
-                if (jarFileName == null) {
-                    try {
-                        JarURLConnection jarUrl = (JarURLConnection) url.openConnection();
-                        jarFileName = jarUrl.getJarFile().getName();
-                    } catch (IOException e) {
-                        logger.warn("exception while getting last modified value", e);
+            if (url == null) {
+                throw new RuntimeException("URL is null");
+            }
+            String protocol = url.getProtocol();
+            switch (protocol) {
+                case "file":
+                    fileName = url.getFile();
+                    break;
+                case "jar":
+                    if (jarFileName == null) {
+                        try {
+                            JarURLConnection jarUrl = (JarURLConnection) url.openConnection();
+                            jarFileName = jarUrl.getJarFile().getName();
+                        } catch (IOException e) {
+                            logger.warn("exception while getting last modified value", e);
+                        }
                     }
-                }
-                fileName = jarFileName;
-            } else {
-                throw new IllegalArgumentException("Not a file");
+                    fileName = jarFileName;
+                    break;
+                default:
+                    throw new IllegalArgumentException("Not a file");
             }
             File f = new File(fileName);
             return f.lastModified();

@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 public class MessageProperty<T> {
-    private static Map<String, MessageProperty> KEYS = new ConcurrentHashMapV8<>();
+    private static final Map<String, MessageProperty> KEYS = new ConcurrentHashMapV8<>();
 
     public static final MessageProperty<MessageType> TYPE = valueOf("type");
     public static final MessageProperty<String> ROOM = valueOf("room");

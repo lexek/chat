@@ -6,7 +6,7 @@ import org.slf4j.LoggerFactory;
 
 public abstract class AbstractService implements Service {
     private final String name;
-    protected Logger logger = LoggerFactory.getLogger(this.getClass());
+    protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     protected AbstractService(String name) {
         this.name = name;

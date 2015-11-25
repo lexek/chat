@@ -101,7 +101,7 @@ public class EmoticonService {
         return cachedEmoticons;
     }
 
-    private Path createEmoticonFile(String originalName) throws IOException {
+    private Path createEmoticonFile(String originalName) {
         String extension = originalName.substring(originalName.lastIndexOf("."));
         String newName = Hashing.md5()
             .newHasher()

@@ -145,8 +145,8 @@ public class OutboundMessageHandler {
     }
 
     private static class UserCredentials {
-        private String id;
-        private String token;
+        private final String id;
+        private final String token;
 
         private UserCredentials(String id, String token) {
             this.id = id;

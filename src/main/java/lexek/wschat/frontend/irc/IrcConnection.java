@@ -44,10 +44,6 @@ public class IrcConnection extends Connection {
         this.password = password;
     }
 
-    public void authorize() {
-        this.password = null;
-    }
-
     @Override
     public String toString() {
         return "IrcConnection{" +

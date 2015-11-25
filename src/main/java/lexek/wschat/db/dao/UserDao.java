@@ -30,13 +30,12 @@ public class UserDao {
     }
 
     public boolean tryChangeName(long id, String newName, boolean ignoreCheck) {
-        boolean result = false;
         try (Connection connection = dataSource.getConnection()) {
             Condition condition = USER.ID.equal(id);
             if (!ignoreCheck) {
                 condition.and(USER.RENAME_AVAILABLE.equal(true));
             }
-            result = DSL.using(connection)
+            return DSL.using(connection)
                 .update(USER)
                 .set(USER.NAME, newName)
                 .set(USER.RENAME_AVAILABLE, false)
@@ -45,37 +44,32 @@ public class UserDao {
         } catch (DataAccessException | SQLException e) {
             throw new InternalErrorException(e);
         }
-        return result;
     }
 
     public UserDto getByName(String name) {
-        UserDto userDto = null;
         try (Connection connection = dataSource.getConnection()) {
             Record record = DSL.using(connection)
                 .select()
                 .from(USER)
                 .where(USER.NAME.equal(name))
                 .fetchOne();
-            userDto = UserDto.fromRecord(record);
+            return UserDto.fromRecord(record);
         } catch (DataAccessException | SQLException e) {
             throw new InternalErrorException(e);
         }
-        return userDto;
     }
 
     public UserDto getById(long id) {
-        UserDto userDto = null;
         try (Connection connection = dataSource.getConnection()) {
             Record record = DSL.using(connection)
                 .select()
                 .from(USER)
                 .where(USER.ID.equal(id))
                 .fetchOne();
-            userDto = UserDto.fromRecord(record);
+            return UserDto.fromRecord(record);
         } catch (DataAccessException | SQLException e) {
             throw new InternalErrorException(e);
         }
-        return userDto;
     }
 
     public UserDto update(long id, UserChangeSet changeSet) {
@@ -125,7 +119,6 @@ public class UserDao {
     }
 
     public DataPage<UserData> getAllPaged(int page, int pageLength) {
-        DataPage<UserData> result = null;
         try (Connection connection = dataSource.getConnection()) {
             List<UserData> data = DSL.using(connection)
                 .select(USER.ID, USER.NAME, USER.ROLE, USER.COLOR, USER.BANNED, USER.RENAME_AVAILABLE, USER.EMAIL, USER.EMAIL_VERIFIED,
@@ -143,15 +136,13 @@ public class UserDao {
                     record.getValue("authNames", String.class)
                 ))
                 .collect(Collectors.toList());
-            result = new DataPage<>(data, page, Pages.pageCount(pageLength, DSL.using(connection).fetchCount(USER)));
+            return new DataPage<>(data, page, Pages.pageCount(pageLength, DSL.using(connection).fetchCount(USER)));
         } catch (DataAccessException | SQLException e) {
             throw new InternalErrorException(e);
         }
-        return result;
     }
 
     public DataPage<UserData> searchPaged(Integer page, int pageLength, String nameParam) {
-        DataPage<UserData> result = null;
         try (Connection connection = dataSource.getConnection()) {
             List<UserData> data = DSL.using(connection)
                 .select(USER.ID, USER.NAME, USER.ROLE, USER.COLOR, USER.BANNED,
@@ -172,31 +163,27 @@ public class UserDao {
                 ))
                 .collect(Collectors.toList());
 
-            result = new DataPage<>(data, page,
+            return new DataPage<>(data, page,
                 Pages.pageCount(pageLength, DSL.using(connection).fetchCount(USER, USER.NAME.like(nameParam, '!'))));
         } catch (DataAccessException | SQLException e) {
             throw new InternalErrorException(e);
         }
-        return result;
     }
 
     public boolean delete(UserDto user) {
-        boolean result = false;
         try (Connection connection = dataSource.getConnection()) {
-            result = DSL.using(connection)
+            return DSL.using(connection)
                 .delete(USER)
                 .where(USER.ID.equal(user.getId()))
                 .execute() == 1;
         } catch (DataAccessException | SQLException e) {
             throw new InternalErrorException(e);
         }
-        return result;
     }
 
     public boolean checkName(String username) {
-        boolean result = false;
         try (Connection connection = dataSource.getConnection()) {
-            result = DSL.using(connection)
+            return DSL.using(connection)
                 .selectOne()
                 .from(USER)
                 .where(USER.NAME.equal(username))
@@ -204,7 +191,6 @@ public class UserDao {
         } catch (DataAccessException | SQLException e) {
             throw new InternalErrorException(e);
         }
-        return result;
     }
 
     public UserData fetchData(long id) {
@@ -232,9 +218,8 @@ public class UserDao {
     }
 
     public List<UserDto> getAdmins() {
-        List<UserDto> result = null;
         try (Connection connection = dataSource.getConnection()) {
-            result = DSL.using(connection)
+            return DSL.using(connection)
                 .select()
                 .from(USER)
                 .where(USER.ROLE.equal("SUPERADMIN"))
@@ -245,6 +230,5 @@ public class UserDao {
         } catch (DataAccessException | SQLException e) {
             throw new InternalErrorException(e);
         }
-        return result;
     }
 }

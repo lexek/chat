@@ -22,17 +22,14 @@ import lexek.httpserver.RequestDispatcher;
 import lexek.wschat.services.AbstractService;
 import lexek.wschat.util.ExceptionLogger;
 
-import javax.net.ssl.SSLException;
-import java.io.FileNotFoundException;
 import java.util.concurrent.ThreadFactory;
 
 public class HttpServer extends AbstractService {
     private static final int PORT = 1337;
-    private ServerBootstrap bootstrap;
+    private final ServerBootstrap bootstrap;
     private Channel channel;
 
-    public HttpServer(SslContext sslContext, RequestDispatcher requestDispatcher)
-        throws FileNotFoundException, SSLException {
+    public HttpServer(SslContext sslContext, RequestDispatcher requestDispatcher) {
         super("httpServer");
 
         EventLoopGroup parentGroup;

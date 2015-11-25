@@ -75,9 +75,7 @@ public class JerseyContainer extends SimpleHttpHandler implements Container {
 
         @Override
         public OutputStream writeResponseStatusAndHeaders(long contentLength, ContainerResponse responseContext) throws ContainerException {
-            responseContext.getHeaders().forEach((k, v) -> {
-                v.forEach(e -> response.header(k, e.toString()));
-            });
+            responseContext.getHeaders().forEach((k, v) -> v.forEach(e -> response.header(k, e.toString())));
             response.status(responseContext.getStatus());
             return new BufferOutputStream(response.getBuffer());
         }

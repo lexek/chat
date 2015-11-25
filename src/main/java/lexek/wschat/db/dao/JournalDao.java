@@ -50,7 +50,6 @@ public class JournalDao {
     }
 
     public DataPage<JournalEntry> fetchAllGlobal(int page, int pageSize) {
-        DataPage<JournalEntry> result = null;
         try (Connection connection = dataSource.getConnection()) {
             List<JournalEntry> data = DSL.using(connection)
                 .selectFrom(JOURNAL
@@ -70,15 +69,13 @@ public class JournalDao {
                     record.getValue(JOURNAL.ROOM_ID)))
                 .collect(Collectors.toList());
             int count = DSL.using(connection).fetchCount(JOURNAL, JOURNAL.ACTION.in(GLOBAL_ACTIONS));
-            result = new DataPage<>(data, page, Pages.pageCount(pageSize, count));
+            return new DataPage<>(data, page, Pages.pageCount(pageSize, count));
         } catch (DataAccessException | SQLException e) {
             throw new InternalErrorException(e);
         }
-        return result;
     }
 
     public DataPage<JournalEntry> fetchAllForRoom(int page, int pageSize, long roomId) {
-        DataPage<JournalEntry> result = null;
         try (Connection connection = dataSource.getConnection()) {
             List<JournalEntry> data = DSL.using(connection)
                 .selectFrom(JOURNAL
@@ -98,10 +95,9 @@ public class JournalDao {
                     record.getValue(JOURNAL.ROOM_ID)))
                 .collect(Collectors.toList());
             int count = DSL.using(connection).fetchCount(JOURNAL, JOURNAL.ROOM_ID.equal(roomId));
-            result = new DataPage<>(data, page, Pages.pageCount(pageSize, count));
+            return new DataPage<>(data, page, Pages.pageCount(pageSize, count));
         } catch (DataAccessException | SQLException e) {
             throw new InternalErrorException(e);
         }
-        return result;
     }
 }
