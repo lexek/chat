@@ -33,7 +33,7 @@ public class MeHandler extends AbstractRoomMessageHandler {
             connection.send(Message.errorMessage("EMPTY_MESSAGE"));
         } else if (!(chatter.hasRole(LocalRole.MOD) || connection.getUser().hasRole(GlobalRole.MOD)) && (text.length() > 420)) {
             connection.send(Message.errorMessage("MESSAGE_TOO_BIG"));
-        } else if (text.length() != 0) {
+        } else {
             messageBroadcaster.submitMessage(
                 Message.meMessage(
                     room.getName(),
