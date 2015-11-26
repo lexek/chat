@@ -1,5 +1,8 @@
 package lexek.wschat.chat;
 
+import lexek.wschat.chat.model.Message;
+import lexek.wschat.chat.model.User;
+
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Predicate;

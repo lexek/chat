@@ -5,6 +5,9 @@ import com.codahale.metrics.MetricRegistry;
 import com.lmax.disruptor.EventHandler;
 import io.netty.util.internal.RecyclableArrayList;
 import lexek.wschat.chat.filters.BroadcastFilter;
+import lexek.wschat.chat.model.GlobalRole;
+import lexek.wschat.chat.model.Message;
+import lexek.wschat.chat.model.User;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;

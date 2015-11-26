@@ -1,7 +1,7 @@
 package lexek.wschat.db.model;
 
 import com.fasterxml.jackson.annotation.JsonView;
-import lexek.wschat.chat.GlobalRole;
+import lexek.wschat.chat.model.GlobalRole;
 import lexek.wschat.frontend.http.rest.view.DetailView;
 import lexek.wschat.frontend.http.rest.view.MessageView;
 import org.jooq.Record;

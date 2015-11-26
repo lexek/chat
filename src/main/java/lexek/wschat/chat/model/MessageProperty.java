@@ -1,4 +1,4 @@
-package lexek.wschat.chat;
+package lexek.wschat.chat.model;
 
 import io.netty.util.internal.chmv8.ConcurrentHashMapV8;
 import lexek.wschat.db.model.Emoticon;

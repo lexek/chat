@@ -1,7 +1,7 @@
 package lexek.wschat.frontend.http.rest.admin;
 
-import lexek.wschat.chat.GlobalRole;
 import lexek.wschat.chat.e.InvalidInputException;
+import lexek.wschat.chat.model.GlobalRole;
 import lexek.wschat.db.model.Emoticon;
 import lexek.wschat.db.model.UserDto;
 import lexek.wschat.security.jersey.Auth;

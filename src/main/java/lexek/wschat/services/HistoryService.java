@@ -2,8 +2,14 @@ package lexek.wschat.services;
 
 import com.google.common.collect.ImmutableSet;
 import com.lmax.disruptor.EventHandler;
-import lexek.wschat.chat.*;
+import lexek.wschat.chat.Connection;
+import lexek.wschat.chat.MessageEvent;
+import lexek.wschat.chat.Room;
 import lexek.wschat.chat.filters.BroadcastFilter;
+import lexek.wschat.chat.model.Message;
+import lexek.wschat.chat.model.MessageProperty;
+import lexek.wschat.chat.model.MessageType;
+import lexek.wschat.chat.model.User;
 import lexek.wschat.db.dao.HistoryDao;
 import lexek.wschat.db.jooq.tables.pojos.History;
 import lexek.wschat.db.model.DataPage;

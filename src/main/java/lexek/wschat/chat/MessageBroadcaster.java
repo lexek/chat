@@ -11,6 +11,7 @@ import com.lmax.disruptor.RingBuffer;
 import com.lmax.disruptor.dsl.Disruptor;
 import com.lmax.disruptor.dsl.ProducerType;
 import lexek.wschat.chat.filters.BroadcastFilter;
+import lexek.wschat.chat.model.Message;
 import lexek.wschat.services.AbstractService;
 import lexek.wschat.util.LoggingExceptionHandler;
 

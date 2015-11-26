@@ -1,4 +1,4 @@
-package lexek.wschat.chat;
+package lexek.wschat.chat.model;
 
 import lexek.wschat.db.model.UserDto;
 import lexek.wschat.util.Colors;

@@ -1,7 +1,11 @@
 package lexek.wschat.services;
 
-import lexek.wschat.chat.*;
+import lexek.wschat.chat.Connection;
+import lexek.wschat.chat.ConnectionManager;
+import lexek.wschat.chat.MessageBroadcaster;
 import lexek.wschat.chat.filters.UserFilter;
+import lexek.wschat.chat.model.Message;
+import lexek.wschat.chat.model.User;
 import lexek.wschat.db.dao.PendingNotificationDao;
 import lexek.wschat.db.model.Email;
 import lexek.wschat.db.model.UserDto;

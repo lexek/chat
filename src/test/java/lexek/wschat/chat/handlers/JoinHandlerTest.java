@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableSet;
 import lexek.wschat.chat.*;
 import lexek.wschat.chat.evt.EventDispatcher;
 import lexek.wschat.chat.filters.BroadcastFilter;
+import lexek.wschat.chat.model.*;
 import lexek.wschat.db.model.UserDto;
 import org.junit.Test;
 

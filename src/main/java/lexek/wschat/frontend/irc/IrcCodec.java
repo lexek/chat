@@ -1,7 +1,7 @@
 package lexek.wschat.frontend.irc;
 
 import com.google.common.collect.ImmutableMap;
-import lexek.wschat.chat.*;
+import lexek.wschat.chat.model.*;
 import lexek.wschat.frontend.Codec;
 
 import java.util.Arrays;

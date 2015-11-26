@@ -2,6 +2,7 @@ package lexek.wschat.chat.handlers;
 
 import com.google.common.collect.ImmutableSet;
 import lexek.wschat.chat.*;
+import lexek.wschat.chat.model.*;
 import lexek.wschat.db.dao.UserDao;
 import lexek.wschat.db.model.UserDto;
 import org.junit.Before;

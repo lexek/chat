@@ -1,8 +1,8 @@
 package lexek.wschat.services;
 
-import lexek.wschat.chat.User;
 import lexek.wschat.chat.e.InvalidInputException;
 import lexek.wschat.chat.e.LimitExceededException;
+import lexek.wschat.chat.model.User;
 import lexek.wschat.db.dao.IgnoreDao;
 
 import java.util.List;

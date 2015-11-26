@@ -2,8 +2,8 @@ package lexek.wschat.frontend.irc;
 
 import lexek.wschat.chat.Connection;
 import lexek.wschat.chat.ConnectionGroup;
-import lexek.wschat.chat.Message;
-import lexek.wschat.chat.User;
+import lexek.wschat.chat.model.Message;
+import lexek.wschat.chat.model.User;
 import lexek.wschat.frontend.Codec;
 
 import java.util.LinkedHashSet;

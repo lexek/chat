@@ -1,7 +1,9 @@
 package lexek.wschat.services;
 
-import lexek.wschat.chat.*;
+import lexek.wschat.chat.MessageBroadcaster;
+import lexek.wschat.chat.Room;
 import lexek.wschat.chat.filters.UserInRoomFilter;
+import lexek.wschat.chat.model.*;
 import lexek.wschat.db.dao.ChatterDao;
 
 public class ChatterService {

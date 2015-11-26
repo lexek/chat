@@ -1,9 +1,9 @@
 package lexek.wschat.services;
 
 import com.google.common.hash.Hashing;
-import lexek.wschat.chat.Message;
 import lexek.wschat.chat.MessageBroadcaster;
 import lexek.wschat.chat.e.InvalidInputException;
+import lexek.wschat.chat.model.Message;
 import lexek.wschat.db.dao.EmoticonDao;
 import lexek.wschat.db.model.Emoticon;
 import lexek.wschat.db.model.UserDto;

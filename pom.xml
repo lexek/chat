@@ -138,6 +138,7 @@
                         <exclude>lexek/wschat/db/jooq/**</exclude>
                         <exclude>lexek/wschat/db/model/**</exclude>
                         <exclude>lexek/wschat/chat/e/**</exclude>
+                        <exclude>lexek/wschat/chat/model/**</exclude>
                         <exclude>lexek/wschat/Main*</exclude>
                         <exclude>lexek/wschat/*Configuration*</exclude>
                     </excludes>

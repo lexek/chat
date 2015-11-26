@@ -1,7 +1,11 @@
 package lexek.wschat.frontend.ws;
 
 import com.google.common.collect.ImmutableSet;
-import lexek.wschat.chat.*;
+import lexek.wschat.chat.Connection;
+import lexek.wschat.chat.ConnectionGroup;
+import lexek.wschat.chat.model.Message;
+import lexek.wschat.chat.model.MessageType;
+import lexek.wschat.chat.model.User;
 import lexek.wschat.frontend.Codec;
 
 import java.util.HashSet;

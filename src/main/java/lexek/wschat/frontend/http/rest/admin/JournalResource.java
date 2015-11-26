@@ -1,6 +1,6 @@
 package lexek.wschat.frontend.http.rest.admin;
 
-import lexek.wschat.chat.GlobalRole;
+import lexek.wschat.chat.model.GlobalRole;
 import lexek.wschat.db.dao.JournalDao;
 import lexek.wschat.db.model.DataPage;
 import lexek.wschat.db.model.JournalEntry;

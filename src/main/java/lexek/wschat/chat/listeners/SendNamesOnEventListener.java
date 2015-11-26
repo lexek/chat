@@ -1,8 +1,12 @@
 package lexek.wschat.chat.listeners;
 
 import com.google.common.collect.ImmutableList;
-import lexek.wschat.chat.*;
+import lexek.wschat.chat.Connection;
+import lexek.wschat.chat.Room;
 import lexek.wschat.chat.evt.EventListener;
+import lexek.wschat.chat.model.Chatter;
+import lexek.wschat.chat.model.LocalRole;
+import lexek.wschat.chat.model.Message;
 
 public class SendNamesOnEventListener implements EventListener {
     @Override

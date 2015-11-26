@@ -6,10 +6,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
-import lexek.wschat.chat.LocalRole;
-import lexek.wschat.chat.Message;
-import lexek.wschat.chat.MessageProperty;
-import lexek.wschat.chat.MessageType;
+import lexek.wschat.chat.model.LocalRole;
+import lexek.wschat.chat.model.Message;
+import lexek.wschat.chat.model.MessageProperty;
+import lexek.wschat.chat.model.MessageType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

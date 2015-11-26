@@ -3,7 +3,7 @@ package lexek.wschat.frontend.http.rest.admin;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.health.HealthCheckRegistry;
 import com.google.common.collect.ImmutableMap;
-import lexek.wschat.chat.GlobalRole;
+import lexek.wschat.chat.model.GlobalRole;
 import lexek.wschat.db.dao.StatisticsDao;
 import lexek.wschat.db.model.UserMessageCount;
 import lexek.wschat.security.jersey.RequiredRole;

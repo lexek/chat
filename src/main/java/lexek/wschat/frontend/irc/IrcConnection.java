@@ -2,8 +2,8 @@ package lexek.wschat.frontend.irc;
 
 import io.netty.channel.Channel;
 import lexek.wschat.chat.Connection;
-import lexek.wschat.chat.ConnectionState;
-import lexek.wschat.chat.Message;
+import lexek.wschat.chat.model.ConnectionState;
+import lexek.wschat.chat.model.Message;
 import lexek.wschat.util.Net;
 
 public class IrcConnection extends Connection {

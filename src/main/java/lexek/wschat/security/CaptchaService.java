@@ -2,7 +2,7 @@ package lexek.wschat.security;
 
 import com.google.common.cache.CacheBuilder;
 import lexek.wschat.chat.Connection;
-import lexek.wschat.chat.Message;
+import lexek.wschat.chat.model.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

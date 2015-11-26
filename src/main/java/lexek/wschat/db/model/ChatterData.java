@@ -1,7 +1,7 @@
 package lexek.wschat.db.model;
 
-import lexek.wschat.chat.GlobalRole;
-import lexek.wschat.chat.LocalRole;
+import lexek.wschat.chat.model.GlobalRole;
+import lexek.wschat.chat.model.LocalRole;
 
 public class ChatterData {
     private final long id;

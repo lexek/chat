@@ -2,7 +2,10 @@ package lexek.wschat.chat.processing;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import lexek.wschat.chat.*;
+import lexek.wschat.chat.Connection;
+import lexek.wschat.chat.Room;
+import lexek.wschat.chat.RoomManager;
+import lexek.wschat.chat.model.*;
 import lexek.wschat.security.CaptchaService;
 import lexek.wschat.services.ChatterService;
 

@@ -2,7 +2,7 @@ package lexek.wschat.chat.filters;
 
 import lexek.wschat.chat.Connection;
 import lexek.wschat.chat.Room;
-import lexek.wschat.chat.User;
+import lexek.wschat.chat.model.User;
 import org.jetbrains.annotations.NotNull;
 
 public class UserInRoomFilter implements BroadcastFilter<Void> {

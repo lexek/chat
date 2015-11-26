@@ -3,8 +3,8 @@ package lexek.wschat.frontend.ws;
 import io.netty.channel.Channel;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import lexek.wschat.chat.Connection;
-import lexek.wschat.chat.ConnectionState;
-import lexek.wschat.chat.Message;
+import lexek.wschat.chat.model.ConnectionState;
+import lexek.wschat.chat.model.Message;
 import lexek.wschat.util.Net;
 
 public class WebSocketConnectionAdapter extends Connection {

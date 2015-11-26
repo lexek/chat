@@ -1,4 +1,4 @@
-package lexek.wschat.chat;
+package lexek.wschat.chat.model;
 
 public enum LocalRole {
     GUEST,

@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.module.SimpleDeserializers;
 import com.fasterxml.jackson.databind.module.SimpleSerializers;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import lexek.wschat.chat.Message;
+import lexek.wschat.chat.model.Message;
 
 public class MessageModule extends Module {
     @Override

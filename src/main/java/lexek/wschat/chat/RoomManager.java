@@ -1,6 +1,8 @@
 package lexek.wschat.chat;
 
 import io.netty.util.internal.chmv8.ConcurrentHashMapV8;
+import lexek.wschat.chat.model.GlobalRole;
+import lexek.wschat.chat.model.Message;
 import lexek.wschat.db.dao.RoomDao;
 import lexek.wschat.db.model.UserDto;
 import lexek.wschat.services.ChatterService;

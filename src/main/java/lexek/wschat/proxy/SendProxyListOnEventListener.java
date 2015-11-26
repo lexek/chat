@@ -1,10 +1,10 @@
 package lexek.wschat.proxy;
 
-import lexek.wschat.chat.Chatter;
 import lexek.wschat.chat.Connection;
-import lexek.wschat.chat.Message;
 import lexek.wschat.chat.Room;
 import lexek.wschat.chat.evt.EventListener;
+import lexek.wschat.chat.model.Chatter;
+import lexek.wschat.chat.model.Message;
 import lexek.wschat.db.model.ProxyMessageModel;
 
 import java.util.stream.Collectors;

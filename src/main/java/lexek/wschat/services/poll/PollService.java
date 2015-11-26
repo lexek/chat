@@ -2,7 +2,13 @@ package lexek.wschat.services.poll;
 
 import com.google.common.collect.ImmutableList;
 import io.netty.util.internal.chmv8.ConcurrentHashMapV8;
-import lexek.wschat.chat.*;
+import lexek.wschat.chat.Connection;
+import lexek.wschat.chat.MessageBroadcaster;
+import lexek.wschat.chat.Room;
+import lexek.wschat.chat.RoomManager;
+import lexek.wschat.chat.model.Message;
+import lexek.wschat.chat.model.MessageType;
+import lexek.wschat.chat.model.User;
 import lexek.wschat.db.dao.PollDao;
 import lexek.wschat.db.model.DataPage;
 import lexek.wschat.db.model.UserDto;

@@ -1,4 +1,4 @@
-package lexek.wschat.chat;
+package lexek.wschat.chat.model;
 
 import com.google.common.collect.ImmutableMap;
 import lexek.wschat.db.model.Emoticon;

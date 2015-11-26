@@ -1,5 +1,8 @@
 package lexek.wschat.chat;
 
+import lexek.wschat.chat.model.ConnectionState;
+import lexek.wschat.chat.model.Message;
+import lexek.wschat.chat.model.User;
 import lexek.wschat.frontend.Codec;
 import lexek.wschat.frontend.Protocol;
 

@@ -1,6 +1,6 @@
 package lexek.wschat.db.model;
 
-import lexek.wschat.chat.MessageType;
+import lexek.wschat.chat.model.MessageType;
 
 public class HistoryData {
     private final String message;

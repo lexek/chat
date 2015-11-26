@@ -1,6 +1,11 @@
 package lexek.wschat.chat.handlers;
 
-import lexek.wschat.chat.*;
+import lexek.wschat.chat.Connection;
+import lexek.wschat.chat.MessageBroadcaster;
+import lexek.wschat.chat.Room;
+import lexek.wschat.chat.model.Chatter;
+import lexek.wschat.chat.model.Message;
+import lexek.wschat.chat.model.MessageType;
 
 public class ClearUserHandler extends AbstractModerationHandler {
     private final MessageBroadcaster messageBroadcaster;

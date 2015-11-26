@@ -2,9 +2,13 @@ package lexek.wschat.frontend.http.rest.admin;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
-import lexek.wschat.chat.*;
+import lexek.wschat.chat.Room;
 import lexek.wschat.chat.e.EntityNotFoundException;
 import lexek.wschat.chat.e.InternalErrorException;
+import lexek.wschat.chat.model.Chatter;
+import lexek.wschat.chat.model.GlobalRole;
+import lexek.wschat.chat.model.LocalRole;
+import lexek.wschat.chat.model.User;
 import lexek.wschat.db.dao.ChatterDao;
 import lexek.wschat.db.model.ChatterData;
 import lexek.wschat.db.model.DataPage;

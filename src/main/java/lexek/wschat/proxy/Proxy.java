@@ -1,7 +1,7 @@
 package lexek.wschat.proxy;
 
 import lexek.wschat.chat.Connection;
-import lexek.wschat.chat.Message;
+import lexek.wschat.chat.model.Message;
 
 public interface Proxy {
     void start();

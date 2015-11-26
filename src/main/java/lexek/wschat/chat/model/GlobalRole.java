@@ -1,4 +1,4 @@
-package lexek.wschat.chat;
+package lexek.wschat.chat.model;
 
 import lexek.wschat.chat.filters.BroadcastFilter;
 import lexek.wschat.chat.filters.GlobalRoleFilter;
