@@ -44,6 +44,12 @@ public class MeHandlerTest {
     }
 
     @Test
+    public void shouldRequireTimeout() {
+        MeHandler handler = new MeHandler(null, null);
+        assertTrue(handler.isNeedsInterval());
+    }
+
+    @Test
     public void shouldWork() {
         Room room = mock(Room.class);
         MessageBroadcaster messageBroadcaster = mock(MessageBroadcaster.class);

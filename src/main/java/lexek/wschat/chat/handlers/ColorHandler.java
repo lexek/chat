@@ -16,7 +16,7 @@ public class ColorHandler extends AbstractGlobalMessageHandler {
             ),
             MessageType.COLOR,
             GlobalRole.USER,
-            false
+            true
         );
 
         this.userDao = userDao;

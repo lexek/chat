@@ -40,6 +40,12 @@ public class LikeHandlerTest {
     }
 
     @Test
+    public void shouldRequireTimeout() {
+        LikeHandler handler = new LikeHandler(null);
+        assertTrue(handler.isNeedsInterval());
+    }
+
+    @Test
     public void shouldWork() {
         Room room = mock(Room.class);
         MessageBroadcaster messageBroadcaster = mock(MessageBroadcaster.class);

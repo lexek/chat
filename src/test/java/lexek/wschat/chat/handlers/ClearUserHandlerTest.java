@@ -7,8 +7,7 @@ import lexek.wschat.db.model.UserDto;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
@@ -47,6 +46,11 @@ public class ClearUserHandlerTest {
     @Test
     public void shouldRequireJoin() {
         assertTrue(handler.joinRequired());
+    }
+
+    @Test
+    public void shouldNotRequireTimeout() {
+        assertFalse(handler.isNeedsInterval());
     }
 
     @Test

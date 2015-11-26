@@ -59,6 +59,11 @@ public class VoteHandlerTest {
     }
 
     @Test
+    public void shouldRequireTimeout() {
+        assertTrue(handler.isNeedsInterval());
+    }
+
+    @Test
     public void testGoodScenario() {
         when(roomManager.getRoomInstance("#main")).thenReturn(room);
         when(room.inRoom(connection)).thenReturn(true);

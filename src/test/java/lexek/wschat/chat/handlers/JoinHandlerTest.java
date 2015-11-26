@@ -41,6 +41,12 @@ public class JoinHandlerTest {
     }
 
     @Test
+    public void shouldNotRequireTimeout() {
+        JoinHandler handler = new JoinHandler(null, null);
+        assertFalse(handler.isNeedsInterval());
+    }
+
+    @Test
     public void should() {
         EventDispatcher eventDispatcher = mock(EventDispatcher.class);
         Room room = mock(Room.class);
