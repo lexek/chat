@@ -17,7 +17,8 @@ public class ProxyModerationHandler extends AbstractRoomMessageHandler {
                 MessageProperty.ROOM,
                 MessageProperty.NAME,
                 MessageProperty.SERVICE,
-                MessageProperty.SERVICE_RESOURCE
+                MessageProperty.SERVICE_RESOURCE,
+                MessageProperty.TEXT
             ),
             MessageType.PROXY_MOD,
             LocalRole.MOD,
