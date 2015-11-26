@@ -3,7 +3,6 @@ package lexek.wschat.chat.handlers;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import lexek.wschat.chat.Connection;
-import lexek.wschat.chat.MessageBroadcaster;
 import lexek.wschat.chat.Room;
 import lexek.wschat.chat.TestConnection;
 import lexek.wschat.chat.model.*;
@@ -12,15 +11,8 @@ import lexek.wschat.proxy.ModerationOperation;
 import lexek.wschat.proxy.ProxyManager;
 import org.junit.Test;
 
-import java.util.Arrays;
-import java.util.concurrent.atomic.AtomicLong;
-
-import static lexek.wschat.chat.TextMessageMatcher.textMessage;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 

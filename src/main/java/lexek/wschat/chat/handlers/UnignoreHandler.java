@@ -2,6 +2,7 @@ package lexek.wschat.chat.handlers;
 
 import com.google.common.collect.ImmutableSet;
 import lexek.wschat.chat.Connection;
+import lexek.wschat.chat.e.EntityNotFoundException;
 import lexek.wschat.chat.e.InvalidInputException;
 import lexek.wschat.chat.e.LimitExceededException;
 import lexek.wschat.chat.model.*;
@@ -23,10 +24,12 @@ public class UnignoreHandler extends AbstractGlobalMessageHandler {
             ignoreService.unignore(user, name);
             connection.send(Message.ignoredMessage(ignoreService.getIgnoredNames(user)));
             connection.send(Message.ignoreMessage(MessageType.UNIGNORE, name));
-        } catch (LimitExceededException e) {
-            connection.send(Message.errorMessage("IGNORE_LIMIT_REACHED"));
+        } catch (EntityNotFoundException e) {
+            if (e.getMessage().equals("user")) {
+                connection.send(Message.errorMessage("UNKNOWN_USER"));
+            }
         } catch (InvalidInputException e) {
-            connection.send(Message.errorMessage("UNKNOWN_USER"));
+            connection.send(Message.errorMessage(e.message()));
         }
     }
 

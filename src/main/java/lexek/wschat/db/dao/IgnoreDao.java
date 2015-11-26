@@ -1,6 +1,7 @@
 package lexek.wschat.db.dao;
 
 import com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException;
+import lexek.wschat.chat.e.EntityNotFoundException;
 import lexek.wschat.chat.e.InternalErrorException;
 import lexek.wschat.chat.e.InvalidInputException;
 import lexek.wschat.db.model.UserDto;
@@ -31,7 +32,7 @@ public class IgnoreDao {
                 .select(DSL.select(DSL.inline(user.getId()), USER.ID).from(USER).where(USER.NAME.equal(name)))
                 .execute();
             if (result != 1) {
-                throw new InvalidInputException("name", "UNKNOWN_USER");
+                throw new EntityNotFoundException("user");
             }
         } catch (SQLException e) {
             throw new InternalErrorException(e);
@@ -54,7 +55,7 @@ public class IgnoreDao {
                     "where ignore_list.user_id = ? and ignored.name = ?";
             int result = DSL.using(connection).execute(query, user.getId(), name);
             if (result != 1) {
-                throw new InvalidInputException("name", "UNKNOWN_USER");
+                throw new EntityNotFoundException("user");
             }
         } catch (SQLException e) {
             throw new InternalErrorException(e);
