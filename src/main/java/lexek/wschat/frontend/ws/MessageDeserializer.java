@@ -44,7 +44,11 @@ public class MessageDeserializer extends StdDeserializer<Message> {
                     mapBuilder.put(MessageProperty.ROOM, node.asText());
                     break;
                 case "name":
-                    mapBuilder.put(MessageProperty.NAME, node.asText());
+                    String value = node.asText();
+                    if (value != null) {
+                        value = value.trim().toLowerCase();
+                        mapBuilder.put(MessageProperty.NAME, value);
+                    }
                     break;
                 case "color":
                     mapBuilder.put(MessageProperty.COLOR, node.asText());
