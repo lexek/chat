@@ -3,7 +3,6 @@ package lexek.wschat.frontend.http.rest.admin;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import lexek.wschat.chat.Room;
-import lexek.wschat.chat.e.EntityNotFoundException;
 import lexek.wschat.chat.e.InternalErrorException;
 import lexek.wschat.chat.model.Chatter;
 import lexek.wschat.chat.model.GlobalRole;
@@ -118,18 +117,7 @@ public class ChattersResource {
             adminChatter = chatterService.getChatter(room, chatAdmin);
         }
 
-        User chatUser = userService.getCached(name);
-        if (chatUser == null) {
-            chatUser = userService.cache(userService.fetchByName(name));
-        }
-        if (chatUser == null) {
-            throw new EntityNotFoundException();
-        }
-        Chatter userChatter = room.getOnlineChatter(chatUser);
-        if (userChatter == null) {
-            userChatter = chatterService.getChatter(room, chatUser);
-        }
-
+        Chatter userChatter = room.getChatter(name);
         if (canBan(adminChatter, userChatter)) {
             if (value) {
                 if (!chatterService.banChatter(room, userChatter, adminChatter)) {
@@ -145,10 +133,10 @@ public class ChattersResource {
         }
         return new ChatterData(
             userChatter.getId(),
-            chatUser.getId(),
-            chatUser.getName(),
+            userChatter.getUser().getId(),
+            userChatter.getUser().getName(),
             userChatter.getRole(),
-            chatUser.getRole(),
+            userChatter.getUser().getRole(),
             userChatter.getTimeout() != null,
             userChatter.isBanned()
         );
