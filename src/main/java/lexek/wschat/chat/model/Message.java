@@ -42,8 +42,13 @@ public class Message {
         return new Message(ImmutableMap.<MessageProperty, Object>of(MessageProperty.TYPE, MessageType.INFO, MessageProperty.TEXT, text, MessageProperty.ROOM, room));
     }
 
-    public static Message joinMessage(String room, UserDto user) {
-        return new Message(ImmutableMap.<MessageProperty, Object>of(MessageProperty.TYPE, MessageType.JOIN, MessageProperty.ROOM, room, MessageProperty.USER, user));
+    public static Message joinMessage(String room, UserDto user, LocalRole localRole) {
+        return new Message(ImmutableMap.<MessageProperty, Object>of(
+            MessageProperty.TYPE, MessageType.JOIN,
+            MessageProperty.ROOM, room,
+            MessageProperty.USER, user,
+            MessageProperty.LOCAL_ROLE, localRole
+        ));
     }
 
     public static Message partMessage(String room, String name) {
@@ -67,8 +72,13 @@ public class Message {
         return new Message(ImmutableMap.<MessageProperty, Object>of(MessageProperty.TYPE, MessageType.POLL_VOTED, MessageProperty.ROOM, room));
     }
 
-    public static Message namesMessage(String room, List<Chatter> users) {
-        return new Message(ImmutableMap.<MessageProperty, Object>of(MessageProperty.TYPE, MessageType.NAMES, MessageProperty.ROOM, room, MessageProperty.CHATTERS, users));
+    public static Message namesMessage(String room, List<Chatter> users, String selfName) {
+        return new Message(ImmutableMap.<MessageProperty, Object>of(
+            MessageProperty.TYPE, MessageType.NAMES,
+            MessageProperty.ROOM, room,
+            MessageProperty.CHATTERS, users,
+            MessageProperty.NAME, selfName
+        ));
     }
 
     public static Message moderationMessage(MessageType messageType, String room, String mod, String user) {
@@ -97,8 +107,12 @@ public class Message {
         return new Message(ImmutableMap.<MessageProperty, Object>of(MessageProperty.TYPE, MessageType.PONG, MessageProperty.TEXT, text));
     }
 
-    public static Message captchaMessage(String captchaId) {
-        return new Message(ImmutableMap.<MessageProperty, Object>of(MessageProperty.TYPE, MessageType.RECAPTCHA, MessageProperty.TEXT, captchaId));
+    public static Message captchaMessage(String captchaId, String name) {
+        return new Message(ImmutableMap.<MessageProperty, Object>of(
+            MessageProperty.TYPE, MessageType.RECAPTCHA,
+            MessageProperty.TEXT, captchaId,
+            MessageProperty.NAME, name
+        ));
     }
 
     public static Message msgMessage(String room, String name, LocalRole role, GlobalRole globalRole, String color, long messageId, long time, String text) {

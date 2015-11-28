@@ -73,7 +73,11 @@ public class JoinHandlerTest {
         )));
 
         verify(room).join(connection);
-        verify(messageBroadcaster).submitMessage(eq(Message.joinMessage("#main", userDto)), eq(connection), eq(room.FILTER));
+        verify(messageBroadcaster).submitMessage(eq(
+            Message.joinMessage("#main", userDto, LocalRole.USER)),
+            eq(connection),
+            eq(room.FILTER)
+        );
         verify(connection).send(eq(Message.selfJoinMessage("#main", chatter)));
         verify(eventDispatcher).joinedRoom(eq(connection), eq(chatter), eq(room));
     }

@@ -108,7 +108,7 @@ public class WebSocketConnectionGroup implements ConnectionGroup<WebSocketConnec
         if (!IGNORE_TYPES.contains(message.getType())) {
             readLock.lock();
             try {
-                String encodedMessage = codec.encode(message, user);
+                String encodedMessage = codec.encode(message);
                 for (WebSocketConnectionAdapter c : connections) {
                     c.send(encodedMessage);
                 }
@@ -123,7 +123,7 @@ public class WebSocketConnectionGroup implements ConnectionGroup<WebSocketConnec
         if (!IGNORE_TYPES.contains(message.getType())) {
             readLock.lock();
             try {
-                String encodedMessage = codec.encode(message, user);
+                String encodedMessage = codec.encode(message);
                 connections.stream().filter(predicate).forEach(c -> c.send(encodedMessage));
             } finally {
                 readLock.unlock();

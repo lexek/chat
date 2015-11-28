@@ -102,8 +102,11 @@ public class WebSocketChatHandler extends SimpleChannelInboundHandler<WebSocketF
                 }
                 return;
             }
-            channel.writeAndFlush(new TextWebSocketFrame(protocol.getCodec().encode(
-                Message.errorMessage("Not authenticated, try refreshing page."), null)));
+            channel.writeAndFlush(
+                new TextWebSocketFrame(
+                    protocol.getCodec().encode(Message.errorMessage("Not authenticated, try refreshing page."))
+                )
+            );
         }
     }
 

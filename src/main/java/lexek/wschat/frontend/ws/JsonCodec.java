@@ -6,7 +6,6 @@ import com.google.common.collect.ImmutableMap;
 import lexek.wschat.chat.model.Message;
 import lexek.wschat.chat.model.MessageProperty;
 import lexek.wschat.chat.model.MessageType;
-import lexek.wschat.chat.model.User;
 import lexek.wschat.frontend.Codec;
 import lexek.wschat.frontend.http.rest.view.MessageView;
 import org.slf4j.Logger;
@@ -20,7 +19,7 @@ public class JsonCodec implements Codec {
         .registerModule(new MessageModule());
 
     @Override
-    public String encode(Message message, User user) {
+    public String encode(Message message) {
         try {
             return objectMapper.writerWithView(MessageView.class).writeValueAsString(message);
         } catch (JsonProcessingException e) {

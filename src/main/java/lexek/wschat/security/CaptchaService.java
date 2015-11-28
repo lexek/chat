@@ -21,7 +21,7 @@ public class CaptchaService {
 
     public long tryAuthorize(final Connection connection, Runnable onSuccess) {
         long id = counter.incrementAndGet();
-        connection.send(Message.captchaMessage(String.valueOf(id)));
+        connection.send(Message.captchaMessage(String.valueOf(id), connection.getUser().getName()));
         onSuccessActions.put(id, onSuccess);
         return id;
     }

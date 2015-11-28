@@ -102,7 +102,7 @@ public class IrcConnectionGroup implements ConnectionGroup<IrcConnection> {
 
     @Override
     public void send(Message message, User user) {
-        String encodedMessage = codec.encode(message, user);
+        String encodedMessage = codec.encode(message);
 
         if (encodedMessage != null) {
             readLock.lock();
@@ -118,7 +118,7 @@ public class IrcConnectionGroup implements ConnectionGroup<IrcConnection> {
 
     @Override
     public void send(Message message, User user, Predicate<Connection> predicate) {
-        String encodedMessage = codec.encode(message, user);
+        String encodedMessage = codec.encode(message);
 
         if (encodedMessage != null) {
             readLock.lock();

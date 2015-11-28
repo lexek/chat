@@ -2,6 +2,7 @@ package lexek.wschat.frontend.irc;
 
 import com.google.common.collect.ImmutableMap;
 import lexek.wschat.chat.model.*;
+import lexek.wschat.db.model.UserDto;
 import lexek.wschat.frontend.Codec;
 
 import java.util.Arrays;
@@ -40,7 +41,7 @@ public class IrcCodec implements Codec {
     }
 
     @Override
-    public String encode(Message message, User user) {
+    public String encode(Message message) {
         switch (message.getType()) {
             case MSG: {
                 String room = message.get(MessageProperty.ROOM);
@@ -50,11 +51,13 @@ public class IrcCodec implements Codec {
             }
             case RECAPTCHA: {
                 String captchaId = message.get(MessageProperty.TEXT);
-                return ":server PRIVMSG " + user.getName() + " :https://" + serverName + ":1337/recaptcha/" + captchaId;
+                String name = message.get(MessageProperty.NAME);
+                return ":server PRIVMSG " + name + " :https://" + serverName + ":1337/recaptcha/" + captchaId;
             }
             case NAMES: {
                 List<Chatter> users = message.get(MessageProperty.CHATTERS);
                 String room = message.get(MessageProperty.ROOM);
+                String name = message.get(MessageProperty.NAME);
                 StringBuilder sb = new StringBuilder();
                 for (Chatter u : users) {
                     if (u.hasRole(LocalRole.MOD)) {
@@ -63,25 +66,26 @@ public class IrcCodec implements Codec {
                         sb.append(u.getUser().getName()).append(' ');
                     }
                 }
-                return ":" + user.getName() + " 353 " + user.getName() + " = " + room + " :@server " + sb.toString() + "\r\n" +
-                    ":" + user.getName() + " 366 " + user.getName() + " " + room + " :End of /NAMES list";
+                return ":" + name + " 353 " + name + " = " + room + " :@server " + sb.toString() + "\r\n" +
+                    ":" + name + " 366 " + name + " " + room + " :End of /NAMES list";
             }
             case JOIN: {
+                UserDto joinedUser = message.get(MessageProperty.USER);
+                LocalRole localRole = message.get(MessageProperty.LOCAL_ROLE);
                 String room = message.get(MessageProperty.ROOM);
-                String msg = ":" + user.getName() + "!" + user.getName() + "@" + serverName + " JOIN " + room;
-                if (user.getRole().compareTo(GlobalRole.MOD) >= 0) {
-                    msg += "\r\n:server MODE " + room + " +o " + user.getName();
+                String msg = ":" + joinedUser.getName() + "!" + joinedUser.getName() + "@" + serverName + " JOIN " + room;
+                if (localRole.compareTo(LocalRole.MOD) >= 0) {
+                    msg += "\r\n:server MODE " + room + " +o " + joinedUser.getName();
                 }
                 return msg;
             }
             case SELF_JOIN: {
+                Chatter chatter = message.get(MessageProperty.CHATTER);
                 String room = message.get(MessageProperty.ROOM);
-                String msg;
-                if (user.getRole().compareTo(GlobalRole.MOD) >= 0) {
-                    msg = ":" + user.getName() + "!" + user.getName() + "@" + serverName + " JOIN " + room + "\r\n" +
-                        ":server MODE " + room + " +o " + user.getName();
-                } else {
-                    msg = ":" + user.getName() + "!" + user.getName() + "@" + serverName + " JOIN " + room;
+                String name = chatter.getName();
+                String msg = ":" + name + "!" + name + "@" + serverName + " JOIN " + room;
+                if (chatter.hasRole(LocalRole.MOD)) {
+                    msg = msg + "\r\n:server MODE " + room + " +o " + name;
                 }
                 return msg + "\r\n:server TOPIC " + room + " :yoba.vg";
             }

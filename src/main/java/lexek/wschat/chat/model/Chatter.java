@@ -88,4 +88,8 @@ public class Chatter {
     public boolean hasGreaterRole(LocalRole other) {
         return this.getRole().compareTo(other) > 0;
     }
+
+    public String getName() {
+        return this.user.getName();
+    }
 }

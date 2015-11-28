@@ -14,7 +14,7 @@ public class SendNamesOnEventListener implements EventListener {
         if (connection.isNeedNames()) {
             ImmutableList.Builder<Chatter> users = ImmutableList.builder();
             room.getOnlineChatters().stream().filter(c -> c.hasRole(LocalRole.USER)).forEach(users::add);
-            connection.send(Message.namesMessage(room.getName(), users.build()));
+            connection.send(Message.namesMessage(room.getName(), users.build(), chatter.getName()));
         }
     }
 }

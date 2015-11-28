@@ -22,7 +22,7 @@ public class IrcConnection extends Connection {
 
     @Override
     public void send(Message message) {
-        send(getCodec().encode(message, getUser()));
+        send(getCodec().encode(message));
     }
 
     public void send(String message) {

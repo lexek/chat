@@ -38,7 +38,7 @@ public class JoinHandler extends AbstractRoomMessageHandler {
         }
         Chatter chatter = room.join(connection);
         boolean sendJoin = !room.inRoom(user);
-        Message joinMessage = Message.joinMessage(room.getName(), user.getWrappedObject());
+        Message joinMessage = Message.joinMessage(room.getName(), user.getWrappedObject(), chatter.getRole());
         connection.send(Message.selfJoinMessage(room.getName(), chatter));
         if (sendJoin) {
             if (chatter.hasRole(LocalRole.USER)) {

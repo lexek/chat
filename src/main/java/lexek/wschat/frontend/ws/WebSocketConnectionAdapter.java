@@ -22,7 +22,7 @@ public class WebSocketConnectionAdapter extends Connection {
 
     @Override
     public void send(Message message) {
-        channel.writeAndFlush(new TextWebSocketFrame(getCodec().encode(message, getUser())));
+        channel.writeAndFlush(new TextWebSocketFrame(getCodec().encode(message)));
     }
 
     public void send(String message) {
