@@ -1,16 +1,13 @@
 package lexek.wschat.chat;
 
 import lexek.wschat.chat.model.Message;
-import lexek.wschat.chat.model.User;
 
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 public interface ConnectionGroup<T extends Connection> {
-    void send(Message message, User user);
-
-    void send(Message message, User user, Predicate<Connection> predicate);
+    void send(Message message, Predicate<Connection> predicate);
 
     void registerConnection(T connection);
 

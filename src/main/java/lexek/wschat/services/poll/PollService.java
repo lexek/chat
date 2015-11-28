@@ -2,7 +2,6 @@ package lexek.wschat.services.poll;
 
 import com.google.common.collect.ImmutableList;
 import io.netty.util.internal.chmv8.ConcurrentHashMapV8;
-import lexek.wschat.chat.Connection;
 import lexek.wschat.chat.MessageBroadcaster;
 import lexek.wschat.chat.Room;
 import lexek.wschat.chat.RoomManager;
@@ -51,9 +50,8 @@ public class PollService {
             PollState pollState = new PollState(poll);
             this.activePolls.put(room, pollState);
             this.messageBroadcaster.submitMessage(
-                Message.pollMessage(MessageType.POLL, room.getName(), pollState),
-                Connection.STUB_CONNECTION,
-                room.FILTER);
+                Message.pollMessage(MessageType.POLL, room.getName(), pollState), room.FILTER
+            );
             this.journalService.newPoll(admin, room, poll);
             return pollState;
         } else {
@@ -68,9 +66,7 @@ public class PollService {
                 pollDao.vote(pollState.getPoll().getId(), user.getId(), option);
                 pollState.addVote(pollState.getPoll().getOptions().get(option), user.getId());
                 this.messageBroadcaster.submitMessage(
-                    Message.pollMessage(MessageType.POLL_UPDATE, room.getName(), pollState),
-                    Connection.STUB_CONNECTION,
-                    room.FILTER
+                    Message.pollMessage(MessageType.POLL_UPDATE, room.getName(), pollState), room.FILTER
                 );
             }
         }
@@ -81,9 +77,7 @@ public class PollService {
         if (pollState != null) {
             pollDao.closePoll(pollState.getPoll().getId());
             this.messageBroadcaster.submitMessage(
-                Message.pollMessage(MessageType.POLL_END, room.getName(), pollState),
-                Connection.STUB_CONNECTION,
-                room.FILTER
+                Message.pollMessage(MessageType.POLL_END, room.getName(), pollState), room.FILTER
             );
             this.journalService.closedPoll(admin, room, pollState.getPoll());
         }

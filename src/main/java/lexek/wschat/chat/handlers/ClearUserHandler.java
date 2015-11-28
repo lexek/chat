@@ -28,6 +28,6 @@ public class ClearUserHandler extends AbstractModerationHandler {
             modChatter.getUser().getName(),
             userChatter.getUser().getName()
         );
-        messageBroadcaster.submitMessage(message, connection, room.FILTER);
+        messageBroadcaster.submitMessage(message, room.FILTER);
     }
 }

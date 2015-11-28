@@ -33,7 +33,6 @@ public class LikeHandler extends AbstractRoomMessageHandler {
                     connection.getUser().getName(),
                     id
                 ),
-                connection,
                 room.FILTER);
         }
     }

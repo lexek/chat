@@ -42,7 +42,7 @@ public class JoinHandler extends AbstractRoomMessageHandler {
         connection.send(Message.selfJoinMessage(room.getName(), chatter));
         if (sendJoin) {
             if (chatter.hasRole(LocalRole.USER)) {
-                messageBroadcaster.submitMessage(joinMessage, connection, room.FILTER);
+                messageBroadcaster.submitMessage(joinMessage, room.FILTER);
             }
         }
         notificationService.joinedRoom(connection, chatter, room);

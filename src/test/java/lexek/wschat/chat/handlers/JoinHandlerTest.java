@@ -75,7 +75,6 @@ public class JoinHandlerTest {
         verify(room).join(connection);
         verify(messageBroadcaster).submitMessage(eq(
             Message.joinMessage("#main", userDto, LocalRole.USER)),
-            eq(connection),
             eq(room.FILTER)
         );
         verify(connection).send(eq(Message.selfJoinMessage("#main", chatter)));
@@ -105,7 +104,7 @@ public class JoinHandlerTest {
         )));
 
         verify(room).join(connection);
-        verify(messageBroadcaster, never()).submitMessage(any(Message.class), any(Connection.class), any(BroadcastFilter.class));
+        verify(messageBroadcaster, never()).submitMessage(any(Message.class), any(BroadcastFilter.class));
         verify(connection).send(eq(Message.selfJoinMessage("#main", chatter)));
         verify(eventDispatcher).joinedRoom(eq(connection), eq(chatter), eq(room));
     }
@@ -133,7 +132,7 @@ public class JoinHandlerTest {
         )));
 
         verify(room).join(connection);
-        verify(messageBroadcaster, never()).submitMessage(any(Message.class), any(Connection.class), any(BroadcastFilter.class));
+        verify(messageBroadcaster, never()).submitMessage(any(Message.class), any(BroadcastFilter.class));
         verify(connection).send(eq(Message.selfJoinMessage("#main", chatter)));
         verify(eventDispatcher).joinedRoom(eq(connection), eq(chatter), eq(room));
     }
@@ -161,7 +160,7 @@ public class JoinHandlerTest {
         )));
 
         verify(room, never()).join(connection);
-        verify(messageBroadcaster, never()).submitMessage(any(Message.class), any(Connection.class), any(BroadcastFilter.class));
+        verify(messageBroadcaster, never()).submitMessage(any(Message.class), any(BroadcastFilter.class));
         verify(connection, never()).send(eq(Message.selfJoinMessage("#main", chatter)));
         verify(eventDispatcher, never()).joinedRoom(any(Connection.class), any(Chatter.class), any(Room.class));
         verify(connection).send(eq(Message.errorMessage("ROOM_ALREADY_JOINED")));

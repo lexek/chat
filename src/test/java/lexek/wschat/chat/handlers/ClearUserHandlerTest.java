@@ -73,8 +73,8 @@ public class ClearUserHandlerTest {
         )));
         verify(messageBroadcaster, times(1)).submitMessage(
             eq(Message.moderationMessage(MessageType.CLEAR, "#main", "user", "username")),
-            eq(connection),
-            eq(room.FILTER));
+            eq(room.FILTER)
+        );
     }
 
     @Test

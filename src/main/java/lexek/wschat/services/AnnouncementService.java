@@ -55,8 +55,8 @@ public class AnnouncementService extends AbstractService {
                     for (Map.Entry<Room, Announcement> entry : roomAnnouncements.entries()) {
                         messageBroadcaster.submitMessage(
                             Message.infoMessage(entry.getValue().getText()),
-                            Connection.STUB_CONNECTION,
-                            entry.getKey().FILTER);
+                            entry.getKey().FILTER
+                        );
                     }
                 } catch (Exception e) {
                     logger.warn("", e);
@@ -70,20 +70,14 @@ public class AnnouncementService extends AbstractService {
         announcementDao.add(announcement);
         if (announcement.getId() != null) {
             roomAnnouncements.put(room, announcement);
-            messageBroadcaster.submitMessage(
-                Message.infoMessage(announcement.getText()),
-                Connection.STUB_CONNECTION,
-                room.FILTER);
+            messageBroadcaster.submitMessage(Message.infoMessage(announcement.getText()), room.FILTER);
             journalService.newAnnouncement(admin, room, announcement);
         }
         return announcement;
     }
 
     public Announcement announceWithoutSaving(String text, Room room) {
-        messageBroadcaster.submitMessage(
-            Message.infoMessage(text),
-            Connection.STUB_CONNECTION,
-            room.FILTER);
+        messageBroadcaster.submitMessage(Message.infoMessage(text), room.FILTER);
         return new Announcement(null, room.getId(), true, text);
     }
 

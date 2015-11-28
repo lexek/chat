@@ -71,7 +71,7 @@ public class ClearRoomHandlerTest {
         )));
         verify(messageBroadcaster, times(1)).submitMessage(
             eq(Message.clearMessage("#main")),
-            eq(connection),
-            eq(room.FILTER));
+            eq(room.FILTER)
+        );
     }
 }

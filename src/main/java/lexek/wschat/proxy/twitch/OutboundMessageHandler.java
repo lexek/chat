@@ -14,9 +14,12 @@ import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
 import io.netty.util.AttributeKey;
 import io.netty.util.CharsetUtil;
-import lexek.wschat.chat.Connection;
-import lexek.wschat.chat.model.*;
+import lexek.wschat.chat.model.GlobalRole;
+import lexek.wschat.chat.model.Message;
+import lexek.wschat.chat.model.MessageProperty;
+import lexek.wschat.chat.model.MessageType;
 import lexek.wschat.db.model.UserAuthDto;
+import lexek.wschat.db.model.UserDto;
 import lexek.wschat.security.AuthenticationManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -78,11 +81,12 @@ public class OutboundMessageHandler {
         this.connections.values().forEach(Channel::close);
     }
 
-    public void onMessage(Connection connection, Message message) {
+    public void onMessage(Message message) {
         if (message.getType() == MessageType.MSG && message.get(MessageProperty.ROOM).equals("#main")) {
+            UserDto user = message.get(MessageProperty.USER);
             UserCredentials userCredentials = null;
-            if (needsFetchingConnectionData(connection.getUser())) {
-                userCredentials = fetchConnectionDataForUser(connection.getUser());
+            if (needsFetchingConnectionData(user)) {
+                userCredentials = fetchConnectionDataForUser(user);
             }
 
             if (userCredentials != null) {
@@ -103,16 +107,16 @@ public class OutboundMessageHandler {
         }
     }
 
-    private boolean needsFetchingConnectionData(User user) {
+    private boolean needsFetchingConnectionData(UserDto user) {
         Boolean tmp = checkedUsers.get(user.getId());
         return user.getRole().compareTo(GlobalRole.USER) >= 0 && (tmp == null || tmp);
     }
 
-    private UserCredentials fetchConnectionDataForUser(User user) {
+    private UserCredentials fetchConnectionDataForUser(UserDto user) {
         UserCredentials userCredentials = null;
         logger.debug("fetching connection data for user {}", user.getName());
         boolean r = false;
-        UserAuthDto auth = authenticationManager.getAuthDataForUser(user.getWrappedObject(), "twitch.tv");
+        UserAuthDto auth = authenticationManager.getAuthDataForUser(user, "twitch.tv");
         if (auth != null) {
             String token = auth.getAuthenticationKey();
             String extName = auth.getAuthenticationName();

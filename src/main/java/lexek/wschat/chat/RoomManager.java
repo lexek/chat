@@ -52,7 +52,8 @@ public class RoomManager {
                 connection.getUser().hasRole(GlobalRole.USER) &&
                 sendPartMessage)
             .forEach(room -> messageBroadcaster.submitMessage(
-                Message.partMessage(room.getName(), connection.getUser().getName()), connection, room.FILTER));
+                Message.partMessage(room.getName(), connection.getUser().getName()), room.FILTER)
+            );
     }
 
     public void createRoom(String name, String topic, UserDto admin) {

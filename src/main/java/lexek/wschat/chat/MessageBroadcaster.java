@@ -38,17 +38,21 @@ public class MessageBroadcaster extends AbstractService {
     }
 
     /**
-     * submits message to broadcast
+     * Submits message to broadcast
      *
-     * @param message    message to send
-     * @param connection connection which triggered the message
-     * @param filter     how to filter connections
+     * @param message message to send
+     * @param filter  how to filter connections
      */
-    public void submitMessage(Message message, Connection connection, BroadcastFilter filter) {
+    public void submitMessage(Message message, BroadcastFilter filter) {
+        if (filter == null) {
+            throw new NullPointerException("filter");
+        }
+        if (message == null) {
+            throw new NullPointerException("message");
+        }
         long sequence = ringBuffer.next();
         MessageEvent event = ringBuffer.get(sequence);
         event.setMessage(message);
-        event.setConnection(connection);
         event.setBroadcastFilter(filter);
         ringBuffer.publish(sequence);
     }
@@ -56,31 +60,10 @@ public class MessageBroadcaster extends AbstractService {
     /**
      * Will submit message with {@link BroadcastFilter#NO_FILTER} as filter
      *
-     * @param message    message to send
-     * @param connection connection which triggered the message
-     */
-    public void submitMessage(Message message, Connection connection) {
-        submitMessage(message, connection, BroadcastFilter.NO_FILTER);
-    }
-
-    /**
-     * Will submit message with {@link Connection#STUB_CONNECTION} as connection
-     *
-     * @param message message to send
-     * @param filter  how to filter connections
-     */
-    public void submitMessage(Message message, BroadcastFilter filter) {
-        submitMessage(message, Connection.STUB_CONNECTION, filter);
-    }
-
-    /**
-     * Will submit message with {@link BroadcastFilter#NO_FILTER} as filter
-     * and {@link Connection#STUB_CONNECTION} as connection
-     *
      * @param message message to send
      */
     public void submitMessage(Message message) {
-        submitMessage(message, Connection.STUB_CONNECTION);
+        submitMessage(message, BroadcastFilter.NO_FILTER);
     }
 
     public void registerConsumer(EventHandler<MessageEvent> consumer) {

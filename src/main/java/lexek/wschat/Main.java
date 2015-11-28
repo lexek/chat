@@ -164,7 +164,7 @@ public class Main {
         ThreadFactory scheduledThreadFactory = new ThreadFactoryBuilder().setNameFormat("ANNOUNCEMENT_SCHEDULER_%d").build();
         ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(scheduledThreadFactory);
         AtomicLong messageId = new AtomicLong(0);
-        HistoryService historyService = new HistoryService(20, historyDao);
+        HistoryService historyService = new HistoryService(20, historyDao, userService);
         MessageConsumerServiceHandler messageConsumerServiceHandler = new MessageConsumerServiceHandler();
         MessageBroadcaster messageBroadcaster = new MessageBroadcaster();
         messageBroadcaster.registerConsumer(historyService);

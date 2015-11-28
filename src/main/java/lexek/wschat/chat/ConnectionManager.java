@@ -26,38 +26,16 @@ public class ConnectionManager implements EventHandler<MessageEvent> {
     @Override
     public void onEvent(MessageEvent event, long sequence, boolean endOfBatch) throws Exception {
         BroadcastFilter<?> predicate = event.getBroadcastFilter();
-        if (predicate != null) {
-            sendAll(event.getMessage(), event.getConnection(), predicate);
-        } else {
-            sendAll(event.getMessage(), event.getConnection());
-        }
+        sendAll(event.getMessage(), predicate);
     }
 
     public void registerGroup(ConnectionGroup connectionGroup) {
         connectionGroups.add(connectionGroup);
     }
 
-    private void sendAll(Message message, final Connection connection) {
-        if (connection.isNeedSendingBack()) {
-            for (ConnectionGroup c : connectionGroups) {
-                c.send(message, connection.getUser());
-            }
-        } else {
-            for (ConnectionGroup group : connectionGroups) {
-                group.send(message, connection.getUser(), c -> (connection != c));
-            }
-        }
-    }
-
-    private void sendAll(Message message, final Connection connection, final Predicate<Connection> p) {
-        if (connection.isNeedSendingBack()) {
-            for (ConnectionGroup c : connectionGroups) {
-                c.send(message, connection.getUser(), p);
-            }
-        } else {
-            for (ConnectionGroup group : connectionGroups) {
-                group.send(message, connection.getUser(), p.and(c -> (connection != c)));
-            }
+    private void sendAll(Message message, final Predicate<Connection> p) {
+        for (ConnectionGroup group : connectionGroups) {
+            group.send(message, p);
         }
     }
 

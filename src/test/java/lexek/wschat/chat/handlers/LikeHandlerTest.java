@@ -71,7 +71,7 @@ public class LikeHandlerTest {
             MessageProperty.MESSAGE_ID, 0L
         )));
 
-        verify(messageBroadcaster).submitMessage(eq(Message.likeMessage("#main", user.getName(), 0L)), eq(connection), eq(room.FILTER));
+        verify(messageBroadcaster).submitMessage(eq(Message.likeMessage("#main", user.getName(), 0L)), eq(room.FILTER));
     }
 
 }

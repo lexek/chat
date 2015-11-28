@@ -74,7 +74,7 @@ public class PartHandlerTest {
         )));
 
         verify(room).part(connection);
-        verify(messageBroadcaster).submitMessage(eq(Message.partMessage("#main", "user")), eq(connection), eq(room.FILTER));
+        verify(messageBroadcaster).submitMessage(eq(Message.partMessage("#main", "user")), eq(room.FILTER));
     }
 
     @Test
@@ -100,7 +100,7 @@ public class PartHandlerTest {
         )));
 
         verify(room).part(connection);
-        verify(messageBroadcaster, never()).submitMessage(any(Message.class), any(Connection.class), any(BroadcastFilter.class));
+        verify(messageBroadcaster, never()).submitMessage(any(Message.class), any(BroadcastFilter.class));
     }
 
     @Test
@@ -126,6 +126,6 @@ public class PartHandlerTest {
         )));
 
         verify(room).part(connection);
-        verify(messageBroadcaster, never()).submitMessage(any(Message.class), any(Connection.class), any(BroadcastFilter.class));
+        verify(messageBroadcaster, never()).submitMessage(any(Message.class), any(BroadcastFilter.class));
     }
 }

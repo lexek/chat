@@ -5,7 +5,7 @@ import lexek.wschat.chat.Room;
 import org.jetbrains.annotations.NotNull;
 
 public class RoomFilter implements BroadcastFilter<Room> {
-    private final Room room;
+    protected final Room room;
 
     public RoomFilter(Room room) {
         this.room = room;
@@ -25,5 +25,12 @@ public class RoomFilter implements BroadcastFilter<Room> {
     @Override
     public boolean test(Connection input) {
         return room.inRoom(input);
+    }
+
+    @Override
+    public String toString() {
+        return "RoomFilter{" +
+            "room=" + room +
+            '}';
     }
 }

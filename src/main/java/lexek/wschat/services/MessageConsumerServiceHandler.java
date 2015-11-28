@@ -20,7 +20,7 @@ public class MessageConsumerServiceHandler implements EventHandler<MessageEvent>
     public void onEvent(MessageEvent event, long sequence, boolean endOfBatch) throws Exception {
         for (MessageConsumerService consumer : consumers) {
             try {
-                consumer.consume(event.getConnection(), event.getMessage(), event.getBroadcastFilter());
+                consumer.consume(event.getMessage(), event.getBroadcastFilter());
             } catch (Exception e) {
                 logger.warn("exception while handling message for message consumer", e);
             }

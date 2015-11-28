@@ -26,7 +26,7 @@ public class PartHandler extends AbstractRoomMessageHandler {
     @Override
     public void handle(Connection connection, User user, Room room, Chatter chatter, Message message) {
         if (room.part(connection) && user.hasRole(GlobalRole.USER)) {
-            messageBroadcaster.submitMessage(Message.partMessage(room.getName(), user.getName()), connection, room.FILTER);
+            messageBroadcaster.submitMessage(Message.partMessage(room.getName(), user.getName()), room.FILTER);
         }
     }
 }

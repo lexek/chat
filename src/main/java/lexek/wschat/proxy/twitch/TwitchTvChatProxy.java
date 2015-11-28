@@ -14,7 +14,6 @@ import io.netty.handler.codec.string.StringEncoder;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.CharsetUtil;
 import io.netty.util.internal.chmv8.ConcurrentHashMapV8;
-import lexek.wschat.chat.Connection;
 import lexek.wschat.chat.MessageBroadcaster;
 import lexek.wschat.chat.Room;
 import lexek.wschat.chat.model.GlobalRole;
@@ -132,9 +131,9 @@ public class TwitchTvChatProxy implements Proxy {
     }
 
     @Override
-    public void onMessage(Connection connection, Message message) {
+    public void onMessage(Message message) {
         if (this.outboundHandler != null) {
-            outboundHandler.onMessage(connection, message);
+            outboundHandler.onMessage(message);
         }
     }
 
@@ -202,7 +201,7 @@ public class TwitchTvChatProxy implements Proxy {
                     "twitch",
                     channelName
                 );
-                messageBroadcaster.submitMessage(msg, Connection.STUB_CONNECTION, room.FILTER);
+                messageBroadcaster.submitMessage(msg, room.FILTER);
             }
         }
 
@@ -214,7 +213,7 @@ public class TwitchTvChatProxy implements Proxy {
                 channelName,
                 name
             );
-            messageBroadcaster.submitMessage(msg, Connection.STUB_CONNECTION, room.FILTER);
+            messageBroadcaster.submitMessage(msg, room.FILTER);
         }
 
         @Override

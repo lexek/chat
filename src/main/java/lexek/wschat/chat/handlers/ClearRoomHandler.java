@@ -24,6 +24,6 @@ public class ClearRoomHandler extends AbstractRoomMessageHandler {
 
     @Override
     public void handle(Connection connection, User user, Room room, Chatter chatter, Message message) {
-        messageBroadcaster.submitMessage(Message.clearMessage(room.getName()), connection, room.FILTER);
+        messageBroadcaster.submitMessage(Message.clearMessage(room.getName()), room.FILTER);
     }
 }

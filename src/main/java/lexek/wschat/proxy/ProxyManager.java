@@ -3,7 +3,6 @@ package lexek.wschat.proxy;
 import com.codahale.metrics.health.HealthCheck;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
-import lexek.wschat.chat.Connection;
 import lexek.wschat.chat.Room;
 import lexek.wschat.chat.RoomManager;
 import lexek.wschat.chat.e.EntityNotFoundException;
@@ -101,14 +100,14 @@ public class ProxyManager extends AbstractService implements MessageConsumerServ
     }
 
     @Override
-    public void consume(Connection connection, Message message, BroadcastFilter filter) {
+    public void consume(Message message, BroadcastFilter filter) {
         if (filter.getType() == BroadcastFilter.Type.ROOM && message.getType() == MessageType.MSG) {
             Room room = (Room) filter.getData();
             proxies.get(room.getId())
                 .stream()
                 .filter(proxy -> proxy.state() == ProxyState.RUNNING)
                 .filter(Proxy::outboundEnabled)
-                .forEach(proxy -> proxy.onMessage(connection, message));
+                .forEach(proxy -> proxy.onMessage(message));
         }
     }
 

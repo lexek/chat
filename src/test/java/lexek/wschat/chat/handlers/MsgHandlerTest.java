@@ -6,6 +6,7 @@ import lexek.wschat.chat.Connection;
 import lexek.wschat.chat.MessageBroadcaster;
 import lexek.wschat.chat.Room;
 import lexek.wschat.chat.TestConnection;
+import lexek.wschat.chat.filters.RoomWithSendBackCheckFilter;
 import lexek.wschat.chat.model.*;
 import lexek.wschat.db.model.UserDto;
 import org.junit.Test;
@@ -88,8 +89,8 @@ public class MsgHandlerTest {
                 0L,
                 0L,
                 "top kek"))),
-            eq(connection),
-            eq(room.FILTER));
+            eq(new RoomWithSendBackCheckFilter(room, connection))
+        );
     }
 
     @Test
@@ -120,8 +121,8 @@ public class MsgHandlerTest {
 
         verify(messageBroadcaster, never()).submitMessage(
             any(Message.class),
-            eq(connection),
-            eq(room.FILTER));
+            eq(new RoomWithSendBackCheckFilter(room, connection))
+        );
         verify(connection).send(eq(Message.errorMessage("MESSAGE_TOO_BIG")));
     }
 
@@ -161,8 +162,8 @@ public class MsgHandlerTest {
                 0L,
                 0L,
                 s))),
-            eq(connection),
-            eq(room.FILTER));
+            eq(new RoomWithSendBackCheckFilter(room, connection))
+        );
     }
 
     @Test
@@ -190,8 +191,8 @@ public class MsgHandlerTest {
 
         verify(messageBroadcaster, never()).submitMessage(
             any(Message.class),
-            eq(connection),
-            eq(room.FILTER));
+            eq(new RoomWithSendBackCheckFilter(room, connection))
+        );
         verify(connection).send(eq(Message.errorMessage("EMPTY_MESSAGE")));
     }
 
@@ -221,8 +222,8 @@ public class MsgHandlerTest {
 
         verify(messageBroadcaster, never()).submitMessage(
             any(Message.class),
-            eq(connection),
-            eq(room.FILTER));
+            eq(new RoomWithSendBackCheckFilter(room, connection))
+        );
         verify(connection).send(eq(Message.errorMessage("EMPTY_MESSAGE")));
     }
 }

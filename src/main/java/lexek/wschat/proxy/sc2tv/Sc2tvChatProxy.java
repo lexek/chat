@@ -14,7 +14,6 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.http.*;
 import io.netty.util.CharsetUtil;
-import lexek.wschat.chat.Connection;
 import lexek.wschat.chat.MessageBroadcaster;
 import lexek.wschat.chat.Room;
 import lexek.wschat.chat.model.GlobalRole;
@@ -107,7 +106,7 @@ public class Sc2tvChatProxy implements Proxy {
     }
 
     @Override
-    public void onMessage(Connection connection, Message message) {
+    public void onMessage(Message message) {
         //do nothing
     }
 
@@ -176,7 +175,7 @@ public class Sc2tvChatProxy implements Proxy {
                                 "sc2tv",
                                 "sc2tv"
                             );
-                            messageBroadcaster.submitMessage(chatMessage, Connection.STUB_CONNECTION, room.FILTER);
+                            messageBroadcaster.submitMessage(chatMessage, room.FILTER);
                         }
                         lastId = id;
                     }

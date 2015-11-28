@@ -3,7 +3,6 @@ package lexek.wschat.frontend.irc;
 import lexek.wschat.chat.Connection;
 import lexek.wschat.chat.ConnectionGroup;
 import lexek.wschat.chat.model.Message;
-import lexek.wschat.chat.model.User;
 import lexek.wschat.frontend.Codec;
 
 import java.util.LinkedHashSet;
@@ -101,23 +100,7 @@ public class IrcConnectionGroup implements ConnectionGroup<IrcConnection> {
     }
 
     @Override
-    public void send(Message message, User user) {
-        String encodedMessage = codec.encode(message);
-
-        if (encodedMessage != null) {
-            readLock.lock();
-            try {
-                for (IrcConnection c : connections) {
-                    c.send(encodedMessage);
-                }
-            } finally {
-                readLock.unlock();
-            }
-        }
-    }
-
-    @Override
-    public void send(Message message, User user, Predicate<Connection> predicate) {
+    public void send(Message message, Predicate<Connection> predicate) {
         String encodedMessage = codec.encode(message);
 
         if (encodedMessage != null) {

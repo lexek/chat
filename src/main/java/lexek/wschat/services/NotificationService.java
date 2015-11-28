@@ -1,6 +1,5 @@
 package lexek.wschat.services;
 
-import lexek.wschat.chat.Connection;
 import lexek.wschat.chat.ConnectionManager;
 import lexek.wschat.chat.MessageBroadcaster;
 import lexek.wschat.chat.filters.UserFilter;
@@ -33,11 +32,7 @@ public class NotificationService {
 
     public void notify(UserDto user, String summary, String description, boolean sendEmail) {
         if (connectionManager.anyConnection(connection -> user.getId().equals(connection.getUser().getId()))) {
-            messageBroadcaster.submitMessage(
-                Message.infoMessage(description),
-                Connection.STUB_CONNECTION,
-                new UserFilter(user)
-            );
+            messageBroadcaster.submitMessage(Message.infoMessage(description), new UserFilter(user));
         } else {
             pendingNotificationDao.add(user.getId(), description);
         }
