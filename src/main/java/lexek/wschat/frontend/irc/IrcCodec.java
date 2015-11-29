@@ -43,10 +43,11 @@ public class IrcCodec implements Codec {
     @Override
     public String encode(Message message) {
         switch (message.getType()) {
+            case ME:
             case MSG: {
                 String room = message.get(MessageProperty.ROOM);
                 String name = message.get(MessageProperty.NAME);
-                String text = message.get(MessageProperty.TEXT);
+                String text = message.get(MessageProperty.TEXT).replaceAll("[\r\n\t]", " ");
                 return ":" + name + " PRIVMSG " + room + " :" + text;
             }
             case RECAPTCHA: {
@@ -103,7 +104,6 @@ public class IrcCodec implements Codec {
                 }
             default:
                 return null;
-            //return ":frontend PRIVMSG " + user.getName() + " :" + message.getType() + ' ' + message.getArgs();
         }
     }
 
