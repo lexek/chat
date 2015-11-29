@@ -51,7 +51,7 @@ public class JoinHandlerTest {
     }
 
     @Test
-    public void should() {
+    public void shouldWork() {
         EventDispatcher eventDispatcher = mock(EventDispatcher.class);
         Room room = mock(Room.class);
         MessageBroadcaster messageBroadcaster = mock(MessageBroadcaster.class);
@@ -66,10 +66,12 @@ public class JoinHandlerTest {
         when(room.join(connection)).thenReturn(chatter);
         when(room.getName()).thenReturn("#main");
         when(room.inRoom(user)).thenReturn(false);
+        when(room.getTopic()).thenReturn("topic");
 
         handler.handle(connection, user, room, chatter, new Message(ImmutableMap.of(
             MessageProperty.TYPE, MessageType.JOIN,
-            MessageProperty.ROOM, "#main"
+            MessageProperty.ROOM, "#main",
+            MessageProperty.TEXT, "topic"
         )));
 
         verify(room).join(connection);
@@ -97,6 +99,7 @@ public class JoinHandlerTest {
         when(room.join(connection)).thenReturn(chatter);
         when(room.getName()).thenReturn("#main");
         when(room.inRoom(user)).thenReturn(true);
+        when(room.getTopic()).thenReturn("topic");
 
         handler.handle(connection, user, room, chatter, new Message(ImmutableMap.of(
             MessageProperty.TYPE, MessageType.JOIN,
@@ -125,6 +128,7 @@ public class JoinHandlerTest {
         when(room.join(connection)).thenReturn(chatter);
         when(room.getName()).thenReturn("#main");
         when(room.inRoom(user)).thenReturn(false);
+        when(room.getTopic()).thenReturn("topic");
 
         handler.handle(connection, user, room, chatter, new Message(ImmutableMap.of(
             MessageProperty.TYPE, MessageType.JOIN,
@@ -153,6 +157,7 @@ public class JoinHandlerTest {
         when(room.join(connection)).thenReturn(chatter);
         when(room.getName()).thenReturn("#main");
         when(room.inRoom(user)).thenReturn(true);
+        when(room.getTopic()).thenReturn("topic");
 
         handler.handle(connection, user, room, chatter, new Message(ImmutableMap.of(
             MessageProperty.TYPE, MessageType.JOIN,
