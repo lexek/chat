@@ -55,9 +55,13 @@ public class Message {
         return new Message(ImmutableMap.<MessageProperty, Object>of(MessageProperty.TYPE, MessageType.PART, MessageProperty.ROOM, room, MessageProperty.NAME, name));
     }
 
-    public static Message selfJoinMessage(String room, Chatter chatter) {
-        return new Message(ImmutableMap.<MessageProperty, Object>of(MessageProperty.TYPE, MessageType.SELF_JOIN,
-            MessageProperty.ROOM, room, MessageProperty.CHATTER, chatter));
+    public static Message selfJoinMessage(String room, Chatter chatter, String topic) {
+        return new Message(ImmutableMap.<MessageProperty, Object>of(
+            MessageProperty.TYPE, MessageType.SELF_JOIN,
+            MessageProperty.ROOM, room,
+            MessageProperty.CHATTER, chatter,
+            MessageProperty.TEXT, topic
+        ));
     }
 
     public static Message historyMessage(List<Message> messages) {

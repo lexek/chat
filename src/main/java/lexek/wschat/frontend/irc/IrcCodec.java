@@ -82,13 +82,16 @@ public class IrcCodec implements Codec {
             }
             case SELF_JOIN: {
                 Chatter chatter = message.get(MessageProperty.CHATTER);
-                String room = message.get(MessageProperty.ROOM);
+                String room = message.getRoom();
                 String name = chatter.getName();
-                String msg = ":" + name + "!" + name + "@" + serverName + " JOIN " + room;
+                String topic = message.getText();
+                String msg =
+                    ":" + name + "!" + name + "@" + serverName + " JOIN " + room + "\r\n" +
+                        ":server TOPIC " + room + " :" + topic;
                 if (chatter.hasRole(LocalRole.MOD)) {
                     msg = msg + "\r\n:server MODE " + room + " +o " + name;
                 }
-                return msg + "\r\n:server TOPIC " + room + " :yoba.vg";
+                return msg;
             }
             case PART: {
                 String room = message.get(MessageProperty.ROOM);
