@@ -49,6 +49,15 @@ public class HandlerInvoker {
     }
 
     public void handle(Connection connection, Message message) {
+        try {
+            doHandle(connection, message);
+        } catch (Exception e) {
+            connection.send(Message.errorMessage("INTERNAL_ERROR"));
+            throw e;
+        }
+    }
+
+    private void doHandle(Connection connection, Message message) {
         User user = connection.getUser();
         String roomName = message.getRoom();
         if (roomName != null) {
@@ -67,14 +76,7 @@ public class HandlerInvoker {
             }
 
             //check message timeout
-            int interval = user.getRole().getMessageTimeInterval();
-            long timeFromLastMessage = System.currentTimeMillis() - user.getLastMessage();
-            if (!handler.isNeedsInterval() || (interval == 0) || (timeFromLastMessage > interval)) {
-                if (handler.isNeedsInterval()) {
-                    user.setLastMessage(System.currentTimeMillis());
-                }
-            } else {
-                connection.send(Message.errorMessage("TOO_FAST"));
+            if (checkInterval(connection, handler)) {
                 return;
             }
 
@@ -148,17 +150,9 @@ public class HandlerInvoker {
                     connection.send(Message.errorMessage("BAD_MESSAGE"));
                     return;
                 }
-                int interval = user.getRole().getMessageTimeInterval();
-                long timeFromLastMessage = System.currentTimeMillis() - user.getLastMessage();
-                if (!handler.isNeedsInterval() || (interval == 0) || (timeFromLastMessage > interval)) {
-                    if (handler.isNeedsInterval()) {
-                        user.setLastMessage(System.currentTimeMillis());
-                    }
-                } else {
-                    connection.send(Message.errorMessage("TOO_FAST"));
+                if (checkInterval(connection, handler)) {
                     return;
                 }
-
                 if (user.hasRole(handler.getRole())) {
                     handler.handle(connection, user, message);
                 } else {
@@ -168,5 +162,20 @@ public class HandlerInvoker {
                 connection.send(Message.errorMessage("UNKNOWN_COMMAND"));
             }
         }
+    }
+
+    private boolean checkInterval(Connection connection, MessageHandler handler) {
+        User user = connection.getUser();
+        int interval = user.getRole().getMessageTimeInterval();
+        long timeFromLastMessage = System.currentTimeMillis() - user.getLastMessage();
+        if (!handler.isNeedsInterval() || (interval == 0) || (timeFromLastMessage > interval)) {
+            if (handler.isNeedsInterval()) {
+                user.setLastMessage(System.currentTimeMillis());
+            }
+        } else {
+            connection.send(Message.errorMessage("TOO_FAST"));
+            return true;
+        }
+        return false;
     }
 }
