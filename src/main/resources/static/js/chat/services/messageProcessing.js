@@ -172,6 +172,7 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
                 }
             )), ctx.room);
         }
+        chat.addMessage(new Message("INFO", msg.text), msg.room);
         chat.addRoom(ctx.room);
         chat.messagesUpdated();
     };
