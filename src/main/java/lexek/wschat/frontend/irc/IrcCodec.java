@@ -50,6 +50,15 @@ public class IrcCodec implements Codec {
                 String text = message.get(MessageProperty.TEXT).replaceAll("[\r\n\t]", " ");
                 return ":" + name + " PRIVMSG " + room + " :" + text;
             }
+            case INFO: {
+                String room = message.get(MessageProperty.ROOM);
+                String text = message.get(MessageProperty.TEXT).replaceAll("[\r\n\t]", " ");
+                if (room != null) {
+                    return ":server PRIVMSG " + room + " :" + text;
+                } else {
+                    return null;
+                }
+            }
             case RECAPTCHA: {
                 String captchaId = message.get(MessageProperty.TEXT);
                 String name = message.get(MessageProperty.NAME);
