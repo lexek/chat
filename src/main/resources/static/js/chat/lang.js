@@ -83,7 +83,7 @@ langModule.config(['$translateProvider', function ($translateProvider) {
         "AUTH_USERNAME_NOT_AVAILABLE": "This username is not available.",
 
         "HELP_ABOUT": "About this chat",
-        "HELP_ABOUT_TEXT": "Our github: <a href='https://github.com/lexek/chat'><i class='fa fa-fw fa-github'/>lexek/chat</a>",
+        "HELP_ABOUT_TEXT": "Our github: <a href='https://github.com/lexek/chat' target='_blank'><i class='fa fa-fw fa-github'/>lexek/chat</a>",
         "HELP_MARKUP": "Markup",
         "HELP_BOLD_TEXT": "bold text",
         "HELP_ITALIC_TEXT": "italic text",
@@ -236,7 +236,7 @@ langModule.config(['$translateProvider', function ($translateProvider) {
         "AUTH_USERNAME_NOT_AVAILABLE": "Это имя уже занято.",
 
         "HELP_ABOUT": "О чате",
-        "HELP_ABOUT_TEXT": "Наш гитхаб: <a href='https://github.com/lexek/chat'><i class='fa fa-fw fa-github'/>lexek/chat</a>",
+        "HELP_ABOUT_TEXT": "Наш гитхаб: <a href='https://github.com/lexek/chat' target='_blank'><i class='fa fa-fw fa-github'/>lexek/chat</a>",
         "HELP_MARKUP": "Разметка",
         "HELP_BOLD_TEXT": "полужирный текст",
         "HELP_ITALIC_TEXT": "полужирный курсив",
