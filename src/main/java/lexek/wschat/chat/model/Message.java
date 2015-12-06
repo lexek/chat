@@ -119,7 +119,17 @@ public class Message {
         ));
     }
 
-    public static Message msgMessage(String room, String name, LocalRole role, GlobalRole globalRole, String color, long messageId, long time, String text) {
+    public static Message msgMessage(
+        String room,
+        long userId,
+        String name,
+        LocalRole role,
+        GlobalRole globalRole,
+        String color,
+        long messageId,
+        long time,
+        String text
+    ) {
         return new Message(ImmutableMap.<MessageProperty, Object>builder()
             .put(MessageProperty.TYPE, MessageType.MSG)
             .put(MessageProperty.ROOM, room)
@@ -130,11 +140,22 @@ public class Message {
             .put(MessageProperty.MESSAGE_ID, messageId)
             .put(MessageProperty.TIME, time)
             .put(MessageProperty.TEXT, text)
+            .put(MessageProperty.USER_ID, userId)
             .build());
     }
 
-    public static Message extMessage(String room, String name, LocalRole role, GlobalRole globalRole, String color, long messageId, long time,
-                                     String text, String service, String serviceResource) {
+    public static Message extMessage(
+        String room,
+        String name,
+        LocalRole role,
+        GlobalRole globalRole,
+        String color,
+        long messageId,
+        long time,
+        String text,
+        String service,
+        String serviceResource
+    ) {
         return new Message(ImmutableMap.<MessageProperty, Object>builder()
             .put(MessageProperty.TYPE, MessageType.MSG_EXT)
             .put(MessageProperty.ROOM, room)
@@ -150,7 +171,17 @@ public class Message {
             .build());
     }
 
-    public static Message meMessage(String room, String name, LocalRole role, GlobalRole globalRole, String color, long messageId, long time, String text) {
+    public static Message meMessage(
+        String room,
+        Long userId,
+        String name,
+        LocalRole role,
+        GlobalRole globalRole,
+        String color,
+        long messageId,
+        long time,
+        String text
+    ) {
         return new Message(ImmutableMap.<MessageProperty, Object>builder()
             .put(MessageProperty.TYPE, MessageType.ME)
             .put(MessageProperty.ROOM, room)
@@ -161,6 +192,7 @@ public class Message {
             .put(MessageProperty.MESSAGE_ID, messageId)
             .put(MessageProperty.TIME, time)
             .put(MessageProperty.TEXT, text)
+            .put(MessageProperty.USER_ID, userId)
             .build());
     }
 

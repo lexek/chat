@@ -21,6 +21,7 @@ public class MessageProperty<T> {
     public static final MessageProperty<Long> MESSAGE_ID = valueOf("messageId");
     public static final MessageProperty<Long> TIME = valueOf("time");
     public static final MessageProperty<Long> VERSION = valueOf("version");
+    public static final MessageProperty<Long> USER_ID = valueOf("userId");
     public static final MessageProperty<String> TEXT = valueOf("text");
     public static final MessageProperty<UserDto> USER = valueOf("user");
     public static final MessageProperty<Chatter> CHATTER = valueOf("chatter");

@@ -67,8 +67,8 @@ public class HistoryService implements EventHandler<MessageEvent> {
     private void store(Message message, Room room) {
         MessageType type = message.getType();
         if (type == MessageType.MSG || type == MessageType.ME) {
-            UserDto user = message.get(MessageProperty.USER);
-            historyDao.add(new History(null, room.getId(), user.getId(), message.get(MessageProperty.TIME),
+            long userId = message.get(MessageProperty.USER_ID);
+            historyDao.add(new History(null, room.getId(), userId, message.get(MessageProperty.TIME),
                 message.getType().toString(), message.get(MessageProperty.TEXT), false));
         } else if (type == MessageType.CLEAR || type == MessageType.BAN || type == MessageType.TIMEOUT) {
             //todo: find better solution, but this works for now since it's not really frequent event type

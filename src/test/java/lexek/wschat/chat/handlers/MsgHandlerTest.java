@@ -82,6 +82,7 @@ public class MsgHandlerTest {
         verify(messageBroadcaster).submitMessage(
             argThat(textMessage(Message.msgMessage(
                 "#main",
+                0L,
                 "user",
                 LocalRole.USER,
                 GlobalRole.USER,
@@ -155,6 +156,7 @@ public class MsgHandlerTest {
         verify(messageBroadcaster).submitMessage(
             argThat(textMessage(Message.msgMessage(
                 "#main",
+                0L,
                 "user",
                 LocalRole.MOD,
                 GlobalRole.MOD,

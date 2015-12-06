@@ -38,6 +38,7 @@ public class MsgHandler extends AbstractRoomMessageHandler {
             messageBroadcaster.submitMessage(
                 Message.msgMessage(
                     room.getName(),
+                    chatter.getUser().getId(),
                     chatter.getUser().getName(),
                     chatter.getRole(),
                     chatter.getUser().getRole(),
