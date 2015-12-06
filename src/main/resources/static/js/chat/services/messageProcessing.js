@@ -172,6 +172,7 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
                 }
             )), ctx.room);
         }
+        chat.addMessage(new Message("INFO", msg.text), msg.room);
         chat.addRoom(ctx.room);
         chat.messagesUpdated();
     };
@@ -233,6 +234,23 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
                 chat.messageUpdated(likedMessage);
             }
         }
+    };
+
+    var processEmoticons = function(chat, emoticons) {
+        chat.emoticons = {};
+        var emoticonCodeList = [];
+        angular.forEach(emoticons, function (e) {
+            chat.emoticons[e.code] = e;
+            emoticonCodeList.push(
+                e.code
+                    .replace("\\", "\\\\")
+                    .replace(")", "\\)")
+                    .replace("(", "\\(")
+                    .replace(".", "\\.")
+                    .replace("*", "\\*")
+            );
+        });
+        chat.emoticonRegExp = new RegExp(emoticonCodeList.join("|"), "g");
     };
 
     var MessageProcessingService = function() {
@@ -417,16 +435,6 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
                 break;
             case "IGNORED":
                 chat.ignoredNames = ctx.msg.names;
-                //todo: remove later
-                angular.forEach(settings.getIgnored(), function(name) {
-                    if (chat.ignoredNames.indexOf(name) === -1) {
-                        chat.sendMessage({
-                            "type": "IGNORE",
-                            "name": name
-                        });
-                    }
-                    settings.deleteIgnored(name);
-                });
                 break;
             case "IGNORE":
                 chat.addMessage(new Message("INFO", $translate.instant("IGNORE_OK", {
@@ -444,6 +452,9 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
                 chat.addMessage(new Message("INFO", $translate.instant("IGNORE_LIST", {
                     "names": chat.ignoredNames.join(", ")
                 }), ctx.room));
+                break;
+            case "EMOTICONS":
+                processEmoticons(chat, ctx.msg.emoticons);
                 break;
             default:
                 console.log(message);

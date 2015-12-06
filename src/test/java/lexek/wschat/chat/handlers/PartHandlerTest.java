@@ -2,7 +2,12 @@ package lexek.wschat.chat.handlers;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import lexek.wschat.chat.*;
+import lexek.wschat.chat.Connection;
+import lexek.wschat.chat.MessageBroadcaster;
+import lexek.wschat.chat.Room;
+import lexek.wschat.chat.TestConnection;
+import lexek.wschat.chat.filters.BroadcastFilter;
+import lexek.wschat.chat.model.*;
 import lexek.wschat.db.model.UserDto;
 import org.junit.Test;
 
@@ -41,6 +46,12 @@ public class PartHandlerTest {
     }
 
     @Test
+    public void shouldRequireTimeout() {
+        PartHandler handler = new PartHandler(null);
+        assertTrue(handler.isNeedsInterval());
+    }
+
+    @Test
     public void should() {
         Room room = mock(Room.class);
         MessageBroadcaster messageBroadcaster = mock(MessageBroadcaster.class);
@@ -63,7 +74,7 @@ public class PartHandlerTest {
         )));
 
         verify(room).part(connection);
-        verify(messageBroadcaster).submitMessage(eq(Message.partMessage("#main", "user")), eq(connection), eq(room.FILTER));
+        verify(messageBroadcaster).submitMessage(eq(Message.partMessage("#main", "user")), eq(room.FILTER));
     }
 
     @Test
@@ -89,7 +100,7 @@ public class PartHandlerTest {
         )));
 
         verify(room).part(connection);
-        verify(messageBroadcaster, never()).submitMessage(any(Message.class), any(Connection.class), any(BroadcastFilter.class));
+        verify(messageBroadcaster, never()).submitMessage(any(Message.class), any(BroadcastFilter.class));
     }
 
     @Test
@@ -115,6 +126,6 @@ public class PartHandlerTest {
         )));
 
         verify(room).part(connection);
-        verify(messageBroadcaster, never()).submitMessage(any(Message.class), any(Connection.class), any(BroadcastFilter.class));
+        verify(messageBroadcaster, never()).submitMessage(any(Message.class), any(BroadcastFilter.class));
     }
 }

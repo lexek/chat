@@ -1,7 +1,7 @@
 package lexek.wschat.frontend.http.rest.admin;
 
 import io.netty.util.NetUtil;
-import lexek.wschat.chat.GlobalRole;
+import lexek.wschat.chat.model.GlobalRole;
 import lexek.wschat.security.jersey.RequiredRole;
 
 import javax.validation.ValidationException;

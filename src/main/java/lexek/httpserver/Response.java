@@ -48,11 +48,13 @@ public class Response {
     }
 
     public void jsonContent(Object jsonObject) {
-        if (jsonObject == null) {
-            jsonObject = JsonNodeFactory.instance.objectNode();
-        }
         try {
-            stringContent(viewResolvers.getObjectMapper().writeValueAsString(jsonObject), "application/json; charset=utf-8");
+            stringContent(
+                viewResolvers
+                    .getObjectMapper()
+                    .writeValueAsString(jsonObject != null ? jsonObject : JsonNodeFactory.instance.objectNode()),
+                "application/json; charset=utf-8"
+            );
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }

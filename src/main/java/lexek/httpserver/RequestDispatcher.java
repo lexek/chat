@@ -26,8 +26,6 @@ public class RequestDispatcher extends SimpleChannelInboundHandler<FullHttpReque
     private final List<MatcherEntry> matcherEntries = new ArrayList<>();
     private final ServerMessageHandler serverMessageHandler;
     private final ViewResolvers viewResolvers;
-    private final ApplicationHandler applicationHandler;
-    private final JerseyContainer jerseyContainer;
     private final Timer timer;
 
     public RequestDispatcher(
@@ -39,8 +37,8 @@ public class RequestDispatcher extends SimpleChannelInboundHandler<FullHttpReque
     ) {
         this.serverMessageHandler = serverMessageHandler;
         this.viewResolvers = viewResolvers;
-        this.applicationHandler = new ApplicationHandler(resourceConfig);
-        this.jerseyContainer = new JerseyContainer(authenticationManager, applicationHandler);
+        ApplicationHandler applicationHandler = new ApplicationHandler(resourceConfig);
+        JerseyContainer jerseyContainer = new JerseyContainer(authenticationManager, applicationHandler);
         this.matcherEntries.add(new MatcherEntry(Pattern.compile("/rest/.*"), jerseyContainer));
         this.timer = metricRegistry.register("httpServer.requests", new Timer());
     }
@@ -125,8 +123,9 @@ public class RequestDispatcher extends SimpleChannelInboundHandler<FullHttpReque
     private String withoutQuery(String path) {
         int queryStart = path.indexOf('?');
         if (queryStart > -1) {
-            path = path.substring(0, queryStart);
+            return path.substring(0, queryStart);
+        } else {
+            return path;
         }
-        return path;
     }
 }

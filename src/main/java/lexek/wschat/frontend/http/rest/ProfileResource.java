@@ -1,6 +1,6 @@
 package lexek.wschat.frontend.http.rest;
 
-import lexek.wschat.chat.GlobalRole;
+import lexek.wschat.chat.model.GlobalRole;
 import lexek.wschat.db.model.UserData;
 import lexek.wschat.db.model.UserDto;
 import lexek.wschat.security.jersey.Auth;

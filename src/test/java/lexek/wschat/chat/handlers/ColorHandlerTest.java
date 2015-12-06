@@ -1,13 +1,16 @@
 package lexek.wschat.chat.handlers;
 
 import com.google.common.collect.ImmutableSet;
-import lexek.wschat.chat.*;
+import lexek.wschat.chat.Connection;
+import lexek.wschat.chat.TestConnection;
+import lexek.wschat.chat.model.*;
 import lexek.wschat.db.dao.UserDao;
 import lexek.wschat.db.model.UserDto;
 import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
@@ -41,6 +44,11 @@ public class ColorHandlerTest {
             handler.requiredProperties(),
             ImmutableSet.of(MessageProperty.COLOR)
         );
+    }
+
+    @Test
+    public void shouldRequireTimeout() {
+        assertTrue(handler.isNeedsInterval());
     }
 
     @Test

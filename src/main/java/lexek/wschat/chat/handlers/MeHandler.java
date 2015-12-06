@@ -1,7 +1,11 @@
 package lexek.wschat.chat.handlers;
 
 import com.google.common.collect.ImmutableSet;
-import lexek.wschat.chat.*;
+import lexek.wschat.chat.Connection;
+import lexek.wschat.chat.MessageBroadcaster;
+import lexek.wschat.chat.Room;
+import lexek.wschat.chat.filters.RoomWithSendBackCheckFilter;
+import lexek.wschat.chat.model.*;
 import lexek.wschat.chat.processing.AbstractRoomMessageHandler;
 
 import java.util.concurrent.atomic.AtomicLong;
@@ -33,10 +37,11 @@ public class MeHandler extends AbstractRoomMessageHandler {
             connection.send(Message.errorMessage("EMPTY_MESSAGE"));
         } else if (!(chatter.hasRole(LocalRole.MOD) || connection.getUser().hasRole(GlobalRole.MOD)) && (text.length() > 420)) {
             connection.send(Message.errorMessage("MESSAGE_TOO_BIG"));
-        } else if (text.length() != 0) {
+        } else {
             messageBroadcaster.submitMessage(
                 Message.meMessage(
                     room.getName(),
+                    chatter.getUser().getId(),
                     chatter.getUser().getName(),
                     chatter.getRole(),
                     chatter.getUser().getRole(),
@@ -45,8 +50,8 @@ public class MeHandler extends AbstractRoomMessageHandler {
                     System.currentTimeMillis(),
                     text
                 ),
-                connection,
-                room.FILTER);
+                new RoomWithSendBackCheckFilter(room, connection)
+            );
         }
     }
 }

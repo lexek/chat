@@ -3,7 +3,7 @@ package lexek.wschat.frontend.ws;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
-import lexek.wschat.chat.Message;
+import lexek.wschat.chat.model.Message;
 
 import java.io.IOException;
 

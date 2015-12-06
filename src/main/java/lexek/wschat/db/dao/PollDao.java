@@ -129,7 +129,6 @@ public class PollDao {
     }
 
     public DataPage<PollState> getOldPolls(long roomId, int page) {
-        DataPage<PollState> result = null;
         try (Connection connection = dataSource.getConnection()) {
             List<PollState> polls = new ArrayList<>();
             int count = DSL.using(connection).fetchCount(POLL, POLL.OPEN.isFalse().and(POLL.ROOM_ID.equal(roomId)));
@@ -163,10 +162,9 @@ public class PollDao {
                     }
                 }
             }
-            result = new DataPage<>(polls, page, Pages.pageCount(5, count));
+            return new DataPage<>(polls, page, Pages.pageCount(5, count));
         } catch (DataAccessException | SQLException e) {
             throw new InternalErrorException(e);
         }
-        return result;
     }
 }

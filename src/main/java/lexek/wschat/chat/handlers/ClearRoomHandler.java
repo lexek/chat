@@ -1,7 +1,10 @@
 package lexek.wschat.chat.handlers;
 
 import com.google.common.collect.ImmutableSet;
-import lexek.wschat.chat.*;
+import lexek.wschat.chat.Connection;
+import lexek.wschat.chat.MessageBroadcaster;
+import lexek.wschat.chat.Room;
+import lexek.wschat.chat.model.*;
 import lexek.wschat.chat.processing.AbstractRoomMessageHandler;
 
 public class ClearRoomHandler extends AbstractRoomMessageHandler {
@@ -21,6 +24,6 @@ public class ClearRoomHandler extends AbstractRoomMessageHandler {
 
     @Override
     public void handle(Connection connection, User user, Room room, Chatter chatter, Message message) {
-        messageBroadcaster.submitMessage(Message.clearMessage(room.getName()), connection, room.FILTER);
+        messageBroadcaster.submitMessage(Message.clearMessage(room.getName()), room.FILTER);
     }
 }

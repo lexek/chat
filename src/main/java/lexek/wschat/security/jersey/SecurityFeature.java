@@ -1,6 +1,6 @@
 package lexek.wschat.security.jersey;
 
-import lexek.wschat.chat.GlobalRole;
+import lexek.wschat.chat.model.GlobalRole;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -1,6 +1,6 @@
 package lexek.wschat.frontend.http.rest.admin;
 
-import lexek.wschat.chat.GlobalRole;
+import lexek.wschat.chat.model.GlobalRole;
 import lexek.wschat.db.dao.JournalDao;
 import lexek.wschat.db.model.DataPage;
 import lexek.wschat.db.model.JournalEntry;
@@ -27,7 +27,7 @@ public class JournalResource {
     public DataPage<JournalEntry> peekRoomJournal(
         @PathParam("roomId") @Min(0) long roomId
     ) {
-        return journalDao.fetchAllForRoom(0, 6, roomId);
+        return journalDao.fetchAllForRoom(0, 3, roomId);
     }
 
     @Path("/room/{roomId}")

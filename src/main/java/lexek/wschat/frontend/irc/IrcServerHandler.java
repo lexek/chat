@@ -8,7 +8,9 @@ import io.netty.handler.codec.http.websocketx.CloseWebSocketFrame;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.util.AttributeKey;
-import lexek.wschat.chat.*;
+import lexek.wschat.chat.MessageReactor;
+import lexek.wschat.chat.RoomManager;
+import lexek.wschat.chat.model.*;
 import lexek.wschat.security.AuthenticationCallback;
 import lexek.wschat.security.AuthenticationService;
 import org.slf4j.Logger;
@@ -78,6 +80,10 @@ public class IrcServerHandler extends ChannelInboundHandlerAdapter implements Au
                     } else {
                         authenticationService.authenticateWithPassword(connection, username, connection.getPassword(), this);
                     }
+                    break;
+                default:
+                    logger.warn("usupported type {}", msg.getType());
+                    break;
             }
         }
     }

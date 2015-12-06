@@ -4,8 +4,8 @@ import com.google.common.io.BaseEncoding;
 import io.netty.util.internal.chmv8.ConcurrentHashMapV8;
 import lexek.httpserver.Request;
 import lexek.wschat.chat.ConnectionManager;
-import lexek.wschat.chat.GlobalRole;
 import lexek.wschat.chat.e.InvalidInputException;
+import lexek.wschat.chat.model.GlobalRole;
 import lexek.wschat.db.dao.UserAuthDao;
 import lexek.wschat.db.model.Email;
 import lexek.wschat.db.model.SessionDto;
@@ -54,6 +54,7 @@ public class AuthenticationManager {
             } else {
                 tries.incrementAndGet();
             }
+            logger.info("failed login with password for user {} with {} tries for ip {}", name, tries, ip);
             return null;
         }
     }

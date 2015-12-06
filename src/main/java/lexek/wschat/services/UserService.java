@@ -4,8 +4,8 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import lexek.wschat.chat.Connection;
 import lexek.wschat.chat.ConnectionManager;
-import lexek.wschat.chat.GlobalRole;
-import lexek.wschat.chat.User;
+import lexek.wschat.chat.model.GlobalRole;
+import lexek.wschat.chat.model.User;
 import lexek.wschat.db.dao.UserDao;
 import lexek.wschat.db.model.DataPage;
 import lexek.wschat.db.model.UserData;
@@ -28,6 +28,10 @@ public class UserService {
 
     public UserDto fetchById(long id) {
         return userDao.getById(id);
+    }
+
+    public UserDto fetchByName(String name) {
+        return userDao.getByName(name);
     }
 
     public void update(UserDto user, UserDto admin, UserChangeSet changeSet) {
@@ -76,20 +80,6 @@ public class UserService {
 
     public User getCached(String name) {
         return userCache.getIfPresent(name);
-    }
-
-    public UserDto getByNameWithCache(String name) {
-        UserDto userDto = null;
-        {
-            User u = userCache.getIfPresent(name);
-            if (u != null) {
-                userDto = u.getWrappedObject();
-            }
-        }
-        if (userDto == null) {
-            userDto = userDao.getByName(name);
-        }
-        return userDto;
     }
 
     public DataPage<UserData> searchPaged(int page, int pageLength, String search) {

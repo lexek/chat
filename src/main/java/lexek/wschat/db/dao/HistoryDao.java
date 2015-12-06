@@ -1,7 +1,7 @@
 package lexek.wschat.db.dao;
 
-import lexek.wschat.chat.MessageType;
 import lexek.wschat.chat.e.InternalErrorException;
+import lexek.wschat.chat.model.MessageType;
 import lexek.wschat.db.jooq.tables.pojos.History;
 import lexek.wschat.db.model.DataPage;
 import lexek.wschat.db.model.HistoryData;
@@ -53,13 +53,13 @@ public class HistoryDao {
 
     public void hideRoomMessages(long roomId, long since) {
         try (Connection connection = dataSource.getConnection()) {
-            DSL.using(connection).transaction(txCfg -> {
-                DSL.using(connection)
+            DSL.using(connection).transaction(
+                txCfg -> DSL.using(connection)
                     .update(HISTORY)
                     .set(HISTORY.HIDDEN, true)
                     .where(HISTORY.ROOM_ID.equal(roomId).and(HISTORY.TIMESTAMP.greaterOrEqual(since)))
-                    .execute();
-            });
+                    .execute()
+            );
         } catch (DataAccessException | SQLException e) {
             throw new InternalErrorException(e);
         }
@@ -75,7 +75,6 @@ public class HistoryDao {
         users.ifPresent(names -> conditions.add(USER.NAME.in(names)));
         since.ifPresent(value -> conditions.add(HISTORY.TIMESTAMP.greaterOrEqual(value)));
         until.ifPresent(value -> conditions.add(HISTORY.TIMESTAMP.lessOrEqual(value)));
-        DataPage<HistoryData> result = null;
         try (Connection connection = dataSource.getConnection()) {
             int count = DSL.using(connection).fetchCount(DSL.select(DSL.one())
                 .from(HISTORY.join(USER).on(HISTORY.USER_ID.equal(USER.ID)))
@@ -96,14 +95,13 @@ public class HistoryDao {
                     record.getValue(HISTORY.HIDDEN)
                 ))
                 .collect(Collectors.toList());
-            result = new DataPage<>(data, page, Pages.pageCount(pageLength, count));
+            return new DataPage<>(data, page, Pages.pageCount(pageLength, count));
         } catch (DataAccessException | SQLException e) {
             throw new InternalErrorException(e);
         }
-        return result;
     }
 
-    public List<HistoryData> getLast20(long roomId) {
+    public List<HistoryData> getLastN(long roomId, int count) {
         List<HistoryData> result;
         try (Connection connection = dataSource.getConnection()) {
             result = DSL.using(connection)
@@ -111,7 +109,7 @@ public class HistoryDao {
                 .from(HISTORY.join(USER).on(HISTORY.USER_ID.equal(USER.ID)))
                 .where(HISTORY.ROOM_ID.equal(roomId))
                 .orderBy(HISTORY.TIMESTAMP.desc())
-                .limit(20)
+                .limit(count)
                 .fetch()
                 .stream()
                 .map(record -> new HistoryData(

@@ -32,37 +32,6 @@ function($modal, settings, $translate, $http, $timeout, notificationService, msg
         this.limit = document.IS_MOBILE ? 20 : 50;
         this.proxies = {};
         this.ignoredNames = [];
-
-        var c = this;
-
-        $http({method: 'GET', url: '/rest/emoticons/all'})
-            .success(function(d, status, headers, config) {
-                if (status == 200) {
-                    var data = d["records"];
-                    if (data) {
-                        var emoticonCodeList = [];
-                        angular.forEach(data, function (e) {
-                            c.emoticons[e[1]] = {
-                                "id": e[0],
-                                "code": e[1],
-                                "fileName": e[2],
-                                "height": e[3],
-                                "width": e[4]
-                            };
-                            emoticonCodeList.push(e[1]
-                                .replace("\\", "\\\\")
-                                .replace(")", "\\)")
-                                .replace("(", "\\(")
-                                .replace(".", "\\.")
-                                .replace("*", "\\*"));
-                        });
-                        c.emoticonRegExp = new RegExp(emoticonCodeList.join("|"), "g");
-                    }
-                }
-            })
-            .error(function() {
-                console.log("failed to load emoticons");
-            });
     };
 
     chatService.prototype.isProxyModerationEnabled = function(room, providerName, remoteRoom) {

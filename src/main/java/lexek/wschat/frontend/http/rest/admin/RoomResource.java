@@ -1,7 +1,9 @@
 package lexek.wschat.frontend.http.rest.admin;
 
-import lexek.wschat.chat.GlobalRole;
+import com.fasterxml.jackson.databind.JsonNode;
 import lexek.wschat.chat.Room;
+import lexek.wschat.chat.e.InvalidInputException;
+import lexek.wschat.chat.model.GlobalRole;
 import lexek.wschat.db.model.UserDto;
 import lexek.wschat.db.model.form.RoomForm;
 import lexek.wschat.db.model.rest.ErrorModel;
@@ -77,5 +79,33 @@ public class RoomResource {
     ) {
         Room room = roomService.getRoomInstance(roomId);
         roomService.deleteRoom(room, admin);
+    }
+
+    @Path("/{roomId}")
+    @PUT
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response updateTopic(
+        @PathParam("roomId") @Min(0) long roomId,
+        @Auth UserDto admin,
+        JsonNode data
+    ) {
+        Room room = roomService.getRoomInstance(roomId);
+        JsonNode topicNode = data.get("topic");
+        if (topicNode.isNull()) {
+            throw new InvalidInputException("topic", "Shouldn't be null");
+        }
+        if (!topicNode.isTextual()) {
+            throw new InvalidInputException("topic", "Should be string type");
+        }
+        String topic = topicNode.asText().trim();
+        if (topic.length() > 256) {
+            throw new InvalidInputException("topic", "Too long");
+        }
+        if (topic.length() == 0) {
+            throw new InvalidInputException("topic", "Shouldn't be empty or only spaces");
+        }
+        roomService.updateTopic(admin, room, topic);
+        return Response.ok().build();
     }
 }

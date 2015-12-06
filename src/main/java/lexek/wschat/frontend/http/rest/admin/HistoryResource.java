@@ -1,6 +1,6 @@
 package lexek.wschat.frontend.http.rest.admin;
 
-import lexek.wschat.chat.GlobalRole;
+import lexek.wschat.chat.model.GlobalRole;
 import lexek.wschat.db.model.DataPage;
 import lexek.wschat.db.model.HistoryData;
 import lexek.wschat.security.jersey.RequiredRole;
@@ -45,6 +45,6 @@ public class HistoryResource {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public List<HistoryData> peekRoomHistory(@PathParam("roomId") @Min(0) long roomId) {
-        return historyService.getLast20(roomId);
+        return historyService.getLastN(roomId, 10);
     }
 }

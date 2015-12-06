@@ -13,11 +13,12 @@ public class TwitchTvMessageDecoder extends MessageToMessageDecoder<String> {
     private TwitchUser user;
 
     @Override
-    protected void decode(ChannelHandlerContext ctx, String msg, List<Object> out) throws Exception {
-        logger.trace(msg);
+    protected void decode(ChannelHandlerContext ctx, String message, List<Object> out) throws Exception {
+        logger.trace(message);
         String prefix = null;
         String trailing;
         String arg[];
+        String msg = message;
         if (msg.startsWith(":")) {
             String tmp[] = msg.substring(1).split(" ", 2);
             prefix = tmp[0];
@@ -48,6 +49,10 @@ public class TwitchTvMessageDecoder extends MessageToMessageDecoder<String> {
             }
             case "PRIVMSG": {
                 String nick = prefix;
+                if (nick == null) {
+                    logger.warn("nick is null. WTF?");
+                    return;
+                }
                 if (nick.contains("!")) {
                     nick = nick.substring(0, nick.indexOf('!'));
                 }

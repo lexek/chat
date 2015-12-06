@@ -2,7 +2,11 @@ package lexek.wschat.chat.handlers;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import lexek.wschat.chat.*;
+import lexek.wschat.chat.Connection;
+import lexek.wschat.chat.MessageBroadcaster;
+import lexek.wschat.chat.Room;
+import lexek.wschat.chat.TestConnection;
+import lexek.wschat.chat.model.*;
 import lexek.wschat.db.model.UserDto;
 import org.junit.Test;
 
@@ -40,6 +44,12 @@ public class LikeHandlerTest {
     }
 
     @Test
+    public void shouldRequireTimeout() {
+        LikeHandler handler = new LikeHandler(null);
+        assertTrue(handler.isNeedsInterval());
+    }
+
+    @Test
     public void shouldWork() {
         Room room = mock(Room.class);
         MessageBroadcaster messageBroadcaster = mock(MessageBroadcaster.class);
@@ -61,7 +71,7 @@ public class LikeHandlerTest {
             MessageProperty.MESSAGE_ID, 0L
         )));
 
-        verify(messageBroadcaster).submitMessage(eq(Message.likeMessage("#main", user.getName(), 0L)), eq(connection), eq(room.FILTER));
+        verify(messageBroadcaster).submitMessage(eq(Message.likeMessage("#main", user.getName(), 0L)), eq(room.FILTER));
     }
 
 }

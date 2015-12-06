@@ -1,7 +1,10 @@
 package lexek.wschat.chat.handlers;
 
 import com.google.common.collect.ImmutableSet;
-import lexek.wschat.chat.*;
+import lexek.wschat.chat.Connection;
+import lexek.wschat.chat.MessageBroadcaster;
+import lexek.wschat.chat.Room;
+import lexek.wschat.chat.model.*;
 import lexek.wschat.chat.processing.AbstractRoomMessageHandler;
 
 public class LikeHandler extends AbstractRoomMessageHandler {
@@ -30,7 +33,6 @@ public class LikeHandler extends AbstractRoomMessageHandler {
                     connection.getUser().getName(),
                     id
                 ),
-                connection,
                 room.FILTER);
         }
     }

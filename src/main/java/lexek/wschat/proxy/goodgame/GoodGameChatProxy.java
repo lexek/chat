@@ -17,7 +17,11 @@ import io.netty.handler.codec.http.websocketx.WebSocketVersion;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.handler.timeout.IdleStateHandler;
-import lexek.wschat.chat.*;
+import lexek.wschat.chat.MessageBroadcaster;
+import lexek.wschat.chat.Room;
+import lexek.wschat.chat.model.GlobalRole;
+import lexek.wschat.chat.model.LocalRole;
+import lexek.wschat.chat.model.Message;
 import lexek.wschat.proxy.ModerationOperation;
 import lexek.wschat.proxy.Proxy;
 import lexek.wschat.proxy.ProxyProvider;
@@ -128,7 +132,7 @@ public class GoodGameChatProxy implements Proxy {
     }
 
     @Override
-    public void onMessage(Connection connection, Message message) {
+    public void onMessage(Message message) {
 
     }
 
@@ -204,18 +208,10 @@ public class GoodGameChatProxy implements Proxy {
                     "goodgame",
                     "GoodGame"
                 );
-                messageBroadcaster.submitMessage(
-                    message,
-                    Connection.STUB_CONNECTION,
-                    room.FILTER);
+                messageBroadcaster.submitMessage(message, room.FILTER);
             } else if (msg.getType() == GoodGameEventType.USER_BAN) {
-                Message message = Message.proxyClear(
-                    "#main",
-                    "goodgame",
-                    "GoodGame",
-                    msg.getUser()
-                );
-                messageBroadcaster.submitMessage(message, Connection.STUB_CONNECTION, room.FILTER);
+                Message message = Message.proxyClear("#main", "goodgame", "GoodGame", msg.getUser());
+                messageBroadcaster.submitMessage(message, room.FILTER);
             }
         }
 

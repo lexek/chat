@@ -5,8 +5,12 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.health.HealthCheck;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
-import lexek.wschat.chat.*;
+import lexek.wschat.chat.Connection;
+import lexek.wschat.chat.MessageBroadcaster;
+import lexek.wschat.chat.Room;
+import lexek.wschat.chat.RoomManager;
 import lexek.wschat.chat.e.EntityNotFoundException;
+import lexek.wschat.chat.model.Message;
 import lexek.wschat.db.dao.AnnouncementDao;
 import lexek.wschat.db.jooq.tables.pojos.Announcement;
 import lexek.wschat.db.model.UserDto;
@@ -51,8 +55,8 @@ public class AnnouncementService extends AbstractService {
                     for (Map.Entry<Room, Announcement> entry : roomAnnouncements.entries()) {
                         messageBroadcaster.submitMessage(
                             Message.infoMessage(entry.getValue().getText()),
-                            Connection.STUB_CONNECTION,
-                            entry.getKey().FILTER);
+                            entry.getKey().FILTER
+                        );
                     }
                 } catch (Exception e) {
                     logger.warn("", e);
@@ -66,20 +70,14 @@ public class AnnouncementService extends AbstractService {
         announcementDao.add(announcement);
         if (announcement.getId() != null) {
             roomAnnouncements.put(room, announcement);
-            messageBroadcaster.submitMessage(
-                Message.infoMessage(announcement.getText()),
-                Connection.STUB_CONNECTION,
-                room.FILTER);
+            messageBroadcaster.submitMessage(Message.infoMessage(announcement.getText()), room.FILTER);
             journalService.newAnnouncement(admin, room, announcement);
         }
         return announcement;
     }
 
     public Announcement announceWithoutSaving(String text, Room room) {
-        messageBroadcaster.submitMessage(
-            Message.infoMessage(text),
-            Connection.STUB_CONNECTION,
-            room.FILTER);
+        messageBroadcaster.submitMessage(Message.infoMessage(text), room.FILTER);
         return new Announcement(null, room.getId(), true, text);
     }
 

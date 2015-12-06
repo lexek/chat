@@ -1,5 +1,8 @@
 package lexek.wschat.chat;
 
+import lexek.wschat.chat.model.Message;
+import lexek.wschat.chat.model.User;
+
 public class TestConnection extends Connection {
     public TestConnection(User user) {
         super(null, user);

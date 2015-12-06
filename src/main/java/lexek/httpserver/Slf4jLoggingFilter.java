@@ -183,7 +183,7 @@ public class Slf4jLoggingFilter implements ContainerRequestFilter, ClientRequest
     }
 
     private Set<Map.Entry<String, List<String>>> getSortedHeaders(final Set<Map.Entry<String, List<String>>> headers) {
-        final TreeSet<Map.Entry<String, List<String>>> sortedHeaders = new TreeSet<Map.Entry<String, List<String>>>(COMPARATOR);
+        final TreeSet<Map.Entry<String, List<String>>> sortedHeaders = new TreeSet<>(COMPARATOR);
         sortedHeaders.addAll(headers);
         return sortedHeaders;
     }

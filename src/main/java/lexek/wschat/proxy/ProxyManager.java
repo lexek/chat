@@ -3,9 +3,14 @@ package lexek.wschat.proxy;
 import com.codahale.metrics.health.HealthCheck;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
-import lexek.wschat.chat.*;
+import lexek.wschat.chat.Room;
+import lexek.wschat.chat.RoomManager;
 import lexek.wschat.chat.e.EntityNotFoundException;
-import lexek.wschat.chat.e.InvalidDataException;
+import lexek.wschat.chat.e.InvalidInputException;
+import lexek.wschat.chat.e.InvalidStateException;
+import lexek.wschat.chat.filters.BroadcastFilter;
+import lexek.wschat.chat.model.Message;
+import lexek.wschat.chat.model.MessageType;
 import lexek.wschat.db.dao.ProxyDao;
 import lexek.wschat.db.jooq.tables.pojos.ChatProxy;
 import lexek.wschat.db.model.UserDto;
@@ -41,7 +46,7 @@ public class ProxyManager extends AbstractService implements MessageConsumerServ
     public Proxy newProxy(UserDto admin, Room room, String providerName, String remoteRoom, String name, String token, boolean outbound) {
         ProxyProvider provider = providers.get(providerName);
         if (token != null && name != null && provider.isSupportsAuthentication() && !provider.validateCredentials(name, token)) {
-            throw new InvalidDataException("Invalid credentials.");
+            throw new InvalidInputException("token", "Invalid credentials.");
         }
         ChatProxy chatProxy = new ChatProxy(null, room.getId(), providerName, name, token, remoteRoom, outbound);
         proxyDao.store(chatProxy);
@@ -52,7 +57,7 @@ public class ProxyManager extends AbstractService implements MessageConsumerServ
             proxy.start();
             return proxy;
         } else {
-            throw new InvalidDataException("Unknown proxy name");
+            throw new InvalidInputException("name", "Unknown proxy name");
         }
     }
 
@@ -74,7 +79,7 @@ public class ProxyManager extends AbstractService implements MessageConsumerServ
             if (proxy.state() == ProxyState.RUNNING) {
                 proxy.stop();
             } else {
-                throw new InvalidDataException("You can stop only running proxy.");
+                throw new InvalidStateException("You can stop only running proxy.");
             }
         } else {
             throw new EntityNotFoundException("Proxy doesn't exist.");
@@ -87,7 +92,7 @@ public class ProxyManager extends AbstractService implements MessageConsumerServ
             if (proxy.state() == ProxyState.STOPPED || proxy.state() == ProxyState.FAILED) {
                 proxy.start();
             } else {
-                throw new InvalidDataException("You can start only stopped or failed proxy.");
+                throw new InvalidStateException("You can start only stopped or failed proxy.");
             }
         } else {
             throw new EntityNotFoundException("Proxy doesn't exist.");
@@ -95,14 +100,14 @@ public class ProxyManager extends AbstractService implements MessageConsumerServ
     }
 
     @Override
-    public void consume(Connection connection, Message message, BroadcastFilter filter) {
+    public void consume(Message message, BroadcastFilter filter) {
         if (filter.getType() == BroadcastFilter.Type.ROOM && message.getType() == MessageType.MSG) {
             Room room = (Room) filter.getData();
             proxies.get(room.getId())
                 .stream()
                 .filter(proxy -> proxy.state() == ProxyState.RUNNING)
                 .filter(Proxy::outboundEnabled)
-                .forEach(proxy -> proxy.onMessage(connection, message));
+                .forEach(proxy -> proxy.onMessage(message));
         }
     }
 

@@ -1,7 +1,8 @@
 package lexek.wschat.chat.handlers;
 
 import com.google.common.collect.ImmutableSet;
-import lexek.wschat.chat.*;
+import lexek.wschat.chat.Connection;
+import lexek.wschat.chat.model.*;
 import lexek.wschat.chat.processing.AbstractGlobalMessageHandler;
 import lexek.wschat.db.dao.UserDao;
 import lexek.wschat.util.Colors;
@@ -16,7 +17,7 @@ public class ColorHandler extends AbstractGlobalMessageHandler {
             ),
             MessageType.COLOR,
             GlobalRole.USER,
-            false
+            true
         );
 
         this.userDao = userDao;

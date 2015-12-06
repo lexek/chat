@@ -3,6 +3,8 @@ package lexek.wschat.chat.handlers;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import lexek.wschat.chat.*;
+import lexek.wschat.chat.filters.UserInRoomFilter;
+import lexek.wschat.chat.model.*;
 import lexek.wschat.db.model.UserDto;
 import lexek.wschat.services.poll.PollService;
 import org.junit.Before;
@@ -21,11 +23,12 @@ public class VoteHandlerTest {
     private RoomManager roomManager = mock(RoomManager.class);
     private Room room = mock(Room.class);
     private PollService pollService = mock(PollService.class);
-    private VoteHandler handler = new VoteHandler(pollService);
+    private MessageBroadcaster messageBroadcaster = mock(MessageBroadcaster.class);
+    private VoteHandler handler = new VoteHandler(pollService, messageBroadcaster);
 
     @Before
     public void resetMocks() {
-        reset(connection, roomManager, room, pollService);
+        reset(connection, roomManager, room, pollService, messageBroadcaster);
     }
 
     @Test
@@ -57,6 +60,11 @@ public class VoteHandlerTest {
     }
 
     @Test
+    public void shouldRequireTimeout() {
+        assertTrue(handler.isNeedsInterval());
+    }
+
+    @Test
     public void testGoodScenario() {
         when(roomManager.getRoomInstance("#main")).thenReturn(room);
         when(room.inRoom(connection)).thenReturn(true);
@@ -68,7 +76,11 @@ public class VoteHandlerTest {
         )));
         verify(pollService).vote(room, user, 0);
         verifyZeroInteractions(pollService);
-        verify(connection, times(1)).send(eq(Message.pollVotedMessage("#main")));
+        verify(messageBroadcaster, times(1))
+            .submitMessage(
+                eq(Message.pollVotedMessage("#main")),
+                eq(new UserInRoomFilter(user, room))
+            );
     }
 
     @Test
@@ -84,5 +96,10 @@ public class VoteHandlerTest {
         verify(pollService, never()).vote(room, user, 0);
         verifyZeroInteractions(pollService);
         verify(connection, times(1)).send(eq(Message.errorMessage("BAD_ARG")));
+        verify(messageBroadcaster, never())
+            .submitMessage(
+                eq(Message.pollVotedMessage("#main")),
+                eq(new UserInRoomFilter(user, room))
+            );
     }
 }

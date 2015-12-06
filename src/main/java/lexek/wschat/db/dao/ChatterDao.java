@@ -1,9 +1,10 @@
 package lexek.wschat.db.dao;
 
-import lexek.wschat.chat.Chatter;
-import lexek.wschat.chat.LocalRole;
-import lexek.wschat.chat.User;
 import lexek.wschat.chat.e.InternalErrorException;
+import lexek.wschat.chat.model.Chatter;
+import lexek.wschat.chat.model.GlobalRole;
+import lexek.wschat.chat.model.LocalRole;
+import lexek.wschat.chat.model.User;
 import lexek.wschat.db.model.ChatterData;
 import lexek.wschat.db.model.DataPage;
 import lexek.wschat.db.model.UserDto;
@@ -125,7 +126,10 @@ public class ChatterDao {
         DataPage<ChatterData> result;
         try (Connection connection = dataSource.getConnection()) {
             List<ChatterData> data = DSL.using(connection)
-                .select(CHATTER.ID, CHATTER.USER_ID, CHATTER.ROOM_ID, CHATTER.ROLE, CHATTER.TIMEOUT, CHATTER.BANNED, USER.NAME)
+                .select(
+                    CHATTER.ID, CHATTER.USER_ID, CHATTER.ROLE, CHATTER.TIMEOUT, CHATTER.BANNED,
+                    USER.NAME, USER.ROLE
+                )
                 .from(CHATTER.join(USER).on(CHATTER.USER_ID.equal(USER.ID)))
                 .where(CHATTER.ROOM_ID.equal(room))
                 .orderBy(CHATTER.ID)
@@ -136,9 +140,9 @@ public class ChatterDao {
                     record.getValue(CHATTER.ID),
                     record.getValue(CHATTER.USER_ID),
                     record.getValue(USER.NAME),
-                    record.getValue(CHATTER.ROOM_ID),
                     LocalRole.valueOf(record.getValue(CHATTER.ROLE)),
-                    record.getValue(CHATTER.TIMEOUT),
+                    GlobalRole.valueOf(record.getValue(USER.ROLE)),
+                    record.getValue(CHATTER.TIMEOUT) != null,
                     record.getValue(CHATTER.BANNED)
                 ))
                 .collect(Collectors.toList());
@@ -150,10 +154,12 @@ public class ChatterDao {
     }
 
     public DataPage<ChatterData> searchPaged(long room, int page, int pageLength, String nameParam) {
-        DataPage<ChatterData> result = null;
         try (Connection connection = dataSource.getConnection()) {
             List<ChatterData> data = DSL.using(connection)
-                .select(CHATTER.ID, CHATTER.USER_ID, CHATTER.ROOM_ID, CHATTER.ROLE, CHATTER.TIMEOUT, CHATTER.BANNED, USER.NAME)
+                .select(
+                    CHATTER.ID, CHATTER.USER_ID, CHATTER.ROLE, CHATTER.TIMEOUT, CHATTER.BANNED,
+                    USER.NAME, USER.ROLE
+                )
                 .from(CHATTER.join(USER).on(CHATTER.USER_ID.equal(USER.ID)))
                 .where(CHATTER.ROOM_ID.equal(room).and(USER.NAME.like(nameParam, '!')))
                 .orderBy(CHATTER.ID)
@@ -164,18 +170,17 @@ public class ChatterDao {
                     record.getValue(CHATTER.ID),
                     record.getValue(CHATTER.USER_ID),
                     record.getValue(USER.NAME),
-                    record.getValue(CHATTER.ROOM_ID),
                     LocalRole.valueOf(record.getValue(CHATTER.ROLE)),
-                    record.getValue(CHATTER.TIMEOUT),
+                    GlobalRole.valueOf(record.getValue(USER.ROLE)),
+                    record.getValue(CHATTER.TIMEOUT) != null,
                     record.getValue(CHATTER.BANNED)
                 ))
                 .collect(Collectors.toList());
             int count = count(connection, room, USER.NAME.like(nameParam, '!'));
-            result = new DataPage<>(data, page, Pages.pageCount(pageLength, count));
+            return new DataPage<>(data, page, Pages.pageCount(pageLength, count));
         } catch (DataAccessException | SQLException e) {
             throw new InternalErrorException(e);
         }
-        return result;
     }
 
     private int count(Connection connection, long room, Condition condition) {
@@ -189,5 +194,4 @@ public class ChatterDao {
             return DSL.using(connection).fetchCount(CHATTER, CHATTER.ROOM_ID.eq(room));
         }
     }
-
 }

@@ -26,6 +26,9 @@ public class CybergameTvProtocolHandler extends SimpleChannelInboundHandler<Cybe
                 logger.debug("received message event");
                 ctx.fireChannelRead(msg);
                 break;
+            default:
+                logger.warn("unsupported event type {}", msg.getType());
+                break;
         }
     }
 }

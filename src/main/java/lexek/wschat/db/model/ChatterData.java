@@ -1,23 +1,24 @@
 package lexek.wschat.db.model;
 
-import lexek.wschat.chat.LocalRole;
+import lexek.wschat.chat.model.GlobalRole;
+import lexek.wschat.chat.model.LocalRole;
 
 public class ChatterData {
     private final long id;
     private final long userId;
     private final String userName;
-    private final long roomId;
     private final LocalRole role;
-    private final Long timeout;
+    private final GlobalRole globalRole;
+    private final boolean timedOut;
     private final boolean banned;
 
-    public ChatterData(long id, long userId, String userName, long roomId, LocalRole role, Long timeout, boolean banned) {
+    public ChatterData(long id, long userId, String userName, LocalRole role, GlobalRole globalRole, boolean timedOut, boolean banned) {
         this.id = id;
         this.userId = userId;
         this.userName = userName;
-        this.roomId = roomId;
         this.role = role;
-        this.timeout = timeout;
+        this.globalRole = globalRole;
+        this.timedOut = timedOut;
         this.banned = banned;
     }
 
@@ -33,19 +34,19 @@ public class ChatterData {
         return userName;
     }
 
-    public long getRoomId() {
-        return roomId;
-    }
-
     public LocalRole getRole() {
         return role;
     }
 
-    public Long getTimeout() {
-        return timeout;
+    public boolean isTimedOut() {
+        return timedOut;
     }
 
     public boolean isBanned() {
         return banned;
+    }
+
+    public GlobalRole getGlobalRole() {
+        return globalRole;
     }
 }

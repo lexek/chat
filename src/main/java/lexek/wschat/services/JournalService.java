@@ -3,11 +3,11 @@ package lexek.wschat.services;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
-import lexek.wschat.chat.LocalRole;
 import lexek.wschat.chat.Room;
+import lexek.wschat.chat.model.LocalRole;
 import lexek.wschat.db.dao.JournalDao;
 import lexek.wschat.db.jooq.tables.pojos.Announcement;
-import lexek.wschat.db.jooq.tables.pojos.Emoticon;
+import lexek.wschat.db.model.Emoticon;
 import lexek.wschat.db.model.JournalEntry;
 import lexek.wschat.db.model.UserDto;
 import lexek.wschat.db.model.form.UserChangeSet;
@@ -155,6 +155,23 @@ public class JournalService {
                 objectMapper.writeValueAsString(ImmutableMap.of(
                     "providerName", providerName,
                     "remoteRoom", remoteRoom
+                )),
+                now(),
+                room.getId()));
+        } catch (JsonProcessingException e) {
+            logger.warn("", e);
+        }
+    }
+
+    public void topicChanged(UserDto admin, Room room, String newTopic) {
+        try {
+            journalDao.add(new JournalEntry(
+                null,
+                admin,
+                "TOPIC_CHANGED",
+                objectMapper.writeValueAsString(ImmutableMap.of(
+                    "oldTopic", room.getTopic(),
+                    "newTopic", newTopic
                 )),
                 now(),
                 room.getId()));

@@ -6,14 +6,18 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
-import lexek.wschat.chat.LocalRole;
-import lexek.wschat.chat.Message;
-import lexek.wschat.chat.MessageProperty;
-import lexek.wschat.chat.MessageType;
+import lexek.wschat.chat.model.LocalRole;
+import lexek.wschat.chat.model.Message;
+import lexek.wschat.chat.model.MessageProperty;
+import lexek.wschat.chat.model.MessageType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
 public class MessageDeserializer extends StdDeserializer<Message> {
+    private final Logger logger = LoggerFactory.getLogger(MessageDeserializer.class);
+
     public MessageDeserializer() {
         super(Message.class);
     }
@@ -63,6 +67,9 @@ public class MessageDeserializer extends StdDeserializer<Message> {
                     break;
                 case "serviceResource":
                     mapBuilder.put(MessageProperty.SERVICE_RESOURCE, node.asText());
+                    break;
+                default:
+                    logger.warn("unsupported property {}", name);
                     break;
             }
 

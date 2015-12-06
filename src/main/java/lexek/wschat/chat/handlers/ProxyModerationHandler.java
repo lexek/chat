@@ -1,7 +1,9 @@
 package lexek.wschat.chat.handlers;
 
 import com.google.common.collect.ImmutableSet;
-import lexek.wschat.chat.*;
+import lexek.wschat.chat.Connection;
+import lexek.wschat.chat.Room;
+import lexek.wschat.chat.model.*;
 import lexek.wschat.chat.processing.AbstractRoomMessageHandler;
 import lexek.wschat.proxy.ModerationOperation;
 import lexek.wschat.proxy.ProxyManager;
@@ -15,7 +17,8 @@ public class ProxyModerationHandler extends AbstractRoomMessageHandler {
                 MessageProperty.ROOM,
                 MessageProperty.NAME,
                 MessageProperty.SERVICE,
-                MessageProperty.SERVICE_RESOURCE
+                MessageProperty.SERVICE_RESOURCE,
+                MessageProperty.TEXT
             ),
             MessageType.PROXY_MOD,
             LocalRole.MOD,

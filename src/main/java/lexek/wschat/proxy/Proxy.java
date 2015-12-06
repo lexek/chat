@@ -1,7 +1,6 @@
 package lexek.wschat.proxy;
 
-import lexek.wschat.chat.Connection;
-import lexek.wschat.chat.Message;
+import lexek.wschat.chat.model.Message;
 
 public interface Proxy {
     void start();
@@ -10,7 +9,7 @@ public interface Proxy {
 
     void moderate(ModerationOperation type, String name);
 
-    void onMessage(Connection connection, Message message);
+    void onMessage(Message message);
 
     long id();
 

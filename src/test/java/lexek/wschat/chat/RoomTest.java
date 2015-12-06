@@ -1,5 +1,7 @@
 package lexek.wschat.chat;
 
+import lexek.wschat.chat.model.Chatter;
+import lexek.wschat.chat.model.GlobalRole;
 import lexek.wschat.db.model.UserDto;
 import lexek.wschat.services.ChatterService;
 import lexek.wschat.services.UserService;

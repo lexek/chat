@@ -2,9 +2,14 @@ package lexek.wschat.chat.handlers;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import lexek.wschat.chat.*;
+import lexek.wschat.chat.Connection;
+import lexek.wschat.chat.MessageBroadcaster;
+import lexek.wschat.chat.Room;
+import lexek.wschat.chat.TestConnection;
+import lexek.wschat.chat.evt.EventDispatcher;
+import lexek.wschat.chat.filters.BroadcastFilter;
+import lexek.wschat.chat.model.*;
 import lexek.wschat.db.model.UserDto;
-import lexek.wschat.services.EventDispatcher;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -40,7 +45,13 @@ public class JoinHandlerTest {
     }
 
     @Test
-    public void should() {
+    public void shouldNotRequireTimeout() {
+        JoinHandler handler = new JoinHandler(null, null);
+        assertFalse(handler.isNeedsInterval());
+    }
+
+    @Test
+    public void shouldWork() {
         EventDispatcher eventDispatcher = mock(EventDispatcher.class);
         Room room = mock(Room.class);
         MessageBroadcaster messageBroadcaster = mock(MessageBroadcaster.class);
@@ -55,15 +66,20 @@ public class JoinHandlerTest {
         when(room.join(connection)).thenReturn(chatter);
         when(room.getName()).thenReturn("#main");
         when(room.inRoom(user)).thenReturn(false);
+        when(room.getTopic()).thenReturn("topic");
 
         handler.handle(connection, user, room, chatter, new Message(ImmutableMap.of(
             MessageProperty.TYPE, MessageType.JOIN,
-            MessageProperty.ROOM, "#main"
+            MessageProperty.ROOM, "#main",
+            MessageProperty.TEXT, "topic"
         )));
 
         verify(room).join(connection);
-        verify(messageBroadcaster).submitMessage(eq(Message.joinMessage("#main", userDto)), eq(connection), eq(room.FILTER));
-        verify(connection).send(eq(Message.selfJoinMessage("#main", chatter)));
+        verify(messageBroadcaster).submitMessage(eq(
+            Message.joinMessage("#main", userDto, LocalRole.USER)),
+            eq(room.FILTER)
+        );
+        verify(connection).send(eq(Message.selfJoinMessage("#main", chatter, room.getTopic())));
         verify(eventDispatcher).joinedRoom(eq(connection), eq(chatter), eq(room));
     }
 
@@ -83,6 +99,7 @@ public class JoinHandlerTest {
         when(room.join(connection)).thenReturn(chatter);
         when(room.getName()).thenReturn("#main");
         when(room.inRoom(user)).thenReturn(true);
+        when(room.getTopic()).thenReturn("topic");
 
         handler.handle(connection, user, room, chatter, new Message(ImmutableMap.of(
             MessageProperty.TYPE, MessageType.JOIN,
@@ -90,8 +107,8 @@ public class JoinHandlerTest {
         )));
 
         verify(room).join(connection);
-        verify(messageBroadcaster, never()).submitMessage(any(Message.class), any(Connection.class), any(BroadcastFilter.class));
-        verify(connection).send(eq(Message.selfJoinMessage("#main", chatter)));
+        verify(messageBroadcaster, never()).submitMessage(any(Message.class), any(BroadcastFilter.class));
+        verify(connection).send(eq(Message.selfJoinMessage("#main", chatter, room.getTopic())));
         verify(eventDispatcher).joinedRoom(eq(connection), eq(chatter), eq(room));
     }
 
@@ -111,6 +128,7 @@ public class JoinHandlerTest {
         when(room.join(connection)).thenReturn(chatter);
         when(room.getName()).thenReturn("#main");
         when(room.inRoom(user)).thenReturn(false);
+        when(room.getTopic()).thenReturn("topic");
 
         handler.handle(connection, user, room, chatter, new Message(ImmutableMap.of(
             MessageProperty.TYPE, MessageType.JOIN,
@@ -118,8 +136,8 @@ public class JoinHandlerTest {
         )));
 
         verify(room).join(connection);
-        verify(messageBroadcaster, never()).submitMessage(any(Message.class), any(Connection.class), any(BroadcastFilter.class));
-        verify(connection).send(eq(Message.selfJoinMessage("#main", chatter)));
+        verify(messageBroadcaster, never()).submitMessage(any(Message.class), any(BroadcastFilter.class));
+        verify(connection).send(eq(Message.selfJoinMessage("#main", chatter, room.getTopic())));
         verify(eventDispatcher).joinedRoom(eq(connection), eq(chatter), eq(room));
     }
 
@@ -139,6 +157,7 @@ public class JoinHandlerTest {
         when(room.join(connection)).thenReturn(chatter);
         when(room.getName()).thenReturn("#main");
         when(room.inRoom(user)).thenReturn(true);
+        when(room.getTopic()).thenReturn("topic");
 
         handler.handle(connection, user, room, chatter, new Message(ImmutableMap.of(
             MessageProperty.TYPE, MessageType.JOIN,
@@ -146,8 +165,8 @@ public class JoinHandlerTest {
         )));
 
         verify(room, never()).join(connection);
-        verify(messageBroadcaster, never()).submitMessage(any(Message.class), any(Connection.class), any(BroadcastFilter.class));
-        verify(connection, never()).send(eq(Message.selfJoinMessage("#main", chatter)));
+        verify(messageBroadcaster, never()).submitMessage(any(Message.class), any(BroadcastFilter.class));
+        verify(connection, never()).send(eq(Message.selfJoinMessage("#main", chatter, room.getTopic())));
         verify(eventDispatcher, never()).joinedRoom(any(Connection.class), any(Chatter.class), any(Room.class));
         verify(connection).send(eq(Message.errorMessage("ROOM_ALREADY_JOINED")));
     }

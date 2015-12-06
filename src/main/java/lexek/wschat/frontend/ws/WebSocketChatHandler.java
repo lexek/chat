@@ -5,7 +5,9 @@ import io.netty.handler.codec.http.websocketx.*;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.util.AttributeKey;
-import lexek.wschat.chat.*;
+import lexek.wschat.chat.MessageReactor;
+import lexek.wschat.chat.RoomManager;
+import lexek.wschat.chat.model.*;
 import lexek.wschat.security.AuthenticationCallback;
 import lexek.wschat.security.AuthenticationService;
 import lexek.wschat.util.Constants;
@@ -100,8 +102,11 @@ public class WebSocketChatHandler extends SimpleChannelInboundHandler<WebSocketF
                 }
                 return;
             }
-            channel.writeAndFlush(new TextWebSocketFrame(protocol.getCodec().encode(
-                Message.errorMessage("Not authenticated, try refreshing page."), null)));
+            channel.writeAndFlush(
+                new TextWebSocketFrame(
+                    protocol.getCodec().encode(Message.errorMessage("Not authenticated, try refreshing page."))
+                )
+            );
         }
     }
 

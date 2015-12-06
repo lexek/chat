@@ -14,7 +14,7 @@ public class FileSystemStaticHandler extends AbstractStaticHandler {
     }
 
     @Override
-    StaticHandlerContext getContext(String uri) {
+    protected StaticHandlerContext getContext(String uri) {
         return new FileSystemContext(uri);
     }
 

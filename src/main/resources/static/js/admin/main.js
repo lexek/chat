@@ -60,27 +60,25 @@ var TicketCountServiceFactory = function($http) {
 var MessageFilter = function($http, $sce) {
     var emoticons = {};
     var emoticonRegExp = null;
-    $http({method: 'GET', url: '/rest/emoticons/all'})
-        .success(function(d, status, headers, config) {
-            var data = d["records"];
-            var emoticonCodeList = [];
-            angular.forEach(data, function (e) {
-                emoticons[e[1]] = {
-                    "id": e[0],
-                    "code": e[1],
-                    "fileName": e[2],
-                    "height": e[3],
-                    "width": e[4]
-                };
-                emoticonCodeList.push(e[1]
+    $http({
+        method: 'GET',
+        url: '/rest/emoticons/all'
+    }).success(function(data) {
+        emoticons = {};
+        var emoticonCodeList = [];
+        angular.forEach(data, function (e) {
+            emoticons[e.code] = e;
+            emoticonCodeList.push(
+                e.code
                     .replace("\\", "\\\\")
                     .replace(")", "\\)")
                     .replace("(", "\\(")
                     .replace(".", "\\.")
-                    .replace("*", "\\*"));
-            });
-            emoticonRegExp = new RegExp(emoticonCodeList.join("|"), "g");
+                    .replace("*", "\\*")
+            );
         });
+        emoticonRegExp = new RegExp(emoticonCodeList.join("|"), "g");
+    });
 
     return function(input) {
         var text = input.replace(/</gi, '&lt;');
@@ -409,32 +407,25 @@ var EmoticonsController = function($scope, $http, alert) {
 
     var loadEmoticons = function() {
         $scope.emoticons.length = 0;
-        $http({method: "GET", url: "/rest/emoticons/all"})
-            .success(function (d, status, headers, config) {
-                var data = d["records"];
-                angular.forEach(data, function (e) {
-                    $scope.emoticons.push({
-                        "id": e[0],
-                        "code": e[1],
-                        "fileName": e[2],
-                        "height": e[3],
-                        "width": e[4]
-                    });
-                });
-            })
-            .error(function (data, status, headers, config) {
-                alert.alert("danger", data);
-            });
+        $http({
+            method: "GET",
+            url: "/rest/emoticons/all"
+        }).success(function (d) {
+            $scope.emoticons = d;
+        }).error(function (data) {
+            alert.alert("danger", data);
+        });
     };
 
     $scope.requestDelete = function(id) {
-        $http({method: "DELETE", url: "/rest/emoticons/"+id})
-            .success(function(data, status, headers, config) {
-                loadEmoticons();
-            })
-            .error(function(data, status, headers, config) {
-                alert.alert("danger", data);
-            });
+        $http({
+            method: "DELETE",
+            url: "/rest/emoticons/"+id
+        }).success(function() {
+            loadEmoticons();
+        }).error(function(data) {
+            alert.alert("danger", data);
+        });
     };
 
     $scope.submitForm = function() {
@@ -443,10 +434,9 @@ var EmoticonsController = function($scope, $http, alert) {
             url     : "/rest/emoticons/add",
             data    : $scope.formData,
             headers : { "Content-Type": "multipart/form-data" }
-        })
-            .success(function() {
-                loadEmoticons();
-            });
+        }).success(function() {
+            loadEmoticons();
+        });
     };
 
     $scope.orderBy = function(orderVar) {
@@ -1528,11 +1518,14 @@ var ChattersController = function($scope, $location, $http, $modal, room) {
             page: $scope.page,
             search: $scope.search
         };
-        $http({method: "GET", url: StringFormatter.format("/rest/rooms/{number}/chatters/all", room.id), params: params})
-            .success(function (d, status, headers, config) {
-                $scope.users = d["data"];
-                $scope.totalPages = d["pageCount"];
-            });
+        $http({
+            method: "GET",
+            url: StringFormatter.format("/rest/rooms/{number}/chatters/all", room.id),
+            params: params
+        }).success(function (d) {
+            $scope.users = d["data"];
+            $scope.totalPages = d["pageCount"];
+        });
     };
 
     $scope.previousPage = function() {
@@ -1584,6 +1577,78 @@ var ChattersController = function($scope, $location, $http, $modal, room) {
                 }
             }
         });
+    };
+
+    $scope.toggleBan = function(chatter) {
+        $http({
+            method: "PUT",
+            url: StringFormatter.format("/rest/rooms/{number}/chatters/{string}", room.id, chatter.userName),
+            data: {
+                "banned": !chatter.banned
+            }
+        }).success(function () {
+            chatter.banned = !chatter.banned;
+        });
+    };
+
+    $scope.canBan = function(chatter) {
+        return (ROLES[chatter.role] <= ROLES.MOD) && (ROLES[chatter.globalRole] < ROLES[document.SELF_ROLE]);
+    };
+
+    loadPage();
+};
+
+var OnlineChattersController = function($scope, $location, $http, $modal, room) {
+    $scope.users = [];
+    $scope.search = null;
+    $scope.room = room;
+    $scope.filter = '';
+
+    var loadPage = function() {
+        $scope.users.length = 0;
+        var params = {
+            page: $scope.page,
+            search: $scope.search
+        };
+        $http({
+            method: "GET",
+            url: StringFormatter.format("/rest/rooms/{number}/chatters/online", room.id),
+            params: params
+        }).success(function (d) {
+            $scope.users = d;
+        });
+    };
+
+    $scope.showUser = function(id, evt) {
+        if (evt) {
+            evt.preventDefault();
+        }
+        $modal.open({
+            templateUrl: "user.html",
+            controller: UserModalController,
+            size: "sm",
+            resolve: {
+                id: function () {
+                    return id;
+                }
+            }
+        });
+    };
+
+    $scope.toggleBan = function(chatter) {
+        $http({
+            method: "PUT",
+            url: StringFormatter.format("/rest/rooms/{number}/chatters/{string}", room.id, chatter.userName),
+            data: {
+                "banned": !chatter.banned
+            }
+        }).success(function () {
+            chatter.banned = !chatter.banned;
+        });
+    };
+
+    $scope.canBan = function(chatter) {
+        return (ROLES[chatter.role] <= ROLES.MOD) && (ROLES[chatter.globalRole] < ROLES[document.SELF_ROLE]);
     };
 
     loadPage();
@@ -1715,6 +1780,21 @@ var RoomController = function($scope, $location, $http, $sce, $modal, alert, tit
         loadProxies();
     };
 
+    $scope.updateTopic = function() {
+        var newTopic = prompt("New topic", $scope.roomData.topic);
+        if (newTopic) {
+            $http({
+                method: "PUT",
+                data: {
+                    topic: newTopic
+                },
+                url: "/rest/rooms/" + $scope.roomId
+            }).success(function() {
+                $scope.roomData.topic = newTopic;
+            });
+        }
+    };
+
     $scope.showHistory = function() {
         $modal.open({
             templateUrl: 'history.html',
@@ -1731,9 +1811,20 @@ var RoomController = function($scope, $location, $http, $sce, $modal, alert, tit
 
     $scope.showChatters = function() {
         $modal.open({
-            templateUrl: 'chatters.html',
+            templateUrl: '/templates/chatters.html',
             controller: ChattersController,
-            size: "lg",
+            resolve: {
+                room: function () {
+                    return $scope.roomData;
+                }
+            }
+        });
+    };
+
+    $scope.showOnlineChatters = function() {
+        $modal.open({
+            templateUrl: '/templates/online_chatters.html',
+            controller: OnlineChattersController,
             resolve: {
                 room: function () {
                     return $scope.roomData;
@@ -1941,7 +2032,8 @@ var RoomController = function($scope, $location, $http, $sce, $modal, alert, tit
         "ROOM_UNBAN": "User unbanned",
         "ROOM_ROLE": "Role changed",
         "NEW_ANNOUNCEMENT": "Announcement created",
-        "INACTIVE_ANNOUNCEMENT": "Announcement archived"
+        "INACTIVE_ANNOUNCEMENT": "Announcement archived",
+        "TOPIC_CHANGED": "Changed topic"
     };
 
     $scope.getClassForJournalAction = function(action) {
@@ -2090,7 +2182,7 @@ AdminApplication.config(["$routeProvider", "$locationProvider", function($routeP
     });
     $routeProvider.when("/room", {
         "title": "room",
-        "templateUrl": "room.html",
+        "templateUrl": "/templates/room.html",
         "controller": RoomController,
         "menuId": "room"
     });
@@ -2103,6 +2195,7 @@ AdminApplication.config(["$routeProvider", "$locationProvider", function($routeP
 }]);
 
 AdminApplication.run(['$location', '$rootScope', "$route", "title", "tickets", function($location, $rootScope, $route, title, tickets) {
+    $rootScope.SELF_ROLE = document.SELF_ROLE;
     $rootScope.reloadCurrentRoute = function() {
         $route.reload();
     };

@@ -7,15 +7,15 @@
     <groupId>lexek</groupId>
     <artifactId>wschat</artifactId>
     <packaging>jar</packaging>
-    <version>20-FINAL</version>
+    <version>21-FINAL</version>
     <name>Yoba chat server</name>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <webappSourceDir>${basedir}/src/main/resources</webappSourceDir>
         <wro4j.version>1.7.6</wro4j.version>
-        <jooq.version>3.7.0</jooq.version>
-        <netty.version>4.0.32.Final</netty.version>
+        <jooq.version>3.7.1</jooq.version>
+        <netty.version>4.0.33.Final</netty.version>
         <jersey.version>2.22.1</jersey.version>
         <metrics.version>3.1.0</metrics.version>
     </properties>
@@ -138,6 +138,7 @@
                         <exclude>lexek/wschat/db/jooq/**</exclude>
                         <exclude>lexek/wschat/db/model/**</exclude>
                         <exclude>lexek/wschat/chat/e/**</exclude>
+                        <exclude>lexek/wschat/chat/model/**</exclude>
                         <exclude>lexek/wschat/Main*</exclude>
                         <exclude>lexek/wschat/*Configuration*</exclude>
                     </excludes>
@@ -222,7 +223,32 @@
 
         <dependency>
             <groupId>io.netty</groupId>
-            <artifactId>netty-all</artifactId>
+            <artifactId>netty-buffer</artifactId>
+            <version>${netty.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-codec</artifactId>
+            <version>${netty.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-codec-http</artifactId>
+            <version>${netty.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-common</artifactId>
+            <version>${netty.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-handler</artifactId>
+            <version>${netty.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-transport</artifactId>
             <version>${netty.version}</version>
         </dependency>
         <dependency>

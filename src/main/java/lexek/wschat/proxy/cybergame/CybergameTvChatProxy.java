@@ -16,7 +16,11 @@ import io.netty.handler.codec.http.websocketx.WebSocketVersion;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.handler.timeout.IdleStateHandler;
-import lexek.wschat.chat.*;
+import lexek.wschat.chat.MessageBroadcaster;
+import lexek.wschat.chat.Room;
+import lexek.wschat.chat.model.GlobalRole;
+import lexek.wschat.chat.model.LocalRole;
+import lexek.wschat.chat.model.Message;
 import lexek.wschat.proxy.ModerationOperation;
 import lexek.wschat.proxy.Proxy;
 import lexek.wschat.proxy.ProxyProvider;
@@ -110,7 +114,7 @@ public class CybergameTvChatProxy implements Proxy {
     }
 
     @Override
-    public void onMessage(Connection connection, Message message) {
+    public void onMessage(Message message) {
         //do nothing
     }
 
@@ -177,10 +181,7 @@ public class CybergameTvChatProxy implements Proxy {
                 "cybergame",
                 channelName
             );
-            messageBroadcaster.submitMessage(
-                chatMessage,
-                Connection.STUB_CONNECTION,
-                room.FILTER);
+            messageBroadcaster.submitMessage(chatMessage, room.FILTER);
         }
 
         @Override

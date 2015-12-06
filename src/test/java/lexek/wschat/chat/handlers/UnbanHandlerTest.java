@@ -2,14 +2,16 @@ package lexek.wschat.chat.handlers;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import lexek.wschat.chat.*;
+import lexek.wschat.chat.Connection;
+import lexek.wschat.chat.Room;
+import lexek.wschat.chat.TestConnection;
+import lexek.wschat.chat.model.*;
 import lexek.wschat.db.model.UserDto;
 import lexek.wschat.services.ChatterService;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 public class UnbanHandlerTest {
@@ -47,6 +49,11 @@ public class UnbanHandlerTest {
     @Test
     public void shouldRequireJoin() {
         assertTrue(handler.joinRequired());
+    }
+
+    @Test
+    public void shouldNotRequireTimeout() {
+        assertFalse(handler.isNeedsInterval());
     }
 
     @Test

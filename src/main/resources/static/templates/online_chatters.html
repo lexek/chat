@@ -1,0 +1,49 @@
+<div class="modal-header">
+    <h3 class="modal-title">
+        Chatters for room {{room.name}}
+        <div class="pull-right" style="max-width: 200px">
+            <div class="input-group">
+                <input type="text" class="form-control" placeholder="Search" ng-model="filter">
+                    <span class="input-group-btn">
+                        <button type="submit" class="btn btn-default">
+                            <i class="fa fa-fw fa-search"></i>
+                        </button>
+                    </span>
+            </div>
+        </div>
+    </h3>
+</div>
+
+<div class="modal-body">
+    <div class="panel panel-default">
+        <div class="list-group">
+            <div class="list-group-item" ng-repeat="user in users | filter:{'userName': filter}">
+                <h4 class="list-group-item-heading">
+                    <i class="fa fa-fw fa-user"></i>
+                    <a href="/admin/users?page=0&search={{user.userName}}" ng-click="showUser(user.userId, $event)">
+                        {{user.userName}}
+                    </a>
+                    <small>
+                        {{user.role}} ({{user.globalRole}})
+                    </small>
+                    <span class="pull-right">
+                        <span
+                                class="btn  btn-xs"
+                                ng-if="canBan(user)"
+                                ng-click="toggleBan(user)"
+                                ng-class="user.banned ? 'btn-link-danger' : 'btn-link-success'">
+                            <span class="fa fa-fw" ng-class="user.banned ? 'fa-check-square-o' : 'fa-square-o'" ></span>
+                        </span>
+                        <span
+                                class="fa fa-fw" style="font-size: 14px;"
+                                ng-if="!canBan(user)"
+                                ng-class="user.banned ? 'fa-check-square-o' : 'fa-square-o'"></span>
+                    </span>
+                </h4>
+            </div>
+        </div>
+        <div class="panel-body" ng-if="users.length === 0">
+            <div class="alert alert-warning" role="alert">Nothing to show.</div>
+        </div>
+    </div>
+</div>

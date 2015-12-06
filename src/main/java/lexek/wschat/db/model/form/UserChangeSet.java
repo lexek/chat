@@ -2,7 +2,7 @@ package lexek.wschat.db.model.form;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import lexek.wschat.chat.GlobalRole;
+import lexek.wschat.chat.model.GlobalRole;
 
 @JsonSerialize(include = JsonSerialize.Inclusion.NON_NULL)
 public class UserChangeSet {

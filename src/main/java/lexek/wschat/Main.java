@@ -13,7 +13,6 @@ import com.codahale.metrics.jvm.BufferPoolMetricSet;
 import com.codahale.metrics.jvm.GarbageCollectorMetricSet;
 import com.codahale.metrics.jvm.MemoryUsageGaugeSet;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
@@ -27,10 +26,12 @@ import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import lexek.httpserver.*;
 import lexek.wschat.chat.*;
+import lexek.wschat.chat.evt.ChatEventType;
+import lexek.wschat.chat.evt.EventDispatcher;
 import lexek.wschat.chat.handlers.*;
+import lexek.wschat.chat.listeners.*;
 import lexek.wschat.chat.processing.HandlerInvoker;
 import lexek.wschat.db.dao.*;
-import lexek.wschat.db.model.ProxyMessageModel;
 import lexek.wschat.frontend.http.*;
 import lexek.wschat.frontend.http.admin.AdminPageHandler;
 import lexek.wschat.frontend.http.rest.CheckUsernameResource;
@@ -44,6 +45,7 @@ import lexek.wschat.frontend.ws.WebSocketChatServer;
 import lexek.wschat.frontend.ws.WebSocketConnectionGroup;
 import lexek.wschat.frontend.ws.WebSocketProtocol;
 import lexek.wschat.proxy.ProxyManager;
+import lexek.wschat.proxy.SendProxyListOnEventListener;
 import lexek.wschat.proxy.cybergame.CybergameTvProxyProvider;
 import lexek.wschat.proxy.goodgame.GoodGameProxyProvider;
 import lexek.wschat.proxy.sc2tv.Sc2tvProxyProvider;
@@ -58,7 +60,6 @@ import lexek.wschat.security.jersey.UserParamValueFactoryProvider;
 import lexek.wschat.security.social.TwitchTvSocialAuthService;
 import lexek.wschat.services.*;
 import lexek.wschat.services.poll.PollService;
-import lexek.wschat.services.poll.PollState;
 import org.apache.http.impl.client.HttpClients;
 import org.glassfish.hk2.api.InjectionResolver;
 import org.glassfish.hk2.api.TypeLiteral;
@@ -81,7 +82,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Collectors;
 
 public class Main {
     private Main() {
@@ -158,39 +158,38 @@ public class Main {
 
         ConnectionManager connectionManager = new ConnectionManager(metricRegistry);
         UserService userService = new UserService(connectionManager, userDao, journalService);
-        ChatterService chatterService = new ChatterService(chatterDao, journalService);
         AuthenticationManager authenticationManager = new AuthenticationManager(ircHost, emailService, connectionManager, userAuthDao);
+        EventDispatcher eventDispatcher = new EventDispatcher();
 
         ThreadFactory scheduledThreadFactory = new ThreadFactoryBuilder().setNameFormat("ANNOUNCEMENT_SCHEDULER_%d").build();
         ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(scheduledThreadFactory);
         AtomicLong messageId = new AtomicLong(0);
-        HistoryService historyService = new HistoryService(20, historyDao);
+        HistoryService historyService = new HistoryService(20, historyDao, userService);
         MessageConsumerServiceHandler messageConsumerServiceHandler = new MessageConsumerServiceHandler();
         MessageBroadcaster messageBroadcaster = new MessageBroadcaster();
         messageBroadcaster.registerConsumer(historyService);
         messageBroadcaster.registerConsumer(connectionManager);
         messageBroadcaster.registerConsumer(messageConsumerServiceHandler);
+        ChatterService chatterService = new ChatterService(chatterDao, journalService, userService, messageBroadcaster);
         RoomManager roomManager = new RoomManager(userService, messageBroadcaster, roomDao, chatterService, journalService);
         RoomService roomService = new RoomService(roomManager);
         AnnouncementService announcementService = new AnnouncementService(new AnnouncementDao(dataSource), journalService, roomManager, messageBroadcaster, scheduledExecutorService);
         PollService pollService = new PollService(new PollDao(dataSource), messageBroadcaster, roomManager, journalService);
-        AuthenticationService authenticationService = new AuthenticationService(authenticationManager, userService, captchaService);
+        AuthenticationService authenticationService = new AuthenticationService(authenticationManager, userService, captchaService, eventDispatcher);
         NotificationService notificationService = new NotificationService(connectionManager, userService, messageBroadcaster, emailService, pendingNotificationDao);
         TicketService ticketService = new TicketService(userService, notificationService, new TicketDao(dataSource));
         EmoticonService emoticonService = new EmoticonService(
             new Dimension(coreSettings.getMaxEmoticonWidth(), coreSettings.getMaxEmoticonHeight()),
             dataDir,
             emoticonDao,
-            journalService
-        );
+            journalService,
+            messageBroadcaster);
         SteamGameDao steamGameDao = new SteamGameDao(dataSource);
         SteamGameResolver steamGameResolver = new SteamGameResolver(steamGameDao, HttpClients.createMinimal());
         TwitchTvSocialAuthService twitchAuthService = new TwitchTvSocialAuthService(settings.getHttp().getTwitchClientId(),
             settings.getHttp().getTwitchSecret(),
             settings.getHttp().getTwitchUrl());
         IgnoreService ignoreService = new IgnoreService(ignoreDao);
-
-        EventDispatcher eventDispatcher = new EventDispatcher();
 
         Set<String> bannedIps = new CopyOnWriteArraySet<>();
 
@@ -206,47 +205,18 @@ public class Main {
         proxyManager.registerProvider(new Sc2tvProxyProvider(proxyEventLoopGroup, messageBroadcaster, messageId));
         proxyManager.registerProvider(new CybergameTvProxyProvider(proxyEventLoopGroup, messageBroadcaster, messageId));
         messageConsumerServiceHandler.register(proxyManager);
-        eventDispatcher.registerListener(new IgnoreJoinListener(ignoreService));
-        eventDispatcher.registerListener((connection, chatter, room) ->
-                connection.send(Message.proxyListMessage(
-                    proxyManager.getProxiesByRoom(room)
-                        .stream()
-                        .map(proxy -> new ProxyMessageModel(
-                            proxy.provider().getName(),
-                            proxy.remoteRoom(),
-                            proxy.outboundEnabled(),
-                            proxy.moderationEnabled()
-                        ))
-                        .collect(Collectors.toList())
-                    ,
-                    room.getName()
-                ))
-        );
-        eventDispatcher.registerListener((connection, chatter, room) -> {
-            if (connection.isNeedNames()) {
-                ImmutableList.Builder<Chatter> users = ImmutableList.builder();
-                room.getOnlineChatters().stream().filter(c -> c.hasRole(LocalRole.USER)).forEach(users::add);
-                connection.send(Message.namesMessage(room.getName(), users.build()));
-            }
-        });
-        eventDispatcher.registerListener(((connection, chatter, room) ->
-            connection.send(Message.historyMessage(room.getHistory()))));
-        eventDispatcher.registerListener((connection, chatter, room) ->
-            announcementService.sendAnnouncements(connection, room));
-        eventDispatcher.registerListener((connection, chatter, room) -> {
-            PollState activePoll = pollService.getActivePoll(room);
-            if (activePoll != null) {
-                connection.send(Message.pollMessage(MessageType.POLL, room.getName(), activePoll));
-                if (activePoll.getVoted().contains(connection.getUser().getId())) {
-                    connection.send(Message.pollVotedMessage(room.getName()));
-                }
-            }
-        });
-        eventDispatcher.registerListener(notificationService);
+        eventDispatcher.registerListener(ChatEventType.CONNECT, new SendIgnoreListOnEventListener(ignoreService));
+        eventDispatcher.registerListener(ChatEventType.CONNECT, new SendEmoticonsOnEventListener(emoticonService));
+        eventDispatcher.registerListener(ChatEventType.JOIN, new SendProxyListOnEventListener(proxyManager));
+        eventDispatcher.registerListener(ChatEventType.JOIN, new SendNamesOnEventListener());
+        eventDispatcher.registerListener(ChatEventType.JOIN, new SendHistoryOnEventListener());
+        eventDispatcher.registerListener(ChatEventType.JOIN, new SendAnnouncementsOnEventListener(announcementService));
+        eventDispatcher.registerListener(ChatEventType.JOIN, new SendPollOnEventListener(pollService));
+        eventDispatcher.registerListener(ChatEventType.JOIN, new SendNotificationsOnEventListener(notificationService));
 
         HandlerInvoker handlerInvoker = new HandlerInvoker(roomManager, chatterService, bannedIps, captchaService);
         MessageReactor messageReactor = new DefaultMessageReactor(handlerInvoker);
-        handlerInvoker.register(new BanHandler(messageBroadcaster, chatterService));
+        handlerInvoker.register(new BanHandler(chatterService));
         handlerInvoker.register(new ClearUserHandler(messageBroadcaster));
         handlerInvoker.register(new ColorHandler(userDao));
         handlerInvoker.register(new JoinHandler(eventDispatcher, messageBroadcaster));
@@ -254,12 +224,12 @@ public class Main {
         handlerInvoker.register(new MeHandler(messageBroadcaster, messageId));
         handlerInvoker.register(new PartHandler(messageBroadcaster));
         handlerInvoker.register(new SetRoleHandler(chatterService));
-        handlerInvoker.register(new TimeOutHandler(messageBroadcaster, chatterService));
+        handlerInvoker.register(new TimeOutHandler(chatterService));
         handlerInvoker.register(new UnbanHandler(chatterService));
         handlerInvoker.register(new NameHandler(userService));
         handlerInvoker.register(new LikeHandler(messageBroadcaster));
         handlerInvoker.register(new ClearRoomHandler(messageBroadcaster));
-        handlerInvoker.register(new VoteHandler(pollService));
+        handlerInvoker.register(new VoteHandler(pollService, messageBroadcaster));
         handlerInvoker.register(new ProxyModerationHandler(proxyManager));
         handlerInvoker.register(new IgnoreHandler(ignoreService));
         handlerInvoker.register(new UnignoreHandler(ignoreService));
@@ -329,7 +299,7 @@ public class Main {
                 registerInstances(
                     new StatisticsResource(new StatisticsDao(dataSource), runtimeMetricRegistry, healthCheckRegistry),
                     new AnnouncementResource(announcementService, roomService),
-                    new ChattersResource(chatterDao, roomService),
+                    new ChattersResource(chatterDao, roomService, chatterService, userService),
                     new EmoticonsResource(emoticonService),
                     new HistoryResource(historyService),
                     new IpBlockResource(bannedIps),

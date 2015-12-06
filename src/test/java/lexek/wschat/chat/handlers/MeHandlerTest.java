@@ -2,7 +2,12 @@ package lexek.wschat.chat.handlers;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import lexek.wschat.chat.*;
+import lexek.wschat.chat.Connection;
+import lexek.wschat.chat.MessageBroadcaster;
+import lexek.wschat.chat.Room;
+import lexek.wschat.chat.TestConnection;
+import lexek.wschat.chat.filters.RoomWithSendBackCheckFilter;
+import lexek.wschat.chat.model.*;
 import lexek.wschat.db.model.UserDto;
 import org.junit.Test;
 
@@ -44,6 +49,12 @@ public class MeHandlerTest {
     }
 
     @Test
+    public void shouldRequireTimeout() {
+        MeHandler handler = new MeHandler(null, null);
+        assertTrue(handler.isNeedsInterval());
+    }
+
+    @Test
     public void shouldWork() {
         Room room = mock(Room.class);
         MessageBroadcaster messageBroadcaster = mock(MessageBroadcaster.class);
@@ -69,6 +80,7 @@ public class MeHandlerTest {
         verify(messageBroadcaster).submitMessage(
             argThat(textMessage(Message.meMessage(
                 "#main",
+                0L,
                 "user",
                 LocalRole.USER,
                 GlobalRole.USER,
@@ -76,8 +88,8 @@ public class MeHandlerTest {
                 0L,
                 0L,
                 "top kek"))),
-            eq(connection),
-            eq(room.FILTER));
+            eq(new RoomWithSendBackCheckFilter(room, connection))
+        );
     }
 
     @Test
@@ -108,8 +120,8 @@ public class MeHandlerTest {
 
         verify(messageBroadcaster, never()).submitMessage(
             any(Message.class),
-            eq(connection),
-            eq(room.FILTER));
+            eq(new RoomWithSendBackCheckFilter(room, connection))
+        );
         verify(connection).send(eq(Message.errorMessage("MESSAGE_TOO_BIG")));
     }
 
@@ -142,6 +154,7 @@ public class MeHandlerTest {
         verify(messageBroadcaster).submitMessage(
             argThat(textMessage(Message.meMessage(
                 "#main",
+                0L,
                 "user",
                 LocalRole.MOD,
                 GlobalRole.MOD,
@@ -149,8 +162,8 @@ public class MeHandlerTest {
                 0L,
                 0L,
                 s))),
-            eq(connection),
-            eq(room.FILTER));
+            eq(new RoomWithSendBackCheckFilter(room, connection))
+        );
     }
 
     @Test
@@ -178,8 +191,8 @@ public class MeHandlerTest {
 
         verify(messageBroadcaster, never()).submitMessage(
             any(Message.class),
-            eq(connection),
-            eq(room.FILTER));
+            eq(new RoomWithSendBackCheckFilter(room, connection))
+        );
         verify(connection).send(eq(Message.errorMessage("EMPTY_MESSAGE")));
     }
 
@@ -208,8 +221,8 @@ public class MeHandlerTest {
 
         verify(messageBroadcaster, never()).submitMessage(
             any(Message.class),
-            eq(connection),
-            eq(room.FILTER));
+            eq(new RoomWithSendBackCheckFilter(room, connection))
+        );
         verify(connection).send(eq(Message.errorMessage("EMPTY_MESSAGE")));
     }
 }

@@ -1,6 +1,8 @@
 package lexek.wschat.chat;
 
 import io.netty.util.internal.chmv8.ConcurrentHashMapV8;
+import lexek.wschat.chat.model.GlobalRole;
+import lexek.wschat.chat.model.Message;
 import lexek.wschat.db.dao.RoomDao;
 import lexek.wschat.db.model.UserDto;
 import lexek.wschat.services.ChatterService;
@@ -50,7 +52,8 @@ public class RoomManager {
                 connection.getUser().hasRole(GlobalRole.USER) &&
                 sendPartMessage)
             .forEach(room -> messageBroadcaster.submitMessage(
-                Message.partMessage(room.getName(), connection.getUser().getName()), connection, room.FILTER));
+                Message.partMessage(room.getName(), connection.getUser().getName()), room.FILTER)
+            );
     }
 
     public void createRoom(String name, String topic, UserDto admin) {
@@ -62,6 +65,12 @@ public class RoomManager {
             roomIds.put(room.getId(), room);
             journalService.newRoom(admin, room);
         }
+    }
+
+    public void updateTopic(UserDto admin, Room room, String newTopic) {
+        roomDao.updateTopic(room.getId(), newTopic);
+        journalService.topicChanged(admin, room, newTopic);
+        room.setTopic(newTopic);
     }
 
     public void deleteRoom(Room room, UserDto admin) {

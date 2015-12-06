@@ -4,6 +4,12 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.LinkedHashMultiset;
 import com.google.common.collect.Multiset;
 import io.netty.util.internal.chmv8.ConcurrentHashMapV8;
+import lexek.wschat.chat.filters.BroadcastFilter;
+import lexek.wschat.chat.filters.RoomFilter;
+import lexek.wschat.chat.model.Chatter;
+import lexek.wschat.chat.model.GlobalRole;
+import lexek.wschat.chat.model.Message;
+import lexek.wschat.chat.model.User;
 import lexek.wschat.db.model.UserDto;
 import lexek.wschat.services.ChatterService;
 import lexek.wschat.services.UserService;
@@ -37,6 +43,10 @@ public class Room {
         this.id = id;
         this.name = name;
         this.topic = topic;
+    }
+
+    public Chatter getOnlineChatter(User user) {
+        return getOnlineChatter(user.getWrappedObject());
     }
 
     public Chatter getOnlineChatter(UserDto user) {

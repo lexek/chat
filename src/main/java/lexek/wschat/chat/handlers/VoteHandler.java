@@ -1,15 +1,20 @@
 package lexek.wschat.chat.handlers;
 
 import com.google.common.collect.ImmutableSet;
-import lexek.wschat.chat.*;
+import lexek.wschat.chat.Connection;
+import lexek.wschat.chat.MessageBroadcaster;
+import lexek.wschat.chat.Room;
+import lexek.wschat.chat.filters.UserInRoomFilter;
+import lexek.wschat.chat.model.*;
 import lexek.wschat.chat.processing.AbstractRoomMessageHandler;
 import lexek.wschat.services.poll.PollService;
 
 
 public class VoteHandler extends AbstractRoomMessageHandler {
     private final PollService pollService;
+    private final MessageBroadcaster messageBroadcaster;
 
-    public VoteHandler(PollService pollService) {
+    public VoteHandler(PollService pollService, MessageBroadcaster messageBroadcaster) {
         super(
             ImmutableSet.of(
                 MessageProperty.ROOM,
@@ -20,6 +25,7 @@ public class VoteHandler extends AbstractRoomMessageHandler {
             true
         );
         this.pollService = pollService;
+        this.messageBroadcaster = messageBroadcaster;
     }
 
     @Override
@@ -27,7 +33,10 @@ public class VoteHandler extends AbstractRoomMessageHandler {
         int option = message.get(MessageProperty.POLL_OPTION);
         if (option >= 0) {
             pollService.vote(room, user, option);
-            connection.send(Message.pollVotedMessage(room.getName()));
+            messageBroadcaster.submitMessage(
+                Message.pollVotedMessage(room.getName()),
+                new UserInRoomFilter(user, room)
+            );
         } else {
             connection.send(Message.errorMessage("BAD_ARG"));
         }

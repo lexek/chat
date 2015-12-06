@@ -26,7 +26,7 @@ public class UserTicketsHandler extends SimpleHttpHandler {
         if (auth != null && auth.getUser() != null) {
             UserDto user = auth.getUser();
             if (request.method() == HttpMethod.GET) {
-                handleGet(request, response, user);
+                handleGet(response, user);
                 return;
             } else if (request.method() == HttpMethod.POST) {
                 handlePost(request, response, user);
@@ -51,7 +51,7 @@ public class UserTicketsHandler extends SimpleHttpHandler {
         }
     }
 
-    private void handleGet(Request request, Response response, UserDto user) {
+    private void handleGet(Response response, UserDto user) {
         response.jsonContent(ticketService.getAllTicketsForUser(user, 0).getData());
     }
 }

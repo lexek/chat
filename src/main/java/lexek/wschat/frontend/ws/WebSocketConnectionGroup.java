@@ -1,7 +1,10 @@
 package lexek.wschat.frontend.ws;
 
 import com.google.common.collect.ImmutableSet;
-import lexek.wschat.chat.*;
+import lexek.wschat.chat.Connection;
+import lexek.wschat.chat.ConnectionGroup;
+import lexek.wschat.chat.model.Message;
+import lexek.wschat.chat.model.MessageType;
 import lexek.wschat.frontend.Codec;
 
 import java.util.HashSet;
@@ -100,26 +103,11 @@ public class WebSocketConnectionGroup implements ConnectionGroup<WebSocketConnec
     }
 
     @Override
-    public void send(Message message, User user) {
+    public void send(Message message, Predicate<Connection> predicate) {
         if (!IGNORE_TYPES.contains(message.getType())) {
             readLock.lock();
             try {
-                String encodedMessage = codec.encode(message, user);
-                for (WebSocketConnectionAdapter c : connections) {
-                    c.send(encodedMessage);
-                }
-            } finally {
-                readLock.unlock();
-            }
-        }
-    }
-
-    @Override
-    public void send(Message message, User user, Predicate<Connection> predicate) {
-        if (!IGNORE_TYPES.contains(message.getType())) {
-            readLock.lock();
-            try {
-                String encodedMessage = codec.encode(message, user);
+                String encodedMessage = codec.encode(message);
                 connections.stream().filter(predicate).forEach(c -> c.send(encodedMessage));
             } finally {
                 readLock.unlock();

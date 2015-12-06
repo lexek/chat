@@ -2,14 +2,16 @@ package lexek.wschat.chat.handlers;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import lexek.wschat.chat.*;
+import lexek.wschat.chat.Connection;
+import lexek.wschat.chat.Room;
+import lexek.wschat.chat.TestConnection;
+import lexek.wschat.chat.model.*;
 import lexek.wschat.db.model.UserDto;
 import lexek.wschat.services.ChatterService;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 public class TimeoutHandlerTest {
@@ -17,14 +19,13 @@ public class TimeoutHandlerTest {
     private User user = new User(userDto);
     private Chatter chatter = new Chatter(0L, LocalRole.MOD, false, null, user);
     private Connection connection = spy(new TestConnection(user));
-    private MessageBroadcaster messageBroadcaster = mock(MessageBroadcaster.class);
     private Room room = mock(Room.class);
     private ChatterService chatterService = mock(ChatterService.class);
-    private TimeOutHandler handler = new TimeOutHandler(messageBroadcaster, chatterService);
+    private TimeOutHandler handler = new TimeOutHandler(chatterService);
 
     @Before
     public void resetMocks() {
-        reset(messageBroadcaster, connection, room, chatterService);
+        reset(connection, room, chatterService);
     }
 
     @Test
@@ -51,6 +52,11 @@ public class TimeoutHandlerTest {
     }
 
     @Test
+    public void shouldNotRequireTimeout() {
+        assertFalse(handler.isNeedsInterval());
+    }
+
+    @Test
     public void testExistingUserWithGoodRole() {
         UserDto otherUserDto = new UserDto(1L, "username", GlobalRole.USER, "#000000", false, false, null, false);
         User otherUser = new User(otherUserDto);
@@ -59,17 +65,12 @@ public class TimeoutHandlerTest {
         when(room.getOnlineChatter(userDto)).thenReturn(chatter);
         when(room.getChatter("username")).thenReturn(otherChatter);
         when(room.getName()).thenReturn("#main");
-        when(chatterService.timeoutChatter(eq(room), eq(otherChatter), anyLong())).thenReturn(true);
+        when(chatterService.timeoutChatter(eq(room), eq(otherChatter), eq(chatter), anyLong())).thenReturn(true);
         handler.handle(connection, user, room, chatter, new Message(ImmutableMap.of(
             MessageProperty.TYPE, MessageType.TIMEOUT,
             MessageProperty.ROOM, "#main",
             MessageProperty.NAME, "username"
         )));
-        verify(chatterService).timeoutChatter(eq(room), eq(otherChatter), anyLong());
-        verify(messageBroadcaster, times(1)).submitMessage(
-            eq(Message.moderationMessage(MessageType.TIMEOUT, "#main", "user", "username")),
-            eq(connection),
-            eq(room.FILTER));
     }
 
     @Test
@@ -81,14 +82,13 @@ public class TimeoutHandlerTest {
         when(room.getOnlineChatter(userDto)).thenReturn(chatter);
         when(room.getChatter("username")).thenReturn(otherChatter);
         when(room.getName()).thenReturn("#main");
-        when(chatterService.timeoutChatter(eq(room), eq(otherChatter), anyLong())).thenReturn(false);
+        when(chatterService.timeoutChatter(eq(room), eq(otherChatter), eq(chatter), anyLong())).thenReturn(false);
         handler.handle(connection, user, room, chatter, new Message(ImmutableMap.of(
             MessageProperty.TYPE, MessageType.TIMEOUT,
             MessageProperty.ROOM, "#main",
             MessageProperty.NAME, "username"
         )));
-        verify(chatterService).timeoutChatter(eq(room), eq(otherChatter), anyLong());
-        verifyZeroInteractions(messageBroadcaster);
+        verify(chatterService).timeoutChatter(eq(room), eq(otherChatter), eq(chatter), anyLong());
         verify(connection, times(1)).send(eq(Message.errorMessage("INTERNAL_ERROR")));
     }
 
@@ -107,8 +107,7 @@ public class TimeoutHandlerTest {
             MessageProperty.ROOM, "#main",
             MessageProperty.NAME, "username"
         )));
-        verify(chatterService, never()).timeoutChatter(eq(room), eq(otherChatter), anyLong());
-        verifyZeroInteractions(messageBroadcaster);
+        verify(chatterService, never()).timeoutChatter(eq(room), eq(otherChatter), eq(chatter), anyLong());
         verify(connection, times(1)).send(eq(Message.errorMessage("TIMEOUT_DENIED")));
     }
 
@@ -126,8 +125,7 @@ public class TimeoutHandlerTest {
             MessageProperty.ROOM, "#main",
             MessageProperty.NAME, "username"
         )));
-        verify(chatterService, never()).timeoutChatter(eq(room), eq(otherChatter), anyLong());
-        verifyZeroInteractions(messageBroadcaster);
+        verify(chatterService, never()).timeoutChatter(eq(room), eq(otherChatter), eq(chatter), anyLong());
         verify(connection, times(1)).send(eq(Message.errorMessage("TIMEOUT_DENIED")));
     }
 
@@ -142,8 +140,7 @@ public class TimeoutHandlerTest {
             MessageProperty.ROOM, "#main",
             MessageProperty.NAME, "username"
         )));
-        verify(chatterService, never()).timeoutChatter(eq(room), any(Chatter.class), anyLong());
-        verifyZeroInteractions(messageBroadcaster);
+        verify(chatterService, never()).timeoutChatter(eq(room), any(Chatter.class), eq(chatter), anyLong());
         verify(connection, times(1)).send(eq(Message.errorMessage("UNKNOWN_USER")));
     }
 }

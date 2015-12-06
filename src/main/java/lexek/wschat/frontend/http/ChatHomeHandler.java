@@ -22,13 +22,13 @@ public class ChatHomeHandler extends SimpleHttpHandler {
         boolean debug = request.queryParamAsBoolean("debug");
         String room = request.queryParam("room");
         response.renderTemplate("chat", ImmutableMap.builder()
-                .put("title", title)
-                .put("like", allowLikes)
-                .put("singleRoom", singleRoom)
-                .put("debug", debug)
-                .put("room", room != null ? "#" + room : "#main")
-                .put("protocolVersion", Constants.WEBSOCKET_PROTOCOL_VERSION)
-                .build()
+            .put("title", title)
+            .put("like", allowLikes)
+            .put("singleRoom", singleRoom)
+            .put("debug", debug)
+            .put("room", room != null ? "#" + room : "#main")
+            .put("protocolVersion", Constants.WEBSOCKET_PROTOCOL_VERSION)
+            .build()
         );
     }
 }

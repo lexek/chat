@@ -51,6 +51,9 @@ public class GoodGameProtocolHandler extends SimpleChannelInboundHandler<GoodGam
             case ERROR:
                 logger.debug("error {}", msg.getText());
                 break;
+            default:
+                logger.debug("unsupported message type {}", msg.getType());
+                break;
         }
     }
 }

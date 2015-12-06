@@ -1,7 +1,7 @@
 package lexek.wschat.frontend.http.rest.admin;
 
 import com.google.common.collect.ImmutableMap;
-import lexek.wschat.chat.GlobalRole;
+import lexek.wschat.chat.model.GlobalRole;
 import lexek.wschat.db.jooq.tables.pojos.Ticket;
 import lexek.wschat.db.model.DataPage;
 import lexek.wschat.db.model.UserDto;

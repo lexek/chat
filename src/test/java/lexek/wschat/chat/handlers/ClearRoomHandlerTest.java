@@ -2,13 +2,16 @@ package lexek.wschat.chat.handlers;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import lexek.wschat.chat.*;
+import lexek.wschat.chat.Connection;
+import lexek.wschat.chat.MessageBroadcaster;
+import lexek.wschat.chat.Room;
+import lexek.wschat.chat.TestConnection;
+import lexek.wschat.chat.model.*;
 import lexek.wschat.db.model.UserDto;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 public class ClearRoomHandlerTest {
@@ -53,6 +56,11 @@ public class ClearRoomHandlerTest {
     }
 
     @Test
+    public void shouldNotRequireTimeout() {
+        assertFalse(handler.isNeedsInterval());
+    }
+
+    @Test
     public void testExistingUserWithGoodRole() {
         when(room.inRoom(connection)).thenReturn(true);
         when(room.getOnlineChatter(userDto)).thenReturn(chatter);
@@ -63,7 +71,7 @@ public class ClearRoomHandlerTest {
         )));
         verify(messageBroadcaster, times(1)).submitMessage(
             eq(Message.clearMessage("#main")),
-            eq(connection),
-            eq(room.FILTER));
+            eq(room.FILTER)
+        );
     }
 }

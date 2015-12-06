@@ -61,13 +61,13 @@ public class RoomDao {
         }
     }
 
-    @Deprecated
-    public void delete(String name) {
+    public void updateTopic(long roomId, String newTopic) {
         try (Connection connection = dataSource.getConnection()) {
             DSLContext ctx = DSL.using(connection);
             ctx
-                .delete(ROOM)
-                .where(ROOM.NAME.equal(name))
+                .update(ROOM)
+                .set(ROOM.TOPIC, newTopic)
+                .where(ROOM.ID.equal(roomId))
                 .execute();
         } catch (DataAccessException | SQLException e) {
             throw new InternalErrorException(e);

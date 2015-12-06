@@ -11,9 +11,10 @@ import com.lmax.disruptor.RingBuffer;
 import com.lmax.disruptor.dsl.Disruptor;
 import com.lmax.disruptor.dsl.ProducerType;
 import lexek.wschat.chat.Connection;
-import lexek.wschat.chat.ConnectionState;
-import lexek.wschat.chat.Message;
-import lexek.wschat.chat.User;
+import lexek.wschat.chat.evt.EventDispatcher;
+import lexek.wschat.chat.model.ConnectionState;
+import lexek.wschat.chat.model.Message;
+import lexek.wschat.chat.model.User;
 import lexek.wschat.db.model.UserAuthDto;
 import lexek.wschat.services.AbstractService;
 import lexek.wschat.services.UserService;
@@ -28,12 +29,19 @@ public class AuthenticationService extends AbstractService {
     private final AuthenticationManager authenticationManager;
     private final UserService userService;
     private final CaptchaService captchaService;
+    private final EventDispatcher eventDispatcher;
 
-    public AuthenticationService(AuthenticationManager authenticationManager, UserService userService, CaptchaService captchaService) {
+    public AuthenticationService(
+        AuthenticationManager authenticationManager,
+        UserService userService,
+        CaptchaService captchaService,
+        EventDispatcher eventDispatcher
+    ) {
         super("authenticationService");
         this.authenticationManager = authenticationManager;
         this.userService = userService;
         this.captchaService = captchaService;
+        this.eventDispatcher = eventDispatcher;
         EventFactory<AuthenticationEvent> eventFactory = AuthenticationEvent::new;
         ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("AUTHENTICATION_SERVICE_%d").build();
         this.disruptor = new Disruptor<>(
@@ -185,6 +193,7 @@ public class AuthenticationService extends AbstractService {
             }
             connection.send(Message.authCompleteMessage(connection.getUser().getWrappedObject()));
             callback.authenticationComplete(connection);
+            eventDispatcher.connected(connection);
         }
     }
 }

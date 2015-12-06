@@ -1,6 +1,6 @@
 package lexek.httpserver;
 
-import lexek.wschat.chat.GlobalRole;
+import lexek.wschat.chat.model.GlobalRole;
 import lexek.wschat.db.model.UserDto;
 
 import javax.ws.rs.core.SecurityContext;

@@ -1,17 +1,11 @@
 package lexek.wschat.chat;
 
+import lexek.wschat.chat.filters.BroadcastFilter;
+import lexek.wschat.chat.model.Message;
+
 public class MessageEvent {
-    private Connection connection;
     private Message message;
     private BroadcastFilter broadcastFilter;
-
-    public Connection getConnection() {
-        return connection;
-    }
-
-    public void setConnection(Connection connection) {
-        this.connection = connection;
-    }
 
     public Message getMessage() {
         return message;

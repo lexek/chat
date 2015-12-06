@@ -34,10 +34,6 @@ public abstract class ProxyProvider {
         return supportsOutbound;
     }
 
-    public EnumSet<ModerationOperation> getSupportedOperations() {
-        return supportedOperations;
-    }
-
     public boolean supports(ModerationOperation operation) {
         return supportedOperations.contains(operation);
     }

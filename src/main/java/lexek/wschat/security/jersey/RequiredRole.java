@@ -1,6 +1,6 @@
 package lexek.wschat.security.jersey;
 
-import lexek.wschat.chat.GlobalRole;
+import lexek.wschat.chat.model.GlobalRole;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

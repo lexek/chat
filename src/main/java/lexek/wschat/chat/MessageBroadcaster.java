@@ -10,6 +10,8 @@ import com.lmax.disruptor.EventHandler;
 import com.lmax.disruptor.RingBuffer;
 import com.lmax.disruptor.dsl.Disruptor;
 import com.lmax.disruptor.dsl.ProducerType;
+import lexek.wschat.chat.filters.BroadcastFilter;
+import lexek.wschat.chat.model.Message;
 import lexek.wschat.services.AbstractService;
 import lexek.wschat.util.LoggingExceptionHandler;
 
@@ -35,17 +37,33 @@ public class MessageBroadcaster extends AbstractService {
         this.disruptor.handleExceptionsWith(new LoggingExceptionHandler());
     }
 
-    public void submitMessage(Message message, Connection connection, BroadcastFilter filter) {
+    /**
+     * Submits message to broadcast
+     *
+     * @param message message to send
+     * @param filter  how to filter connections
+     */
+    public void submitMessage(Message message, BroadcastFilter filter) {
+        if (filter == null) {
+            throw new NullPointerException("filter");
+        }
+        if (message == null) {
+            throw new NullPointerException("message");
+        }
         long sequence = ringBuffer.next();
         MessageEvent event = ringBuffer.get(sequence);
         event.setMessage(message);
-        event.setConnection(connection);
         event.setBroadcastFilter(filter);
         ringBuffer.publish(sequence);
     }
 
-    public void submitMessage(Message message, Connection connection) {
-        submitMessage(message, connection, BroadcastFilter.NO_FILTER);
+    /**
+     * Will submit message with {@link BroadcastFilter#NO_FILTER} as filter
+     *
+     * @param message message to send
+     */
+    public void submitMessage(Message message) {
+        submitMessage(message, BroadcastFilter.NO_FILTER);
     }
 
     public void registerConsumer(EventHandler<MessageEvent> consumer) {

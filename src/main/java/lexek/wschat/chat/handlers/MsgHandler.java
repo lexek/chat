@@ -1,7 +1,11 @@
 package lexek.wschat.chat.handlers;
 
 import com.google.common.collect.ImmutableSet;
-import lexek.wschat.chat.*;
+import lexek.wschat.chat.Connection;
+import lexek.wschat.chat.MessageBroadcaster;
+import lexek.wschat.chat.Room;
+import lexek.wschat.chat.filters.RoomWithSendBackCheckFilter;
+import lexek.wschat.chat.model.*;
 import lexek.wschat.chat.processing.AbstractRoomMessageHandler;
 
 import java.util.concurrent.atomic.AtomicLong;
@@ -34,6 +38,7 @@ public class MsgHandler extends AbstractRoomMessageHandler {
             messageBroadcaster.submitMessage(
                 Message.msgMessage(
                     room.getName(),
+                    chatter.getUser().getId(),
                     chatter.getUser().getName(),
                     chatter.getRole(),
                     chatter.getUser().getRole(),
@@ -42,8 +47,8 @@ public class MsgHandler extends AbstractRoomMessageHandler {
                     System.currentTimeMillis(),
                     text
                 ),
-                connection,
-                room.FILTER);
+                new RoomWithSendBackCheckFilter(room, connection)
+            );
         }
 
     }
