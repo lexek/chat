@@ -256,7 +256,7 @@ function($modal, settings, $translate, $http, $timeout, notificationService, msg
                     clearTimeout(chat.lastMessageTimeout);
                 }
                 chat.lastMessageTimeout = setTimeout(function() {
-                    chat.sendMessage({"type": "PING", "args": []});
+                    chat.sendMessage({"type": "PING"});
                 }, 30000);
 
                 if (message.type !== "PONG") {
