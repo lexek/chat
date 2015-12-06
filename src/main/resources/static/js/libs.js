@@ -155,39 +155,20 @@ Array.prototype.remove = function(obj) {
     return rv;
 };
 
-var amperRe_ = /&/g;
-var ltRe_ = /</g;
-var gtRe_ = />/g;
-var quotRe_ = /\"/g;
-var allRe_ = /[&<>\"]/;
+var allRe_ = /[&<>";]/g;
 
-var htmlEscape = function(str, opt_isLikelyToContainHtmlChars) {
-    if (opt_isLikelyToContainHtmlChars) {
-        return str.replace(amperRe_, '&amp;')
-            .replace(ltRe_, '&lt;')
-            .replace(gtRe_, '&gt;')
-            .replace(quotRe_, '&quot;');
+var replaceMap_ = {
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    "\"": "&quot;",
+    ";": "&#59;"
+};
 
-    } else {
-        // quick test helps in the case when there are no chars to replace, in
-        // worst case this makes barely a difference to the time taken
-        if (!allRe_.test(str)) return str;
-
-        // str.indexOf is faster than regex.test in this case
-        if (str.indexOf('&') != -1) {
-            str = str.replace(amperRe_, '&amp;');
-        }
-        if (str.indexOf('<') != -1) {
-            str = str.replace(ltRe_, '&lt;');
-        }
-        if (str.indexOf('>') != -1) {
-            str = str.replace(gtRe_, '&gt;');
-        }
-        if (str.indexOf('"') != -1) {
-            str = str.replace(quotRe_, '&quot;');
-        }
-        return str;
-    }
+var htmlEscape = function(str) {
+    return str.replace(allRe_, function(match) {
+        return replaceMap_[match];
+    })
 };
 
 //*****************
