@@ -249,6 +249,10 @@ public class AuthenticationManager {
         return userAuthDao.getAuthDataForUser(user.getId(), service);
     }
 
+    public UserAuthDto getAuthDataForUser(long userId, String service) {
+        return userAuthDao.getAuthDataForUser(userId, service);
+    }
+
     public boolean hasRole(Request request, GlobalRole role) {
         UserAuthDto auth = checkFullAuthentication(request);
         return auth != null && auth.getUser() != null && auth.getUser().getRole().compareTo(role) >= 0;

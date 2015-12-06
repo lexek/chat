@@ -14,12 +14,10 @@ import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
 import io.netty.util.AttributeKey;
 import io.netty.util.CharsetUtil;
-import lexek.wschat.chat.model.GlobalRole;
 import lexek.wschat.chat.model.Message;
 import lexek.wschat.chat.model.MessageProperty;
 import lexek.wschat.chat.model.MessageType;
 import lexek.wschat.db.model.UserAuthDto;
-import lexek.wschat.db.model.UserDto;
 import lexek.wschat.security.AuthenticationManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -83,10 +81,11 @@ public class OutboundMessageHandler {
 
     public void onMessage(Message message) {
         if (message.getType() == MessageType.MSG && message.get(MessageProperty.ROOM).equals("#main")) {
-            UserDto user = message.get(MessageProperty.USER);
+            long userId = message.get(MessageProperty.USER_ID);
+            String name = message.get(MessageProperty.NAME);
             UserCredentials userCredentials = null;
-            if (needsFetchingConnectionData(user)) {
-                userCredentials = fetchConnectionDataForUser(user);
+            if (needsFetchingConnectionData(userId)) {
+                userCredentials = fetchConnectionDataForUser(name, userId);
             }
 
             if (userCredentials != null) {
@@ -107,26 +106,26 @@ public class OutboundMessageHandler {
         }
     }
 
-    private boolean needsFetchingConnectionData(UserDto user) {
-        Boolean tmp = checkedUsers.get(user.getId());
-        return user.getRole().compareTo(GlobalRole.USER) >= 0 && (tmp == null || tmp);
+    private boolean needsFetchingConnectionData(long userId) {
+        Boolean tmp = checkedUsers.get(userId);
+        return tmp == null || tmp;
     }
 
-    private UserCredentials fetchConnectionDataForUser(UserDto user) {
+    private UserCredentials fetchConnectionDataForUser(String userName, long userId) {
         UserCredentials userCredentials = null;
-        logger.debug("fetching connection data for user {}", user.getName());
+        logger.debug("fetching connection data for user {}", userName);
         boolean r = false;
-        UserAuthDto auth = authenticationManager.getAuthDataForUser(user, "twitch.tv");
+        UserAuthDto auth = authenticationManager.getAuthDataForUser(userId, "twitch.tv");
         if (auth != null) {
             String token = auth.getAuthenticationKey();
             String extName = auth.getAuthenticationName();
-            logger.debug("fetched data for user {} with ext name {}", user.getName(), extName, token);
+            logger.debug("fetched data for user {} with ext name {}", userName, extName, token);
             if (token != null && extName != null) {
                 userCredentials = new UserCredentials(extName, token);
             }
             r = true;
         }
-        checkedUsers.put(user.getId(), r);
+        checkedUsers.put(userId, r);
         return userCredentials;
     }
 
