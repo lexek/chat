@@ -2032,7 +2032,8 @@ var RoomController = function($scope, $location, $http, $sce, $modal, alert, tit
         "ROOM_UNBAN": "User unbanned",
         "ROOM_ROLE": "Role changed",
         "NEW_ANNOUNCEMENT": "Announcement created",
-        "INACTIVE_ANNOUNCEMENT": "Announcement archived"
+        "INACTIVE_ANNOUNCEMENT": "Announcement archived",
+        "TOPIC_CHANGED": "Changed topic"
     };
 
     $scope.getClassForJournalAction = function(action) {

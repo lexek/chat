@@ -42,6 +42,11 @@
                                     <span ng-switch-when="DELETED_PROXY">
                                         {{entry.actionDescription.providerName}}/{{entry.actionDescription.remoteRoom}}
                                     </span>
+                                    <span ng-switch-when="TOPIC_CHANGED">
+                                        <code>{{entry.actionDescription.oldTopic}}</code>
+                                        <span class="fa fa-long-arrow-right"></span>
+                                        <code>{{entry.actionDescription.newTopic}}</code>
+                                    </span>
                                     <span ng-switch-default ng-bind="entry.actionDescription"></span>
                                 </span>
                             </span>
