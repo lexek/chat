@@ -67,6 +67,12 @@ public class RoomManager {
         }
     }
 
+    public void updateTopic(UserDto admin, Room room, String newTopic) {
+        roomDao.updateTopic(room.getId(), newTopic);
+        journalService.topicChanged(admin, room, newTopic);
+        room.setTopic(newTopic);
+    }
+
     public void deleteRoom(Room room, UserDto admin) {
         if (!room.getName().equals("#main")) {
             roomDao.delete(room.getId());

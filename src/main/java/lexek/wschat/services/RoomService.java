@@ -44,4 +44,8 @@ public class RoomService {
     public void createRoom(String name, String topic, UserDto admin) {
         roomManager.createRoom(name, topic, admin);
     }
+
+    public void updateTopic(UserDto admin, Room room, String topic) {
+        roomManager.updateTopic(admin, room, topic);
+    }
 }

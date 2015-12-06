@@ -86,6 +86,21 @@
         <div class="panel panel-primary">
             <div class="panel-heading">
                 <h4 class="panel-title">
+                    <i class="fa fa-fw fa-newspaper-o"></i> topic
+                </h4>
+            </div>
+            <div class="panel-body">
+                <span class="btn btn-link pull-right" ng-click="updateTopic()">
+                    <span class="fa fa-fw fa-pencil"></span>
+                </span>
+                <h4>
+                    {{ roomData.topic }}
+                </h4>
+            </div>
+        </div>
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <h4 class="panel-title">
                     <i class="fa fa-fw fa-users"></i> chatters
                 </h4>
             </div>

@@ -163,6 +163,23 @@ public class JournalService {
         }
     }
 
+    public void topicChanged(UserDto admin, Room room, String newTopic) {
+        try {
+            journalDao.add(new JournalEntry(
+                null,
+                admin,
+                "TOPIC_CHANGED",
+                objectMapper.writeValueAsString(ImmutableMap.of(
+                    "oldTopic", room.getTopic(),
+                    "newTopic", newTopic
+                )),
+                now(),
+                room.getId()));
+        } catch (JsonProcessingException e) {
+            logger.warn("", e);
+        }
+    }
+
     private long now() {
         return System.currentTimeMillis();
     }

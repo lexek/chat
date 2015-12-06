@@ -1780,6 +1780,21 @@ var RoomController = function($scope, $location, $http, $sce, $modal, alert, tit
         loadProxies();
     };
 
+    $scope.updateTopic = function() {
+        var newTopic = prompt("New topic", $scope.roomData.topic);
+        if (newTopic) {
+            $http({
+                method: "PUT",
+                data: {
+                    topic: newTopic
+                },
+                url: "/rest/rooms/" + $scope.roomId
+            }).success(function() {
+                $scope.roomData.topic = newTopic;
+            });
+        }
+    };
+
     $scope.showHistory = function() {
         $modal.open({
             templateUrl: 'history.html',
