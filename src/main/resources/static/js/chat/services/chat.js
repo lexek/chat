@@ -32,6 +32,7 @@ function($modal, settings, $translate, $http, $timeout, notificationService, msg
         this.limit = document.IS_MOBILE ? 20 : 50;
         this.proxies = {};
         this.ignoredNames = [];
+        this.reconnect = true;
     };
 
     chatService.prototype.isProxyModerationEnabled = function(room, providerName, remoteRoom) {
@@ -234,15 +235,17 @@ function($modal, settings, $translate, $http, $timeout, notificationService, msg
                 chat.connectionAttempt = 0;
             };
             chat.ws.onclose = function () {
-                if (chat.connectionAttempt === 0) {
-                    chat.reconnectAt = Date.now();
-                    start();
-                } else {
-                    var time = 250 * Math.pow(2, chat.connectionAttempt);
-                    chat.reconnectAt = Date.now() + time;
-                    setTimeout(function () {
+                if (chat.reconnect) {
+                    if (chat.connectionAttempt === 0) {
+                        chat.reconnectAt = Date.now();
                         start();
-                    }, time);
+                    } else {
+                        var time = 250 * Math.pow(2, chat.connectionAttempt);
+                        chat.reconnectAt = Date.now() + time;
+                        setTimeout(function () {
+                            start();
+                        }, time);
+                    }
                 }
                 chat.polls = {};
                 chat.pollsUpdatedCallback();

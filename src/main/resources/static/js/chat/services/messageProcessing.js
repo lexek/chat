@@ -429,6 +429,7 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
                 break;
             case "PROTOCOL_VERSION":
                 if (ctx.msg.version !== PROTOCOL_VERSION) {
+                    chat.reconnect = false;
                     document.location.reload(true);
                 } else {
                     console.log("protocol version matches");
