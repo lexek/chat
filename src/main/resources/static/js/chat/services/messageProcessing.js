@@ -240,6 +240,7 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
         chat.emoticons = {};
         var emoticonCodeList = [];
         angular.forEach(emoticons, function (e) {
+            e.code = htmlEscape(e.code);
             chat.emoticons[e.code] = e;
             emoticonCodeList.push(
                 e.code
