@@ -7,6 +7,7 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.ResponseHandler;
+import org.apache.http.entity.ContentType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,7 +28,8 @@ public enum JsonResponseHandler implements ResponseHandler<JsonNode> {
             if (entity == null) {
                 throw new ClientProtocolException("Response contains no content");
             }
-            InputStreamReader inputStreamReader = new InputStreamReader(entity.getContent());
+            ContentType contentType = ContentType.get(entity);
+            InputStreamReader inputStreamReader = new InputStreamReader(entity.getContent(), contentType.getCharset());
             return parser.readTree(inputStreamReader);
         } else {
             if (entity != null) {
