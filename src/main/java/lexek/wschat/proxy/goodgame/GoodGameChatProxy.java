@@ -27,6 +27,8 @@ import lexek.wschat.proxy.Proxy;
 import lexek.wschat.proxy.ProxyProvider;
 import lexek.wschat.proxy.ProxyState;
 import lexek.wschat.util.Colors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -35,6 +37,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public class GoodGameChatProxy implements Proxy {
     private static final String HOST_NAME = "chat.goodgame.ru";
+    private final Logger logger = LoggerFactory.getLogger(GoodGameChatProxy.class);
     private final Cache<String, String> idCache = CacheBuilder.newBuilder().maximumSize(100).build();
     private final String channelName;
     private final MessageBroadcaster messageBroadcaster;
@@ -183,14 +186,17 @@ public class GoodGameChatProxy implements Proxy {
         @Override
         protected void channelRead0(ChannelHandlerContext ctx, GoodGameEvent msg) throws Exception {
             if (msg.getType() == GoodGameEventType.FAILED_AUTH) {
+                logger.warn("failed login {}", userId);
                 state = ProxyState.FAILED;
                 lastError = "failed login";
                 channel.close();
             } else if (msg.getType() == GoodGameEventType.FAILED_JOIN) {
+                logger.warn("failed join {}", channelName);
                 state = ProxyState.FAILED;
                 lastError = "failed join";
                 channel.close();
             } else if (msg.getType() == GoodGameEventType.BAD_RIGHTS) {
+                logger.warn("bad rights {}: {}", channelName, userId);
                 state = ProxyState.FAILED;
                 lastError = "bad rights";
                 channel.close();
