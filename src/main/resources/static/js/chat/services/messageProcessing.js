@@ -60,7 +60,7 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
         if (!((chat.self.role >= globalLevels.MOD) || chat.hasLocalRole(levels.MOD, ctx.room))) {
             chat.messages[ctx.room].length = 0;
         }
-        chat.messages[ctx.room].push(new Message("INFO", $translate.instant("CHAT_CLEAR")));
+        chat.addMessage(new Message("INFO", $translate.instant("CHAT_CLEAR")), ctx.room);
         chat.messagesUpdated();
     };
 
