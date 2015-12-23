@@ -27,16 +27,21 @@ public class RequestDispatcher extends SimpleChannelInboundHandler<FullHttpReque
     private final ServerMessageHandler serverMessageHandler;
     private final ViewResolvers viewResolvers;
     private final Timer timer;
+    private final String host;
+    private final String origin;
 
     public RequestDispatcher(
         ServerMessageHandler serverMessageHandler,
         ViewResolvers viewResolvers,
         AuthenticationManager authenticationManager,
         Application resourceConfig,
-        MetricRegistry metricRegistry
+        MetricRegistry metricRegistry,
+        String hostname
     ) {
         this.serverMessageHandler = serverMessageHandler;
         this.viewResolvers = viewResolvers;
+        this.host = hostname + ":1337";
+        this.origin = "https://" + this.host;
         ApplicationHandler applicationHandler = new ApplicationHandler(resourceConfig);
         JerseyContainer jerseyContainer = new JerseyContainer(authenticationManager, applicationHandler);
         this.matcherEntries.add(new MatcherEntry(Pattern.compile("/rest/.*"), jerseyContainer));
@@ -48,31 +53,50 @@ public class RequestDispatcher extends SimpleChannelInboundHandler<FullHttpReque
         Channel channel = ctx.channel();
         channel.config().setAutoRead(false);
         boolean keepAlive = HttpHeaders.isKeepAlive(request);
+
+        boolean hostnameOk = false;
+        String host = request.headers().get(HttpHeaders.Names.HOST);
+        String origin = request.headers().get(HttpHeaders.Names.ORIGIN);
+        if (this.host.equalsIgnoreCase(host) && (origin == null || this.origin.equals(origin))) {
+            hostnameOk = true;
+        }
+
         FullHttpResponse response = null;
-        Timer.Context timerContext = timer.time();
-        for (MatcherEntry matcherEntry : matcherEntries) {
-            if (matcherEntry.getPattern().matcher(withoutQuery(request.getUri())).matches()) {
-                try {
-                    response = matcherEntry.getHandler().handle(viewResolvers, request, channel);
-                } catch (Exception e) {
-                    logger.warn("Exception while handling request", e);
-                    response = createInternalErrorResponse(e, channel.alloc());
-                }
-                if (response != null) {
-                    break;
+        if (hostnameOk) {
+            Timer.Context timerContext = timer.time();
+            for (MatcherEntry matcherEntry : matcherEntries) {
+                if (matcherEntry.getPattern().matcher(withoutQuery(request.getUri())).matches()) {
+                    try {
+                        response = matcherEntry.getHandler().handle(viewResolvers, request, channel);
+                    } catch (Exception e) {
+                        logger.warn("Exception while handling request", e);
+                        response = createInternalErrorResponse(e, channel.alloc());
+                    }
+                    if (response != null) {
+                        break;
+                    }
                 }
             }
-        }
-        long millis = TimeUnit.NANOSECONDS.toMillis(timerContext.stop());
-
-        //slow request
-        if (millis > 500) {
-            slowRequestLogger.info(
-                "{} {} ({}) {} ms",
-                request.getUri(),
-                request.getMethod(),
-                response != null ? response.getStatus() : 0,
-                millis
+            long millis = TimeUnit.NANOSECONDS.toMillis(timerContext.stop());
+            //slow request
+            if (millis > 500) {
+                slowRequestLogger.info(
+                    "{} {} ({}) {} ms",
+                    request.getUri(),
+                    request.getMethod(),
+                    response != null ? response.getStatus() : 0,
+                    millis
+                );
+            }
+        } else {
+            response = new DefaultFullHttpResponse(
+                HttpVersion.HTTP_1_1,
+                HttpResponseStatus.INTERNAL_SERVER_ERROR,
+                channel.alloc().buffer());
+            Response wrapper = new Response(response, viewResolvers);
+            serverMessageHandler.handle(
+                new ServerMessage(HttpResponseStatus.FORBIDDEN, "Hostname verification failed."),
+                wrapper
             );
         }
 

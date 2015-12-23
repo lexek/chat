@@ -318,7 +318,7 @@ public class Main {
             }
         };
 
-        final RequestDispatcher httpRequestDispatcher = new RequestDispatcher(serverMessageHandler, viewResolvers, authenticationManager, resourceConfig, runtimeMetricRegistry);
+        final RequestDispatcher httpRequestDispatcher = new RequestDispatcher(serverMessageHandler, viewResolvers, authenticationManager, resourceConfig, runtimeMetricRegistry, ircHost);
         httpRequestDispatcher.add("/.*", new FileSystemStaticHandler(dataDir));
         httpRequestDispatcher.add("/.*", new ClassPathStaticHandler(ClassPathStaticHandler.class, "/static/"));
         httpRequestDispatcher.add("/chat.html", new ChatHomeHandler("Yoba chat", settings.getHttp().isAllowLikes(), settings.getHttp().isSingleRoom()));
