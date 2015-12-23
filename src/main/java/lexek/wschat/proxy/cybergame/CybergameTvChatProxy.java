@@ -170,7 +170,7 @@ public class CybergameTvChatProxy implements Proxy {
         @Override
         protected void channelRead0(ChannelHandlerContext ctx, CybergameTvInboundMessage message) throws Exception {
             Message chatMessage = Message.extMessage(
-                "#main",
+                room.getName(),
                 message.getFrom(),
                 LocalRole.USER,
                 GlobalRole.USER,

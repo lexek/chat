@@ -203,7 +203,7 @@ public class GoodGameChatProxy implements Proxy {
             } else if (msg.getType() == GoodGameEventType.MESSAGE) {
                 idCache.put(msg.getUser(), msg.getId());
                 Message message = Message.extMessage(
-                    "#main",
+                    room.getName(),
                     msg.getUser(),
                     LocalRole.USER,
                     GlobalRole.USER,
