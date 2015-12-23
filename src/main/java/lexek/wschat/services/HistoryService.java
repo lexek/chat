@@ -72,7 +72,7 @@ public class HistoryService implements EventHandler<MessageEvent> {
                 message.getType().toString(), message.get(MessageProperty.TEXT), false));
         } else if (type == MessageType.CLEAR || type == MessageType.BAN || type == MessageType.TIMEOUT) {
             //todo: find better solution, but this works for now since it's not really frequent event type
-            UserDto mod = userService.fetchByName(message.get(MessageProperty.NAME));
+            UserDto mod = userService.fetchByName(message.get(MessageProperty.MOD));
             long t = System.currentTimeMillis();
             String userName = message.get(MessageProperty.NAME);
             historyDao.hideUserMessages(
