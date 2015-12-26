@@ -16,7 +16,7 @@ public class GoodGameCodec extends MessageToMessageCodec<JsonNode, GoodGameEvent
 
     @Override
     protected void decode(ChannelHandlerContext ctx, JsonNode rootObject, List<Object> out) throws Exception {
-        logger.debug(rootObject.toString());
+        logger.trace(rootObject.toString());
         String type = rootObject.get("type").asText();
         JsonNode data = rootObject.get("data");
         switch (type) {
