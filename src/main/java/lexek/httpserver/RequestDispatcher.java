@@ -91,7 +91,7 @@ public class RequestDispatcher extends SimpleChannelInboundHandler<FullHttpReque
         } else {
             response = new DefaultFullHttpResponse(
                 HttpVersion.HTTP_1_1,
-                HttpResponseStatus.INTERNAL_SERVER_ERROR,
+                HttpResponseStatus.FORBIDDEN,
                 channel.alloc().buffer());
             Response wrapper = new Response(response, viewResolvers);
             serverMessageHandler.handle(
