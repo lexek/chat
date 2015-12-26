@@ -177,7 +177,13 @@ public class GoodGameChatProxy implements Proxy {
     @ChannelHandler.Sharable
     private class Handler extends SimpleChannelInboundHandler<GoodGameEvent> {
         @Override
+        public void channelActive(ChannelHandlerContext ctx) throws Exception {
+            logger.info("connected");
+        }
+
+        @Override
         public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+            logger.info("disconnected");
             if (state == ProxyState.RUNNING) {
                 channel = bootstrap.connect(HOST_NAME, 8081).channel();
             }
