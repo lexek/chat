@@ -1,7 +1,6 @@
 package lexek.wschat.proxy.cybergame;
 
 import io.netty.bootstrap.Bootstrap;
-import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.*;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.epoll.Epoll;
@@ -28,7 +27,6 @@ import lexek.wschat.proxy.ProxyState;
 import lexek.wschat.util.Colors;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -60,13 +58,7 @@ public class CybergameTvChatProxy implements Proxy {
         ChannelHandler handler,
         String channelName
     ) {
-        URI uri_ = null;
-        try {
-            uri_ = new URI("ws://cybergame.tv:9090/123/agerh4tt/websocket");
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
-        }
-        final URI uri = uri_;
+        URI uri = URI.create("ws://cybergame.tv:9090/123/agerh4tt/websocket");
         Bootstrap bootstrap = new Bootstrap();
         bootstrap.group(eventLoopGroup);
         if (Epoll.isAvailable()) {
@@ -74,7 +66,6 @@ public class CybergameTvChatProxy implements Proxy {
         } else {
             bootstrap.channel(NioSocketChannel.class);
         }
-        bootstrap.option(ChannelOption.SO_KEEPALIVE, true);
         final CybergameTvMessageCodec codec = new CybergameTvMessageCodec();
         final CybergameTvProtocolHandler protocolHandler = new CybergameTvProtocolHandler(channelName);
         bootstrap.handler(new ChannelInitializer<SocketChannel>() {

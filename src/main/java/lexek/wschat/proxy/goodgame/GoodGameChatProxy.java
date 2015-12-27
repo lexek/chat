@@ -30,7 +30,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -70,13 +69,7 @@ public class GoodGameChatProxy implements Proxy {
         String password,
         Handler handler
     ) {
-        URI uri_ = null;
-        try {
-            uri_ = new URI("ws://chat.goodgame.ru:8081/chat/websocket");
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
-        }
-        final URI uri = uri_;
+        URI uri = URI.create("ws://chat.goodgame.ru:8081/chat/websocket");
         Bootstrap bootstrap = new Bootstrap();
         bootstrap.group(eventLoopGroup);
         if (Epoll.isAvailable()) {
@@ -84,7 +77,6 @@ public class GoodGameChatProxy implements Proxy {
         } else {
             bootstrap.channel(NioSocketChannel.class);
         }
-        bootstrap.option(ChannelOption.SO_KEEPALIVE, true);
         final JsonCodec jsonCodec = new JsonCodec();
         final GoodGameCodec goodGameCodec = new GoodGameCodec();
         final GoodGameProtocolHandler goodGameProtocolHandler = new GoodGameProtocolHandler(channelName, username, password);
