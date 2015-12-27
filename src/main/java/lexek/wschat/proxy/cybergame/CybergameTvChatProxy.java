@@ -75,7 +75,6 @@ public class CybergameTvChatProxy implements Proxy {
             bootstrap.channel(NioSocketChannel.class);
         }
         bootstrap.option(ChannelOption.SO_KEEPALIVE, true);
-        bootstrap.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
         final CybergameTvMessageCodec codec = new CybergameTvMessageCodec();
         final CybergameTvProtocolHandler protocolHandler = new CybergameTvProtocolHandler(channelName);
         bootstrap.handler(new ChannelInitializer<SocketChannel>() {

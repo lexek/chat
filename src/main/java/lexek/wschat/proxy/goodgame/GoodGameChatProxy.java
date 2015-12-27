@@ -3,7 +3,6 @@ package lexek.wschat.proxy.goodgame;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import io.netty.bootstrap.Bootstrap;
-import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.*;
 import io.netty.channel.epoll.Epoll;
 import io.netty.channel.epoll.EpollSocketChannel;
@@ -86,7 +85,6 @@ public class GoodGameChatProxy implements Proxy {
             bootstrap.channel(NioSocketChannel.class);
         }
         bootstrap.option(ChannelOption.SO_KEEPALIVE, true);
-        bootstrap.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
         final JsonCodec jsonCodec = new JsonCodec();
         final GoodGameCodec goodGameCodec = new GoodGameCodec();
         final GoodGameProtocolHandler goodGameProtocolHandler = new GoodGameProtocolHandler(channelName, username, password);
@@ -234,6 +232,7 @@ public class GoodGameChatProxy implements Proxy {
                 if (e.state() == IdleState.READER_IDLE) {
                     ctx.writeAndFlush(new PingWebSocketFrame());
                 } else if (e.state() == IdleState.ALL_IDLE) {
+                    logger.debug("closing idle connection");
                     ctx.close();
                 }
             }

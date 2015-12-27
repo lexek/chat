@@ -16,7 +16,7 @@ public class GoodGameProxyProvider extends ProxyProvider {
     private final AtomicLong messsageId;
 
     public GoodGameProxyProvider(EventLoopGroup eventLoopGroup, MessageBroadcaster messageBroadcaster, AtomicLong messsageId) {
-        super("goodgame", true, false, EnumSet.of(ModerationOperation.BAN));
+        super("goodgame", false, false, EnumSet.of(ModerationOperation.BAN));
         this.eventLoopGroup = eventLoopGroup;
         this.messageBroadcaster = messageBroadcaster;
         this.messsageId = messsageId;
@@ -40,6 +40,6 @@ public class GoodGameProxyProvider extends ProxyProvider {
     @Override
     public boolean validateCredentials(String name, String token) {
         //todo: wait for better api on goodgame side
-        return true;
+        return false;
     }
 }
