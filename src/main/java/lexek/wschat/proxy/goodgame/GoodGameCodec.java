@@ -66,6 +66,8 @@ public class GoodGameCodec extends MessageToMessageCodec<JsonNode, GoodGameEvent
                 }
                 break;
             }
+            case "channel_counters":
+                break;
             default: {
                 logger.debug("unsupported message type {}: {}", type, data);
                 break;
