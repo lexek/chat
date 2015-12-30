@@ -15,7 +15,7 @@
         <webappSourceDir>${basedir}/src/main/resources</webappSourceDir>
         <wro4j.version>1.7.6</wro4j.version>
         <jooq.version>3.7.1</jooq.version>
-        <netty.version>4.0.33.Final</netty.version>
+        <netty.version>4.0.32.Final</netty.version>
         <jersey.version>2.22.1</jersey.version>
         <metrics.version>3.1.0</metrics.version>
     </properties>
@@ -33,6 +33,17 @@
             </dependencies>
         </profile>
     </profiles>
+
+    <repositories>
+        <repository>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <id>bintray-lexek-maven</id>
+            <name>bintray</name>
+            <url>http://dl.bintray.com/lexek/maven</url>
+        </repository>
+    </repositories>
 
     <build>
         <plugins>
@@ -397,6 +408,11 @@
             <groupId>org.slf4j</groupId>
             <artifactId>log4j-over-slf4j</artifactId>
             <version>1.7.11</version>
+        </dependency>
+        <dependency>
+            <groupId>lexek</groupId>
+            <artifactId>netty-socketio</artifactId>
+            <version>1.0.alpha.1</version>
         </dependency>
     </dependencies>
 </project>

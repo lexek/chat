@@ -3,6 +3,7 @@ package lexek.wschat.proxy.goodgame;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import io.netty.bootstrap.Bootstrap;
+import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.*;
 import io.netty.channel.epoll.Epoll;
 import io.netty.channel.epoll.EpollSocketChannel;
@@ -77,9 +78,10 @@ public class GoodGameChatProxy implements Proxy {
         } else {
             bootstrap.channel(NioSocketChannel.class);
         }
-        final JsonCodec jsonCodec = new JsonCodec();
-        final GoodGameCodec goodGameCodec = new GoodGameCodec();
-        final GoodGameProtocolHandler goodGameProtocolHandler = new GoodGameProtocolHandler(channelName, username, password);
+        bootstrap.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
+        JsonCodec jsonCodec = new JsonCodec();
+        GoodGameCodec goodGameCodec = new GoodGameCodec();
+        GoodGameProtocolHandler goodGameProtocolHandler = new GoodGameProtocolHandler(channelName, username, password);
         bootstrap.handler(new ChannelInitializer<SocketChannel>() {
             @Override
             public void initChannel(final SocketChannel c) throws Exception {

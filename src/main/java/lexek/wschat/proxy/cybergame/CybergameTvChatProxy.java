@@ -1,6 +1,7 @@
 package lexek.wschat.proxy.cybergame;
 
 import io.netty.bootstrap.Bootstrap;
+import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.*;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.epoll.Epoll;
@@ -66,8 +67,9 @@ public class CybergameTvChatProxy implements Proxy {
         } else {
             bootstrap.channel(NioSocketChannel.class);
         }
-        final CybergameTvMessageCodec codec = new CybergameTvMessageCodec();
-        final CybergameTvProtocolHandler protocolHandler = new CybergameTvProtocolHandler(channelName);
+        bootstrap.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
+        CybergameTvMessageCodec codec = new CybergameTvMessageCodec();
+        CybergameTvProtocolHandler protocolHandler = new CybergameTvProtocolHandler(channelName);
         bootstrap.handler(new ChannelInitializer<SocketChannel>() {
             @Override
             public void initChannel(final SocketChannel c) throws Exception {
