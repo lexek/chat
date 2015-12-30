@@ -412,7 +412,7 @@
         <dependency>
             <groupId>lexek</groupId>
             <artifactId>netty-socketio</artifactId>
-            <version>1.0.alpha.1</version>
+            <version>1.0.alpha.3</version>
         </dependency>
     </dependencies>
 </project>

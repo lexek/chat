@@ -1,9 +1,8 @@
 package lexek.wschat.proxy.sc2tv;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.Lists;
-import com.google.common.primitives.Longs;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.*;
@@ -12,8 +11,16 @@ import io.netty.channel.epoll.Epoll;
 import io.netty.channel.epoll.EpollSocketChannel;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.handler.codec.http.*;
-import io.netty.util.CharsetUtil;
+import io.netty.handler.codec.http.HttpClientCodec;
+import io.netty.handler.codec.http.HttpObjectAggregator;
+import io.netty.handler.codec.http.websocketx.WebSocketClientProtocolHandler;
+import io.netty.handler.codec.http.websocketx.WebSocketVersion;
+import lexek.netty.handler.codec.engineio.EngineIoDecoder;
+import lexek.netty.handler.codec.engineio.EngineIoEncoder;
+import lexek.netty.handler.codec.engineio.EngineIoProtocolHandler;
+import lexek.netty.handler.codec.socketio.SocketIoDecoder;
+import lexek.netty.handler.codec.socketio.SocketIoEncoder;
+import lexek.netty.handler.codec.socketio.SocketIoPacket;
 import lexek.wschat.chat.MessageBroadcaster;
 import lexek.wschat.chat.Room;
 import lexek.wschat.chat.model.GlobalRole;
@@ -28,15 +35,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.Date;
-import java.util.List;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
+import java.net.URI;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class Sc2tvChatProxy implements Proxy {
     private final Logger logger = LoggerFactory.getLogger(Sc2tvChatProxy.class);
-    private final ObjectMapper objectMapper = new ObjectMapper();
     private final String channelName;
     private final MessageBroadcaster messageBroadcaster;
     private final AtomicLong messageId;
@@ -44,7 +49,6 @@ public class Sc2tvChatProxy implements Proxy {
     private final Bootstrap bootstrap;
     private final long id;
     private final ProxyProvider provider;
-    private volatile ScheduledFuture scheduledFuture;
     private volatile Channel channel;
     private volatile ProxyState state = ProxyState.NEW;
 
@@ -69,7 +73,7 @@ public class Sc2tvChatProxy implements Proxy {
         } else {
             bootstrap.channel(NioSocketChannel.class);
         }
-        bootstrap.option(ChannelOption.SO_KEEPALIVE, true);
+        URI uri = URI.create("ws://funstream.tv/socket.io/?EIO=3&transport=websocket");
         bootstrap.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
         bootstrap.handler(new ChannelInitializer<SocketChannel>() {
             @Override
@@ -77,6 +81,13 @@ public class Sc2tvChatProxy implements Proxy {
                 ChannelPipeline pipeline = c.pipeline();
                 pipeline.addLast("http-codec", new HttpClientCodec(4096, 8192, 8192));
                 pipeline.addLast("http-aggregator", new HttpObjectAggregator(65536));
+                pipeline.addLast(new WebSocketClientProtocolHandler(uri, WebSocketVersion.V13, null, false, null, 4096));
+                pipeline.addLast(new EngineIoDecoder());
+                pipeline.addLast(new EngineIoEncoder());
+                pipeline.addLast(new EngineIoProtocolHandler());
+                pipeline.addLast(new SocketIoDecoder());
+                pipeline.addLast(new SocketIoEncoder());
+                pipeline.addLast(new Sc2tvCodec());
                 pipeline.addLast(handler);
             }
         });
@@ -86,16 +97,13 @@ public class Sc2tvChatProxy implements Proxy {
     @Override
     public void start() {
         this.state = ProxyState.STARTING;
-        this.channel = this.bootstrap.connect("chat.sc2tv.ru", 80).channel();
+        this.channel = this.bootstrap.connect("funstream.tv", 80).channel();
         this.state = ProxyState.RUNNING;
     }
 
     @Override
     public void stop() {
         this.state = ProxyState.STOPPING;
-        if (scheduledFuture != null) {
-            scheduledFuture.cancel(false);
-        }
         this.channel.close();
         this.state = ProxyState.STOPPED;
     }
@@ -146,66 +154,64 @@ public class Sc2tvChatProxy implements Proxy {
     }
 
     @Sharable
-    private class Sc2ChannelHandler extends SimpleChannelInboundHandler<FullHttpResponse> {
-        private long lastId;
-        private boolean firstRun = true;
-        private Date lastModified = null;
+    private class Sc2ChannelHandler extends ChannelInboundHandlerAdapter {
+        private final Set<Long> receivedMessages = new HashSet<>();
+        private long eventId = 0;
 
         @Override
-        protected void channelRead0(final ChannelHandlerContext ctx, FullHttpResponse response) throws Exception {
-            logger.trace("received response with status {}", response.getStatus());
-            if (response.getStatus().equals(HttpResponseStatus.OK)) {
-                lastModified = HttpHeaders.getDateHeader(response, HttpHeaders.Names.LAST_MODIFIED);
-                String data = response.content().toString(CharsetUtil.UTF_8);
-                JsonNode root = objectMapper.readTree(data);
-                List<JsonNode> messages = Lists.reverse(Lists.newArrayList((root.get("messages").elements())));
-                for (JsonNode message : messages) {
-                    Long id = Longs.tryParse(message.get("id").asText());
-                    if (id != null && id > lastId) {
-                        if (!firstRun) {
-                            Message chatMessage = Message.extMessage(
-                                "#main",
-                                message.get("name").asText(),
-                                LocalRole.USER,
-                                GlobalRole.USER,
-                                Colors.generateColor(message.get("name").asText()),
-                                messageId.getAndIncrement(),
-                                System.currentTimeMillis(),
-                                message.get("message").asText(),
-                                "sc2tv",
-                                "sc2tv"
-                            );
-                            messageBroadcaster.submitMessage(chatMessage, room.FILTER);
-                        }
-                        lastId = id;
-                    }
-                }
-                if (firstRun) {
-                    firstRun = false;
+        public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+            logger.trace("{}", msg);
+            if (msg instanceof SocketIoPacket) {
+                SocketIoPacket socketIoPacket = (SocketIoPacket) msg;
+                switch (socketIoPacket.getType()) {
+                    case CONNECT:
+                        ObjectNode object = JsonNodeFactory.instance.objectNode();
+                        object.put("channel", "stream/" + channelName);
+                        ctx.writeAndFlush(new Sc2tvMessage(eventId++, "/chat/join", object));
+                        break;
                 }
             }
-            if (HttpHeaders.isKeepAlive(response)) {
-                scheduledFuture = ctx.channel().eventLoop().schedule(() -> {
-                    logger.trace("sending request for next update");
-                    ctx.writeAndFlush(composeRequest());
-                }, 10, TimeUnit.SECONDS);
-            } else {
-                logger.debug("closing channel coz no keepalive");
-                ctx.close();
+            if (msg instanceof Sc2tvMessage) {
+                Sc2tvMessage sc2tvMessage = (Sc2tvMessage) msg;
+                if (sc2tvMessage.getScope().equals("/chat/message")) {
+                    JsonNode message = sc2tvMessage.getData();
+                    Long sc2tvId = message.get("id").asLong();
+                    if (!receivedMessages.contains(sc2tvId)) {
+                        String userName = message.get("from").get("name").asText();
+                        String text = message.get("text").asText();
+                        JsonNode to = message.get("to");
+                        if (!to.isNull()) {
+                            text = "@" + to.get("name").asText() + " " + text;
+                        }
+                        Message out = Message.extMessage(
+                            room.getName(),
+                            userName,
+                            LocalRole.USER,
+                            GlobalRole.USER,
+                            Colors.generateColor(userName),
+                            messageId.getAndIncrement(),
+                            System.currentTimeMillis(),
+                            text,
+                            "sc2tv",
+                            "sc2tv"
+                        );
+                        messageBroadcaster.submitMessage(out, room.FILTER);
+                        receivedMessages.add(sc2tvId);
+                    }
+                }
             }
         }
 
         @Override
         public void channelActive(ChannelHandlerContext ctx) throws Exception {
             logger.debug("connected");
-            ctx.writeAndFlush(composeRequest());
         }
 
         @Override
         public void channelInactive(ChannelHandlerContext ctx) throws Exception {
             logger.debug("disconnected");
             if (state == ProxyState.RUNNING) {
-                channel = bootstrap.connect("chat.sc2tv.ru", 80).channel();
+                channel = bootstrap.connect("funstream.tv", 80).channel();
             }
         }
 
@@ -217,19 +223,6 @@ public class Sc2tvChatProxy implements Proxy {
                 logger.warn("exception", cause);
             }
             ctx.close();
-        }
-
-        private HttpRequest composeRequest() {
-            HttpRequest request = new DefaultFullHttpRequest(
-                HttpVersion.HTTP_1_1,
-                HttpMethod.GET,
-                "http://chat.sc2tv.ru/memfs/channel-" + channelName + ".json");
-            if (lastModified != null) {
-                HttpHeaders.setDateHeader(request, HttpHeaders.Names.IF_MODIFIED_SINCE, lastModified);
-            }
-            HttpHeaders.setKeepAlive(request, true);
-            HttpHeaders.setHost(request, "chat.sc2tv.ru");
-            return request;
         }
     }
 }
