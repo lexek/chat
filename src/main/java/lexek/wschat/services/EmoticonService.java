@@ -66,6 +66,12 @@ public class EmoticonService {
                         emoticonFile.getFileName().toString(),
                         width, height
                     );
+                    journalService.emoticonImageChanged(
+                        admin,
+                        existingEmoticon.getCode(),
+                        existingEmoticon.getFileName(),
+                        emoticonFile.getFileName().toString()
+                    );
                 }
             } catch (Exception e) {
                 success = false;

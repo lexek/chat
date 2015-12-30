@@ -230,6 +230,12 @@
                                 <img ng-src="/emoticons/{{entry.actionDescription.fileName}}">
                                 <code ng-bind="entry.actionDescription.code"></code>
                             </div>
+                            <div ng-switch-when="IMAGE_EMOTICON">
+                                <img ng-src="/emoticons/{{entry.actionDescription.oldImage}}">
+                                <span class="fa fa-long-arrow-right"></span>
+                                <img ng-src="/emoticons/{{entry.actionDescription.newImage}}">
+                                <code ng-bind="entry.actionDescription.code"></code>
+                            </div>
                             <div ng-switch-when="DELETED_EMOTICON">
                                 <img ng-src="/emoticons/{{entry.actionDescription.fileName}}">
                                 <code ng-bind="entry.actionDescription.code"></code>

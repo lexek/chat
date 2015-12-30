@@ -55,6 +55,19 @@ public class JournalService {
         }
     }
 
+    public void emoticonImageChanged(UserDto admin, String code, String oldFile, String newFile) {
+        try {
+            String data = objectMapper.writeValueAsString(ImmutableMap.of(
+                "code", code,
+                "oldImage", oldFile,
+                "newImage", newFile
+            ));
+            journalDao.add(new JournalEntry(null, admin, "IMAGE_EMOTICON", data, now(), null));
+        } catch (JsonProcessingException e) {
+            logger.warn("", e);
+        }
+    }
+
     public void deletedEmoticon(UserDto admin, Emoticon emoticon) {
         try {
             journalDao.add(new JournalEntry(null, admin, "DELETED_EMOTICON", objectMapper.writeValueAsString(emoticon), now(), null));

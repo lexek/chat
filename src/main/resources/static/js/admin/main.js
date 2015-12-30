@@ -1046,6 +1046,7 @@ var JournalController = function($scope, $location, $http, $modal, alert, title)
         "USER_UPDATE": "User changed",
         "NAME_CHANGE": "User name changed",
         "NEW_EMOTICON": "New emoticon",
+        "IMAGE_EMOTICON": "Updated emoticon image",
         "DELETED_EMOTICON": "Deleted emoticon",
         "NEW_ROOM": "Created room",
         "DELETED_ROOM": "Deleted room"

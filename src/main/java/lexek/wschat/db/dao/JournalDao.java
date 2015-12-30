@@ -21,8 +21,15 @@ import static lexek.wschat.db.jooq.Tables.USER;
 import static lexek.wschat.db.jooq.tables.Journal.JOURNAL;
 
 public class JournalDao {
-    private static final Set<String> GLOBAL_ACTIONS = ImmutableSet.of("USER_UPDATE", "NEW_EMOTICON", "DELETED_EMOTICON",
-        "NAME_CHANGE", "NEW_ROOM", "DELETED_ROOM");
+    private static final Set<String> GLOBAL_ACTIONS = ImmutableSet.of(
+        "USER_UPDATE",
+        "NAME_CHANGE",
+        "NEW_EMOTICON",
+        "IMAGE_EMOTICON",
+        "DELETED_EMOTICON",
+        "NEW_ROOM",
+        "DELETED_ROOM"
+    );
     private final DataSource dataSource;
 
     public JournalDao(DataSource dataSource) {
