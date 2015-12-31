@@ -51,6 +51,7 @@ public class Sc2tvChatProxy implements Proxy {
     private final ProxyProvider provider;
     private volatile Channel channel;
     private volatile ProxyState state = ProxyState.NEW;
+    private volatile String lastError = null;
 
     protected Sc2tvChatProxy(String channelName,
                              MessageBroadcaster messageBroadcaster,
@@ -96,16 +97,16 @@ public class Sc2tvChatProxy implements Proxy {
 
     @Override
     public void start() {
-        this.state = ProxyState.STARTING;
-        this.channel = this.bootstrap.connect("funstream.tv", 80).channel();
-        this.state = ProxyState.RUNNING;
+        state = ProxyState.STARTING;
+        connect();
+        state = ProxyState.RUNNING;
     }
 
     @Override
     public void stop() {
-        this.state = ProxyState.STOPPING;
-        this.channel.close();
-        this.state = ProxyState.STOPPED;
+        state = ProxyState.STOPPING;
+        channel.close();
+        state = ProxyState.STOPPED;
     }
 
     @Override
@@ -150,7 +151,19 @@ public class Sc2tvChatProxy implements Proxy {
 
     @Override
     public String lastError() {
-        return null;
+        return this.lastError;
+    }
+
+    private void connect() {
+        ChannelFuture channelFuture = bootstrap.connect("funstream.tv", 80);
+        channel = channelFuture.channel();
+        channelFuture.addListener(future -> {
+            if (!future.isSuccess()) {
+                logger.warn("failed to connect connect");
+                state = ProxyState.FAILED;
+                lastError = "failed to connect";
+            }
+        });
     }
 
     @Sharable
@@ -211,7 +224,7 @@ public class Sc2tvChatProxy implements Proxy {
         public void channelInactive(ChannelHandlerContext ctx) throws Exception {
             logger.debug("disconnected");
             if (state == ProxyState.RUNNING) {
-                channel = bootstrap.connect("funstream.tv", 80).channel();
+                connect();
             }
         }
 

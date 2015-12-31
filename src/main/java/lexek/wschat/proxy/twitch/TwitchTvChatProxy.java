@@ -95,7 +95,7 @@ public class TwitchTvChatProxy implements Proxy {
     @Override
     public void start() {
         this.state = ProxyState.STARTING;
-        this.channel = inboundBootstrap.connect("irc.twitch.tv", 6667).channel();
+        connect();
         this.lastError = null;
         if (this.outboundHandler != null) {
             this.outboundHandler.start();
@@ -172,6 +172,18 @@ public class TwitchTvChatProxy implements Proxy {
         return this.lastError;
     }
 
+    private void connect() {
+        ChannelFuture channelFuture = inboundBootstrap.connect("irc.twitch.tv", 6667);
+        channel = channelFuture.channel();
+        channelFuture.addListener(future -> {
+            if (!future.isSuccess()) {
+                logger.warn("failed to connect connect");
+                state = ProxyState.FAILED;
+                lastError = "failed to connect";
+            }
+        });
+    }
+
     private class JtvEventListenerImpl implements JTVEventListener {
         @Override
         public void onConnected() {
@@ -182,7 +194,7 @@ public class TwitchTvChatProxy implements Proxy {
         public void onDisconnected() {
             logger.info("Twitch proxy disconnected.");
             if (state == ProxyState.RUNNING) {
-                channel = inboundBootstrap.connect("irc.twitch.tv", 6667).channel();
+                connect();
             }
         }
 

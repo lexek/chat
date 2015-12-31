@@ -26,12 +26,15 @@ import lexek.wschat.proxy.Proxy;
 import lexek.wschat.proxy.ProxyProvider;
 import lexek.wschat.proxy.ProxyState;
 import lexek.wschat.util.Colors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class CybergameTvChatProxy implements Proxy {
+    private final Logger logger = LoggerFactory.getLogger(CybergameTvChatProxy.class);
     private final String channelName;
     private final ProxyProvider provider;
     private final MessageBroadcaster messageBroadcaster;
@@ -41,6 +44,7 @@ public class CybergameTvChatProxy implements Proxy {
     private final long id;
     private volatile Channel channel;
     private volatile ProxyState state = ProxyState.NEW;
+    private volatile String lastError = null;
 
     public CybergameTvChatProxy(EventLoopGroup eventLoopGroup, String ChannelName,
                                 ProxyProvider provider, MessageBroadcaster messageBroadcaster,
@@ -88,16 +92,16 @@ public class CybergameTvChatProxy implements Proxy {
 
     @Override
     public void start() {
-        this.state = ProxyState.STARTING;
-        this.channel = this.bootstrap.connect("cybergame.tv", 9090).channel();
-        this.state = ProxyState.RUNNING;
+        state = ProxyState.STARTING;
+        connect();
+        state = ProxyState.RUNNING;
     }
 
     @Override
     public void stop() {
-        this.state = ProxyState.STOPPING;
-        this.channel.close();
-        this.state = ProxyState.STOPPED;
+        state = ProxyState.STOPPING;
+        channel.close();
+        state = ProxyState.STOPPED;
     }
 
     @Override
@@ -142,7 +146,19 @@ public class CybergameTvChatProxy implements Proxy {
 
     @Override
     public String lastError() {
-        return null;
+        return this.lastError;
+    }
+
+    private void connect() {
+        ChannelFuture channelFuture = bootstrap.connect("cybergame.tv", 9090);
+        channel = channelFuture.channel();
+        channelFuture.addListener(future -> {
+            if (!future.isSuccess()) {
+                logger.warn("failed to connect connect");
+                state = ProxyState.FAILED;
+                lastError = "failed to connect";
+            }
+        });
     }
 
     @Sharable
@@ -150,7 +166,7 @@ public class CybergameTvChatProxy implements Proxy {
         @Override
         public void channelInactive(ChannelHandlerContext ctx) throws Exception {
             if (state == ProxyState.RUNNING) {
-                channel = bootstrap.connect("cybergame.tv", 9090).channel();
+                connect();
             }
         }
 

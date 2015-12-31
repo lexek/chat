@@ -103,7 +103,7 @@ public class GoodGameChatProxy implements Proxy {
     public void start() {
         this.state = ProxyState.STARTING;
         this.lastError = null;
-        this.channel = this.bootstrap.connect(HOST_NAME, 8081).channel();
+        connect();
         this.state = ProxyState.RUNNING;
     }
 
@@ -166,6 +166,18 @@ public class GoodGameChatProxy implements Proxy {
         return this.lastError;
     }
 
+    private void connect() {
+        ChannelFuture channelFuture = bootstrap.connect(HOST_NAME, 8081);
+        channel = channelFuture.channel();
+        channelFuture.addListener(future -> {
+            if (!future.isSuccess()) {
+                logger.warn("failed to connect connect");
+                state = ProxyState.FAILED;
+                lastError = "failed to connect";
+            }
+        });
+    }
+
     @ChannelHandler.Sharable
     private class Handler extends SimpleChannelInboundHandler<GoodGameEvent> {
         @Override
@@ -177,7 +189,7 @@ public class GoodGameChatProxy implements Proxy {
         public void channelInactive(ChannelHandlerContext ctx) throws Exception {
             logger.info("disconnected");
             if (state == ProxyState.RUNNING) {
-                channel = bootstrap.connect(HOST_NAME, 8081).channel();
+                connect();
             }
         }
 
