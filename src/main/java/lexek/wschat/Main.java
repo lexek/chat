@@ -34,10 +34,7 @@ import lexek.wschat.chat.processing.HandlerInvoker;
 import lexek.wschat.db.dao.*;
 import lexek.wschat.frontend.http.*;
 import lexek.wschat.frontend.http.admin.AdminPageHandler;
-import lexek.wschat.frontend.http.rest.CheckUsernameResource;
-import lexek.wschat.frontend.http.rest.EmailResource;
-import lexek.wschat.frontend.http.rest.PasswordResource;
-import lexek.wschat.frontend.http.rest.ProfileResource;
+import lexek.wschat.frontend.http.rest.*;
 import lexek.wschat.frontend.http.rest.admin.*;
 import lexek.wschat.frontend.irc.*;
 import lexek.wschat.frontend.ws.WebSocketChatHandler;
@@ -319,6 +316,7 @@ public class Main {
         };
 
         final RequestDispatcher httpRequestDispatcher = new RequestDispatcher(serverMessageHandler, viewResolvers, authenticationManager, resourceConfig, runtimeMetricRegistry, ircHost);
+        httpRequestDispatcher.add("/", new RedirectToAppHandler());
         httpRequestDispatcher.add("/.*", new FileSystemStaticHandler(dataDir));
         httpRequestDispatcher.add("/.*", new ClassPathStaticHandler(ClassPathStaticHandler.class, "/static/"));
         httpRequestDispatcher.add("/chat.html", new ChatHomeHandler("Yoba chat", settings.getHttp().isAllowLikes(), settings.getHttp().isSingleRoom()));
