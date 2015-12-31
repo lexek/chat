@@ -19,11 +19,12 @@ import lexek.wschat.chat.Room;
 import lexek.wschat.chat.model.GlobalRole;
 import lexek.wschat.chat.model.LocalRole;
 import lexek.wschat.chat.model.Message;
+import lexek.wschat.proxy.AbstractProxy;
 import lexek.wschat.proxy.ModerationOperation;
-import lexek.wschat.proxy.Proxy;
 import lexek.wschat.proxy.ProxyProvider;
 import lexek.wschat.proxy.ProxyState;
 import lexek.wschat.security.AuthenticationManager;
+import lexek.wschat.services.NotificationService;
 import lexek.wschat.util.Colors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,10 +33,8 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class TwitchTvChatProxy implements Proxy {
+public class TwitchTvChatProxy extends AbstractProxy {
     private final Logger logger = LoggerFactory.getLogger(TwitchTvChatProxy.class);
-    private final ProxyProvider provider;
-    private final String channelName;
     private final String username;
     private final AtomicLong messageId;
     private final MessageBroadcaster messageBroadcaster;
@@ -43,25 +42,21 @@ public class TwitchTvChatProxy implements Proxy {
     private final Bootstrap inboundBootstrap;
     private final Map<String, Channel> connections = new ConcurrentHashMapV8<>();
     private final OutboundMessageHandler outboundHandler;
-    private final long id;
     private volatile Channel channel;
-    private volatile ProxyState state = ProxyState.NEW;
-    private volatile String lastError;
 
     public TwitchTvChatProxy(
-        long id, ProxyProvider provider, Room room, String channelName, String username, String token, boolean outbound,
-        AtomicLong messageId, MessageBroadcaster messageBroadcaster, AuthenticationManager authenticationManager,
-        EventLoopGroup eventLoopGroup
+        NotificationService notificationService, long id, ProxyProvider provider, Room room, String remoteRoom,
+        String username, String token, boolean outbound, AtomicLong messageId, MessageBroadcaster messageBroadcaster,
+        AuthenticationManager authenticationManager, EventLoopGroup eventLoopGroup
     ) {
-        this.channelName = channelName;
+        super(notificationService, id, provider, remoteRoom);
         this.username = username;
         this.messageId = messageId;
         this.messageBroadcaster = messageBroadcaster;
         this.room = room;
-        this.id = id;
-        this.provider = provider;
         if (outbound) {
-            this.outboundHandler = new OutboundMessageHandler(connections, channelName, authenticationManager, eventLoopGroup);
+            this.outboundHandler =
+                new OutboundMessageHandler(authenticationManager, eventLoopGroup, connections, remoteRoom);
         } else {
             this.outboundHandler = null;
         }
@@ -87,46 +82,25 @@ public class TwitchTvChatProxy implements Proxy {
                 pipeline.addLast(stringDecoder);
                 pipeline.addLast(new IdleStateHandler(120, 0, 140, TimeUnit.SECONDS));
                 pipeline.addLast(new TwitchTvMessageDecoder());
-                pipeline.addLast(new TwitchMessageHandler(eventListener, channelName, username, token));
+                pipeline.addLast(new TwitchMessageHandler(eventListener, remoteRoom, username, token));
             }
         });
     }
 
     @Override
-    public void start() {
-        this.state = ProxyState.STARTING;
-        connect();
-        this.lastError = null;
-        if (this.outboundHandler != null) {
-            this.outboundHandler.start();
-        }
-        this.state = ProxyState.RUNNING;
-    }
-
-    @Override
-    public void stop() {
-        this.state = ProxyState.STOPPING;
-        this.channel.close();
-        if (this.outboundHandler != null) {
-            this.outboundHandler.shutdown();
-        }
-        this.state = ProxyState.STOPPED;
-    }
-
-    @Override
     public void moderate(ModerationOperation type, String name) {
         if (type == ModerationOperation.BAN) {
-            channel.writeAndFlush("PRIVMSG #" + channelName + " :.ban " + name + "\r\n");
+            channel.writeAndFlush("PRIVMSG #" + remoteRoom() + " :.ban " + name + "\r\n");
         }
         if (type == ModerationOperation.TIMEOUT) {
-            channel.writeAndFlush("PRIVMSG #" + channelName + " :.timeout " + name + "\r\n");
+            channel.writeAndFlush("PRIVMSG #" + remoteRoom() + " :.timeout " + name + "\r\n");
         }
         if (type == ModerationOperation.UNBAN) {
-            channel.writeAndFlush("PRIVMSG #" + channelName + " :.unban " + name + "\r\n");
+            channel.writeAndFlush("PRIVMSG #" + remoteRoom() + " :.unban " + name + "\r\n");
         }
         if (type == ModerationOperation.CLEAR) {
-            channel.writeAndFlush("PRIVMSG #" + channelName + " :.ban " + name + "\r\n");
-            channel.writeAndFlush("PRIVMSG #" + channelName + " :.unban " + name + "\r\n");
+            channel.writeAndFlush("PRIVMSG #" + remoteRoom() + " :.ban " + name + "\r\n");
+            channel.writeAndFlush("PRIVMSG #" + remoteRoom() + " :.unban " + name + "\r\n");
         }
     }
 
@@ -135,21 +109,6 @@ public class TwitchTvChatProxy implements Proxy {
         if (this.outboundHandler != null) {
             outboundHandler.onMessage(message);
         }
-    }
-
-    @Override
-    public long id() {
-        return this.id;
-    }
-
-    @Override
-    public ProxyProvider provider() {
-        return this.provider;
-    }
-
-    @Override
-    public String remoteRoom() {
-        return channelName;
     }
 
     @Override
@@ -163,37 +122,38 @@ public class TwitchTvChatProxy implements Proxy {
     }
 
     @Override
-    public ProxyState state() {
-        return this.state;
-    }
-
-    @Override
-    public String lastError() {
-        return this.lastError;
-    }
-
-    private void connect() {
+    protected void connect() {
         ChannelFuture channelFuture = inboundBootstrap.connect("irc.twitch.tv", 6667);
         channel = channelFuture.channel();
         channelFuture.addListener(future -> {
             if (!future.isSuccess()) {
                 logger.warn("failed to connect connect");
-                state = ProxyState.FAILED;
-                lastError = "failed to connect";
+                failed("failed to connect");
             }
         });
+        if (this.outboundHandler != null) {
+            this.outboundHandler.start();
+        }
+    }
+
+    @Override
+    protected void disconnect() {
+        this.channel.close();
+        if (this.outboundHandler != null) {
+            this.outboundHandler.shutdown();
+        }
     }
 
     private class JtvEventListenerImpl implements JTVEventListener {
         @Override
         public void onConnected() {
-            logger.info("Twitch proxy connected. Channel: {}", channelName);
+            logger.info("Twitch proxy connected. Channel: {}", remoteRoom());
         }
 
         @Override
         public void onDisconnected() {
             logger.info("Twitch proxy disconnected.");
-            if (state == ProxyState.RUNNING) {
+            if (state() == ProxyState.RUNNING) {
                 connect();
             }
         }
@@ -211,7 +171,7 @@ public class TwitchTvChatProxy implements Proxy {
                     System.currentTimeMillis(),
                     message,
                     "twitch",
-                    channelName
+                    remoteRoom()
                 );
                 messageBroadcaster.submitMessage(msg, room.FILTER);
             }
@@ -222,7 +182,7 @@ public class TwitchTvChatProxy implements Proxy {
             Message msg = Message.proxyClear(
                 "#main",
                 "twitch",
-                channelName,
+                remoteRoom(),
                 name
             );
             messageBroadcaster.submitMessage(msg, room.FILTER);
@@ -235,8 +195,7 @@ public class TwitchTvChatProxy implements Proxy {
 
         @Override
         public void loginFailed() {
-            lastError = "login failed";
-            state = ProxyState.FAILED;
+            failed("login failed");
             channel.close();
         }
     }

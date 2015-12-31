@@ -10,6 +10,7 @@ import lexek.wschat.proxy.ProxyProvider;
 import lexek.wschat.security.AuthenticationManager;
 import lexek.wschat.security.social.SocialAuthProfile;
 import lexek.wschat.security.social.TwitchTvSocialAuthService;
+import lexek.wschat.services.NotificationService;
 
 import java.io.IOException;
 import java.util.EnumSet;
@@ -22,23 +23,29 @@ public class TwitchTvProxyProvider extends ProxyProvider {
     private final AuthenticationManager authenticationManager;
     private final EventLoopGroup eventLoopGroup;
     private final TwitchTvSocialAuthService authService;
+    private final NotificationService notificationService;
 
-    public TwitchTvProxyProvider(AtomicLong messageId,
-                                 MessageBroadcaster messageBroadcaster,
-                                 AuthenticationManager authenticationManager,
-                                 EventLoopGroup eventLoopGroup, TwitchTvSocialAuthService authService) {
+    public TwitchTvProxyProvider(
+        AtomicLong messageId,
+        MessageBroadcaster messageBroadcaster,
+        AuthenticationManager authenticationManager,
+        EventLoopGroup eventLoopGroup,
+        TwitchTvSocialAuthService authService,
+        NotificationService notificationService
+    ) {
         super("twitch", true, true, EnumSet.allOf(ModerationOperation.class));
         this.messageId = messageId;
         this.messageBroadcaster = messageBroadcaster;
         this.authenticationManager = authenticationManager;
         this.eventLoopGroup = eventLoopGroup;
         this.authService = authService;
+        this.notificationService = notificationService;
     }
 
     @Override
     public Proxy newProxy(long id, Room room, String remoteRoom, String name, String token, boolean outbound) {
         return new TwitchTvChatProxy(
-            id, this, room, remoteRoom, name, token, outbound,
+            notificationService, id, this, room, remoteRoom, name, token, outbound,
             messageId, messageBroadcaster, authenticationManager, eventLoopGroup
         );
     }

@@ -26,10 +26,11 @@ import lexek.wschat.chat.Room;
 import lexek.wschat.chat.model.GlobalRole;
 import lexek.wschat.chat.model.LocalRole;
 import lexek.wschat.chat.model.Message;
+import lexek.wschat.proxy.AbstractProxy;
 import lexek.wschat.proxy.ModerationOperation;
-import lexek.wschat.proxy.Proxy;
 import lexek.wschat.proxy.ProxyProvider;
 import lexek.wschat.proxy.ProxyState;
+import lexek.wschat.services.NotificationService;
 import lexek.wschat.util.Colors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,29 +41,22 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class Sc2tvChatProxy implements Proxy {
+public class Sc2tvChatProxy extends AbstractProxy {
     private final Logger logger = LoggerFactory.getLogger(Sc2tvChatProxy.class);
-    private final String channelName;
     private final MessageBroadcaster messageBroadcaster;
     private final AtomicLong messageId;
     private final Room room;
     private final Bootstrap bootstrap;
-    private final long id;
-    private final ProxyProvider provider;
     private volatile Channel channel;
-    private volatile ProxyState state = ProxyState.NEW;
-    private volatile String lastError = null;
 
-    protected Sc2tvChatProxy(String channelName,
-                             MessageBroadcaster messageBroadcaster,
-                             EventLoopGroup eventLoopGroup,
-                             AtomicLong messageId, Room room, long id, ProxyProvider provider) {
-        this.channelName = channelName;
+    protected Sc2tvChatProxy(
+        NotificationService notificationService, String remoteRoom, MessageBroadcaster messageBroadcaster,
+        EventLoopGroup eventLoopGroup, AtomicLong messageId, Room room, long id, ProxyProvider provider
+    ) {
+        super(notificationService, id, provider, remoteRoom);
         this.messageBroadcaster = messageBroadcaster;
         this.messageId = messageId;
         this.room = room;
-        this.id = id;
-        this.provider = provider;
         this.bootstrap = createBootstrap(eventLoopGroup, new Sc2ChannelHandler());
     }
 
@@ -96,20 +90,6 @@ public class Sc2tvChatProxy implements Proxy {
     }
 
     @Override
-    public void start() {
-        state = ProxyState.STARTING;
-        connect();
-        state = ProxyState.RUNNING;
-    }
-
-    @Override
-    public void stop() {
-        state = ProxyState.STOPPING;
-        channel.close();
-        state = ProxyState.STOPPED;
-    }
-
-    @Override
     public void moderate(ModerationOperation type, String name) {
         throw new UnsupportedOperationException();
     }
@@ -117,21 +97,6 @@ public class Sc2tvChatProxy implements Proxy {
     @Override
     public void onMessage(Message message) {
         //do nothing
-    }
-
-    @Override
-    public long id() {
-        return this.id;
-    }
-
-    @Override
-    public ProxyProvider provider() {
-        return this.provider;
-    }
-
-    @Override
-    public String remoteRoom() {
-        return this.channelName;
     }
 
     @Override
@@ -145,25 +110,20 @@ public class Sc2tvChatProxy implements Proxy {
     }
 
     @Override
-    public ProxyState state() {
-        return this.state;
-    }
-
-    @Override
-    public String lastError() {
-        return this.lastError;
-    }
-
-    private void connect() {
+    protected void connect() {
         ChannelFuture channelFuture = bootstrap.connect("funstream.tv", 80);
         channel = channelFuture.channel();
         channelFuture.addListener(future -> {
             if (!future.isSuccess()) {
                 logger.warn("failed to connect connect");
-                state = ProxyState.FAILED;
-                lastError = "failed to connect";
+                failed("failed to connect");
             }
         });
+    }
+
+    @Override
+    protected void disconnect() {
+        this.channel.close();
     }
 
     @Sharable
@@ -179,7 +139,7 @@ public class Sc2tvChatProxy implements Proxy {
                 switch (socketIoPacket.getType()) {
                     case CONNECT:
                         ObjectNode object = JsonNodeFactory.instance.objectNode();
-                        object.put("channel", "stream/" + channelName);
+                        object.put("channel", "stream/" + remoteRoom());
                         ctx.writeAndFlush(new Sc2tvMessage(eventId++, "/chat/join", object));
                         break;
                 }
@@ -223,7 +183,7 @@ public class Sc2tvChatProxy implements Proxy {
         @Override
         public void channelInactive(ChannelHandlerContext ctx) throws Exception {
             logger.debug("disconnected");
-            if (state == ProxyState.RUNNING) {
+            if (state() == ProxyState.RUNNING) {
                 connect();
             }
         }

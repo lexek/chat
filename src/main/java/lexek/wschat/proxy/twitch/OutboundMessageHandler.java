@@ -36,17 +36,19 @@ public class OutboundMessageHandler {
     private final Map<Long, Boolean> checkedUsers = new HashMap<>();
     private final Map<String, Channel> connections;
     private final Bootstrap outboundBootstrap;
-    private final String channel;
+    private final String remoteRoom;
     private final AuthenticationManager authenticationManager;
     private final ScheduledExecutorService eventLoopGroup;
     private ScheduledFuture scheduledFuture;
 
-    public OutboundMessageHandler(Map<String, Channel> connections,
-                                  String channel,
-                                  AuthenticationManager authenticationManager,
-                                  EventLoopGroup eventLoopGroup) {
+    public OutboundMessageHandler(
+        AuthenticationManager authenticationManager,
+        EventLoopGroup eventLoopGroup,
+        Map<String, Channel> connections,
+        String remoteRoom
+    ) {
         this.connections = connections;
-        this.channel = channel;
+        this.remoteRoom = remoteRoom;
         this.authenticationManager = authenticationManager;
         this.eventLoopGroup = eventLoopGroup;
 
@@ -100,7 +102,7 @@ public class OutboundMessageHandler {
                 }
                 if (channel != null) {
                     channel.attr(lastMessageAttrKey).set(System.currentTimeMillis());
-                    channel.writeAndFlush("PRIVMSG #" + this.channel + " :" + message.get(MessageProperty.TEXT) + "\r\n");
+                    channel.writeAndFlush("PRIVMSG #" + this.remoteRoom + " :" + message.get(MessageProperty.TEXT) + "\r\n");
                 }
             }
         }

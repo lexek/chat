@@ -197,10 +197,10 @@ public class Main {
             proxyEventLoopGroup = new NioEventLoopGroup(1);
         }
         ProxyManager proxyManager = new ProxyManager(proxyDao, roomManager, journalService);
-        proxyManager.registerProvider(new GoodGameProxyProvider(proxyEventLoopGroup, messageBroadcaster, messageId));
-        proxyManager.registerProvider(new TwitchTvProxyProvider(messageId, messageBroadcaster, authenticationManager, proxyEventLoopGroup, twitchAuthService));
-        proxyManager.registerProvider(new Sc2tvProxyProvider(proxyEventLoopGroup, messageBroadcaster, messageId));
-        proxyManager.registerProvider(new CybergameTvProxyProvider(proxyEventLoopGroup, messageBroadcaster, messageId));
+        proxyManager.registerProvider(new GoodGameProxyProvider(notificationService, proxyEventLoopGroup, messageBroadcaster, messageId));
+        proxyManager.registerProvider(new TwitchTvProxyProvider(messageId, messageBroadcaster, authenticationManager, proxyEventLoopGroup, twitchAuthService, notificationService));
+        proxyManager.registerProvider(new Sc2tvProxyProvider(notificationService, proxyEventLoopGroup, messageBroadcaster, messageId));
+        proxyManager.registerProvider(new CybergameTvProxyProvider(notificationService, messageBroadcaster, proxyEventLoopGroup, messageId));
         messageConsumerServiceHandler.register(proxyManager);
         eventDispatcher.registerListener(ChatEventType.CONNECT, new SendIgnoreListOnEventListener(ignoreService));
         eventDispatcher.registerListener(ChatEventType.CONNECT, new SendEmoticonsOnEventListener(emoticonService));

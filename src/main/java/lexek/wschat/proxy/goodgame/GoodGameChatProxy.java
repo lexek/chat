@@ -22,10 +22,11 @@ import lexek.wschat.chat.Room;
 import lexek.wschat.chat.model.GlobalRole;
 import lexek.wschat.chat.model.LocalRole;
 import lexek.wschat.chat.model.Message;
+import lexek.wschat.proxy.AbstractProxy;
 import lexek.wschat.proxy.ModerationOperation;
-import lexek.wschat.proxy.Proxy;
 import lexek.wschat.proxy.ProxyProvider;
 import lexek.wschat.proxy.ProxyState;
+import lexek.wschat.services.NotificationService;
 import lexek.wschat.util.Colors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,33 +35,27 @@ import java.net.URI;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class GoodGameChatProxy implements Proxy {
+public class GoodGameChatProxy extends AbstractProxy {
     private static final String HOST_NAME = "chat.goodgame.ru";
     private final Logger logger = LoggerFactory.getLogger(GoodGameChatProxy.class);
     private final Cache<String, String> idCache = CacheBuilder.newBuilder().maximumSize(100).build();
-    private final String channelName;
     private final MessageBroadcaster messageBroadcaster;
     private final AtomicLong messageId;
     private final Room room;
     private final Bootstrap bootstrap;
-    private final long id;
-    private final ProxyProvider provider;
     private final String userId;
     private volatile Channel channel;
-    private volatile ProxyState state = ProxyState.NEW;
-    private volatile String lastError;
 
-    public GoodGameChatProxy(EventLoopGroup eventLoopGroup, String channelName, String name, String token,
-                             MessageBroadcaster messageBroadcaster,
-                             AtomicLong messageId, Room room, long id, ProxyProvider provider) {
-        this.channelName = channelName;
+    public GoodGameChatProxy(
+        NotificationService notificationService, MessageBroadcaster messageBroadcaster, EventLoopGroup eventLoopGroup,
+        AtomicLong messageId, ProxyProvider provider, long id, Room room, String remoteRoom, String name, String token
+    ) {
+        super(notificationService, id, provider, remoteRoom);
         this.messageBroadcaster = messageBroadcaster;
         this.messageId = messageId;
         this.room = room;
-        this.id = id;
-        this.provider = provider;
         this.userId = name;
-        this.bootstrap = createBootstrap(eventLoopGroup, channelName, name, token, new Handler());
+        this.bootstrap = createBootstrap(eventLoopGroup, remoteRoom, name, token, new Handler());
     }
 
     private static Bootstrap createBootstrap(
@@ -100,26 +95,11 @@ public class GoodGameChatProxy implements Proxy {
     }
 
     @Override
-    public void start() {
-        this.state = ProxyState.STARTING;
-        this.lastError = null;
-        connect();
-        this.state = ProxyState.RUNNING;
-    }
-
-    @Override
-    public void stop() {
-        this.state = ProxyState.STOPPING;
-        this.channel.close();
-        this.state = ProxyState.STOPPED;
-    }
-
-    @Override
     public void moderate(ModerationOperation type, String name) {
         if (type == ModerationOperation.BAN) {
             String id = idCache.getIfPresent(name);
             if (id != null && !id.equals(userId)) {
-                channel.writeAndFlush(new GoodGameEvent(GoodGameEventType.BAN, channelName, null, null, id));
+                channel.writeAndFlush(new GoodGameEvent(GoodGameEventType.BAN, remoteRoom(), null, null, id));
             }
         } else {
             throw new UnsupportedOperationException();
@@ -129,21 +109,6 @@ public class GoodGameChatProxy implements Proxy {
     @Override
     public void onMessage(Message message) {
 
-    }
-
-    @Override
-    public long id() {
-        return this.id;
-    }
-
-    @Override
-    public ProxyProvider provider() {
-        return this.provider;
-    }
-
-    @Override
-    public String remoteRoom() {
-        return this.channelName;
     }
 
     @Override
@@ -157,25 +122,20 @@ public class GoodGameChatProxy implements Proxy {
     }
 
     @Override
-    public ProxyState state() {
-        return this.state;
-    }
-
-    @Override
-    public String lastError() {
-        return this.lastError;
-    }
-
-    private void connect() {
+    protected void connect() {
         ChannelFuture channelFuture = bootstrap.connect(HOST_NAME, 8081);
         channel = channelFuture.channel();
         channelFuture.addListener(future -> {
             if (!future.isSuccess()) {
                 logger.warn("failed to connect connect");
-                state = ProxyState.FAILED;
-                lastError = "failed to connect";
+                failed("failed to connect");
             }
         });
+    }
+
+    @Override
+    protected void disconnect() {
+        channel.close();
     }
 
     @ChannelHandler.Sharable
@@ -188,7 +148,7 @@ public class GoodGameChatProxy implements Proxy {
         @Override
         public void channelInactive(ChannelHandlerContext ctx) throws Exception {
             logger.info("disconnected");
-            if (state == ProxyState.RUNNING) {
+            if (state() == ProxyState.RUNNING) {
                 connect();
             }
         }
@@ -197,18 +157,15 @@ public class GoodGameChatProxy implements Proxy {
         protected void channelRead0(ChannelHandlerContext ctx, GoodGameEvent msg) throws Exception {
             if (msg.getType() == GoodGameEventType.FAILED_AUTH) {
                 logger.warn("failed login {}", userId);
-                state = ProxyState.FAILED;
-                lastError = "failed login";
+                failed("failed login");
                 channel.close();
             } else if (msg.getType() == GoodGameEventType.FAILED_JOIN) {
-                logger.warn("failed join {}", channelName);
-                state = ProxyState.FAILED;
-                lastError = "failed join";
+                logger.warn("failed join {}", remoteRoom());
+                failed("failed join");
                 channel.close();
             } else if (msg.getType() == GoodGameEventType.BAD_RIGHTS) {
-                logger.warn("bad rights {}: {}", channelName, userId);
-                state = ProxyState.FAILED;
-                lastError = "bad rights";
+                logger.warn("bad rights {}: {}", remoteRoom(), userId);
+                failed("bad rights");
                 channel.close();
             } else if (msg.getType() == GoodGameEventType.MESSAGE) {
                 idCache.put(msg.getUser(), msg.getId());
