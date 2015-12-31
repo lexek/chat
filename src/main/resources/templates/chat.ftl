@@ -192,6 +192,7 @@
                         required
                         ng-model="input.category"
                         >
+                    <option value="EMOTICON">{{'TICKETS_TYPE_EMOTICON' | translate}}</option>
                     <option value="BAN">{{'TICKETS_TYPE_BAN' | translate}}</option>
                     <option value="RENAME">{{'TICKETS_TYPE_RENAME' | translate}}</option>
                     <option value="BUG">{{'TICKETS_TYPE_BUG' | translate}}</option>

@@ -1232,18 +1232,6 @@ var TicketsController = function($scope, $location, $http, $modal, alert, title)
         });
     };
 
-    $scope.getLabelClass = function(cat) {
-        if (cat === "BAN") {
-            return "label-warning";
-        } else if (cat === "BUG") {
-            return "label-danger";
-        } else if (cat === "RENAME") {
-            return "label-primary";
-        } else if (cat === "OTHER") {
-            return "label-default";
-        }
-    };
-
     $scope.showUser = function(id, evt) {
         if (evt) {
             evt.preventDefault();

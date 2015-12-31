@@ -11,7 +11,7 @@ import lexek.wschat.security.AuthenticationManager;
 import lexek.wschat.services.TicketService;
 
 public class UserTicketsHandler extends SimpleHttpHandler {
-    private final ImmutableSet<String> categories = ImmutableSet.of("BAN", "RENAME", "BUG", "OTHER");
+    private final ImmutableSet<String> categories = ImmutableSet.of("EMOTICON", "BAN", "RENAME", "BUG", "OTHER");
     private final AuthenticationManager authenticationManager;
     private final TicketService ticketService;
 
