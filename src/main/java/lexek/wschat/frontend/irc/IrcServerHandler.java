@@ -51,6 +51,7 @@ public class IrcServerHandler extends ChannelInboundHandlerAdapter implements Au
             roomManager.partAll(connection, true);
             connectionGroup.deregisterConnection(connection);
         }
+        connection.setState(ConnectionState.DISCONNECTED);
     }
 
     @Override

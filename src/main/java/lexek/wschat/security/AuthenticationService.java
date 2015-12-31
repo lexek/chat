@@ -166,23 +166,25 @@ public class AuthenticationService extends AbstractService {
     private class AuthenticationServiceWorker implements EventHandler<AuthenticationEvent> {
         @Override
         public void onEvent(final AuthenticationEvent event, long l, boolean b) throws Exception {
-            UserAuthDto auth = null;
-            final String ip = event.getConnection().getIp();
-            final AuthenticationCallback callback = event.getCallback();
-            final Connection connection = event.getConnection();
-            if (event.getType() == AuthenticationType.SID && event.getKey() != null) {
-                auth = authenticationManager.checkFullAuthentication(event.getKey(), ip);
-            } else if (event.getType() == AuthenticationType.PASSWORD && event.getKey() != null && event.getName() != null) {
-                if (authenticationManager.failedLoginTries(ip) > 10) {
-                    callback.captchaRequired(connection, event.getName(), captchaService.tryAuthorize(() ->
-                        finishAuthentication(authenticationManager.fastAuth(event.getName(), event.getKey(), ip),
-                            connection, callback)));
-                    return;
-                } else {
-                    auth = authenticationManager.fastAuth(event.getName(), event.getKey(), ip);
+            if (event.connection.getState() == ConnectionState.AUTHENTICATING) {
+                UserAuthDto auth = null;
+                final String ip = event.getConnection().getIp();
+                final AuthenticationCallback callback = event.getCallback();
+                final Connection connection = event.getConnection();
+                if (event.getType() == AuthenticationType.SID && event.getKey() != null) {
+                    auth = authenticationManager.checkFullAuthentication(event.getKey(), ip);
+                } else if (event.getType() == AuthenticationType.PASSWORD && event.getKey() != null && event.getName() != null) {
+                    if (authenticationManager.failedLoginTries(ip) > 10) {
+                        callback.captchaRequired(connection, event.getName(), captchaService.tryAuthorize(() ->
+                            finishAuthentication(authenticationManager.fastAuth(event.getName(), event.getKey(), ip),
+                                connection, callback)));
+                        return;
+                    } else {
+                        auth = authenticationManager.fastAuth(event.getName(), event.getKey(), ip);
+                    }
                 }
+                finishAuthentication(auth, connection, callback);
             }
-            finishAuthentication(auth, connection, callback);
         }
 
         private void finishAuthentication(UserAuthDto auth, Connection connection, AuthenticationCallback callback) {

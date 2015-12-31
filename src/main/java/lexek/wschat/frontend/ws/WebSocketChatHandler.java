@@ -48,9 +48,12 @@ public class WebSocketChatHandler extends SimpleChannelInboundHandler<WebSocketF
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         WebSocketConnectionAdapter c = ctx.channel().attr(WRAPPER_ATTR_KEY).get();
-        if (c != null && c.getState() == ConnectionState.AUTHENTICATED) {
-            roomManager.partAll(c, true);
-            connectionGroup.deregisterConnection(c);
+        if (c != null) {
+            if (c.getState() == ConnectionState.AUTHENTICATED) {
+                roomManager.partAll(c, true);
+                connectionGroup.deregisterConnection(c);
+            }
+            c.setState(ConnectionState.DISCONNECTED);
         }
     }
 
