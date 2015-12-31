@@ -128,6 +128,7 @@
             <ul>
                 <li><code>**{{'HELP_BOLD_TEXT' | translate}}**</code> <span class="fa fa-long-arrow-right"></span> <strong>{{'HELP_BOLD_TEXT' | translate}}</strong></li>
                 <li><code>*{{'HELP_ITALIC_TEXT' | translate}}*</code> <span class="fa fa-long-arrow-right"></span> <i>{{'HELP_ITALIC_TEXT' | translate}}</i></li>
+                <li><code>~~{{'HELP_STRIKETHROUGH_TEXT' | translate}}~~</code> <span class="fa fa-long-arrow-right"></span> <del>{{'HELP_STRIKETHROUGH_TEXT' | translate}}</del></li>
                 <li><code>%%{{'HELP_SPOILER_TEXT' | translate}}%%</code> <span class="fa fa-long-arrow-right"></span> <span class="spoiler">{{'HELP_SPOILER_TEXT' | translate}}</span></li>
                 <li>
                     <code>!!!{{'HELP_NSFW_TEXT' | translate}}</code> <span class="fa fa-long-arrow-right"></span> <span class="nsfwLabel">NSFW</span> <span class="spoiler">{{'HELP_NSFW_TEXT' | translate}}</span><br/>

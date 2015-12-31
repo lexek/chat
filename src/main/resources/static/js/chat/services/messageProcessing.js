@@ -512,6 +512,7 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
         }
         text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
         text = text.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+        text = text.replace(/~~(.+?)~~/g, '<del>$1</del>');
         text = text.replace("@" + chat.self.name, function () {
             ctx.proc.mention = true;
             return "<span class='mentionLabel'>@" + chat.self.name + "</span>"
