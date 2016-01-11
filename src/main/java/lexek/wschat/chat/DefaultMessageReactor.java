@@ -126,5 +126,13 @@ public class DefaultMessageReactor extends AbstractService implements MessageRea
         public void setMessage(Message message) {
             this.message = message;
         }
+
+        @Override
+        public String toString() {
+            return "InboundMessageEvent{" +
+                "connection=" + connection +
+                ", message=" + message +
+                '}';
+        }
     }
 }
