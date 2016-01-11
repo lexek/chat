@@ -421,7 +421,7 @@ controlsModule.controller("EmoticonsController", ["$scope", "chatService", funct
     $scope.emoticons = chat.emoticons;
 
     $scope.unescapeCode = function(code) {
-        return code.replace(/\\(.)/, "$1").replace("&lt;", "<").replace("&gt;", ">");
+        return code.replace(/\\(.)/, "$1").replace("&lt;", "<").replace("&gt;", ">").replace("&#59;", ";");
     };
 
     $scope.addToInput = function(text) {
