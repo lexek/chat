@@ -7,6 +7,7 @@ import io.netty.util.CharsetUtil;
 import lexek.wschat.chat.e.InvalidInputException;
 import lexek.wschat.util.JsonResponseHandler;
 import org.apache.http.HttpEntity;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -36,7 +37,17 @@ public class TwitchTvSocialAuthService implements SocialAuthService {
         PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
         connectionManager.setMaxTotal(2);
         connectionManager.setDefaultSocketConfig(SocketConfig.custom().setSoKeepAlive(true).setSoTimeout(TIMEOUT).build());
-        httpClient = HttpClients.custom().setConnectionManager(connectionManager).build();
+        httpClient = HttpClients
+            .custom()
+            .setDefaultRequestConfig(RequestConfig
+                .custom()
+                .setConnectionRequestTimeout(TIMEOUT)
+                .setConnectTimeout(TIMEOUT)
+                .setSocketTimeout(TIMEOUT)
+                .build()
+            )
+            .setConnectionManager(connectionManager)
+            .build();
     }
 
 
