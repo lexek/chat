@@ -135,7 +135,9 @@ public class GoodGameChatProxy extends AbstractProxy {
 
     @Override
     protected void disconnect() {
-        channel.close();
+        if (this.channel.isActive()) {
+            channel.close();
+        }
     }
 
     @ChannelHandler.Sharable

@@ -119,7 +119,9 @@ public class CybergameTvChatProxy extends AbstractProxy {
 
     @Override
     protected void disconnect() {
-        this.channel.close();
+        if (this.channel.isActive()) {
+            this.channel.close();
+        }
     }
 
     @Sharable

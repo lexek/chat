@@ -57,6 +57,7 @@ public abstract class AbstractProxy implements Proxy {
     protected void failed(String message) {
         this.state = ProxyState.FAILED;
         this.lastError = message;
+        disconnect();
         this.notificationService.notifyAdmins(
             "Proxy failed " + provider.getName(),
             String.format("Proxy %s/%s(%d) failed: %s", provider.getName(), remoteRoom, id, message),
