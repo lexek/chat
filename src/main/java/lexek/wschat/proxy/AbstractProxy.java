@@ -2,15 +2,27 @@ package lexek.wschat.proxy;
 
 import lexek.wschat.services.NotificationService;
 
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
 public abstract class AbstractProxy implements Proxy {
     private final NotificationService notificationService;
     private final long id;
     private final ProxyProvider provider;
+    private final ScheduledExecutorService scheduler;
     private final String remoteRoom;
+    private int failsInRow = 0;
     private volatile ProxyState state = ProxyState.NEW;
     private volatile String lastError = null;
 
-    protected AbstractProxy(NotificationService notificationService, long id, ProxyProvider provider, String remoteRoom) {
+    protected AbstractProxy(
+        ScheduledExecutorService scheduler,
+        NotificationService notificationService,
+        ProxyProvider provider,
+        long id,
+        String remoteRoom
+    ) {
+        this.scheduler = scheduler;
         this.notificationService = notificationService;
         this.id = id;
         this.provider = provider;
@@ -44,8 +56,9 @@ public abstract class AbstractProxy implements Proxy {
 
     @Override
     final public void start() {
-        this.state = ProxyState.RUNNING;
+        this.state = ProxyState.STARTING;
         connect();
+        this.scheduler.schedule(this::checkIfRunning, 1, TimeUnit.MINUTES);
     }
 
     @Override
@@ -54,7 +67,13 @@ public abstract class AbstractProxy implements Proxy {
         disconnect();
     }
 
+    protected void started() {
+        this.state = ProxyState.RUNNING;
+        this.failsInRow = 0;
+    }
+
     protected void failed(String message) {
+        this.failsInRow++;
         this.state = ProxyState.FAILED;
         this.lastError = message;
         disconnect();
@@ -63,6 +82,14 @@ public abstract class AbstractProxy implements Proxy {
             String.format("Proxy %s/%s(%d) failed: %s", provider.getName(), remoteRoom, id, message),
             true
         );
+        long reconnectIn = failsInRow <= 5 ? Math.round(Math.pow(2, this.failsInRow)) : 32;
+        this.scheduler.schedule(this::start, reconnectIn, TimeUnit.MINUTES);
+    }
+
+    private void checkIfRunning() {
+        if (this.state == ProxyState.STARTING) {
+            this.failed("didn't start within given time");
+        }
     }
 
     protected abstract void connect();

@@ -12,4 +12,6 @@ public interface JTVEventListener {
     void onClear(String name);
 
     void loginFailed();
+
+    void selfJoined(String room);
 }

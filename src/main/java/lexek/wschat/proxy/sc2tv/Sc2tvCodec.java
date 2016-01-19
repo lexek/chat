@@ -46,7 +46,10 @@ public class Sc2tvCodec extends MessageToMessageCodec<SocketIoEvent<String>, Sc2
             ));
         }
         if (message.getType() == SocketIoPacketType.ACK) {
-            ctx.fireChannelRead(message);
+            out.add(new Sc2tvAck(
+                message.getId(),
+                root.get(0)
+            ));
         }
     }
 }

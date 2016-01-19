@@ -50,7 +50,7 @@ public class GoodGameChatProxy extends AbstractProxy {
         NotificationService notificationService, MessageBroadcaster messageBroadcaster, EventLoopGroup eventLoopGroup,
         AtomicLong messageId, ProxyProvider provider, long id, Room room, String remoteRoom, String name, String token
     ) {
-        super(notificationService, id, provider, remoteRoom);
+        super(eventLoopGroup, notificationService, provider, id, remoteRoom);
         this.messageBroadcaster = messageBroadcaster;
         this.messageId = messageId;
         this.room = room;
@@ -127,7 +127,7 @@ public class GoodGameChatProxy extends AbstractProxy {
         channel = channelFuture.channel();
         channelFuture.addListener(future -> {
             if (!future.isSuccess()) {
-                logger.warn("failed to connect connect");
+                logger.warn("failed to connect");
                 failed("failed to connect");
             }
         });
@@ -169,6 +169,9 @@ public class GoodGameChatProxy extends AbstractProxy {
                 logger.warn("bad rights {}: {}", remoteRoom(), userId);
                 failed("bad rights");
                 channel.close();
+            } else if (msg.getType() == GoodGameEventType.SUCCESS_JOIN) {
+                started();
+                logger.debug("successfully joined channel {}", remoteRoom());
             } else if (msg.getType() == GoodGameEventType.MESSAGE) {
                 idCache.put(msg.getUser(), msg.getId());
                 Message message = Message.extMessage(

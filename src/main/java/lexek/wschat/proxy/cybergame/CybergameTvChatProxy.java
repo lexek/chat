@@ -46,7 +46,7 @@ public class CybergameTvChatProxy extends AbstractProxy {
         NotificationService notificationService, MessageBroadcaster messageBroadcaster, EventLoopGroup eventLoopGroup,
         AtomicLong messageId, ProxyProvider provider, Room room, String remoteRoom, long id
     ) {
-        super(notificationService, id, provider, remoteRoom);
+        super(eventLoopGroup, notificationService, provider, id, remoteRoom);
         this.messageBroadcaster = messageBroadcaster;
         this.messageId = messageId;
         this.room = room;
@@ -113,6 +113,8 @@ public class CybergameTvChatProxy extends AbstractProxy {
             if (!future.isSuccess()) {
                 logger.warn("failed to connect connect");
                 failed("failed to connect");
+            } else {
+                started();
             }
         });
     }

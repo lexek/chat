@@ -53,7 +53,7 @@ public class Sc2tvChatProxy extends AbstractProxy {
         NotificationService notificationService, String remoteRoom, MessageBroadcaster messageBroadcaster,
         EventLoopGroup eventLoopGroup, AtomicLong messageId, Room room, long id, ProxyProvider provider
     ) {
-        super(notificationService, id, provider, remoteRoom);
+        super(eventLoopGroup, notificationService, provider, id, remoteRoom);
         this.messageBroadcaster = messageBroadcaster;
         this.messageId = messageId;
         this.room = room;
@@ -115,7 +115,7 @@ public class Sc2tvChatProxy extends AbstractProxy {
         channel = channelFuture.channel();
         channelFuture.addListener(future -> {
             if (!future.isSuccess()) {
-                logger.warn("failed to connect connect");
+                logger.warn("failed to connect");
                 failed("failed to connect");
             }
         });
@@ -132,6 +132,7 @@ public class Sc2tvChatProxy extends AbstractProxy {
     private class Sc2ChannelHandler extends ChannelInboundHandlerAdapter {
         private final Set<Long> receivedMessages = new HashSet<>();
         private long eventId = 0;
+        private Long joinEventId = null;
 
         @Override
         public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
@@ -139,11 +140,13 @@ public class Sc2tvChatProxy extends AbstractProxy {
             if (msg instanceof SocketIoPacket) {
                 SocketIoPacket socketIoPacket = (SocketIoPacket) msg;
                 switch (socketIoPacket.getType()) {
-                    case CONNECT:
+                    case CONNECT: {
                         ObjectNode object = JsonNodeFactory.instance.objectNode();
                         object.put("channel", "stream/" + remoteRoom());
-                        ctx.writeAndFlush(new Sc2tvMessage(eventId++, "/chat/join", object));
+                        joinEventId = eventId++;
+                        ctx.writeAndFlush(new Sc2tvMessage(joinEventId, "/chat/join", object));
                         break;
+                    }
                 }
             }
             if (msg instanceof Sc2tvMessage) {
@@ -175,6 +178,17 @@ public class Sc2tvChatProxy extends AbstractProxy {
                     }
                 }
             }
+            if (msg instanceof Sc2tvAck) {
+                Sc2tvAck ack = ((Sc2tvAck) msg);
+                if (ack.getId() == joinEventId) {
+                    String status = ack.getData().get("status").asText();
+                    if (status.equals("ok")) {
+                        started();
+                    } else {
+                        failed("failed join");
+                    }
+                }
+            }
         }
 
         @Override
@@ -185,6 +199,7 @@ public class Sc2tvChatProxy extends AbstractProxy {
         @Override
         public void channelInactive(ChannelHandlerContext ctx) throws Exception {
             logger.debug("disconnected");
+            joinEventId = null;
             if (state() == ProxyState.RUNNING) {
                 connect();
             }

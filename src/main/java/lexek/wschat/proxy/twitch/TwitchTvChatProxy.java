@@ -49,7 +49,7 @@ public class TwitchTvChatProxy extends AbstractProxy {
         String username, String token, boolean outbound, AtomicLong messageId, MessageBroadcaster messageBroadcaster,
         AuthenticationManager authenticationManager, EventLoopGroup eventLoopGroup
     ) {
-        super(notificationService, id, provider, remoteRoom);
+        super(eventLoopGroup, notificationService, provider, id, remoteRoom);
         this.username = username;
         this.messageId = messageId;
         this.messageBroadcaster = messageBroadcaster;
@@ -199,6 +199,15 @@ public class TwitchTvChatProxy extends AbstractProxy {
         public void loginFailed() {
             failed("login failed");
             channel.close();
+        }
+
+        @Override
+        public void selfJoined(String room) {
+            if (room.equalsIgnoreCase(remoteRoom())) {
+                started();
+            } else {
+                failed("wrong room, wut?");
+            }
         }
     }
 }

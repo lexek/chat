@@ -40,7 +40,7 @@ public class GoodGameProtocolHandler extends SimpleChannelInboundHandler<GoodGam
                 }
                 break;
             case SUCCESS_JOIN:
-                logger.debug("successfully joined channel {}", channelId);
+                ctx.fireChannelRead(msg);
                 break;
             case FAILED_JOIN:
             case BAD_RIGHTS:

@@ -47,6 +47,12 @@ public class TwitchMessageHandler extends SimpleChannelInboundHandler<TwitchEven
             eventListener.onMessage(((TwitchUserMessage) msg).getUser(), msg.getData());
         } else if (msg.getType() == TwitchEventMessage.Type.LOGIN_FAILED) {
             eventListener.loginFailed();
+        } else if (msg.getType() == TwitchEventMessage.Type.JOIN) {
+            TwitchJoinEvent event = (TwitchJoinEvent) msg;
+            if (event.getData().equalsIgnoreCase(getName())) {
+                String roomName = event.getRoom();
+                eventListener.selfJoined(roomName.indexOf('#') == 0 ? roomName.substring(1) : roomName);
+            }
         }
     }
 
@@ -59,6 +65,14 @@ public class TwitchMessageHandler extends SimpleChannelInboundHandler<TwitchEven
             } else if (e.state() == IdleState.ALL_IDLE) {
                 ctx.close();
             }
+        }
+    }
+
+    private String getName() {
+        if (this.username == null) {
+            return "justinfan1337";
+        } else {
+            return this.username;
         }
     }
 }

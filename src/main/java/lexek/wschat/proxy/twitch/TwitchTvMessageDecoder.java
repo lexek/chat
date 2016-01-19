@@ -62,7 +62,17 @@ public class TwitchTvMessageDecoder extends MessageToMessageDecoder<String> {
                 this.user = null;
                 break;
             }
+            case "JOIN": {
+                out.add(new TwitchJoinEvent(parseNick(prefix), arg[1]));
+            }
         }
+    }
+
+    private static String parseNick(String nick) {
+        if (nick.contains("!")) {
+            nick = nick.substring(0, nick.indexOf('!'));
+        }
+        return nick;
     }
 
     private TwitchUser getUser() {

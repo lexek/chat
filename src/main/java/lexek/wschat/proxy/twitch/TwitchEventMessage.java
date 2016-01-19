@@ -28,6 +28,6 @@ public class TwitchEventMessage {
     public enum Type {
         MSG,
         CLEAR,
-        LOGIN_FAILED
+        JOIN, LOGIN_FAILED
     }
 }
