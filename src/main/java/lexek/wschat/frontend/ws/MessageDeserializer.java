@@ -25,6 +25,10 @@ public class MessageDeserializer extends StdDeserializer<Message> {
     @Override
     public Message deserialize(JsonParser jp, DeserializationContext ctx) throws IOException {
         ObjectNode rootNode = jp.readValueAsTree();
+        JsonNode typeNode = rootNode.get("type");
+        if (typeNode == null || !typeNode.isTextual()) {
+            return new Message(ImmutableMap.of(MessageProperty.TYPE, MessageType.UNKNOWN));
+        }
         ImmutableMap.Builder<MessageProperty, Object> mapBuilder = ImmutableMap.builder();
         rootNode.fields().forEachRemaining(entry -> {
             String name = entry.getKey();
@@ -72,7 +76,6 @@ public class MessageDeserializer extends StdDeserializer<Message> {
                     logger.warn("unsupported property {}", name);
                     break;
             }
-
         });
         return new Message(mapBuilder.build());
     }
