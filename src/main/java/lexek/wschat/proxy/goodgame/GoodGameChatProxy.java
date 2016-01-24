@@ -28,8 +28,6 @@ import lexek.wschat.proxy.ProxyProvider;
 import lexek.wschat.proxy.ProxyState;
 import lexek.wschat.services.NotificationService;
 import lexek.wschat.util.Colors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.util.concurrent.TimeUnit;
@@ -37,7 +35,6 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public class GoodGameChatProxy extends AbstractProxy {
     private static final String HOST_NAME = "chat.goodgame.ru";
-    private final Logger logger = LoggerFactory.getLogger(GoodGameChatProxy.class);
     private final Cache<String, String> idCache = CacheBuilder.newBuilder().maximumSize(100).build();
     private final MessageBroadcaster messageBroadcaster;
     private final AtomicLong messageId;
@@ -127,8 +124,7 @@ public class GoodGameChatProxy extends AbstractProxy {
         channel = channelFuture.channel();
         channelFuture.addListener(future -> {
             if (!future.isSuccess()) {
-                logger.warn("failed to connect");
-                failed("failed to connect");
+                fail("failed to connect");
             }
         });
     }
@@ -151,27 +147,29 @@ public class GoodGameChatProxy extends AbstractProxy {
         public void channelInactive(ChannelHandlerContext ctx) throws Exception {
             logger.info("disconnected");
             if (state() == ProxyState.RUNNING) {
-                connect();
+                minorFail("disconnected");
             }
+        }
+
+        @Override
+        public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+            logger.warn("exception", cause);
+            minorFail(cause.getMessage());
         }
 
         @Override
         protected void channelRead0(ChannelHandlerContext ctx, GoodGameEvent msg) throws Exception {
             if (msg.getType() == GoodGameEventType.FAILED_AUTH) {
-                logger.warn("failed login {}", userId);
-                failed("failed login");
+                fail("failed login");
                 channel.close();
             } else if (msg.getType() == GoodGameEventType.FAILED_JOIN) {
-                logger.warn("failed join {}", remoteRoom());
-                failed("failed join");
+                fail("failed join");
                 channel.close();
             } else if (msg.getType() == GoodGameEventType.BAD_RIGHTS) {
-                logger.warn("bad rights {}: {}", remoteRoom(), userId);
-                failed("bad rights");
+                fail("bad rights");
                 channel.close();
             } else if (msg.getType() == GoodGameEventType.SUCCESS_JOIN) {
                 started();
-                logger.debug("successfully joined channel {}", remoteRoom());
             } else if (msg.getType() == GoodGameEventType.MESSAGE) {
                 idCache.put(msg.getUser(), msg.getId());
                 Message message = Message.extMessage(
@@ -200,8 +198,7 @@ public class GoodGameChatProxy extends AbstractProxy {
                 if (e.state() == IdleState.READER_IDLE) {
                     ctx.writeAndFlush(new PingWebSocketFrame());
                 } else if (e.state() == IdleState.ALL_IDLE) {
-                    logger.debug("closing idle connection");
-                    ctx.close();
+                    minorFail("idle");
                 }
             }
         }

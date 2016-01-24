@@ -32,8 +32,6 @@ import lexek.wschat.proxy.ProxyProvider;
 import lexek.wschat.proxy.ProxyState;
 import lexek.wschat.services.NotificationService;
 import lexek.wschat.util.Colors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URI;
@@ -42,7 +40,6 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class Sc2tvChatProxy extends AbstractProxy {
-    private final Logger logger = LoggerFactory.getLogger(Sc2tvChatProxy.class);
     private final MessageBroadcaster messageBroadcaster;
     private final AtomicLong messageId;
     private final Room room;
@@ -115,8 +112,7 @@ public class Sc2tvChatProxy extends AbstractProxy {
         channel = channelFuture.channel();
         channelFuture.addListener(future -> {
             if (!future.isSuccess()) {
-                logger.warn("failed to connect");
-                failed("failed to connect");
+                fail("failed to connect");
             }
         });
     }
@@ -185,23 +181,17 @@ public class Sc2tvChatProxy extends AbstractProxy {
                     if (status.equals("ok")) {
                         started();
                     } else {
-                        failed("failed join");
+                        fail("failed join");
                     }
                 }
             }
         }
 
         @Override
-        public void channelActive(ChannelHandlerContext ctx) throws Exception {
-            logger.debug("connected");
-        }
-
-        @Override
         public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-            logger.debug("disconnected");
             joinEventId = null;
             if (state() == ProxyState.RUNNING) {
-                connect();
+                minorFail("disconnected");
             }
         }
 
@@ -212,7 +202,7 @@ public class Sc2tvChatProxy extends AbstractProxy {
             } else {
                 logger.warn("exception", cause);
             }
-            ctx.close();
+            minorFail(cause.getMessage());
         }
     }
 }

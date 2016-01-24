@@ -26,15 +26,12 @@ import lexek.wschat.proxy.ProxyState;
 import lexek.wschat.security.AuthenticationManager;
 import lexek.wschat.services.NotificationService;
 import lexek.wschat.util.Colors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class TwitchTvChatProxy extends AbstractProxy {
-    private final Logger logger = LoggerFactory.getLogger(TwitchTvChatProxy.class);
     private final String username;
     private final AtomicLong messageId;
     private final MessageBroadcaster messageBroadcaster;
@@ -127,8 +124,7 @@ public class TwitchTvChatProxy extends AbstractProxy {
         channel = channelFuture.channel();
         channelFuture.addListener(future -> {
             if (!future.isSuccess()) {
-                logger.warn("failed to connect connect");
-                failed("failed to connect");
+                fail("failed to connect");
             }
         });
         if (this.outboundHandler != null) {
@@ -148,15 +144,9 @@ public class TwitchTvChatProxy extends AbstractProxy {
 
     private class JtvEventListenerImpl implements JTVEventListener {
         @Override
-        public void onConnected() {
-            logger.info("Twitch proxy connected. Channel: {}", remoteRoom());
-        }
-
-        @Override
         public void onDisconnected() {
-            logger.info("Twitch proxy disconnected.");
             if (state() == ProxyState.RUNNING) {
-                connect();
+                minorFail("disconnected");
             }
         }
 
@@ -191,14 +181,8 @@ public class TwitchTvChatProxy extends AbstractProxy {
         }
 
         @Override
-        public void onServerMessage(String s) {
-            logger.trace(s);
-        }
-
-        @Override
         public void loginFailed() {
-            failed("login failed");
-            channel.close();
+            fail("login failed");
         }
 
         @Override
@@ -206,8 +190,14 @@ public class TwitchTvChatProxy extends AbstractProxy {
             if (room.equalsIgnoreCase(remoteRoom())) {
                 started();
             } else {
-                failed("wrong room, wut?");
+                fail("wrong room, wut?");
             }
+        }
+
+        @Override
+        public void exceptionCaught(Throwable throwable) {
+            logger.warn("exception", throwable);
+            minorFail(throwable.getMessage());
         }
     }
 }

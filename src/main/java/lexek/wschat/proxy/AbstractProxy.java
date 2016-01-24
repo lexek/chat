@@ -1,11 +1,15 @@
 package lexek.wschat.proxy;
 
 import lexek.wschat.services.NotificationService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public abstract class AbstractProxy implements Proxy {
+    protected final Logger logger = LoggerFactory.getLogger(this.getClass());
+
     private final NotificationService notificationService;
     private final long id;
     private final ProxyProvider provider;
@@ -31,64 +35,86 @@ public abstract class AbstractProxy implements Proxy {
 
     @Override
     final public long id() {
-        return this.id;
+        return id;
     }
 
     @Override
     final public ProxyProvider provider() {
-        return this.provider;
+        return provider;
     }
 
     @Override
     final public String remoteRoom() {
-        return this.remoteRoom;
+        return remoteRoom;
     }
 
     @Override
     final public ProxyState state() {
-        return this.state;
+        return state;
     }
 
     @Override
     final public String lastError() {
-        return this.lastError;
+        return lastError;
     }
 
     @Override
     final public void start() {
-        this.state = ProxyState.STARTING;
+        logger.info("proxy {}/{} starting", provider.getName(), remoteRoom);
+        state = ProxyState.STARTING;
         connect();
-        this.scheduler.schedule(this::checkIfRunning, 1, TimeUnit.MINUTES);
+        scheduler.schedule(this::checkIfRunning, 1, TimeUnit.MINUTES);
     }
 
     @Override
     final public void stop() {
-        this.state = ProxyState.STOPPED;
+        logger.info("proxy {}/{} stopped", provider.getName(), remoteRoom);
+        state = ProxyState.STOPPED;
         disconnect();
     }
 
     protected void started() {
-        this.state = ProxyState.RUNNING;
-        this.failsInRow = 0;
+        logger.info("proxy {}/{} started", provider.getName(), remoteRoom);
+        state = ProxyState.RUNNING;
+        failsInRow = 0;
     }
 
-    protected void failed(String message) {
-        this.failsInRow++;
-        this.state = ProxyState.FAILED;
-        this.lastError = message;
+    protected void fail(String message) {
+        fail(message, false);
+    }
+
+    protected void minorFail(String message) {
+        fail(message, true);
+    }
+
+    protected void fail(String message, boolean minor) {
+        logger.warn("proxy {}/{} failed: {} (minor: {})", provider.getName(), remoteRoom, message, minor);
+        state = ProxyState.FAILED;
+        lastError = message;
         disconnect();
-        this.notificationService.notifyAdmins(
+        notificationService.notifyAdmins(
             "Proxy failed " + provider.getName(),
             String.format("Proxy %s/%s(%d) failed: %s", provider.getName(), remoteRoom, id, message),
-            true
+            !minor
         );
-        long reconnectIn = failsInRow <= 5 ? Math.round(Math.pow(2, this.failsInRow)) : 32;
-        this.scheduler.schedule(this::start, reconnectIn, TimeUnit.MINUTES);
+        if (failsInRow == 0) {
+            //reconnect right away on first fail
+            start();
+        } else {
+            if (minor) {
+                //with minor issue we shouldn't increase reconnection interval
+                scheduler.schedule(this::start, 1, TimeUnit.MINUTES);
+            } else {
+                long reconnectIn = failsInRow <= 5 ? Math.round(Math.pow(2, failsInRow)) : 32;
+                scheduler.schedule(this::start, reconnectIn, TimeUnit.MINUTES);
+            }
+        }
+        failsInRow++;
     }
 
     private void checkIfRunning() {
-        if (this.state == ProxyState.STARTING) {
-            this.failed("didn't start within given time");
+        if (state == ProxyState.STARTING) {
+            fail("didn't start within given time");
         }
     }
 

@@ -30,8 +30,6 @@ public class TwitchMessageHandler extends SimpleChannelInboundHandler<TwitchEven
         }
         ctx.write("CAP REQ :twitch.tv/commands\r\n");
         ctx.writeAndFlush("JOIN #" + channel + "\r\n");
-
-        eventListener.onConnected();
     }
 
     @Override
@@ -74,5 +72,10 @@ public class TwitchMessageHandler extends SimpleChannelInboundHandler<TwitchEven
         } else {
             return this.username;
         }
+    }
+
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+        eventListener.exceptionCaught(cause);
     }
 }

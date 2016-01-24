@@ -27,15 +27,12 @@ import lexek.wschat.proxy.ProxyProvider;
 import lexek.wschat.proxy.ProxyState;
 import lexek.wschat.services.NotificationService;
 import lexek.wschat.util.Colors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class CybergameTvChatProxy extends AbstractProxy {
-    private final Logger logger = LoggerFactory.getLogger(CybergameTvChatProxy.class);
     private final MessageBroadcaster messageBroadcaster;
     private final AtomicLong messageId;
     private final Room room;
@@ -111,8 +108,7 @@ public class CybergameTvChatProxy extends AbstractProxy {
         channel = channelFuture.channel();
         channelFuture.addListener(future -> {
             if (!future.isSuccess()) {
-                logger.warn("failed to connect connect");
-                failed("failed to connect");
+                fail("failed to connect");
             } else {
                 started();
             }
@@ -131,13 +127,14 @@ public class CybergameTvChatProxy extends AbstractProxy {
         @Override
         public void channelInactive(ChannelHandlerContext ctx) throws Exception {
             if (state() == ProxyState.RUNNING) {
-                connect();
+                minorFail("disconnected");
             }
         }
 
         @Override
         public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-            ctx.close();
+            logger.warn("exception", cause);
+            minorFail(cause.getMessage());
         }
 
         @Override
