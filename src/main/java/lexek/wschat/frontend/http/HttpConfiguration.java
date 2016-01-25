@@ -9,6 +9,8 @@ public class HttpConfiguration {
     private final String twitchClientId;
     private final String twitchSecret;
     private final String twitchUrl;
+    private final String twitterKey;
+    private final String twitterSecret;
     private final boolean allowLikes;
     private final boolean singleRoom;
 
@@ -18,6 +20,8 @@ public class HttpConfiguration {
                              @JsonProperty("twitchClientId") String twitchClientId,
                              @JsonProperty("twitchSecret") String twitchSecret,
                              @JsonProperty("twitchUrl") String twitchUrl,
+                             @JsonProperty("twitterKey") String twitterKey,
+                             @JsonProperty("twitterSecret") String twitterSecret,
                              @JsonProperty("allowLikes") boolean allowLikes,
                              @JsonProperty("singleRoom") boolean singleRoom) {
         this.port = port;
@@ -26,6 +30,8 @@ public class HttpConfiguration {
         this.twitchClientId = twitchClientId;
         this.twitchSecret = twitchSecret;
         this.twitchUrl = twitchUrl;
+        this.twitterKey = twitterKey;
+        this.twitterSecret = twitterSecret;
         this.allowLikes = allowLikes;
         this.singleRoom = singleRoom;
     }
@@ -60,5 +66,13 @@ public class HttpConfiguration {
 
     public boolean isSingleRoom() {
         return singleRoom;
+    }
+
+    public String getTwitterSecret() {
+        return twitterSecret;
+    }
+
+    public String getTwitterKey() {
+        return twitterKey;
     }
 }

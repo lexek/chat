@@ -48,6 +48,7 @@ import lexek.wschat.proxy.cybergame.CybergameTvProxyProvider;
 import lexek.wschat.proxy.goodgame.GoodGameProxyProvider;
 import lexek.wschat.proxy.sc2tv.Sc2tvProxyProvider;
 import lexek.wschat.proxy.twitch.TwitchTvProxyProvider;
+import lexek.wschat.proxy.twitter.TwitterProxyProvider;
 import lexek.wschat.security.AuthenticationManager;
 import lexek.wschat.security.AuthenticationService;
 import lexek.wschat.security.CaptchaService;
@@ -202,6 +203,13 @@ public class Main {
         proxyManager.registerProvider(new TwitchTvProxyProvider(messageId, messageBroadcaster, authenticationManager, proxyEventLoopGroup, twitchAuthService, notificationService));
         proxyManager.registerProvider(new Sc2tvProxyProvider(notificationService, proxyEventLoopGroup, messageBroadcaster, messageId));
         proxyManager.registerProvider(new CybergameTvProxyProvider(notificationService, messageBroadcaster, proxyEventLoopGroup, messageId));
+        proxyManager.registerProvider(new TwitterProxyProvider(
+            notificationService,
+            messageBroadcaster, proxyEventLoopGroup,
+            messageId,
+            settings.getHttp().getTwitterKey(),
+            settings.getHttp().getTwitterSecret()
+        ));
         messageConsumerServiceHandler.register(proxyManager);
         eventDispatcher.registerListener(ChatEventType.CONNECT, new SendIgnoreListOnEventListener(ignoreService));
         eventDispatcher.registerListener(ChatEventType.CONNECT, new SendEmoticonsOnEventListener(emoticonService));
