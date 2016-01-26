@@ -43,10 +43,7 @@ public class TwitterProxy extends AbstractProxy {
     private final AtomicLong messageId;
     private final Room room;
     private final Bootstrap bootstrap;
-    private final String consumerKey;
-    private final String consumerSecret;
-    private final String accessToken;
-    private final String accessTokenSecret;
+    private final TwitterCredentials credentials;
     private volatile Channel channel;
 
     protected TwitterProxy(
@@ -58,20 +55,14 @@ public class TwitterProxy extends AbstractProxy {
         String remoteRoom,
         AtomicLong messageId,
         Room room,
-        String consumerKey,
-        String consumerSecret,
-        String accessToken,
-        String accessTokenSecret
+        TwitterCredentials credentials
     ) throws SSLException {
         super(eventLoopGroup, notificationService, provider, id, remoteRoom);
         this.messageBroadcaster = messageBroadcaster;
         this.messageId = messageId;
         this.room = room;
-        this.consumerKey = consumerKey;
-        this.consumerSecret = consumerSecret;
-        this.accessToken = accessToken;
-        this.accessTokenSecret = accessTokenSecret;
         this.bootstrap = createBootstrap(eventLoopGroup, new Handler());
+        this.credentials = credentials;
     }
 
     private static Bootstrap createBootstrap(EventLoopGroup eventLoopGroup, Handler handler) throws SSLException {
@@ -158,10 +149,10 @@ public class TwitterProxy extends AbstractProxy {
                 wholeUrl
             );
             String header = OAuthUtil.generateAuthorizationHeader(
-                consumerKey,
-                consumerSecret,
-                accessToken,
-                accessTokenSecret,
+                credentials.getConsumerKey(),
+                credentials.getConsumerSecret(),
+                credentials.getAccessToken(),
+                credentials.getAccessTokenSecret(),
                 url,
                 method,
                 queryParameters
