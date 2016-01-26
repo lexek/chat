@@ -163,6 +163,9 @@ public class TwitterProxy extends AbstractProxy {
 
         @Override
         public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+            if (!ctx.channel().isActive()) {
+                return;
+            }
             if (msg instanceof HttpResponse) {
                 HttpResponse response = ((HttpResponse) msg);
                 if (response.getStatus().code() == 200) {
@@ -176,20 +179,28 @@ public class TwitterProxy extends AbstractProxy {
                 if (!message.isEmpty()) {
                     JsonNode rootNode = objectMapper.readTree(message);
                     String name = rootNode.get("user").get("screen_name").asText();
-                    String text = rootNode.get("text").asText();
-                    Message out = Message.extMessage(
-                        room.getName(),
-                        name,
-                        LocalRole.USER,
-                        GlobalRole.USER,
-                        Colors.generateColor(name),
-                        messageId.getAndIncrement(),
-                        System.currentTimeMillis(),
-                        text,
-                        "twitter",
-                        "twitter"
-                    );
-                    messageBroadcaster.submitMessage(out, room.FILTER);
+                    if (!rootNode.hasNonNull("retweeted_status") || name.equalsIgnoreCase(remoteRoom())) {
+                        String text = rootNode.get("text").asText();
+                        if (rootNode.hasNonNull("quoted_status")) {
+                            JsonNode quotedNode = rootNode.get("quoted_status");
+                            String quotedUser = quotedNode.get("user").get("screen_name").asText();
+                            String quotedText = quotedNode.get("text").asText();
+                            text = "**@" + quotedUser + "**: " + quotedText + " **<<<** " + text;
+                        }
+                        Message out = Message.extMessage(
+                            room.getName(),
+                            name,
+                            LocalRole.USER,
+                            GlobalRole.USER,
+                            Colors.generateColor(name),
+                            messageId.getAndIncrement(),
+                            System.currentTimeMillis(),
+                            text,
+                            "twitter",
+                            "twitter"
+                        );
+                        messageBroadcaster.submitMessage(out, room.FILTER);
+                    }
                 }
 
             }
