@@ -179,13 +179,23 @@ public class TwitterProxy extends AbstractProxy {
                 if (!message.isEmpty()) {
                     JsonNode rootNode = objectMapper.readTree(message);
                     String name = rootNode.get("user").get("screen_name").asText();
-                    if (!rootNode.hasNonNull("retweeted_status") || name.equalsIgnoreCase(remoteRoom())) {
+                    boolean isRetweet = rootNode.hasNonNull("retweeted_status");
+                    if (!isRetweet || name.equalsIgnoreCase(remoteRoom())) {
                         String text = rootNode.get("text").asText();
-                        if (rootNode.hasNonNull("quoted_status")) {
+                        if (isRetweet) {
+                            JsonNode quotedNode = rootNode.get("quoted_status");
+                            String quotedUser = quotedNode.get("user").get("screen_name").asText();
+                            String quotedText = quotedNode.get("text").asText();
+                            text = "**Retweeted @" + quotedUser + "**: " + quotedText + " **<<<** " + text;
+                        } else if (rootNode.hasNonNull("quoted_status")) {
                             JsonNode quotedNode = rootNode.get("quoted_status");
                             String quotedUser = quotedNode.get("user").get("screen_name").asText();
                             String quotedText = quotedNode.get("text").asText();
                             text = "**@" + quotedUser + "**: " + quotedText + " **<<<** " + text;
+                        } else if (rootNode.hasNonNull("in_reply_to_status_id")) {
+                            String toName = rootNode.get("in_reply_to_screen_name").asText();
+                            Long toId = rootNode.get("in_reply_to_status_id").asLong();
+                            text = "In reply to https://twitter.com/" + toName + "/status/" + toId + " : " + text;
                         }
                         Message out = Message.extMessage(
                             room.getName(),
