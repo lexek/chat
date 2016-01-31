@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 public abstract class AbstractProxy implements Proxy {
@@ -18,6 +19,7 @@ public abstract class AbstractProxy implements Proxy {
     private int failsInRow = 0;
     private volatile ProxyState state = ProxyState.NEW;
     private volatile String lastError = null;
+    private volatile ScheduledFuture checkFuture = null;
 
     protected AbstractProxy(
         ScheduledExecutorService scheduler,
@@ -63,18 +65,26 @@ public abstract class AbstractProxy implements Proxy {
         logger.info("proxy {}/{} starting", provider.getName(), remoteRoom);
         state = ProxyState.STARTING;
         connect();
-        scheduler.schedule(this::checkIfRunning, 1, TimeUnit.MINUTES);
+        checkFuture = scheduler.schedule(this::checkIfRunning, 1, TimeUnit.MINUTES);
     }
 
     @Override
     final public void stop() {
         logger.info("proxy {}/{} stopped", provider.getName(), remoteRoom);
+        if (checkFuture != null) {
+            checkFuture.cancel(false);
+            checkFuture = null;
+        }
         state = ProxyState.STOPPED;
         disconnect();
     }
 
     protected void started() {
         logger.info("proxy {}/{} started", provider.getName(), remoteRoom);
+        if (checkFuture != null) {
+            checkFuture.cancel(false);
+            checkFuture = null;
+        }
         state = ProxyState.RUNNING;
         failsInRow = 0;
     }
@@ -116,6 +126,7 @@ public abstract class AbstractProxy implements Proxy {
         if (state == ProxyState.STARTING) {
             fail("didn't start within given time");
         }
+        checkFuture = null;
     }
 
     protected abstract void connect();
