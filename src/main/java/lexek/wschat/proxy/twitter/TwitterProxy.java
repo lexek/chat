@@ -1,114 +1,61 @@
 package lexek.wschat.proxy.twitter;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableMap;
-import io.netty.bootstrap.Bootstrap;
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.PooledByteBufAllocator;
-import io.netty.buffer.Unpooled;
-import io.netty.channel.*;
-import io.netty.channel.epoll.Epoll;
-import io.netty.channel.epoll.EpollSocketChannel;
-import io.netty.channel.socket.SocketChannel;
-import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.handler.codec.DelimiterBasedFrameDecoder;
-import io.netty.handler.codec.MessageToMessageDecoder;
-import io.netty.handler.codec.http.*;
-import io.netty.handler.ssl.SslContext;
-import io.netty.handler.ssl.SslContextBuilder;
-import io.netty.handler.timeout.IdleState;
-import io.netty.handler.timeout.IdleStateHandler;
 import lexek.wschat.chat.MessageBroadcaster;
 import lexek.wschat.chat.Room;
 import lexek.wschat.chat.model.GlobalRole;
 import lexek.wschat.chat.model.LocalRole;
 import lexek.wschat.chat.model.Message;
-import lexek.wschat.proxy.AbstractProxy;
 import lexek.wschat.proxy.ModerationOperation;
+import lexek.wschat.proxy.Proxy;
 import lexek.wschat.proxy.ProxyProvider;
-import lexek.wschat.services.NotificationService;
+import lexek.wschat.proxy.ProxyState;
 import lexek.wschat.util.Colors;
-import lexek.wschat.util.OAuthUtil;
 
-import javax.net.ssl.SSLException;
-import java.nio.charset.StandardCharsets;
-import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class TwitterProxy extends AbstractProxy {
-    private final ObjectMapper objectMapper = new ObjectMapper();
-    private final MessageBroadcaster messageBroadcaster;
-    private final AtomicLong messageId;
+public class TwitterProxy implements Proxy, TwitterMessageConsumer {
+    private final long id;
+    private final TwitterStreamingClient twitterClient;
+    private final String remoteRoom;
+    private final ProxyProvider provider;
+    private final ConsumerType consumerType;
+    private final String entityName;
     private final Room room;
-    private final Bootstrap bootstrap;
-    private final TwitterCredentials credentials;
-    private volatile Channel channel;
+    private final AtomicLong messageId;
+    private final MessageBroadcaster messageBroadcaster;
+    private volatile boolean running;
 
-    protected TwitterProxy(
-        NotificationService notificationService,
+    public TwitterProxy(
         MessageBroadcaster messageBroadcaster,
-        EventLoopGroup eventLoopGroup,
+        TwitterStreamingClient twitterClient,
+        AtomicLong messageId,
+        Room room,
         ProxyProvider provider,
         long id,
         String remoteRoom,
-        AtomicLong messageId,
-        Room room,
-        TwitterCredentials credentials
-    ) throws SSLException {
-        super(eventLoopGroup, notificationService, provider, id, remoteRoom);
-        this.messageBroadcaster = messageBroadcaster;
-        this.messageId = messageId;
+        ConsumerType consumerType
+    ) {
+        this.id = id;
+        this.twitterClient = twitterClient;
+        this.remoteRoom = remoteRoom;
+        this.provider = provider;
         this.room = room;
-        this.bootstrap = createBootstrap(eventLoopGroup, new Handler());
-        this.credentials = credentials;
-    }
-
-    private static Bootstrap createBootstrap(EventLoopGroup eventLoopGroup, Handler handler) throws SSLException {
-        Bootstrap bootstrap = new Bootstrap();
-        bootstrap.group(eventLoopGroup);
-        if (Epoll.isAvailable()) {
-            bootstrap.channel(EpollSocketChannel.class);
-        } else {
-            bootstrap.channel(NioSocketChannel.class);
-        }
-        SslContext sslContext = SslContextBuilder.forClient().build();
-        bootstrap.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
-        bootstrap.handler(new ChannelInitializer<SocketChannel>() {
-            @Override
-            public void initChannel(final SocketChannel c) throws Exception {
-                ChannelPipeline pipeline = c.pipeline();
-                pipeline.addLast(sslContext.newHandler(c.alloc()));
-                pipeline.addLast(new HttpClientCodec(4096, 8192, 8192));
-                pipeline.addLast(new IdleStateHandler(90, 0, 0));
-                pipeline.addLast(new MessageToMessageDecoder<HttpContent>() {
-                    @Override
-                    protected void decode(ChannelHandlerContext channelHandlerContext, HttpContent httpContent, List<Object> out) throws Exception {
-                        out.add(httpContent.content().retain());
-                    }
-                });
-                pipeline.addLast(new DelimiterBasedFrameDecoder(102400, Unpooled.copiedBuffer("\r\n", StandardCharsets.UTF_8)));
-                pipeline.addLast(handler);
-            }
-        });
-        return bootstrap;
+        this.messageId = messageId;
+        this.messageBroadcaster = messageBroadcaster;
+        this.entityName = remoteRoom;
+        this.consumerType = consumerType;
     }
 
     @Override
-    protected void connect() {
-        ChannelFuture channelFuture = bootstrap.connect("stream.twitter.com", 443);
-        channel = channelFuture.channel();
-        channelFuture.addListener(future -> {
-            if (!future.isSuccess()) {
-                fail("failed to connect");
-            }
-        });
+    public synchronized void start() {
+        running = true;
+        twitterClient.registerConsumer(this);
     }
 
     @Override
-    protected void disconnect() {
-        this.channel.close();
+    public synchronized void stop() {
+        running = false;
+        twitterClient.deregisterConsumer(this);
     }
 
     @Override
@@ -118,7 +65,22 @@ public class TwitterProxy extends AbstractProxy {
 
     @Override
     public void onMessage(Message message) {
-        //do nothing
+        //ignore
+    }
+
+    @Override
+    public long id() {
+        return id;
+    }
+
+    @Override
+    public ProxyProvider provider() {
+        return provider;
+    }
+
+    @Override
+    public String remoteRoom() {
+        return remoteRoom;
     }
 
     @Override
@@ -131,101 +93,56 @@ public class TwitterProxy extends AbstractProxy {
         return false;
     }
 
-    @ChannelHandler.Sharable
-    private class Handler extends ChannelInboundHandlerAdapter {
-        @Override
-        public void channelActive(ChannelHandlerContext ctx) throws Exception {
-            String url = "https://stream.twitter.com/1.1/statuses/filter.json";
-            Map<String, String> queryParameters = ImmutableMap.of(
-                "track", "@" + remoteRoom()
-            );
-            QueryStringEncoder queryStringEncoder = new QueryStringEncoder(url);
-            queryParameters.forEach(queryStringEncoder::addParam);
-            String wholeUrl = queryStringEncoder.toUri().toString();
-            HttpMethod method = HttpMethod.POST;
-            FullHttpRequest request = new DefaultFullHttpRequest(
-                HttpVersion.HTTP_1_1,
-                HttpMethod.POST,
-                wholeUrl
-            );
-            String header = OAuthUtil.generateAuthorizationHeader(
-                credentials.getConsumerKey(),
-                credentials.getConsumerSecret(),
-                credentials.getAccessToken(),
-                credentials.getAccessTokenSecret(),
-                url,
-                method,
-                queryParameters
-            );
-            request.headers().add("Authorization", header);
-            ctx.writeAndFlush(request);
-        }
+    @Override
+    public ProxyState state() {
+        return running ? twitterClient.state() : ProxyState.STOPPED;
+    }
 
-        @Override
-        public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-            if (!ctx.channel().isActive()) {
-                return;
-            }
-            if (msg instanceof HttpResponse) {
-                HttpResponse response = ((HttpResponse) msg);
-                if (response.getStatus().code() == 200) {
-                    started();
-                } else {
-                    fail(response.getStatus().reasonPhrase());
-                }
-            }
-            if (msg instanceof ByteBuf) {
-                String message = (((ByteBuf) msg).toString(StandardCharsets.UTF_8));
-                if (!message.isEmpty()) {
-                    JsonNode rootNode = objectMapper.readTree(message);
-                    String name = rootNode.get("user").get("screen_name").asText();
-                    boolean isRetweet = rootNode.hasNonNull("retweeted_status");
-                    if (!isRetweet || name.equalsIgnoreCase(remoteRoom())) {
-                        String text = rootNode.get("text").asText();
-                        if (isRetweet) {
-                            JsonNode quotedNode = rootNode.get("quoted_status");
-                            String quotedUser = quotedNode.get("user").get("screen_name").asText();
-                            String quotedText = quotedNode.get("text").asText();
-                            text = "**Retweeted @" + quotedUser + "**: " + quotedText + " **<<<** " + text;
-                        } else if (rootNode.hasNonNull("quoted_status")) {
-                            JsonNode quotedNode = rootNode.get("quoted_status");
-                            String quotedUser = quotedNode.get("user").get("screen_name").asText();
-                            String quotedText = quotedNode.get("text").asText();
-                            text = "**@" + quotedUser + "**: " + quotedText + " **<<<** " + text;
-                        } else if (rootNode.hasNonNull("in_reply_to_status_id")) {
-                            String toName = rootNode.get("in_reply_to_screen_name").asText();
-                            Long toId = rootNode.get("in_reply_to_status_id").asLong();
-                            text = "In reply to https://twitter.com/" + toName + "/status/" + toId + " : " + text;
-                        }
-                        Message out = Message.extMessage(
-                            room.getName(),
-                            name,
-                            LocalRole.USER,
-                            GlobalRole.USER,
-                            Colors.generateColor(name),
-                            messageId.getAndIncrement(),
-                            System.currentTimeMillis(),
-                            text,
-                            "twitter",
-                            "twitter"
-                        );
-                        messageBroadcaster.submitMessage(out, room.FILTER);
-                    }
-                }
+    @Override
+    public String lastError() {
+        return twitterClient.lastError();
+    }
 
-            }
-        }
+    public ConsumerType getConsumerType() {
+        return consumerType;
+    }
 
-        @Override
-        public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-            logger.warn("exception", cause);
-        }
+    @Override
+    public String getEntityName() {
+        return entityName;
+    }
 
-        @Override
-        public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
-            if (evt == IdleState.READER_IDLE) {
-                minorFail("timeout");
-            }
-        }
+    @Override
+    public void onTweet(SimplifiedTweet tweet) {
+        //todo: implement custom message type
+        Message msg = Message.extMessage(
+            room.getName(),
+            tweet.getFrom(),
+            LocalRole.USER,
+            GlobalRole.USER,
+            Colors.generateColor(tweet.getFrom()),
+            messageId.getAndIncrement(),
+            System.currentTimeMillis(),
+            tweet.getText(),
+            "twitter",
+            remoteRoom()
+        );
+        messageBroadcaster.submitMessage(msg, room.FILTER);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        TwitterProxy that = (TwitterProxy) o;
+
+        return id == that.id;
+
+    }
+
+    @Override
+    public int hashCode() {
+        return (int) (id ^ (id >>> 32));
     }
 }

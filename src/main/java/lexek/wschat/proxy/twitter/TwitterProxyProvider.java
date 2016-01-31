@@ -8,16 +8,13 @@ import lexek.wschat.proxy.Proxy;
 import lexek.wschat.proxy.ProxyProvider;
 import lexek.wschat.services.NotificationService;
 
-import javax.net.ssl.SSLException;
 import java.util.EnumSet;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class TwitterProxyProvider extends ProxyProvider {
-    private final NotificationService notificationService;
-    private final EventLoopGroup eventLoopGroup;
     private final MessageBroadcaster messageBroadcaster;
     private final AtomicLong messageId;
-    private final TwitterCredentials credentials;
+    private final TwitterStreamingClient twitterClient;
 
     public TwitterProxyProvider(
         NotificationService notificationService,
@@ -27,31 +24,50 @@ public class TwitterProxyProvider extends ProxyProvider {
         TwitterCredentials credentials
     ) {
         super("twitter", false, false, EnumSet.noneOf(ModerationOperation.class));
-        this.notificationService = notificationService;
-        this.eventLoopGroup = eventLoopGroup;
         this.messageBroadcaster = messageBroadcaster;
         this.messageId = messageId;
-        this.credentials = credentials;
+        this.twitterClient = new TwitterStreamingClient(notificationService, eventLoopGroup, this, credentials);
     }
 
     @Override
     public Proxy newProxy(long id, Room room, String remoteRoom, String name, String key, boolean outbound) {
-        try {
+        if (remoteRoom.startsWith("#")) {
             return new TwitterProxy(
-                notificationService,
                 messageBroadcaster,
-                eventLoopGroup,
-                this,
-                id,
-                remoteRoom,
+                twitterClient,
                 messageId,
                 room,
-                credentials
+                this,
+                id,
+                remoteRoom.substring(1),
+                ConsumerType.TWEETS_HASHTAG
             );
-        } catch (SSLException e) {
-            e.printStackTrace();
-            throw new RuntimeException(e);
         }
+        if (remoteRoom.startsWith("link:")) {
+            return new TwitterProxy(
+                messageBroadcaster,
+                twitterClient,
+                messageId,
+                room,
+                this,
+                id,
+                remoteRoom.substring(5),
+                ConsumerType.TWEETS_LINK
+            );
+        }
+        if (remoteRoom.startsWith("text:")) {
+            return new TwitterProxy(
+                messageBroadcaster,
+                twitterClient,
+                messageId,
+                room,
+                this,
+                id,
+                remoteRoom.substring(5),
+                ConsumerType.TWEETS_PHRASE
+            );
+        }
+        throw new UnsupportedOperationException("couldn't detect type");
     }
 
     @Override
