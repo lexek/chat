@@ -1901,7 +1901,7 @@ var RoomController = function($scope, $location, $http, $sce, $modal, alert, tit
             method: "DELETE",
             url: StringFormatter.format(
                 "/rest/rooms/{number}/proxies/{string}/{string}",
-                $scope.roomData.id, proxy.providerName, proxy.remoteRoom
+                $scope.roomData.id, proxy.providerName, encodeURIComponent(proxy.remoteRoom)
             )
         }).success(function() {
             $scope.proxies.splice($scope.proxies.indexOf(proxy), 1);
@@ -1913,7 +1913,7 @@ var RoomController = function($scope, $location, $http, $sce, $modal, alert, tit
             method: "POST",
             url: StringFormatter.format(
                 "/rest/rooms/{number}/proxies/{string}/{string}/stop",
-                $scope.roomData.id, proxy.providerName, proxy.remoteRoom
+                $scope.roomData.id, proxy.providerName, encodeURIComponent(proxy.remoteRoom)
             )
         }).success(function() {
             loadProxies()
