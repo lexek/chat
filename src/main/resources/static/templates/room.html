@@ -94,13 +94,34 @@
                     <i class="fa fa-fw fa-newspaper-o"></i> topic
                 </h4>
             </div>
-            <div class="panel-body">
-                <span class="btn btn-link pull-right" ng-click="updateTopic()">
-                    <span class="fa fa-fw fa-pencil"></span>
-                </span>
-                <h4>
-                    {{ roomData.topic }}
-                </h4>
+            <div class="panel-body" ng-controller="TopicController">
+                <div ng-if="!editing">
+                    <span class="btn btn-link pull-right" ng-click="toggleEdit()">
+                        <span class="fa fa-fw fa-pencil"></span>
+                    </span>
+                    <h4 ng-bind-html="roomData.topic"></h4>
+                </div>
+                <div ng-if="editing">
+                    <form ng-submit="updateTopic()" class="form-horizontal" name="form">
+                        <div class="form-group" ng-class="{'has-error': form.topic.$invalid && form.topic.$dirty, 'has-success': form.topic.$dirty && !form.topic.$invalid}">
+                            <div class="col-xs-12">
+                                <textarea
+                                        class="form-control"
+                                        name="topic"
+                                        placeholder="Topic"
+                                        ng-model="input.topic"
+                                        required
+                                        nd-disabled="inProgress"
+                                        style="resize: vertical; height: 150px;"
+                                ></textarea>
+                            </div>
+                        </div>
+                        <div>
+                            <button type="submit" class="btn btn-primary" ng-disabled="form.$invalid || inProgress">Update topic</button>
+                            <button type="reset" class="btn btn-warning pull-right" ng-click="toggleEdit()">Cancel</button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
         <div class="panel panel-primary">

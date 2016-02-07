@@ -1718,6 +1718,41 @@ var NewProxyController = function($scope, $http, $modalInstance, room) {
     };
 };
 
+var TopicController = function($scope, $http) {
+    $scope.inProgress = false;
+    $scope.editing = false;
+    $scope.input = {
+        topic: ""
+    };
+
+    $scope.updateTopic = function() {
+        $scope.inProgress = true;
+        $http({
+            method: "PUT",
+            data: {
+                topic: $scope.input.topic
+            },
+            url: "/rest/rooms/" + $scope.roomId
+        }).success(function() {
+            $scope.roomData.topic = $scope.input.topic;
+            $scope.toggleEdit();
+            $scope.inProgress = false;
+        }).error(function(data) {
+            alert(data);
+            $scope.inProgress = false;
+        });
+    };
+
+    $scope.toggleEdit = function() {
+        if (!$scope.editing) {
+            $scope.input.topic = $scope.roomData.topic;
+        }
+        $scope.editing = !$scope.editing;
+    }
+}
+
+AdminApplication.controller("TopicController", ["$scope", "$http", TopicController]);
+
 var RoomController = function($scope, $location, $http, $sce, $modal, alert, title) {
     $scope.messages = [];
     $scope.journal = [];
@@ -1767,21 +1802,6 @@ var RoomController = function($scope, $location, $http, $sce, $modal, alert, tit
                 $scope.journal = d.data;
             });
         loadProxies();
-    };
-
-    $scope.updateTopic = function() {
-        var newTopic = prompt("New topic", $scope.roomData.topic);
-        if (newTopic) {
-            $http({
-                method: "PUT",
-                data: {
-                    topic: newTopic
-                },
-                url: "/rest/rooms/" + $scope.roomId
-            }).success(function() {
-                $scope.roomData.topic = newTopic;
-            });
-        }
     };
 
     $scope.showHistory = function() {
