@@ -39,4 +39,9 @@ public class CybergameTvProxyProvider extends ProxyProvider {
     public boolean validateCredentials(String name, String token) {
         throw new UnsupportedOperationException();
     }
+
+    @Override
+    public boolean validateRemoteRoom(String remoteRoom) {
+        return true;
+    }
 }

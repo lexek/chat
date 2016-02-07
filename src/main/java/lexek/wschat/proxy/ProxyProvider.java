@@ -41,4 +41,6 @@ public abstract class ProxyProvider {
     public abstract Proxy newProxy(long id, Room room, String remoteRoom, String name, String key, boolean outbound);
 
     public abstract boolean validateCredentials(String name, String token);
+
+    public abstract boolean validateRemoteRoom(String remoteRoom);
 }

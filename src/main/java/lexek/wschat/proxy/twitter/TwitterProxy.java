@@ -125,7 +125,7 @@ public class TwitterProxy implements Proxy, TwitterMessageConsumer {
             System.currentTimeMillis(),
             tweet.getText(),
             "twitter",
-            remoteRoom()
+            "twitter"
         );
         messageBroadcaster.submitMessage(msg, room.FILTER);
     }

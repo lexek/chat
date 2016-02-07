@@ -36,6 +36,7 @@ import java.util.stream.Collectors;
 
 public class TwitterStreamingClient extends AbstractProxy {
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private final TwitterProfileSource profileSource;
     private final Bootstrap bootstrap;
     private final TwitterCredentials credentials;
     private final Set<TwitterMessageConsumer> consumers = new CopyOnWriteArraySet<>();
@@ -46,9 +47,11 @@ public class TwitterStreamingClient extends AbstractProxy {
         NotificationService notificationService,
         EventLoopGroup eventLoopGroup,
         ProxyProvider provider,
+        TwitterProfileSource profileSource,
         TwitterCredentials credentials
     ) {
         super(eventLoopGroup, notificationService, provider, -1, "*internal*");
+        this.profileSource = profileSource;
         try {
             this.bootstrap = createBootstrap(eventLoopGroup, new Handler());
         } catch (SSLException e) {
@@ -166,6 +169,7 @@ public class TwitterStreamingClient extends AbstractProxy {
         @Override
         public void channelActive(ChannelHandlerContext ctx) throws Exception {
             List<String> tracks = new ArrayList<>();
+            List<Long> follows = new ArrayList<>();
             for (TwitterMessageConsumer consumer : consumers) {
                 switch (consumer.getConsumerType()) {
                     case TWEETS_HASHTAG:
@@ -182,12 +186,16 @@ public class TwitterStreamingClient extends AbstractProxy {
                     case TWEETS_PHRASE:
                         tracks.add(consumer.getEntityName());
                         break;
+                    case TWEETS_ACCOUNT:
+                        follows.add(profileSource.getTwitterId(consumer.getEntityName()));
+                        break;
                 }
             }
 
             String url = "https://stream.twitter.com/1.1/statuses/filter.json";
             Map<String, String> queryParameters = ImmutableMap.of(
-                "track", tracks.stream().collect(Collectors.joining(","))
+                "track", tracks.stream().collect(Collectors.joining(",")),
+                "follow", follows.stream().map(Object::toString).collect(Collectors.joining(","))
             );
             logger.debug("Starting with parameters {}", queryParameters);
             QueryStringEncoder queryStringEncoder = new QueryStringEncoder(url);
@@ -238,21 +246,29 @@ public class TwitterStreamingClient extends AbstractProxy {
                         links.add(node.get("expanded_url").asText());
                     }
                     SimplifiedTweet tweet = processTweet(rootNode);
-                    boolean simpleRetweet = tweet.getRetweetedStatus() != null && tweet.getQuotedStatus() == null;
+                    if (tweet.getRetweetedStatus() != null && tweet.getQuotedStatus() == null) {
+                        return;
+                    }
+                    String from = tweet.getFrom().toLowerCase();
                     for (TwitterMessageConsumer consumer : consumers) {
                         switch (consumer.getConsumerType()) {
                             case TWEETS_HASHTAG:
-                                if (!simpleRetweet && hashtags.contains(consumer.getEntityName())) {
+                                if (hashtags.contains(consumer.getEntityName())) {
                                     consumer.onTweet(tweet);
                                 }
                                 break;
                             case TWEETS_LINK:
-                                if (!simpleRetweet && links.stream().anyMatch(s -> s.contains(consumer.getEntityName()))) {
+                                if (links.stream().anyMatch(s -> s.contains(consumer.getEntityName()))) {
                                     consumer.onTweet(tweet);
                                 }
                                 break;
                             case TWEETS_PHRASE:
-                                if (!simpleRetweet && tweet.getText().toLowerCase().contains(consumer.getEntityName())) {
+                                if (tweet.getText().toLowerCase().contains(consumer.getEntityName())) {
+                                    consumer.onTweet(tweet);
+                                }
+                                break;
+                            case TWEETS_ACCOUNT:
+                                if (tweet.getReplyToStatus() == null && from.equals(consumer.getEntityName())) {
                                     consumer.onTweet(tweet);
                                 }
                                 break;

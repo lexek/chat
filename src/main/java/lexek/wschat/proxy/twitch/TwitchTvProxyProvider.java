@@ -60,4 +60,9 @@ public class TwitchTvProxyProvider extends ProxyProvider {
             throw new InternalErrorException(e);
         }
     }
+
+    @Override
+    public boolean validateRemoteRoom(String remoteRoom) {
+        return true;
+    }
 }

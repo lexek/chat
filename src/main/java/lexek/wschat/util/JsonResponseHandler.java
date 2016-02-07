@@ -33,7 +33,7 @@ public enum JsonResponseHandler implements ResponseHandler<JsonNode> {
             return parser.readTree(inputStreamReader);
         } else {
             if (entity != null) {
-                logger.debug("bad response {} {}", statusCode,
+                logger.debug("bad response code {} {}", statusCode,
                     CharStreams.toString(new InputStreamReader(httpResponse.getEntity().getContent())));
             }
             throw new ClientProtocolException("got status code " + statusCode);
