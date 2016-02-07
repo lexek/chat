@@ -12,6 +12,7 @@ import com.codahale.metrics.health.HealthCheckRegistry;
 import com.codahale.metrics.jvm.BufferPoolMetricSet;
 import com.codahale.metrics.jvm.GarbageCollectorMetricSet;
 import com.codahale.metrics.jvm.MemoryUsageGaugeSet;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.zaxxer.hikari.HikariConfig;
@@ -99,7 +100,7 @@ public class Main {
             .forServer(new File("./cert.pem"), new File("./key.pk8"))
             .build();
 
-        ObjectMapper objectMapper = new ObjectMapper();
+        ObjectMapper objectMapper = new ObjectMapper().disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
         Configuration settings = objectMapper.readValue(Paths.get("./settings.json").toFile(), Configuration.class);
         CoreConfiguration coreSettings = settings.getCore();
 
