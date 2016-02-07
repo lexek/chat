@@ -161,6 +161,15 @@ public class AuthenticationService extends AbstractService {
         public void setCallback(AuthenticationCallback callback) {
             this.callback = callback;
         }
+
+        @Override
+        public String toString() {
+            return "AuthenticationEvent{" +
+                "connection=" + connection +
+                ", type=" + type +
+                ", name='" + name + '\'' +
+                '}';
+        }
     }
 
     private class AuthenticationServiceWorker implements EventHandler<AuthenticationEvent> {
