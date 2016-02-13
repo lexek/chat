@@ -64,6 +64,11 @@ public class TwitchTvMessageDecoder extends MessageToMessageDecoder<String> {
             }
             case "JOIN": {
                 out.add(new TwitchJoinEvent(parseNick(prefix), arg[1]));
+                break;
+            }
+            case "PING": {
+                out.add(new TwitchEventMessage(TwitchEventMessage.Type.PING, arg.length == 2 ? arg[1] : null));
+                break;
             }
         }
     }
