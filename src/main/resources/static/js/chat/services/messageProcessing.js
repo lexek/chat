@@ -33,6 +33,39 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
         this.likes = [];
     };
 
+    var processTweetMessage = function(tweet) {
+        tweet.text = htmlEscape(tweet.text);
+        tweet.text = twemoji.parse(tweet.text, {
+            base: "/img/",
+            folder: "twemoji",
+            ext: ".png",
+            callback: function(icon, options) {
+                switch ( icon ) {
+                    case 'a9':      // copyright
+                    case 'ae':      // registered trademark
+                    case '2122':    // trademark
+                        return false;
+                }
+                return ''.concat(options.base, options.size, '/', icon, options.ext);
+            }
+        });
+        tweet.text = $sce.trustAsHtml(tweet.text)
+        if (tweet.retweetedStatus) {
+            processTweetMessage(tweet.retweetedStatus);
+        }
+        if (tweet.quotedStatus) {
+            processTweetMessage(tweet.quotedStatus)
+        }
+    };
+
+    var TweetMessage = function(tweet) {
+        this.type = "TWEET";
+        this.tweet = tweet;
+        processTweetMessage(this.tweet);
+        this.messageUpdatedCallbacks = [];
+        this.addToInputCallback = angular.noop;
+    };
+
     var processClearMessage = function (chat, ctx, msg) {
         chat.lastChatter(ctx.room, null);
         if ((chat.self.role >= globalLevels.MOD) || chat.hasLocalRole(levels.MOD, ctx.room)) {
@@ -254,6 +287,11 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
         chat.emoticonRegExp = new RegExp(emoticonCodeList.join("|"), "g");
     };
 
+    var processTweet = function(chat, msg) {
+        chat.addMessage(new TweetMessage(msg.tweet), msg.room);
+        chat.messagesUpdated();
+    }
+
     var MessageProcessingService = function() {
 
     };
@@ -457,6 +495,9 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
                 break;
             case "EMOTICONS":
                 processEmoticons(chat, ctx.msg.emoticons);
+                break;
+            case "TWEET":
+                processTweet(chat, ctx.msg)
                 break;
             default:
                 console.log(message);

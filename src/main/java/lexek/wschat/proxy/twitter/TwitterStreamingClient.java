@@ -29,12 +29,15 @@ import lexek.wschat.util.OAuthUtil;
 
 import javax.net.ssl.SSLException;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class TwitterStreamingClient extends AbstractProxy {
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("E MMM dd HH:mm:ss Z yyyy");
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final TwitterProfileSource profileSource;
     private final Bootstrap bootstrap;
@@ -246,29 +249,30 @@ public class TwitterStreamingClient extends AbstractProxy {
                         links.add(node.get("expanded_url").asText());
                     }
                     SimplifiedTweet tweet = processTweet(rootNode);
-                    if (tweet.getRetweetedStatus() != null && tweet.getQuotedStatus() == null) {
-                        return;
-                    }
                     String from = tweet.getFrom().toLowerCase();
+                    boolean simpleRetweet = tweet.getRetweetedStatus() != null && tweet.getQuotedStatus() == null;
+                    boolean reply = tweet.getReplyToStatus() != null;
+                    boolean replyToSelf = reply && tweet.getReplyToStatus().getFrom().equalsIgnoreCase(from);
+                    boolean simpleTweet = !simpleRetweet && !reply;
                     for (TwitterMessageConsumer consumer : consumers) {
                         switch (consumer.getConsumerType()) {
                             case TWEETS_HASHTAG:
-                                if (hashtags.contains(consumer.getEntityName())) {
+                                if (simpleTweet && hashtags.contains(consumer.getEntityName())) {
                                     consumer.onTweet(tweet);
                                 }
                                 break;
                             case TWEETS_LINK:
-                                if (links.stream().anyMatch(s -> s.contains(consumer.getEntityName()))) {
+                                if (simpleTweet && links.stream().anyMatch(s -> s.contains(consumer.getEntityName()))) {
                                     consumer.onTweet(tweet);
                                 }
                                 break;
                             case TWEETS_PHRASE:
-                                if (tweet.getText().toLowerCase().contains(consumer.getEntityName())) {
+                                if (simpleTweet && tweet.getText().toLowerCase().contains(consumer.getEntityName())) {
                                     consumer.onTweet(tweet);
                                 }
                                 break;
                             case TWEETS_ACCOUNT:
-                                if (tweet.getReplyToStatus() == null && from.equals(consumer.getEntityName())) {
+                                if ((!reply || replyToSelf) && from.equals(consumer.getEntityName())) {
                                     consumer.onTweet(tweet);
                                 }
                                 break;
@@ -283,18 +287,24 @@ public class TwitterStreamingClient extends AbstractProxy {
                 return null;
             }
             SimplifiedTweet replyToStatus = null;
-            if (tweetNode.hasNonNull("in_reply_to_status_id")) {
+            if (tweetNode.hasNonNull("in_reply_to_status_id_str")) {
                 String name = tweetNode.get("in_reply_to_screen_name").asText();
-                Long id = tweetNode.get("in_reply_to_status_id").asLong();
+                String id = tweetNode.get("in_reply_to_status_id").asText();
                 replyToStatus = new SimplifiedTweet(id, name, null);
             }
-            String user = tweetNode.get("user").get("screen_name").asText();
+            JsonNode userNode = tweetNode.get("user");
+            String user = userNode.get("screen_name").asText();
+            String fullName = userNode.get("name").asText();
+            String avatarUrl = userNode.get("profile_image_url").asText();
             String text = tweetNode.get("text").asText();
-            long id = tweetNode.get("id").asLong();
+            String id = tweetNode.get("id_str").asText();
             return new SimplifiedTweet(
                 id,
                 user,
+                fullName,
+                avatarUrl,
                 text,
+                Instant.from(DATE_FORMATTER.parse(tweetNode.get("created_at").asText())).toEpochMilli(),
                 processTweet(tweetNode.get("retweeted_status")),
                 processTweet(tweetNode.get("quoted_status")),
                 replyToStatus

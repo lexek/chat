@@ -231,7 +231,6 @@ public class Main {
             proxyManager.registerProvider(new TwitterProxyProvider(
                 notificationService,
                 messageBroadcaster, proxyEventLoopGroup,
-                messageId,
                 settings.getTwitter(),
                 new TwitterProfileSource(httpClient, settings.getTwitter())
             ));

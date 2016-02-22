@@ -1,17 +1,15 @@
 package lexek.wschat.proxy.twitter;
 
+import com.google.common.collect.ImmutableMap;
 import lexek.wschat.chat.MessageBroadcaster;
 import lexek.wschat.chat.Room;
-import lexek.wschat.chat.model.GlobalRole;
-import lexek.wschat.chat.model.LocalRole;
 import lexek.wschat.chat.model.Message;
+import lexek.wschat.chat.model.MessageProperty;
+import lexek.wschat.chat.model.MessageType;
 import lexek.wschat.proxy.ModerationOperation;
 import lexek.wschat.proxy.Proxy;
 import lexek.wschat.proxy.ProxyProvider;
 import lexek.wschat.proxy.ProxyState;
-import lexek.wschat.util.Colors;
-
-import java.util.concurrent.atomic.AtomicLong;
 
 public class TwitterProxy implements Proxy, TwitterMessageConsumer {
     private final long id;
@@ -21,14 +19,12 @@ public class TwitterProxy implements Proxy, TwitterMessageConsumer {
     private final ConsumerType consumerType;
     private final String entityName;
     private final Room room;
-    private final AtomicLong messageId;
     private final MessageBroadcaster messageBroadcaster;
     private volatile boolean running;
 
     public TwitterProxy(
         MessageBroadcaster messageBroadcaster,
         TwitterStreamingClient twitterClient,
-        AtomicLong messageId,
         Room room,
         ProxyProvider provider,
         long id,
@@ -40,7 +36,6 @@ public class TwitterProxy implements Proxy, TwitterMessageConsumer {
         this.remoteRoom = remoteRoom;
         this.provider = provider;
         this.room = room;
-        this.messageId = messageId;
         this.messageBroadcaster = messageBroadcaster;
         this.entityName = remoteRoom;
         this.consumerType = consumerType;
@@ -114,19 +109,11 @@ public class TwitterProxy implements Proxy, TwitterMessageConsumer {
 
     @Override
     public void onTweet(SimplifiedTweet tweet) {
-        //todo: implement custom message type
-        Message msg = Message.extMessage(
-            room.getName(),
-            tweet.getFrom(),
-            LocalRole.USER,
-            GlobalRole.USER,
-            Colors.generateColor(tweet.getFrom()),
-            messageId.getAndIncrement(),
-            System.currentTimeMillis(),
-            tweet.getText(),
-            "twitter",
-            "twitter"
-        );
+        Message msg = new Message(ImmutableMap.of(
+            MessageProperty.TYPE, MessageType.TWEET,
+            MessageProperty.ROOM, room.getName(),
+            SimplifiedTweet.TWEET_PROPERTY, tweet
+        ));
         messageBroadcaster.submitMessage(msg, room.FILTER);
     }
 

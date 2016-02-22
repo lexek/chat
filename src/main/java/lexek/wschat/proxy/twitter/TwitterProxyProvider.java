@@ -16,7 +16,6 @@ import java.util.concurrent.atomic.AtomicLong;
 public class TwitterProxyProvider extends ProxyProvider {
     private static final Set<String> PREFIXES = ImmutableSet.of("@", "#", "link:", "text:");
     private final MessageBroadcaster messageBroadcaster;
-    private final AtomicLong messageId;
     private final TwitterStreamingClient twitterClient;
     private final TwitterProfileSource profileSource;
 
@@ -24,13 +23,11 @@ public class TwitterProxyProvider extends ProxyProvider {
         NotificationService notificationService,
         MessageBroadcaster messageBroadcaster,
         EventLoopGroup eventLoopGroup,
-        AtomicLong messageId,
         TwitterCredentials credentials,
         TwitterProfileSource profileSource
     ) {
         super("twitter", false, false, EnumSet.noneOf(ModerationOperation.class));
         this.messageBroadcaster = messageBroadcaster;
-        this.messageId = messageId;
         this.profileSource = profileSource;
         this.twitterClient = new TwitterStreamingClient(notificationService, eventLoopGroup, this, profileSource, credentials);
     }
@@ -41,7 +38,6 @@ public class TwitterProxyProvider extends ProxyProvider {
             return new TwitterProxy(
                 messageBroadcaster,
                 twitterClient,
-                messageId,
                 room,
                 this,
                 id,
@@ -53,7 +49,6 @@ public class TwitterProxyProvider extends ProxyProvider {
             return new TwitterProxy(
                 messageBroadcaster,
                 twitterClient,
-                messageId,
                 room,
                 this,
                 id,
@@ -65,7 +60,6 @@ public class TwitterProxyProvider extends ProxyProvider {
             return new TwitterProxy(
                 messageBroadcaster,
                 twitterClient,
-                messageId,
                 room,
                 this,
                 id,
@@ -77,7 +71,6 @@ public class TwitterProxyProvider extends ProxyProvider {
             return new TwitterProxy(
                 messageBroadcaster,
                 twitterClient,
-                messageId,
                 room,
                 this,
                 id,

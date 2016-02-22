@@ -28,7 +28,8 @@ public class HistoryService implements EventHandler<MessageEvent> {
         MessageType.TIMEOUT,
         MessageType.CLEAR,
         MessageType.PROXY_CLEAR,
-        MessageType.LIKE
+        MessageType.LIKE,
+        MessageType.TWEET
     );
 
     private final int maxHistory;
