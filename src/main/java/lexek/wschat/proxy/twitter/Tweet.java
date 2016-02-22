@@ -2,19 +2,19 @@ package lexek.wschat.proxy.twitter;
 
 import lexek.wschat.chat.model.MessageProperty;
 
-public class SimplifiedTweet {
-    public static final MessageProperty<SimplifiedTweet> TWEET_PROPERTY = MessageProperty.valueOf("tweet");
+public class Tweet {
+    public static final MessageProperty<Tweet> TWEET_PROPERTY = MessageProperty.valueOf("tweet");
     private final String id;
     private final String from;
     private final String fromFullName;
     private final String fromAvatar;
     private final String text;
     private final long when;
-    private final SimplifiedTweet retweetedStatus;
-    private final SimplifiedTweet quotedStatus;
-    private final SimplifiedTweet replyToStatus;
+    private final Tweet retweetedStatus;
+    private final Tweet quotedStatus;
+    private final Tweet replyToStatus;
 
-    public SimplifiedTweet(String id, String from, String text) {
+    public Tweet(String id, String from, String text) {
         this.id = id;
         this.from = from;
         this.text = text;
@@ -26,13 +26,13 @@ public class SimplifiedTweet {
         this.when = -1;
     }
 
-    public SimplifiedTweet(
+    public Tweet(
         String id,
         String from,
         String fromFullName, String fromAvatar, String text,
-        long when, SimplifiedTweet retweetedStatus,
-        SimplifiedTweet quotedStatus,
-        SimplifiedTweet replyToStatus
+        long when, Tweet retweetedStatus,
+        Tweet quotedStatus,
+        Tweet replyToStatus
     ) {
         this.id = id;
         this.from = from;
@@ -57,15 +57,15 @@ public class SimplifiedTweet {
         return text;
     }
 
-    public SimplifiedTweet getRetweetedStatus() {
+    public Tweet getRetweetedStatus() {
         return retweetedStatus;
     }
 
-    public SimplifiedTweet getQuotedStatus() {
+    public Tweet getQuotedStatus() {
         return quotedStatus;
     }
 
-    public SimplifiedTweet getReplyToStatus() {
+    public Tweet getReplyToStatus() {
         return replyToStatus;
     }
 
@@ -83,7 +83,7 @@ public class SimplifiedTweet {
 
     @Override
     public String toString() {
-        return "SimplifiedTweet{" +
+        return "Tweet{" +
             "id='" + id + '\'' +
             ", from='" + from + '\'' +
             ", fromFullName='" + fromFullName + '\'' +

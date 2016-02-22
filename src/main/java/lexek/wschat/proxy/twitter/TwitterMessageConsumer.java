@@ -5,5 +5,5 @@ public interface TwitterMessageConsumer {
 
     String getEntityName();
 
-    void onTweet(SimplifiedTweet tweet);
+    void onTweet(Tweet tweet);
 }

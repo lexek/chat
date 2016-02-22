@@ -48,7 +48,7 @@ import lexek.wschat.proxy.cybergame.CybergameTvProxyProvider;
 import lexek.wschat.proxy.goodgame.GoodGameProxyProvider;
 import lexek.wschat.proxy.sc2tv.Sc2tvProxyProvider;
 import lexek.wschat.proxy.twitch.TwitchTvProxyProvider;
-import lexek.wschat.proxy.twitter.TwitterProfileSource;
+import lexek.wschat.proxy.twitter.TwitterApiClient;
 import lexek.wschat.proxy.twitter.TwitterProxyProvider;
 import lexek.wschat.security.AuthenticationManager;
 import lexek.wschat.security.AuthenticationService;
@@ -232,7 +232,7 @@ public class Main {
                 notificationService,
                 messageBroadcaster, proxyEventLoopGroup,
                 settings.getTwitter(),
-                new TwitterProfileSource(httpClient, settings.getTwitter())
+                new TwitterApiClient(httpClient, settings.getTwitter())
             ));
         }
         messageConsumerServiceHandler.register(proxyManager);

@@ -11,20 +11,19 @@ import lexek.wschat.services.NotificationService;
 
 import java.util.EnumSet;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicLong;
 
 public class TwitterProxyProvider extends ProxyProvider {
     private static final Set<String> PREFIXES = ImmutableSet.of("@", "#", "link:", "text:");
     private final MessageBroadcaster messageBroadcaster;
     private final TwitterStreamingClient twitterClient;
-    private final TwitterProfileSource profileSource;
+    private final TwitterApiClient profileSource;
 
     public TwitterProxyProvider(
         NotificationService notificationService,
         MessageBroadcaster messageBroadcaster,
         EventLoopGroup eventLoopGroup,
         TwitterCredentials credentials,
-        TwitterProfileSource profileSource
+        TwitterApiClient profileSource
     ) {
         super("twitter", false, false, EnumSet.noneOf(ModerationOperation.class));
         this.messageBroadcaster = messageBroadcaster;

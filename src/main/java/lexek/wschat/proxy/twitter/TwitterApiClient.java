@@ -8,7 +8,6 @@ import com.google.common.collect.ImmutableMap;
 import io.netty.handler.codec.http.HttpMethod;
 import lexek.wschat.chat.e.InternalErrorException;
 import lexek.wschat.util.JsonResponseHandler;
-import lexek.wschat.util.OAuthUtil;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 
@@ -16,12 +15,12 @@ import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 
-public class TwitterProfileSource {
+public class TwitterApiClient {
     private final LoadingCache<String, Long> idCache;
     private final HttpClient httpClient;
     private final TwitterCredentials twitterCredentials;
 
-    public TwitterProfileSource(HttpClient httpClient, TwitterCredentials twitterCredentials) {
+    public TwitterApiClient(HttpClient httpClient, TwitterCredentials twitterCredentials) {
         this.httpClient = httpClient;
         this.twitterCredentials = twitterCredentials;
         this.idCache = CacheBuilder.newBuilder().build(new CacheLoader<String, Long>() {

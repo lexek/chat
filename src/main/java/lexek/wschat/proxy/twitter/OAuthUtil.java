@@ -1,4 +1,4 @@
-package lexek.wschat.util;
+package lexek.wschat.proxy.twitter;
 
 import com.google.common.io.BaseEncoding;
 import io.netty.handler.codec.http.HttpMethod;

@@ -25,7 +25,6 @@ import lexek.wschat.proxy.ModerationOperation;
 import lexek.wschat.proxy.ProxyProvider;
 import lexek.wschat.proxy.ProxyState;
 import lexek.wschat.services.NotificationService;
-import lexek.wschat.util.OAuthUtil;
 
 import javax.net.ssl.SSLException;
 import java.nio.charset.StandardCharsets;
@@ -39,7 +38,7 @@ import java.util.stream.Collectors;
 public class TwitterStreamingClient extends AbstractProxy {
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("E MMM dd HH:mm:ss Z yyyy");
     private final ObjectMapper objectMapper = new ObjectMapper();
-    private final TwitterProfileSource profileSource;
+    private final TwitterApiClient profileSource;
     private final Bootstrap bootstrap;
     private final TwitterCredentials credentials;
     private final Set<TwitterMessageConsumer> consumers = new CopyOnWriteArraySet<>();
@@ -50,7 +49,7 @@ public class TwitterStreamingClient extends AbstractProxy {
         NotificationService notificationService,
         EventLoopGroup eventLoopGroup,
         ProxyProvider provider,
-        TwitterProfileSource profileSource,
+        TwitterApiClient profileSource,
         TwitterCredentials credentials
     ) {
         super(eventLoopGroup, notificationService, provider, -1, "*internal*");
@@ -248,7 +247,7 @@ public class TwitterStreamingClient extends AbstractProxy {
                     for (JsonNode node : rootNode.get("entities").get("urls")) {
                         links.add(node.get("expanded_url").asText());
                     }
-                    SimplifiedTweet tweet = processTweet(rootNode);
+                    Tweet tweet = processTweet(rootNode);
                     String from = tweet.getFrom().toLowerCase();
                     boolean simpleRetweet = tweet.getRetweetedStatus() != null && tweet.getQuotedStatus() == null;
                     boolean reply = tweet.getReplyToStatus() != null;
@@ -282,15 +281,15 @@ public class TwitterStreamingClient extends AbstractProxy {
             }
         }
 
-        private SimplifiedTweet processTweet(JsonNode tweetNode) {
+        private Tweet processTweet(JsonNode tweetNode) {
             if (tweetNode == null || tweetNode.isNull()) {
                 return null;
             }
-            SimplifiedTweet replyToStatus = null;
+            Tweet replyToStatus = null;
             if (tweetNode.hasNonNull("in_reply_to_status_id_str")) {
                 String name = tweetNode.get("in_reply_to_screen_name").asText();
                 String id = tweetNode.get("in_reply_to_status_id").asText();
-                replyToStatus = new SimplifiedTweet(id, name, null);
+                replyToStatus = new Tweet(id, name, null);
             }
             JsonNode userNode = tweetNode.get("user");
             String user = userNode.get("screen_name").asText();
@@ -298,7 +297,7 @@ public class TwitterStreamingClient extends AbstractProxy {
             String avatarUrl = userNode.get("profile_image_url").asText();
             String text = tweetNode.get("text").asText();
             String id = tweetNode.get("id_str").asText();
-            return new SimplifiedTweet(
+            return new Tweet(
                 id,
                 user,
                 fullName,
