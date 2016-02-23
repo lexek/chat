@@ -117,9 +117,13 @@ angular.module("chat.twitter", ["pasvaz.bindonce"])
                     '<span ng-bind-html="::displayTweet.text"></span>' +
                 '</div>' +
                 '<div class="userMessageBody" ng-if="::tweet.quotedStatus" class="alert-msg-twitter-quoted">' +
-                    '<i class="fa fa-fw fa-angle-double-right"></i>' +
-                    '<strong><twitter-handle name="::tweet.quotedStatus.from" muted="false"/></strong>' +
+                    '<full-twitter-handle ' +
+                        'full-name="::tweet.quotedStatus.fromFullName" ' +
+                        'name="::tweet.quotedStatus.from"' +
+                        '></full-twitter-handle> ' +
+                    '<i class="fa fa-fw fa-quote-left role"></i>' +
                     '<span ng-bind-html="::tweet.quotedStatus.text"></span>' +
+                    '<i class="fa fa-fw fa-quote-right role"></i>' +
                 '</div>'
         }
     })
