@@ -91,7 +91,7 @@ angular.module("chat.twitter", ["pasvaz.bindonce"])
                         'name="::displayTweet.from"' +
                         '></full-twitter-handle> ' +
                     '<small ng-if="::tweet.retweetedStatus" >' +
-                        '<span style="color:#19cf86;">retweeted by</span> ' +
+                        '<span style="color:#19cf86;">{{"TWITTER_RETWEETED" | translate}}</span> ' +
                         '<twitter-handle name="::tweet.from" muted="true"/>'+
                     '</small>' +
                 '</div>'
