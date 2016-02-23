@@ -86,6 +86,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
 public class Main {
     private Main() {
@@ -178,6 +179,17 @@ public class Main {
         ProxyDao proxyDao = new ProxyDao(dataSource);
         IgnoreDao ignoreDao = new IgnoreDao(dataSource);
 
+        TwitterApiClient twitterApiClient = new TwitterApiClient(httpClient, settings.getTwitter());
+        twitterApiClient.loadNames(
+            proxyDao
+                .getAll()
+                .stream()
+                .filter(chatProxy -> chatProxy.getProviderName().equals("twitter"))
+                .filter(chatProxy -> chatProxy.getRemoteRoom().startsWith("@"))
+                .map(chatProxy -> chatProxy.getRemoteRoom().substring(1))
+                .collect(Collectors.toList())
+        );
+
         ConnectionManager connectionManager = new ConnectionManager(metricRegistry);
         UserService userService = new UserService(connectionManager, userDao, journalService);
         AuthenticationManager authenticationManager = new AuthenticationManager(ircHost, emailService, connectionManager, userAuthDao);
@@ -232,7 +244,7 @@ public class Main {
                 notificationService,
                 messageBroadcaster, proxyEventLoopGroup,
                 settings.getTwitter(),
-                new TwitterApiClient(httpClient, settings.getTwitter())
+                twitterApiClient
             ));
         }
         messageConsumerServiceHandler.register(proxyManager);
