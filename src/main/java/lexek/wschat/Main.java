@@ -179,17 +179,6 @@ public class Main {
         ProxyDao proxyDao = new ProxyDao(dataSource);
         IgnoreDao ignoreDao = new IgnoreDao(dataSource);
 
-        TwitterApiClient twitterApiClient = new TwitterApiClient(httpClient, settings.getTwitter());
-        twitterApiClient.loadNames(
-            proxyDao
-                .getAll()
-                .stream()
-                .filter(chatProxy -> chatProxy.getProviderName().equals("twitter"))
-                .filter(chatProxy -> chatProxy.getRemoteRoom().startsWith("@"))
-                .map(chatProxy -> chatProxy.getRemoteRoom().substring(1))
-                .collect(Collectors.toList())
-        );
-
         ConnectionManager connectionManager = new ConnectionManager(metricRegistry);
         UserService userService = new UserService(connectionManager, userDao, journalService);
         AuthenticationManager authenticationManager = new AuthenticationManager(ircHost, emailService, connectionManager, userAuthDao);
@@ -240,6 +229,17 @@ public class Main {
         proxyManager.registerProvider(new Sc2tvProxyProvider(notificationService, proxyEventLoopGroup, messageBroadcaster, messageId));
         proxyManager.registerProvider(new CybergameTvProxyProvider(notificationService, messageBroadcaster, proxyEventLoopGroup, messageId));
         if (settings.getTwitter() != null) {
+            TwitterApiClient twitterApiClient = new TwitterApiClient(httpClient, settings.getTwitter());
+            twitterApiClient.loadNames(
+                proxyDao
+                    .getAll()
+                    .stream()
+                    .filter(chatProxy -> chatProxy.getProviderName().equals("twitter"))
+                    .filter(chatProxy -> chatProxy.getRemoteRoom().startsWith("@"))
+                    .map(chatProxy -> chatProxy.getRemoteRoom().substring(1))
+                    .collect(Collectors.toList())
+            );
+
             proxyManager.registerProvider(new TwitterProxyProvider(
                 notificationService,
                 messageBroadcaster, proxyEventLoopGroup,
