@@ -24,6 +24,7 @@ import lexek.wschat.proxy.AbstractProxy;
 import lexek.wschat.proxy.ModerationOperation;
 import lexek.wschat.proxy.ProxyProvider;
 import lexek.wschat.proxy.ProxyState;
+import lexek.wschat.proxy.twitter.entity.*;
 import lexek.wschat.services.NotificationService;
 
 import javax.net.ssl.SSLException;
@@ -170,6 +171,7 @@ public class TwitterStreamingClient extends AbstractProxy {
     private class Handler extends ChannelInboundHandlerAdapter {
         @Override
         public void channelActive(ChannelHandlerContext ctx) throws Exception {
+            changed = false;
             List<String> tracks = new ArrayList<>();
             List<Long> follows = new ArrayList<>();
             for (TwitterMessageConsumer consumer : consumers) {
@@ -190,6 +192,9 @@ public class TwitterStreamingClient extends AbstractProxy {
                         break;
                     case TWEETS_ACCOUNT:
                         follows.add(profileSource.getTwitterId(consumer.getEntityName()));
+                        break;
+                    case TWEETS_SYMBOL:
+                        tracks.add("$" + consumer.getEntityName());
                         break;
                 }
             }
@@ -241,11 +246,15 @@ public class TwitterStreamingClient extends AbstractProxy {
                     JsonNode rootNode = objectMapper.readTree(message);
                     Set<String> hashtags = new HashSet<>();
                     Set<String> links = new HashSet<>();
+                    Set<String> symbols = new HashSet<>();
                     for (JsonNode node : rootNode.get("entities").get("hashtags")) {
                         hashtags.add(node.get("text").asText().toLowerCase());
                     }
                     for (JsonNode node : rootNode.get("entities").get("urls")) {
                         links.add(node.get("expanded_url").asText());
+                    }
+                    for (JsonNode node : rootNode.get("entities").get("symbols")) {
+                        symbols.add(node.get("text").asText().toLowerCase());
                     }
                     Tweet tweet = processTweet(rootNode);
                     String from = tweet.getFrom().toLowerCase();
@@ -253,6 +262,10 @@ public class TwitterStreamingClient extends AbstractProxy {
                     boolean reply = tweet.getReplyToStatus() != null;
                     boolean replyToSelf = reply && tweet.getReplyToStatus().getFrom().equalsIgnoreCase(from);
                     boolean simpleTweet = !simpleRetweet && !reply;
+                    if (simpleTweet) {
+                        System.out.println(message);
+                        System.out.println(symbols);
+                    }
                     for (TwitterMessageConsumer consumer : consumers) {
                         switch (consumer.getConsumerType()) {
                             case TWEETS_HASHTAG:
@@ -275,6 +288,10 @@ public class TwitterStreamingClient extends AbstractProxy {
                                     consumer.onTweet(tweet);
                                 }
                                 break;
+                            case TWEETS_SYMBOL:
+                                if (simpleTweet && symbols.contains(consumer.getEntityName())) {
+                                    consumer.onTweet(tweet);
+                                }
                         }
                     }
                 }
@@ -291,11 +308,16 @@ public class TwitterStreamingClient extends AbstractProxy {
                 String id = tweetNode.get("in_reply_to_status_id").asText();
                 replyToStatus = new Tweet(id, name, null);
             }
+            JsonNode retweetedStatus = tweetNode.get("retweeted_status");
             JsonNode userNode = tweetNode.get("user");
             String user = userNode.get("screen_name").asText();
             String fullName = userNode.get("name").asText();
             String avatarUrl = userNode.get("profile_image_url").asText();
             String text = tweetNode.get("text").asText();
+            //we should render only original tweet body if tweet is retweet
+            if (retweetedStatus == null || retweetedStatus.isNull()) {
+                text = renderTweetText(tweetNode);
+            }
             String id = tweetNode.get("id_str").asText();
             return new Tweet(
                 id,
@@ -304,10 +326,86 @@ public class TwitterStreamingClient extends AbstractProxy {
                 avatarUrl,
                 text,
                 Instant.from(DATE_FORMATTER.parse(tweetNode.get("created_at").asText())).toEpochMilli(),
-                processTweet(tweetNode.get("retweeted_status")),
+                processTweet(retweetedStatus),
                 processTweet(tweetNode.get("quoted_status")),
                 replyToStatus
             );
+        }
+
+        private String renderTweetText(JsonNode tweet) {
+            TreeSet<TweetEntity> entities = new TreeSet<>();
+            String originalText = tweet.get("text").asText();
+            JsonNode entitiesNode = tweet.get("entities");
+            if (entitiesNode != null && !entitiesNode.isNull()) {
+                JsonNode mediaEntities = entitiesNode.get("media");
+                JsonNode urlEntities = entitiesNode.get("urls");
+                JsonNode mentionEntities = entitiesNode.get("user_mentions");
+                JsonNode hashTagEntities = entitiesNode.get("hashtags");
+                JsonNode symbolEntities = entitiesNode.get("symbols");
+                if (mediaEntities != null) {
+                    for (JsonNode entity : mediaEntities) {
+                        JsonNode indices = entity.get("indices");
+                        entities.add(new MediaEntity(
+                            indices.get(0).asInt(),
+                            indices.get(1).asInt(),
+                            entity.get("url").asText(),
+                            entity.get("display_url").asText()
+                        ));
+                    }
+                }
+                if (urlEntities != null) {
+                    for (JsonNode entity : urlEntities) {
+                        JsonNode indices = entity.get("indices");
+                        entities.add(new UrlEntity(
+                            indices.get(0).asInt(),
+                            indices.get(1).asInt(),
+                            entity.get("url").asText(),
+                            entity.get("display_url").asText()
+                        ));
+                    }
+                }
+                if (mentionEntities != null) {
+                    for (JsonNode entity : mentionEntities) {
+                        JsonNode indices = entity.get("indices");
+                        entities.add(new UserMentionEntity(
+                            indices.get(0).asInt(),
+                            indices.get(1).asInt(),
+                            entity.get("screen_name").asText()
+                        ));
+                    }
+                }
+                if (hashTagEntities != null) {
+                    for (JsonNode entity : hashTagEntities) {
+                        JsonNode indices = entity.get("indices");
+                        entities.add(new HashTagEntity(
+                            indices.get(0).asInt(),
+                            indices.get(1).asInt(),
+                            entity.get("text").asText()
+                        ));
+                    }
+                }
+                if (symbolEntities != null) {
+                    for (JsonNode entity : symbolEntities) {
+                        JsonNode indices = entity.get("indices");
+                        entities.add(new SymbolEntity(
+                            indices.get(0).asInt(),
+                            indices.get(1).asInt(),
+                            entity.get("text").asText()
+                        ));
+                    }
+                }
+                StringBuilder stringBuilder = new StringBuilder();
+                int pos = 0;
+                for (TweetEntity tweetEntity : entities) {
+                    stringBuilder.append(originalText, pos, tweetEntity.getStart());
+                    tweetEntity.render(stringBuilder);
+                    pos = tweetEntity.getEnd();
+                }
+                stringBuilder.append(originalText, pos, originalText.length());
+                return stringBuilder.toString();
+            } else {
+                return originalText;
+            }
         }
 
         @Override

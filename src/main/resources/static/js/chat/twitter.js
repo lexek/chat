@@ -1,4 +1,4 @@
-angular.module("chat.twitter", ["pasvaz.bindonce"])
+angular.module("chat.twitter", [])
     .directive("twitterHandle", function() {
         return {
             restrict: "E",

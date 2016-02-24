@@ -34,7 +34,6 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
     };
 
     var processTweetMessage = function(tweet) {
-        tweet.text = htmlEscape(tweet.text);
         tweet.text = twemoji.parse(tweet.text, {
             base: "/img/",
             folder: "twemoji",

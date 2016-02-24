@@ -13,7 +13,7 @@ import java.util.EnumSet;
 import java.util.Set;
 
 public class TwitterProxyProvider extends ProxyProvider {
-    private static final Set<String> PREFIXES = ImmutableSet.of("@", "#", "link:", "text:");
+    private static final Set<String> PREFIXES = ImmutableSet.of("@", "$", "#", "link:", "text:");
     private final MessageBroadcaster messageBroadcaster;
     private final TwitterStreamingClient twitterClient;
     private final TwitterApiClient profileSource;
@@ -40,8 +40,19 @@ public class TwitterProxyProvider extends ProxyProvider {
                 room,
                 this,
                 id,
-                remoteRoom.substring(1),
+                remoteRoom.substring(1).toLowerCase(),
                 ConsumerType.TWEETS_HASHTAG
+            );
+        }
+        if (remoteRoom.startsWith("$")) {
+            return new TwitterProxy(
+                messageBroadcaster,
+                twitterClient,
+                room,
+                this,
+                id,
+                remoteRoom.substring(1).toLowerCase(),
+                ConsumerType.TWEETS_SYMBOL
             );
         }
         if (remoteRoom.startsWith("link:")) {
@@ -51,7 +62,7 @@ public class TwitterProxyProvider extends ProxyProvider {
                 room,
                 this,
                 id,
-                remoteRoom.substring(5),
+                remoteRoom.substring(5).toLowerCase(),
                 ConsumerType.TWEETS_LINK
             );
         }
@@ -62,7 +73,7 @@ public class TwitterProxyProvider extends ProxyProvider {
                 room,
                 this,
                 id,
-                remoteRoom.substring(5),
+                remoteRoom.substring(5).toLowerCase(),
                 ConsumerType.TWEETS_PHRASE
             );
         }
@@ -73,7 +84,7 @@ public class TwitterProxyProvider extends ProxyProvider {
                 room,
                 this,
                 id,
-                remoteRoom.substring(1),
+                remoteRoom.substring(1).toLowerCase(),
                 ConsumerType.TWEETS_ACCOUNT
             );
         }
