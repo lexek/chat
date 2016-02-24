@@ -36,6 +36,7 @@
         <js>/js/chat/services/messageProcessing.js</js>
         <js>/js/chat/services/chat.js</js>
         <js>/js/chat/services.js</js>
+        <js>/js/chat/twitter.js</js>
         <js>/js/chat/messages.js</js>
         <js>/js/chat/users.js</js>
         <js>/js/chat/controls.js</js>

@@ -6,7 +6,6 @@
     <title>${title}</title>
 
     <meta name="viewport" content="width=device-width, height = device-height, user-scalable=no"/>
-    <link rel="stylesheet" type="text/css" href="min/app.css"/>
 
     <script>
         /**
@@ -44,7 +43,15 @@
     </script>
 
     <script src="https://www.google.com/recaptcha/api.js?onload=vcRecapthaApiLoaded&render=explicit" async defer></script>
+    <script src="https://platform.twitter.com/widgets.js"></script>
     <#if debug>
+        <link rel="stylesheet" type="text/css" href="/vendor/css/animate.css"/>
+        <link rel="stylesheet" type="text/css" href="/vendor/css/bootstrap.css"/>
+        <link rel="stylesheet" type="text/css" href="/css/font-awesome.css"/>
+        <link rel="stylesheet" type="text/css" href="/vendor/css/colorpicker.css"/>
+        <link rel="stylesheet" type="text/css" href="/vendor/css/tse.css"/>
+        <link rel="stylesheet" type="text/css" href="/css/chat.css"/>
+
         <script type="text/javascript" src="/vendor/js/modernizr.js"></script>
         <script type="text/javascript" src="/vendor/js/jquery-1.11.1.js"></script>
         <script type="text/javascript" src="/vendor/js/twemoji.js"></script>
@@ -82,6 +89,7 @@
         <script type="text/javascript" src="/js/chat/services/messageProcessing.js"></script>
         <script type="text/javascript" src="/js/chat/services/chat.js"></script>
         <script type="text/javascript" src="/js/chat/services.js"></script>
+        <script type="text/javascript" src="/js/chat/twitter.js"></script>
         <script type="text/javascript" src="/js/chat/messages.js"></script>
         <script type="text/javascript" src="/js/chat/users.js"></script>
         <script type="text/javascript" src="/js/chat/controls.js"></script>
@@ -92,6 +100,7 @@
         <script type="text/javascript" src="/js/chat/ui/tickets/compose.js"></script>
         <script type="text/javascript" src="/js/chat/chat.js"></script>
     <#else>
+        <link rel="stylesheet" type="text/css" href="min/app.css"/>
         <script type="text/javascript" src="/min/app.js"></script>
     </#if>
 </head>
@@ -687,9 +696,14 @@
                         <div class="alert-msg alert-msg-danger" bo-if="message.type === 'ERROR'">
                             <span ng-bind-html="message.body"></span>
                         </div>
-                        <div class="alert-msg alert-msg-info" bo-if="!((message.type === 'ME') || (message.type === 'MSG_GROUP') || (message.type === 'ERROR'))">
+                        <div class="alert-msg alert-msg-info" bo-if="message.type === 'INFO'">
                             <span ng-bind-html="message.body"></span>
                         </div>
+                        <twitter-tweet
+                            bo-if="(message.type == 'TWEET')"
+                            class="message"
+                            style="display:block;"
+                            tweet="::message.tweet"></twitter-tweet>
                     </div>
                 </div>
                 <div ng-if="!compact()" class="messages" ng-cloak="">
@@ -744,9 +758,14 @@
                         <div class="alert-msg alert-msg-danger" bo-if="message.type == 'ERROR'">
                             <span ng-bind-html="message.body"></span>
                         </div>
-                        <div class="alert-msg alert-msg-info" bo-if="!((message.type == 'ME') || (message.type == 'MSG_GROUP') || (message.type == 'ERROR'))">
+                        <div class="alert-msg alert-msg-info" bo-if="message.type == 'INFO'">
                             <span ng-bind-html="message.body"></span>
                         </div>
+                        <twitter-tweet
+                            bo-if="(message.type == 'TWEET')"
+                            class="message"
+                            style="border-color: #55acee; display:block;"
+                            tweet="::message.tweet"></twitter-tweet>
                     </div>
                 </div>
             </div>

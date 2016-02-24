@@ -153,7 +153,9 @@ langModule.config(['$translateProvider', function ($translateProvider) {
         "ERROR_UNVERIFIED_EMAIL": "You must verify your email before you can send any messages",
         "ERROR_WRONG_COLOR": "You can't use this color",
         "ERROR_ALREADY_IGNORED": "That user is already in ignore list",
-        "ERROR_INTERNAL_ERROR": "Internal server error"
+        "ERROR_INTERNAL_ERROR": "Internal server error",
+
+        "TWITTER_RETWEETED": "retweeted by"
     });
 
     $translateProvider.translations("ru", {
@@ -308,7 +310,9 @@ langModule.config(['$translateProvider', function ($translateProvider) {
         "ERROR_UNVERIFIED_EMAIL": "Вы должны подтвердить свой email перед тем, как вы сможете отправлять сообщения",
         "ERROR_WRONG_COLOR": "Вы не можете использовать этот цвет",
         "ERROR_ALREADY_IGNORED": "Этот пользователь уже в игноре",
-        "ERROR_INTERNAL_ERROR": "Внутренняя ошибка сервера"
+        "ERROR_INTERNAL_ERROR": "Внутренняя ошибка сервера",
+
+        "TWITTER_RETWEETED": "ретвит от"
     });
 
     $translateProvider.translations("ua", {

@@ -51,6 +51,12 @@ public class TwitchMessageHandler extends SimpleChannelInboundHandler<TwitchEven
                 String roomName = event.getRoom();
                 eventListener.selfJoined(roomName.indexOf('#') == 0 ? roomName.substring(1) : roomName);
             }
+        } else if (msg.getType() == TwitchEventMessage.Type.PING) {
+            if (msg.getData() != null) {
+                ctx.writeAndFlush("PONG :" + msg.getData() + "\r\n");
+            } else {
+                ctx.writeAndFlush("PONG\r\n");
+            }
         }
     }
 

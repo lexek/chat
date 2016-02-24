@@ -48,6 +48,8 @@ import lexek.wschat.proxy.cybergame.CybergameTvProxyProvider;
 import lexek.wschat.proxy.goodgame.GoodGameProxyProvider;
 import lexek.wschat.proxy.sc2tv.Sc2tvProxyProvider;
 import lexek.wschat.proxy.twitch.TwitchTvProxyProvider;
+import lexek.wschat.proxy.twitter.TwitterApiClient;
+import lexek.wschat.proxy.twitter.TwitterProxyProvider;
 import lexek.wschat.security.AuthenticationManager;
 import lexek.wschat.security.AuthenticationService;
 import lexek.wschat.security.CaptchaService;
@@ -58,7 +60,11 @@ import lexek.wschat.security.jersey.UserParamValueFactoryProvider;
 import lexek.wschat.security.social.TwitchTvSocialAuthService;
 import lexek.wschat.services.*;
 import lexek.wschat.services.poll.PollService;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.config.SocketConfig;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.glassfish.hk2.api.InjectionResolver;
 import org.glassfish.hk2.api.TypeLiteral;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
@@ -80,6 +86,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
 public class Main {
     private Main() {
@@ -95,6 +102,24 @@ public class Main {
         } catch (Exception ex) {
             ex.printStackTrace();
         }
+
+        int httpClientTimeout = 3000;
+        PoolingHttpClientConnectionManager httpConnectionManager = new PoolingHttpClientConnectionManager();
+        httpConnectionManager.setMaxTotal(50);
+        httpConnectionManager.setDefaultMaxPerRoute(4);
+        httpConnectionManager.setDefaultSocketConfig(SocketConfig.custom().setSoKeepAlive(true).setSoTimeout(httpClientTimeout).build());
+        HttpClient httpClient = HttpClients
+            .custom()
+            .setDefaultRequestConfig(
+                RequestConfig
+                    .custom()
+                    .setConnectionRequestTimeout(httpClientTimeout)
+                    .setConnectTimeout(httpClientTimeout)
+                    .setSocketTimeout(httpClientTimeout)
+                    .build()
+            )
+            .setConnectionManager(httpConnectionManager)
+            .build();
 
         SslContext sslContext = SslContextBuilder
             .forServer(new File("./cert.pem"), new File("./key.pk8"))
@@ -181,12 +206,13 @@ public class Main {
             dataDir,
             emoticonDao,
             journalService,
-            messageBroadcaster);
+            messageBroadcaster
+        );
         SteamGameDao steamGameDao = new SteamGameDao(dataSource);
-        SteamGameResolver steamGameResolver = new SteamGameResolver(steamGameDao, HttpClients.createMinimal());
+        SteamGameResolver steamGameResolver = new SteamGameResolver(steamGameDao, httpClient);
         TwitchTvSocialAuthService twitchAuthService = new TwitchTvSocialAuthService(settings.getHttp().getTwitchClientId(),
             settings.getHttp().getTwitchSecret(),
-            settings.getHttp().getTwitchUrl());
+            settings.getHttp().getTwitchUrl(), httpClient);
         IgnoreService ignoreService = new IgnoreService(ignoreDao);
 
         Set<String> bannedIps = new CopyOnWriteArraySet<>();
@@ -202,6 +228,25 @@ public class Main {
         proxyManager.registerProvider(new TwitchTvProxyProvider(messageId, messageBroadcaster, authenticationManager, proxyEventLoopGroup, twitchAuthService, notificationService));
         proxyManager.registerProvider(new Sc2tvProxyProvider(notificationService, proxyEventLoopGroup, messageBroadcaster, messageId));
         proxyManager.registerProvider(new CybergameTvProxyProvider(notificationService, messageBroadcaster, proxyEventLoopGroup, messageId));
+        if (settings.getTwitter() != null) {
+            TwitterApiClient twitterApiClient = new TwitterApiClient(httpClient, settings.getTwitter());
+            twitterApiClient.loadNames(
+                proxyDao
+                    .getAll()
+                    .stream()
+                    .filter(chatProxy -> chatProxy.getProviderName().equals("twitter"))
+                    .filter(chatProxy -> chatProxy.getRemoteRoom().startsWith("@"))
+                    .map(chatProxy -> chatProxy.getRemoteRoom().substring(1))
+                    .collect(Collectors.toList())
+            );
+
+            proxyManager.registerProvider(new TwitterProxyProvider(
+                notificationService,
+                messageBroadcaster, proxyEventLoopGroup,
+                settings.getTwitter(),
+                twitterApiClient
+            ));
+        }
         messageConsumerServiceHandler.register(proxyManager);
         eventDispatcher.registerListener(ChatEventType.CONNECT, new SendIgnoreListOnEventListener(ignoreService));
         eventDispatcher.registerListener(ChatEventType.CONNECT, new SendEmoticonsOnEventListener(emoticonService));

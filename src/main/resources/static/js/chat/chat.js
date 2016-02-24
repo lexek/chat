@@ -41,6 +41,7 @@ document.chatApplication = angular.module("chatApplication", [
     "chat.controls",
     "chat.messages",
     "chat.users",
+    "chat.twitter",
     "luegg.directives",
     "ui.utils",
     "pasvaz.bindonce",

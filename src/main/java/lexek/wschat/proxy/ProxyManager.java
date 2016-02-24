@@ -45,20 +45,22 @@ public class ProxyManager extends AbstractService implements MessageConsumerServ
 
     public Proxy newProxy(UserDto admin, Room room, String providerName, String remoteRoom, String name, String token, boolean outbound) {
         ProxyProvider provider = providers.get(providerName);
+        if (provider == null) {
+            throw new InvalidInputException("name", "Unknown proxy name");
+        }
         if (token != null && name != null && provider.isSupportsAuthentication() && !provider.validateCredentials(name, token)) {
             throw new InvalidInputException("token", "Invalid credentials.");
+        }
+        if (!provider.validateRemoteRoom(remoteRoom)) {
+            throw new InvalidInputException("remoteRoom", "Invalid remote room");
         }
         ChatProxy chatProxy = new ChatProxy(null, room.getId(), providerName, name, token, remoteRoom, outbound);
         proxyDao.store(chatProxy);
         journalService.newProxy(admin, room, providerName, remoteRoom);
-        if (provider != null) {
-            Proxy proxy = provider.newProxy(chatProxy.getId(), room, remoteRoom, name, token, outbound);
-            proxies.put(room.getId(), proxy);
-            proxy.start();
-            return proxy;
-        } else {
-            throw new InvalidInputException("name", "Unknown proxy name");
-        }
+        Proxy proxy = provider.newProxy(chatProxy.getId(), room, remoteRoom, name, token, outbound);
+        proxies.put(room.getId(), proxy);
+        proxy.start();
+        return proxy;
     }
 
     public void remove(UserDto admin, Room room, String provider, String remoteRoom) {

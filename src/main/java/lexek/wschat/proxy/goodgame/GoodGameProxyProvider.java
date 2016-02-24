@@ -40,4 +40,9 @@ public class GoodGameProxyProvider extends ProxyProvider {
         //todo: wait for better api on goodgame side
         return false;
     }
+
+    @Override
+    public boolean validateRemoteRoom(String remoteRoom) {
+        return true;
+    }
 }

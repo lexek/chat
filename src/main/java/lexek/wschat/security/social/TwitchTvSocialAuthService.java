@@ -7,14 +7,10 @@ import io.netty.util.CharsetUtil;
 import lexek.wschat.chat.e.InvalidInputException;
 import lexek.wschat.util.JsonResponseHandler;
 import org.apache.http.HttpEntity;
-import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.config.SocketConfig;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.message.BasicNameValuePair;
 
 import java.io.IOException;
@@ -23,31 +19,16 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 public class TwitchTvSocialAuthService implements SocialAuthService {
-    private static final int TIMEOUT = 3000;
     private final String clientId;
     private final String secret;
     private final String url;
-    private final CloseableHttpClient httpClient;
+    private final HttpClient httpClient;
 
-    public TwitchTvSocialAuthService(String clientId, String secret, String url) {
+    public TwitchTvSocialAuthService(String clientId, String secret, String url, HttpClient httpClient) {
         this.clientId = clientId;
         this.secret = secret;
         this.url = url;
-
-        PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
-        connectionManager.setMaxTotal(2);
-        connectionManager.setDefaultSocketConfig(SocketConfig.custom().setSoKeepAlive(true).setSoTimeout(TIMEOUT).build());
-        httpClient = HttpClients
-            .custom()
-            .setDefaultRequestConfig(RequestConfig
-                .custom()
-                .setConnectionRequestTimeout(TIMEOUT)
-                .setConnectTimeout(TIMEOUT)
-                .setSocketTimeout(TIMEOUT)
-                .build()
-            )
-            .setConnectionManager(connectionManager)
-            .build();
+        this.httpClient = httpClient;
     }
 
 

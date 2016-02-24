@@ -9,6 +9,7 @@ public class HttpConfiguration {
     private final String twitchClientId;
     private final String twitchSecret;
     private final String twitchUrl;
+
     private final boolean allowLikes;
     private final boolean singleRoom;
 
