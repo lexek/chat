@@ -81,7 +81,7 @@ angular.module("chat.twitter", ["pasvaz.bindonce"])
                             'id="::displayTweet.id"/>'+
                     '</div>' +
                     '<twitter-avatar ' +
-                        'class="pull-left" style="margin-right: 5px;" ' +
+                        'class="pull-left" style="margin-right: 2px;" ' +
                         'url="::displayTweet.fromAvatar" ' +
                         'name="::displayTweet.from"' +
                         '></twitter-avatar>' +
