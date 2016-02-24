@@ -262,10 +262,6 @@ public class TwitterStreamingClient extends AbstractProxy {
                     boolean reply = tweet.getReplyToStatus() != null;
                     boolean replyToSelf = reply && tweet.getReplyToStatus().getFrom().equalsIgnoreCase(from);
                     boolean simpleTweet = !simpleRetweet && !reply;
-                    if (simpleTweet) {
-                        System.out.println(message);
-                        System.out.println(symbols);
-                    }
                     for (TwitterMessageConsumer consumer : consumers) {
                         switch (consumer.getConsumerType()) {
                             case TWEETS_HASHTAG:
