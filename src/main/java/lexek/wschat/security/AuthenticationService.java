@@ -197,14 +197,18 @@ public class AuthenticationService extends AbstractService {
         }
 
         private void finishAuthentication(UserAuthDto auth, Connection connection, AuthenticationCallback callback) {
-            if (auth != null && auth.getUser() != null) {
-                connection.setUser(userService.cache(auth.getUser()));
+            if (connection.getState() == ConnectionState.AUTHENTICATING) {
+                if (auth != null && auth.getUser() != null) {
+                    connection.setUser(userService.cache(auth.getUser()));
+                } else {
+                    connection.setUser(User.UNAUTHENTICATED_USER);
+                }
+                connection.send(Message.authCompleteMessage(connection.getUser().getWrappedObject()));
+                callback.authenticationComplete(connection);
+                eventDispatcher.connected(connection);
             } else {
-                connection.setUser(User.UNAUTHENTICATED_USER);
+                logger.warn("ignoring inactive connection {}", connection);
             }
-            connection.send(Message.authCompleteMessage(connection.getUser().getWrappedObject()));
-            callback.authenticationComplete(connection);
-            eventDispatcher.connected(connection);
         }
     }
 }
