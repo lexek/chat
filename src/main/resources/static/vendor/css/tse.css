@@ -25,6 +25,8 @@
     right: 0;
     bottom: 0;
     width: 6px;
+    margin-bottom: 5px;
+    margin-top: 2px;
 }
 
 .tse-scrollbar .drag-handle {
