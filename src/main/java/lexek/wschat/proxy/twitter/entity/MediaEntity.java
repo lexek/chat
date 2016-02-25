@@ -13,7 +13,7 @@ public class MediaEntity extends TweetEntity {
     @Override
     public void render(StringBuilder stringBuilder) {
         stringBuilder
-            .append("<a href='").append(url).append("' target='_blank'><i class=\"fa fa-camera\"></i> ")
+            .append("<a href='").append(url).append("' target='_blank'><i class=\"fa fa-fw fa-camera link-icon\"></i>")
             .append(displayUrl).append("</a>");
     }
 }

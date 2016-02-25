@@ -13,6 +13,8 @@ public class UrlEntity extends TweetEntity {
     @Override
     public void render(StringBuilder stringBuilder) {
         stringBuilder
-            .append("<a href='").append(url).append("' target='_blank'>").append(displayUrl).append("</a>");
+            .append("<a href='").append(url)
+            .append("' target='_blank'><i class=\"fa fa-fw fa-external-link link-icon\"></i>")
+            .append(displayUrl).append("</a>");
     }
 }

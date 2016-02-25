@@ -915,3 +915,23 @@ a:focus {
     -o-transition: all .2s;
     transition: all .2s;
 }
+
+a:hover .link-icon,
+a:focus .link-icon {
+    color: #0e3855;
+}
+
+.link-icon {
+    color: #333;
+    font-size: small;
+    margin-right: 3px;
+}
+
+.dark .link-icon {
+    color: #D3D3D3;
+}
+
+.dark a:hover .link-icon,
+.dark a:focus .link-icon {
+    color: #5f5f5f;
+}
