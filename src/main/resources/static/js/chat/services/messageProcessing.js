@@ -69,7 +69,7 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
         chat.lastChatter(ctx.room, null);
         if ((chat.self.role >= globalLevels.MOD) || chat.hasLocalRole(levels.MOD, ctx.room)) {
             chat.addMessage(
-                new Message(msg.type, $translate.instant("CHAT_CLEAR_USER", {"mod": msg.mod, "user": msg.name}))
+                new Message("INFO", $translate.instant("CHAT_CLEAR_USER", {"mod": msg.mod, "user": msg.name}))
             );
         }
         chat.messagesUpdated();
@@ -80,7 +80,7 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
         chat.lastChatter(ctx.room, null);
         if ((chat.self.role >= globalLevels.MOD) || chat.hasLocalRole(levels.MOD, ctx.room)) {
             chat.addMessage(
-                new Message(msg.type, $translate.instant("CHAT_CLEAR_USER", {"mod": ctx.msg.service, "user": msg.name}))
+                new Message("INFO", $translate.instant("CHAT_CLEAR_USER", {"mod": ctx.msg.service, "user": msg.name}))
             );
         }
         chat.messagesUpdated();
@@ -178,7 +178,7 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
         chat.lastChatter(ctx.room, null);
         chat.addMessage(
             new Message(
-                msg.type,
+                "INFO",
                 "<span style=\"opacity: 0.7\">Your color is now </span> <span style=\"color:" + msg.color + "\">" +
                     msg.color + "</span>"
             ),
@@ -193,9 +193,9 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
         chat.localRole[ctx.room] = levels[ctx.msg["chatter"]["role"]];
         if (chat.self.role === globalLevels.UNAUTHENTICATED) {
             chat.addMessage(
-                new Message(msg.type, $translate.instant("CHAT_HELLO_UNAUTHENTICATED", {"room": ctx.room})), ctx.room);
+                new Message("INFO", $translate.instant("CHAT_HELLO_UNAUTHENTICATED", {"room": ctx.room})), ctx.room);
         } else {
-            chat.addMessage(new Message(msg.type, $translate.instant("CHAT_HELLO",
+            chat.addMessage(new Message("INFO", $translate.instant("CHAT_HELLO",
                 {
                     "color": chat.self.color,
                     "name": chat.self.name,
@@ -212,7 +212,7 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
     var processTimeoutMessage = function(chat, ctx, msg) {
         chat.lastChatter(ctx.room, null);
         chat.addMessage(
-            new Message(msg.type, $translate.instant("CHAT_TIMEOUT_USER", {"mod": msg.mod, "user": msg.name})), ctx.room);
+            new Message("INFO", $translate.instant("CHAT_TIMEOUT_USER", {"mod": msg.mod, "user": msg.name})), ctx.room);
         chat.hideMessagesFromUser(ctx.room, msg.name);
         if (!ctx.history) {
             chat.messagesUpdated();
@@ -222,7 +222,7 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
     var processBanMessage = function(chat, ctx, msg) {
         chat.lastChatter(ctx.room, null);
         chat.addMessage(
-            new Message(msg.type, $translate.instant("CHAT_BAN_USER", {"mod": msg.mod, "user": msg.name})), ctx.room);
+            new Message("INFO", $translate.instant("CHAT_BAN_USER", {"mod": msg.mod, "user": msg.name})), ctx.room);
         chat.hideMessagesFromUser(ctx.room, msg.name);
         if (!ctx.history) {
             chat.messagesUpdated();
@@ -234,7 +234,7 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
         if (msg.role) {
             chat.self.role = globalLevels[msg.role];
             chat.addMessage(
-                new Message(msg.type, '<span style="opacity: 0.7">You are <strong>' + msg.role + '</strong></span>'),
+                new Message("INFO", '<span style="opacity: 0.7">You are <strong>' + msg.role + '</strong></span>'),
                 ctx.room
             );
         }
