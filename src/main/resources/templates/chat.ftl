@@ -778,8 +778,8 @@
         <form ng-show="isConnected() && isAuthenticated()"  ng-submit="sendMessage()" autocomplete="off">
             <textcomplete members='members' message='message' class="dropup"></textcomplete>
         </form>
-        <div ng-if="isConnected() && !isAuthenticated()" class="connectionState">
-            <span class="btn btn-link-default btn-link-xs" ng-click="showSignIn()">
+        <div ng-if="isConnected() && !isAuthenticated()" class="">
+            <span class="btn btn-link-default btn-link-xs pull-left" ng-click="showSignIn()">
                 <i class="fa fa-fw fa-sign-in"></i> {{"CONTROLS_MENU_SIGN_IN" | translate}}
             </span>
         </div>

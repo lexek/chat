@@ -11,7 +11,7 @@ var setSizes = function() {
         $(".chat").height(windowHeight - 55 + "px");
         $(".online").height(windowHeight - 55 + "px");
     }
-    $(".left-part").width(windowWidth - 92 + "px");
+    $(".left-part").width(windowWidth - 88 + "px");
 };
 
 document.IS_MOBILE = (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i).test(navigator.userAgent);
