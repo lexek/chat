@@ -1869,7 +1869,7 @@ var RoomController = function($scope, $location, $http, $sce, $modal, alert, tit
 
     $scope.showJournal = function() {
         $modal.open({
-            templateUrl: 'journal_modal.html',
+            templateUrl: '/templates/journal_modal.html',
             controller: RoomJournalModalController,
             resolve: {
                 room: function () {
@@ -2155,7 +2155,7 @@ AdminApplication.config(["$routeProvider", "$locationProvider", function($routeP
     $locationProvider.html5Mode(true);
     $routeProvider.when("/", {
         "title": "dashboard",
-        "templateUrl": "dashboard.html",
+        "templateUrl": "/templates/dashboard.html",
         "controller": DashboardController,
         "menuId": "dashboard"
     });
