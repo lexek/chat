@@ -88,7 +88,7 @@ img.emoji {
 }
 
 .inputsContainer {
-    margin: 0 0 4px 6px;
+    margin: 2px 0 4px 6px;
 }
 
 .userInputContainer {
@@ -818,7 +818,7 @@ a:focus {
 }
 
 .connectionState {
-    padding: 3px 10px;
+    padding: 3px 6px 4px 6px;
     font-size: 14px;
     text-align: left;
 }
