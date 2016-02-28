@@ -2,10 +2,12 @@ package lexek.httpserver;
 
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
+import com.google.common.collect.ImmutableSet;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.channel.*;
 import io.netty.handler.codec.http.*;
 import lexek.wschat.security.AuthenticationManager;
+import org.apache.http.entity.ContentType;
 import org.glassfish.jersey.server.ApplicationHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,14 +15,23 @@ import org.slf4j.LoggerFactory;
 import javax.ws.rs.core.Application;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 @ChannelHandler.Sharable
 public class RequestDispatcher extends SimpleChannelInboundHandler<FullHttpRequest> {
+    private static final Set<String> csrfTypes = ImmutableSet.of(
+        ContentType.TEXT_PLAIN.getMimeType(),
+        ContentType.MULTIPART_FORM_DATA.getMimeType(),
+        ContentType.APPLICATION_FORM_URLENCODED.getMimeType()
+    );
+
     private final Logger slowRequestLogger = LoggerFactory.getLogger("slow-http");
     private final Logger logger = LoggerFactory.getLogger(RequestDispatcher.class);
     private final List<MatcherEntry> matcherEntries = new ArrayList<>();
@@ -28,6 +39,7 @@ public class RequestDispatcher extends SimpleChannelInboundHandler<FullHttpReque
     private final ViewResolvers viewResolvers;
     private final Timer timer;
     private final String host;
+    private final String hostname;
     private final String origin;
 
     public RequestDispatcher(
@@ -41,6 +53,7 @@ public class RequestDispatcher extends SimpleChannelInboundHandler<FullHttpReque
         this.serverMessageHandler = serverMessageHandler;
         this.viewResolvers = viewResolvers;
         this.host = hostname + ":1337";
+        this.hostname = hostname;
         this.origin = "https://" + this.host;
         ApplicationHandler applicationHandler = new ApplicationHandler(resourceConfig);
         JerseyContainer jerseyContainer = new JerseyContainer(authenticationManager, applicationHandler);
@@ -61,8 +74,10 @@ public class RequestDispatcher extends SimpleChannelInboundHandler<FullHttpReque
             hostnameOk = true;
         }
 
+        boolean referrerOk = checkReferrer(request);
+
         FullHttpResponse response = null;
-        if (hostnameOk) {
+        if (hostnameOk && referrerOk) {
             Timer.Context timerContext = timer.time();
             for (MatcherEntry matcherEntry : matcherEntries) {
                 if (matcherEntry.getPattern().matcher(withoutQuery(request.getUri())).matches()) {
@@ -89,15 +104,27 @@ public class RequestDispatcher extends SimpleChannelInboundHandler<FullHttpReque
                 );
             }
         } else {
-            response = new DefaultFullHttpResponse(
-                HttpVersion.HTTP_1_1,
-                HttpResponseStatus.FORBIDDEN,
-                channel.alloc().buffer());
-            Response wrapper = new Response(response, viewResolvers);
-            serverMessageHandler.handle(
-                new ServerMessage(HttpResponseStatus.FORBIDDEN, "Hostname verification failed."),
-                wrapper
-            );
+            if (!hostnameOk) {
+                response = new DefaultFullHttpResponse(
+                    HttpVersion.HTTP_1_1,
+                    HttpResponseStatus.FORBIDDEN,
+                    channel.alloc().buffer());
+                Response wrapper = new Response(response, viewResolvers);
+                serverMessageHandler.handle(
+                    new ServerMessage(HttpResponseStatus.FORBIDDEN, "Hostname verification failed."),
+                    wrapper
+                );
+            } else {
+                response = new DefaultFullHttpResponse(
+                    HttpVersion.HTTP_1_1,
+                    HttpResponseStatus.FORBIDDEN,
+                    channel.alloc().buffer());
+                Response wrapper = new Response(response, viewResolvers);
+                serverMessageHandler.handle(
+                    new ServerMessage(HttpResponseStatus.FORBIDDEN, "Referrer check failed."),
+                    wrapper
+                );
+            }
         }
 
         if (response == null) {
@@ -124,6 +151,35 @@ public class RequestDispatcher extends SimpleChannelInboundHandler<FullHttpReque
         }
 
         channel.config().setAutoRead(true);
+    }
+
+    private boolean checkReferrer(HttpRequest request) {
+        if (request.getMethod() == HttpMethod.POST) {
+            String disableCheckHeader = request.headers().get("X-Referrer-Check");
+            if (disableCheckHeader != null && disableCheckHeader.equals("no-check")) {
+                return true;
+            }
+            String contentTypeHeader = request.headers().get(HttpHeaders.Names.CONTENT_TYPE);
+            if (contentTypeHeader != null) {
+                ContentType contentType = ContentType.parse(contentTypeHeader);
+                if (!csrfTypes.contains(contentType.getMimeType())) {
+                    return true;
+                }
+            }
+
+            String referrer = request.headers().get(HttpHeaders.Names.REFERER);
+            if (referrer == null) {
+                return false;
+            }
+            try {
+                URL url = new URL(referrer.toLowerCase());
+                return (url.getHost().equals(hostname) && url.getPort() == 1337);
+            } catch (MalformedURLException e) {
+                return false;
+            }
+        } else {
+            return true;
+        }
     }
 
     private FullHttpResponse createInternalErrorResponse(Exception e, ByteBufAllocator allocator) throws Exception {
