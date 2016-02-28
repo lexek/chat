@@ -1492,7 +1492,8 @@ var ComposePollController = function($scope, $modalInstance, $http, roomId) {
     };
 };
 
-var ChattersController = function($scope, $location, $http, $modal, room) {
+var ChattersController = function($scope, $location, $http, $modal, room, onlyBanned) {
+    onlyBanned = onlyBanned ? true : false;
     $scope.users = [];
     $scope.search = null;
     $scope.room = room;
@@ -1505,7 +1506,8 @@ var ChattersController = function($scope, $location, $http, $modal, room) {
         $scope.users.length = 0;
         var params = {
             page: $scope.page,
-            search: $scope.search
+            search: $scope.search,
+            onlyBanned: onlyBanned
         };
         $http({
             method: "GET",
@@ -1825,6 +1827,24 @@ var RoomController = function($scope, $location, $http, $sce, $modal, alert, tit
             resolve: {
                 room: function () {
                     return $scope.roomData;
+                },
+                onlyBanned: function() {
+                    return false;
+                }
+            }
+        });
+    };
+
+    $scope.showBannedChatters = function() {
+        $modal.open({
+            templateUrl: '/templates/chatters.html',
+            controller: ChattersController,
+            resolve: {
+                room: function() {
+                    return $scope.roomData;
+                },
+                onlyBanned: function() {
+                    return true;
                 }
             }
         });

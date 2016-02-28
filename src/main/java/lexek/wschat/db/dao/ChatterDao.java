@@ -183,6 +183,36 @@ public class ChatterDao {
         }
     }
 
+    public DataPage<ChatterData> getBanned(long room, int page, int pageLength) {
+        try (Connection connection = dataSource.getConnection()) {
+            List<ChatterData> data = DSL.using(connection)
+                .select(
+                    CHATTER.ID, CHATTER.USER_ID, CHATTER.ROLE, CHATTER.TIMEOUT, CHATTER.BANNED,
+                    USER.NAME, USER.ROLE
+                )
+                .from(CHATTER.join(USER).on(CHATTER.USER_ID.equal(USER.ID)))
+                .where(CHATTER.ROOM_ID.equal(room).and(CHATTER.BANNED.equal(true)))
+                .orderBy(CHATTER.ID)
+                .limit(page * pageLength, pageLength)
+                .fetch()
+                .stream()
+                .map(record -> new ChatterData(
+                    record.getValue(CHATTER.ID),
+                    record.getValue(CHATTER.USER_ID),
+                    record.getValue(USER.NAME),
+                    LocalRole.valueOf(record.getValue(CHATTER.ROLE)),
+                    GlobalRole.valueOf(record.getValue(USER.ROLE)),
+                    record.getValue(CHATTER.TIMEOUT) != null,
+                    record.getValue(CHATTER.BANNED)
+                ))
+                .collect(Collectors.toList());
+            int count = count(connection, room, CHATTER.BANNED.equal(true));
+            return new DataPage<>(data, page, Pages.pageCount(pageLength, count));
+        } catch (DataAccessException | SQLException e) {
+            throw new InternalErrorException(e);
+        }
+    }
+
     private int count(Connection connection, long room, Condition condition) {
         if (condition != null) {
             return DSL.using(connection)
