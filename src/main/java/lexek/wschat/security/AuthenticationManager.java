@@ -167,6 +167,12 @@ public class AuthenticationManager {
         return BaseEncoding.base16().encode(bytes);
     }
 
+    public String generateRandomToken(int length) {
+        byte[] bytes = new byte[length];
+        secureRandom.nextBytes(bytes);
+        return BaseEncoding.base64Url().encode(bytes);
+    }
+
     public boolean registerWithPassword(final String name, final String password, final String email) {
         final String color = Colors.generateColor(name);
         String verificationCode = generateVerificationCode();

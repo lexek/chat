@@ -1,5 +1,6 @@
 package lexek.wschat.frontend.http;
 
+import io.netty.handler.codec.http.cookie.DefaultCookie;
 import lexek.httpserver.Request;
 import lexek.httpserver.Response;
 import lexek.httpserver.SimpleHttpHandler;
@@ -28,9 +29,25 @@ public class TwitchAuthHandler extends SimpleHttpHandler {
         if (auth != null) {
             response.redirect("/setup_profile");
         } else if (request.queryParamKeys().isEmpty()) {
-            response.redirect(authService.getRedirectUrl());
+            String token = authenticationManager.generateRandomToken(32);
+            response.cookie(new DefaultCookie("twitch_state", token));
+            response.redirect(authService.getRedirectUrl() + "&state=" + token);
         } else {
             try {
+                String cookieToken = request.cookieValue("twitch_state");
+                if (cookieToken == null) {
+                    response.badRequest("state check failed");
+                    return;
+                }
+                String urlToken = request.queryParam("state");
+                if (urlToken == null) {
+                    response.badRequest("no state parameter");
+                    return;
+                }
+                if (!cookieToken.equals(urlToken)) {
+                    response.badRequest("state check failed");
+                    return;
+                }
                 String code = request.queryParam("code");
                 if (code != null) {
                     String token = authService.authenticate(code);
