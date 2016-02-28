@@ -27,7 +27,11 @@ public class TwitchAuthHandler extends SimpleHttpHandler {
     protected void handle(Request request, Response response) throws Exception {
         UserAuthDto auth = authenticationManager.checkFullAuthentication(request);
         if (auth != null) {
-            response.redirect("/setup_profile");
+            if (auth.getUser() != null) {
+                response.renderTemplate("auth", null);
+            } else {
+                response.redirect("/setup_profile");
+            }
         } else if (request.queryParamKeys().isEmpty()) {
             String token = authenticationManager.generateRandomToken(32);
             response.cookie(new DefaultCookie("twitch_state", token));
