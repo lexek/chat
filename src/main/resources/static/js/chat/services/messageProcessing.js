@@ -285,6 +285,7 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
                     .replace(".", "\\.")
                     .replace("*", "\\*")
             );
+            (new Image()).src = "emoticons/" + e.fileName;
         });
         chat.emoticonRegExp = new RegExp(emoticonCodeList.join("|"), "g");
     };
