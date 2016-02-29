@@ -40,6 +40,7 @@ langModule.config(['$translateProvider', function ($translateProvider) {
         "PROFILE_EMAIL_SETTINGS": "Email settings",
         "PROFILE_EMAIL_RESEND": "Resend verification email",
 
+        "CHAT_HELLO_UNCONFIRMED": "You must verify your email before you can post messages often",
         "CHAT_HELLO_UNAUTHENTICATED": "Hello, you joined {{room}} and you are unauthenticated.",
         "CHAT_HELLO": "Hello, <span style=\"color: {{color}}\">{{name}}</span>! You joined {{room}} and you are {{role}}",
         "CHAT_LOGIN_SUCCESS": "You successfully logged in as {{name}} (<strong>{{role}}</strong>)",
@@ -197,6 +198,7 @@ langModule.config(['$translateProvider', function ($translateProvider) {
         "CONTROLS_MENU_NOTIFICATIONS": "оповещения",
         "CONTROLS_MENU_HIDE_EXT": "не показывать внешние сообщения",
 
+        "CHAT_HELLO_UNCONFIRMED": "Ты должен подтвердить email чтобы чаще отправлять сообщения",
         "CHAT_HELLO_UNAUTHENTICATED": "Привет, ты вошёл в {{room}} и ты гость.",
         "CHAT_HELLO": "Привет, <span style=\"color: {{color}}\">{{name}}</span>! Ты вошёл в {{room}} и ты {{role}}",
         "CHAT_LOGIN_SUCCESS": "Ты успешно вошёл как {{name}} (<strong>{{role}}</strong>)",
