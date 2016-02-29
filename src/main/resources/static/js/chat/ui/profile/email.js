@@ -34,5 +34,5 @@
         };
     };
 
-    module.controller("EmailSettingsController", ["$scope", "$modalInstance", "$http", EmailSettingsController])
+    module.controller("EmailSettingsController", ["$scope", "$modalInstance", "$http", "hasPendingVerification", EmailSettingsController])
 }

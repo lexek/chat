@@ -75,7 +75,8 @@ public class ChattersResource {
     ) {
         if (onlyBanned) {
             return chatterDao.getBanned(roomId, page, PAGE_LENGTH);
-        } if (search != null) {
+        }
+        if (search != null) {
             return chatterDao.searchPaged(roomId, page, PAGE_LENGTH, Pages.escapeSearch(search));
         } else {
             return chatterDao.getAllPaged(roomId, page, PAGE_LENGTH);

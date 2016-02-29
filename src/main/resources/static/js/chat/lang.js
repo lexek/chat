@@ -154,6 +154,9 @@ langModule.config(['$translateProvider', function ($translateProvider) {
         "ERROR_WRONG_COLOR": "You can't use this color",
         "ERROR_ALREADY_IGNORED": "That user is already in ignore list",
         "ERROR_INTERNAL_ERROR": "Internal server error",
+        "ERROR_EMAIL_NULL": "Email shoudn't be empty",
+        "ERROR_EMAIL_SAME": "You can't change email to the same one",
+        "ERROR_EMAIL_TOO_OFTEN": "You're changing email too often, try again in 30 minutes",
 
         "TWITTER_RETWEETED": "retweeted by"
     });
@@ -211,7 +214,7 @@ langModule.config(['$translateProvider', function ($translateProvider) {
         "CHAT_AUTHENTICATING": "ожидание аутентификации",
 
         "PROFILE_EMAIL_SETTINGS": "Настройки email",
-        "PROFILE_EMAIL_RESEND": "Выслать письмо для подтверждения почты",
+        "PROFILE_EMAIL_RESEND": "Выслать подтверждение",
 
         "USERS_MODS": "модераторы",
         "USERS_USERS": "пользователи",
@@ -311,6 +314,9 @@ langModule.config(['$translateProvider', function ($translateProvider) {
         "ERROR_WRONG_COLOR": "Вы не можете использовать этот цвет",
         "ERROR_ALREADY_IGNORED": "Этот пользователь уже в игноре",
         "ERROR_INTERNAL_ERROR": "Внутренняя ошибка сервера",
+        "ERROR_EMAIL_NULL": "Email не должен быть пустым",
+        "ERROR_EMAIL_SAME": "Нельзя поменять email на такой же",
+        "ERROR_EMAIL_TOO_OFTEN": "Вы слишком часто меняете email, попробуйте ещё раз через 30 минут",
 
         "TWITTER_RETWEETED": "ретвит от"
     });

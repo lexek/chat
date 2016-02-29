@@ -22,12 +22,15 @@ import org.slf4j.LoggerFactory;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.security.SecureRandom;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class AuthenticationManager {
     private final Logger logger = LoggerFactory.getLogger(AuthenticationManager.class);
     private final Map<String, AtomicInteger> failedLogin = new ConcurrentHashMapV8<>();
+    private final Map<Long, Instant> latestEmailChanges = new ConcurrentHashMapV8<>();
     private final SecureRandom secureRandom = new SecureRandom();
     private final String host;
     private final EmailService emailService;
@@ -173,25 +176,45 @@ public class AuthenticationManager {
         return BaseEncoding.base64Url().encode(bytes);
     }
 
-    public boolean registerWithPassword(final String name, final String password, final String email) {
+    public synchronized boolean registerWithPassword(final String name, final String password, final String email) {
         final String color = Colors.generateColor(name);
         String verificationCode = generateVerificationCode();
         Long userId = userAuthDao.registerWithPassword(name, password, email, color, verificationCode);
         if (userId != null) {
             sendVerificationEmail(email, verificationCode, userId);
+            latestEmailChanges.put(userId, Instant.now());
         }
         return userId != null;
     }
 
-    public void setEmail(UserDto user, String email) {
-        if (user.getEmail() != null && user.isEmailVerified() || user.getEmail() == null) {
-            String verificationCode = generateVerificationCode();
-            if (userAuthDao.setEmail(user.getId(), email, verificationCode)) {
-                user.setEmail(email);
-                user.setEmailVerified(false);
-                connectionManager.forEach(c -> user.getId().equals(c.getUser().getId()), lexek.wschat.chat.Connection::close);
-                sendVerificationEmail(email, verificationCode, user.getId());
+    public synchronized void setEmail(UserDto user, String email) {
+        if (email == null) {
+            throw new InvalidInputException("email", "ERROR_EMAIL_NULL");
+        }
+
+        if (email.equals(user.getEmail())) {
+            throw new InvalidInputException("email", "ERROR_EMAIL_SAME");
+        }
+
+        Instant lastChange = latestEmailChanges.get(user.getId());
+        if (lastChange != null) {
+            Instant now = Instant.now();
+            if (now.minus(30, ChronoUnit.MINUTES).isBefore(lastChange)) {
+                throw new InvalidInputException("email", "ERROR_EMAIL_TOO_OFTEN");
             }
+        }
+
+        latestEmailChanges.put(user.getId(), Instant.now());
+        doChangeEmail(user, email);
+    }
+
+    private void doChangeEmail(UserDto user, String email) {
+        String verificationCode = generateVerificationCode();
+        if (userAuthDao.setEmail(user.getId(), email, verificationCode)) {
+            user.setEmail(email);
+            user.setEmailVerified(false);
+            connectionManager.forEach(c -> user.getId().equals(c.getUser().getId()), lexek.wschat.chat.Connection::close);
+            sendVerificationEmail(email, verificationCode, user.getId());
         }
     }
 
@@ -215,7 +238,7 @@ public class AuthenticationManager {
         }
     }
 
-    public boolean verifyEmail(String code, long userId) {
+    public synchronized boolean verifyEmail(String code, long userId) {
         boolean success = userAuthDao.verifyEmail(code, userId);
         if (success) {
             connectionManager.forEach(connection -> {

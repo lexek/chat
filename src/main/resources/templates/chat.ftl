@@ -266,32 +266,31 @@
     <div class='modal-header'>
         <h3><i class='fa fa-envelope'></i> {{'PROFILE_EMAIL_SETTINGS' | translate}}</h3>
     </div>
-    <form class="panel-body" name="form" ng-if="!hasPendingVerification">
+    <form class="panel-body" name="form">
+        <div class='modal-body' ng-if="hasPendingVerification">
+            <div class="btn btn-default" ng-click="resendVerification()" translate="PROFILE_EMAIL_RESEND"></div>
+        </div>
         <div class='modal-body'>
-            <div ng-if="hasPendingVerification">
-                <div class="btn btn-default" ng-click="resendVerification()" translate="PROFILE_EMAIL_RESEND"></div>
+            <div class='alert alert-danger' ng-if='error' ng-bind='error | translate'></div>
+            <div class='alert alert-info' ng-if='info' ng-bind='info'></div>
+            <div class="form-group" ng-class="{'has-error': form.email.$invalid && form.email.$dirty, 'has-success': !form.email.$invalid}">
+                <label for="email" class="control-label" translate="AUTH_EMAIL"></label>
+                <input
+                    ng-model="email"
+                    id="email"
+                    type="email"
+                    class="form-control"
+                    name="email"
+                    ng-placeholder="'AUTH_EMAIL' | translate"
+                    required
+                    />
             </div>
-                <div class='alert alert-danger' ng-if='error' ng-bind='error'></div>
-                <div class='alert alert-info' ng-if='info' ng-bind='info'></div>
-                <div class="form-group" ng-class="{'has-error': form.email.$invalid && form.email.$dirty, 'has-success': !form.email.$invalid}">
-                    <label for="email" class="control-label" translate="AUTH_EMAIL"></label>
-                    <input
-                        ng-model="email"
-                        id="email"
-                        type="email"
-                        class="form-control"
-                        name="email"
-                        ng-placeholder="'AUTH_EMAIL' | translate"
-                        required
-                        />
-                    </div>
         </div>
         <div class='modal-footer'>
             <div class='btn btn-warning pull-left' ng-click='close()' translate='CONTROLS_CLOSE'></div>
             <input
                     type="submit"
                     class="btn btn-primary"
-                    ng-if="!hasPendingVerification"
                     ng-value="'CONTROLS_SET_EMAIL' | translate"
                     ng-click="setEmail(email)"
                     ng-disabled="inProgress || form.$invalid"/>

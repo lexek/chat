@@ -3,7 +3,6 @@ package lexek.wschat.frontend.http.rest;
 import lexek.wschat.chat.model.GlobalRole;
 import lexek.wschat.db.model.UserDto;
 import lexek.wschat.db.model.form.EmailForm;
-import lexek.wschat.db.model.rest.ErrorModel;
 import lexek.wschat.security.AuthenticationManager;
 import lexek.wschat.security.jersey.Auth;
 import lexek.wschat.security.jersey.RequiredRole;
@@ -15,7 +14,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 @Path("/email")
-@RequiredRole(GlobalRole.USER)
+@RequiredRole(GlobalRole.USER_UNCONFIRMED)
 public class EmailResource {
     private final AuthenticationManager authenticationManager;
 
@@ -34,25 +33,12 @@ public class EmailResource {
         @Auth UserDto user,
         @Valid @NotNull EmailForm form
     ) {
-        if (hasPendingVerification(user)) {
-            return Response
-                .status(400)
-                .entity(new ErrorModel("You cannot change email until you verify this one."))
-                .build();
-        }
-        if (user.getEmail().equals(form.getEmail())) {
-            return Response
-                .status(400)
-                .entity(new ErrorModel("The new email is same as old."))
-                .build();
-        }
-        authenticationManager.setEmail(user, form.getEmail().trim());
+        authenticationManager.setEmail(user, form.getEmail().trim().toLowerCase());
         return Response.ok().build();
     }
 
     @POST
     @Path("/resendVerification")
-    @RequiredRole(GlobalRole.USER_UNCONFIRMED)
     public void resendVerificationEmail(@Auth UserDto user) {
         if (hasPendingVerification(user)) {
             authenticationManager.resendVerificationEmail(user);
