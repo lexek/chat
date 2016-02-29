@@ -136,6 +136,7 @@ Role.prototype.valueOf = function() {
 var ROLES = {
     'UNAUTHENTICATED': new Role("unauthenticated", 0),
     'GUEST': new Role("guest", 1),
+    'USER_UNCONFIRMED': new Role("unconfirmed user", 2),
     'USER': new Role("user", 2),
     "SUPPORTER": new Role("supporter", 3),
     'MOD': new Role("moderator", 4),
@@ -709,6 +710,7 @@ var UserController = function($scope, $route, $http, $modal, alert, id) {
     $scope.input = {};
 
     $scope.availableRoles = [
+        "USER_UNCONFIRMED",
         "USER",
         "MOD"
     ];
@@ -718,7 +720,7 @@ var UserController = function($scope, $route, $http, $modal, alert, id) {
     }
 
     $scope.isUser = function() {
-        return $scope.user.role === "USER";
+        return ($scope.user.role === "USER") || ($scope.user.role === "USER_UNCONFIRMED");
     };
 
     $scope.saveRenameAvailable = function() {
@@ -746,7 +748,7 @@ var UserController = function($scope, $route, $http, $modal, alert, id) {
     };
 
     $scope.saveRole = function() {
-        if ($scope.input.role === "USER" || $scope.input.role === "MOD" || $scope.input.role === "ADMIN") {
+        if ($scope.input.role === "USER" || $scope.input.role === "USER_UNCONFIRMED" || $scope.input.role === "MOD" || $scope.input.role === "ADMIN") {
             $http({
                 method: "PUT",
                 data: {
@@ -784,7 +786,8 @@ var UserController = function($scope, $route, $http, $modal, alert, id) {
 
     $scope.canEdit = function(variable) {
         if (variable === "name") {
-            return ($scope.user.role === "USER") && (document.SELF_ROLE === "SUPERADMIN");
+            return (($scope.user.role === "USER") || ($scope.user.role === "USER_UNCONFIRMED"))
+                && (document.SELF_ROLE === "SUPERADMIN");
         }
         if (variable === "role") {
             return ROLES[$scope.user.role] < ROLES[document.SELF_ROLE];
@@ -852,6 +855,7 @@ var UserModalController = function($scope, $http, $modal, $modalInstance, id) {
     $scope.auth = [];
 
     $scope.availableRoles = [
+        "USER_UNCONFIRMED",
         "USER",
         "MOD"
     ];
@@ -880,7 +884,7 @@ var UserModalController = function($scope, $http, $modal, $modalInstance, id) {
     };
 
     $scope.isUser = function() {
-        return $scope.user.role === "USER";
+        return ($scope.user.role === "USER") || ($scope.user.role === "USER_UNCONFIRMED");
     };
 
     $scope.saveRenameAvailable = function() {
@@ -908,7 +912,7 @@ var UserModalController = function($scope, $http, $modal, $modalInstance, id) {
     };
 
     $scope.saveRole = function() {
-        if ($scope.input.role === "USER" || $scope.input.role === "MOD" || $scope.input.role === "ADMIN") {
+        if ($scope.input.role === "USER" || $scope.input.role === "USER_UNCONFIRMED" || $scope.input.role === "MOD" || $scope.input.role === "ADMIN") {
             $http({
                 method: "PUT",
                 data: {
@@ -946,7 +950,8 @@ var UserModalController = function($scope, $http, $modal, $modalInstance, id) {
 
     $scope.canEdit = function(variable) {
         if (variable === "name") {
-            return ($scope.user.role === "USER") && (document.SELF_ROLE === "SUPERADMIN");
+            return (($scope.user.role === "USER") || ($scope.user.role === "USER_UNCONFIRMED"))
+                && (document.SELF_ROLE === "SUPERADMIN");
         }
         if (variable === "role") {
             return ROLES[$scope.user.role] < ROLES[document.SELF_ROLE];
