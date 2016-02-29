@@ -70,9 +70,12 @@ public class ChattersResource {
     public DataPage<ChatterData> getChatters(
         @PathParam("roomId") @Min(0) long roomId,
         @QueryParam("page") @Min(0) int page,
-        @QueryParam("search") String search
+        @QueryParam("search") String search,
+        @QueryParam("onlyBanned") @DefaultValue("false") boolean onlyBanned
     ) {
-        if (search != null) {
+        if (onlyBanned) {
+            return chatterDao.getBanned(roomId, page, PAGE_LENGTH);
+        } if (search != null) {
             return chatterDao.searchPaged(roomId, page, PAGE_LENGTH, Pages.escapeSearch(search));
         } else {
             return chatterDao.getAllPaged(roomId, page, PAGE_LENGTH);

@@ -773,13 +773,25 @@
     </div>
 </div>
 
-<div id="inputDiv" ng-controller="UserInputController">
-    <div class="left-part input-group" style="text-align: center">
-        <form ng-show="isConnected() && isAuthenticated()"  ng-submit="sendMessage()" autocomplete="off">
-            <textcomplete members='members' message='message' class="dropup"></textcomplete>
+<div class="inputsContainer" ng-controller="MenuController">
+    <div class="left-part input-group" style="text-align: center" id="inputDiv" ng-controller="UserInputController">
+        <form ng-show="isConnected() && isAuthenticated()"  ng-submit="sendMessage()" autocomplete="off" class="userInputContainer">
+            <textcomplete members='members' message='message' class="dropup userInput"></textcomplete>
+            <div
+                    id="emoticonsButton"
+                    class="btn btn-link btn-link-default pull-right emoticonButton"
+                    ng-class="{active: active === 'emoticons'}"
+                    ng-click="toggle('emoticons')"
+                    popover-template="'emoticons.html'"
+                    popover-placement="top"
+                    popover-trigger="none"
+                    popover-is-open="active === 'emoticons'"
+                    >
+                <span class="fa fa-smile-o"></span>
+            </div>
         </form>
-        <div ng-if="isConnected() && !isAuthenticated()" class="connectionState">
-            <span class="btn btn-link-default btn-link-xs" ng-click="showSignIn()">
+        <div ng-if="isConnected() && !isAuthenticated()">
+            <span class="btn btn-link-default btn-link-xs pull-left" ng-click="showSignIn()">
                 <i class="fa fa-fw fa-sign-in"></i> {{"CONTROLS_MENU_SIGN_IN" | translate}}
             </span>
         </div>
@@ -795,20 +807,6 @@
     </div>
     <div class="right-part">
         <div class="btn-group" ng-controller="MenuController">
-            <div class="btn-group">
-                <div
-                        id="emoticonsButton"
-                        class="btn btn-link btn-link-default"
-                        ng-class="{active: active === 'emoticons'}"
-                        ng-click="toggle('emoticons')"
-                        popover-template="'emoticons.html'"
-                        popover-placement="top"
-                        popover-trigger="none"
-                        popover-is-open="active === 'emoticons'"
-                        >
-                    <span class="fa fa-smile-o"></span>
-                </div>
-            </div>
             <div class="btn-group">
                 <div id="listButton" class="btn btn-link btn-link-default" ng-click="toggle('online')" ng-class="{active: active === 'online'}">
                     <span class="fa fa-bars"></span>

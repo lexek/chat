@@ -4,14 +4,14 @@ var setSizes = function() {
     var windowWidth = $(window).width();
     var windowHeight = $(window).height();
     if (window.SINGLE_ROOM) {
-        $(".chat").height(windowHeight - 35 + "px");
-        $(".online").height(windowHeight - 35 + "px");
+        $(".chat").height(windowHeight - 38 + "px");
+        $(".online").height(windowHeight - 38 + "px");
     } else {
         $("#roomSelector").width(windowWidth - 61 + "px");
-        $(".chat").height(windowHeight - 55 + "px");
-        $(".online").height(windowHeight - 55 + "px");
+        $(".chat").height(windowHeight - 58 + "px");
+        $(".online").height(windowHeight - 58 + "px");
     }
-    $(".left-part").width(windowWidth - 92 + "px");
+    $(".left-part").width(windowWidth - 80 + "px");
 };
 
 document.IS_MOBILE = (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i).test(navigator.userAgent);
