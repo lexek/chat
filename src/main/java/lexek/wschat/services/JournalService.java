@@ -47,6 +47,17 @@ public class JournalService {
         }
     }
 
+    public void userPasswordChanged(UserDto admin, UserDto user) {
+        journalDao.add(new JournalEntry(
+            user,
+            admin,
+            "PASSWORD",
+            null,
+            now(),
+            null
+        ));
+    }
+
     public void newEmoticon(UserDto admin, Emoticon emoticon) {
         try {
             journalDao.add(new JournalEntry(null, admin, "NEW_EMOTICON", objectMapper.writeValueAsString(emoticon), now(), null));

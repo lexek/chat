@@ -259,6 +259,10 @@ public class AuthenticationManager {
         userAuthDao.setPassword(user.getId(), BCrypt.hashpw(password, BCrypt.gensalt()));
     }
 
+    public synchronized void setPasswordNoCheck(UserDto user, String password) {
+        userAuthDao.setPassword(user.getId(), BCrypt.hashpw(password, BCrypt.gensalt()));
+    }
+
     public String createTokenForUser(UserDto user) {
         byte[] bytes = new byte[128];
         secureRandom.nextBytes(bytes);

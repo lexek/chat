@@ -652,7 +652,7 @@ var OnlineController = function($scope, $http, $modal, alert, title) {
             evt.preventDefault();
         }
         $modal.open({
-            templateUrl: "user.html",
+            templateUrl: "/templates/user.html",
             controller: UserModalController,
             size: "sm",
             resolve: {
@@ -826,6 +826,19 @@ var UserController = function($scope, $route, $http, $modal, alert, id) {
         });
     };
 
+    $scope.changePassword = function() {
+        $modal.open({
+            templateUrl: "/templates/password_modal.html",
+            controller: UserPasswordController,
+            size: "sm",
+            resolve: {
+                user: function () {
+                    return $scope.user;
+                }
+            }
+        });
+    };
+
     var init = function() {
         $scope.auth = {};
         if ($scope.user && $scope.user.authServices) {
@@ -848,6 +861,39 @@ var UserController = function($scope, $route, $http, $modal, alert, id) {
 };
 
 AdminApplication.controller("UserController", ["$scope", "$route", "$http", "$modal", "alert", UserController]);
+
+var UserPasswordController = function($scope, $http, $modalInstance, user) {
+    $scope.user = user;
+    $scope.password = "";
+
+    $scope.close = function() {
+        $modalInstance.dismiss('cancel');
+    }
+
+    $scope.submit = function() {
+        $scope.inProgress = true;
+        $http({
+            method: "PUT",
+            data: {
+                password: $scope.password
+            },
+            url: "/rest/users/" + user.id + "/password"
+        }).success(function() {
+            $scope.inProgress = false;
+            $modalInstance.dismiss("ok");
+        }).error(function(data) {
+            if (data) {
+                $scope.error = data.message;
+            } else {
+                $scope.error = "error";
+            }
+            $scope.inProgress = false;
+        })
+    }
+}
+
+AdminApplication.controller("UserPasswordController", ["$scope", "$http", "$modalInstance", "userId", UserPasswordController]);
+
 
 var UserModalController = function($scope, $http, $modal, $modalInstance, id) {
     var editing = '';
@@ -990,6 +1036,19 @@ var UserModalController = function($scope, $http, $modal, $modalInstance, id) {
         });
     };
 
+    $scope.changePassword = function() {
+        $modal.open({
+            templateUrl: "/templates/password_modal.html",
+            controller: UserPasswordController,
+            size: "sm",
+            resolve: {
+                user: function () {
+                    return $scope.user;
+                }
+            }
+        });
+    };
+
     $scope.closeModal = function() {
         $modalInstance.dismiss('cancel');
     };
@@ -1032,7 +1091,7 @@ var JournalController = function($scope, $location, $http, $modal, alert, title)
 
     $scope.showUser = function(id) {
         $modal.open({
-            templateUrl: "user.html",
+            templateUrl: "/templates/user.html",
             controller: UserModalController,
             size: "sm",
             resolve: {
@@ -1054,7 +1113,8 @@ var JournalController = function($scope, $location, $http, $modal, alert, title)
         "IMAGE_EMOTICON": "Updated emoticon image",
         "DELETED_EMOTICON": "Deleted emoticon",
         "NEW_ROOM": "Created room",
-        "DELETED_ROOM": "Deleted room"
+        "DELETED_ROOM": "Deleted room",
+        "PASSWORD": "Changed password"
     };
 
     $scope.getClassForJournalAction = function(action) {
@@ -1113,7 +1173,7 @@ var RoomJournalModalController = function($scope, $http, $modal, room) {
 
     $scope.showUser = function(id) {
         $modal.open({
-            templateUrl: "user.html",
+            templateUrl: "/templates/user.html",
             controller: UserModalController,
             size: "sm",
             resolve: {
@@ -1242,7 +1302,7 @@ var TicketsController = function($scope, $location, $http, $modal, alert, title)
             evt.preventDefault();
         }
         $modal.open({
-            templateUrl: "user.html",
+            templateUrl: "/templates/user.html",
             controller: UserModalController,
             size: "sm",
             resolve: {
@@ -1564,7 +1624,7 @@ var ChattersController = function($scope, $location, $http, $modal, room, onlyBa
             evt.preventDefault();
         }
         $modal.open({
-            templateUrl: "user.html",
+            templateUrl: "/templates/user.html",
             controller: UserModalController,
             size: "sm",
             resolve: {
@@ -1620,7 +1680,7 @@ var OnlineChattersController = function($scope, $location, $http, $modal, room) 
             evt.preventDefault();
         }
         $modal.open({
-            templateUrl: "user.html",
+            templateUrl: "/templates/user.html",
             controller: UserModalController,
             size: "sm",
             resolve: {
@@ -2007,7 +2067,7 @@ var RoomController = function($scope, $location, $http, $sce, $modal, alert, tit
             evt.preventDefault();
         }
         $modal.open({
-            templateUrl: "user.html",
+            templateUrl: "/templates/user.html",
             controller: UserModalController,
             size: "sm",
             resolve: {

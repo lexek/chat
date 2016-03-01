@@ -28,7 +28,8 @@ public class JournalDao {
         "IMAGE_EMOTICON",
         "DELETED_EMOTICON",
         "NEW_ROOM",
-        "DELETED_ROOM"
+        "DELETED_ROOM",
+        "PASSWORD"
     );
     private final DataSource dataSource;
 

@@ -1,18 +1,24 @@
 package lexek.wschat.frontend.http.rest.admin;
 
 import lexek.wschat.chat.ConnectionManager;
+import lexek.wschat.chat.e.EntityNotFoundException;
+import lexek.wschat.chat.e.InvalidInputException;
 import lexek.wschat.chat.model.GlobalRole;
 import lexek.wschat.db.model.DataPage;
 import lexek.wschat.db.model.OnlineUser;
 import lexek.wschat.db.model.UserData;
 import lexek.wschat.db.model.UserDto;
+import lexek.wschat.db.model.form.PasswordForm;
 import lexek.wschat.db.model.form.UserChangeSet;
 import lexek.wschat.db.model.rest.ErrorModel;
 import lexek.wschat.security.jersey.Auth;
 import lexek.wschat.security.jersey.RequiredRole;
 import lexek.wschat.services.UserService;
+import lexek.wschat.util.Names;
 import lexek.wschat.util.Pages;
+import org.jetbrains.annotations.NotNull;
 
+import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -103,6 +109,31 @@ public class UsersResource {
         } else {
             return Response.status(400).entity(new ErrorModel("No changes found.")).build();
         }
+    }
+
+    @Path("/{userId}/password")
+    @RequiredRole(GlobalRole.SUPERADMIN)
+    @PUT
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response setPassword(
+        @PathParam("userId") @Min(0) long userId,
+        @Auth UserDto admin,
+        @Valid @NotNull PasswordForm passwordForm
+    ) {
+        String password = passwordForm.getPassword();
+        if (!Names.PASSWORD_PATTERN.matcher(password).matches()) {
+            throw new InvalidInputException("password", "WRONG_PATTERN");
+        }
+        UserDto user = userService.fetchById(userId);
+        if (user == null) {
+            throw new EntityNotFoundException("user");
+        }
+        if (user.getRole() == GlobalRole.SUPERADMIN) {
+            return Response.status(403).entity(new ErrorModel("Forbidden.")).build();
+        }
+        userService.changePassword(admin, user, password);
+        return Response.noContent().build();
     }
 
     @Path("/{userId}")

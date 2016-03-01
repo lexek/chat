@@ -180,8 +180,8 @@ public class Main {
         IgnoreDao ignoreDao = new IgnoreDao(dataSource);
 
         ConnectionManager connectionManager = new ConnectionManager(metricRegistry);
-        UserService userService = new UserService(connectionManager, userDao, journalService);
         AuthenticationManager authenticationManager = new AuthenticationManager(ircHost, emailService, connectionManager, userAuthDao);
+        UserService userService = new UserService(connectionManager, authenticationManager, userDao, journalService);
         EventDispatcher eventDispatcher = new EventDispatcher();
 
         ThreadFactory scheduledThreadFactory = new ThreadFactoryBuilder().setNameFormat("ANNOUNCEMENT_SCHEDULER_%d").build();

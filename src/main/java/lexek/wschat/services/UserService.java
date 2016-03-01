@@ -11,17 +11,25 @@ import lexek.wschat.db.model.DataPage;
 import lexek.wschat.db.model.UserData;
 import lexek.wschat.db.model.UserDto;
 import lexek.wschat.db.model.form.UserChangeSet;
+import lexek.wschat.security.AuthenticationManager;
 
 import java.util.List;
 
 public class UserService {
     private final Cache<String, User> userCache = CacheBuilder.newBuilder().weakValues().build();
     private final ConnectionManager connectionManager;
+    private final AuthenticationManager authenticationManager;
     private final UserDao userDao;
     private final JournalService journalService;
 
-    public UserService(ConnectionManager connectionManager, UserDao userDao, JournalService journalService) {
+    public UserService(
+        ConnectionManager connectionManager,
+        AuthenticationManager authenticationManager,
+        UserDao userDao,
+        JournalService journalService
+    ) {
         this.connectionManager = connectionManager;
+        this.authenticationManager = authenticationManager;
         this.userDao = userDao;
         this.journalService = journalService;
     }
@@ -53,6 +61,11 @@ public class UserService {
             return true;
         }
         return false;
+    }
+
+    public void changePassword(UserDto admin, UserDto user, String password) {
+        authenticationManager.setPasswordNoCheck(user, password);
+        journalService.userPasswordChanged(admin, user);
     }
 
     public void delete(UserDto user, UserDto admin) {
