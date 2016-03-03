@@ -76,6 +76,29 @@ public class UnbanHandlerTest {
     }
 
     @Test
+    public void localOnlyAdminShouldBeAbleToUnban() {
+        UserDto userDto = new UserDto(0L, "user", GlobalRole.USER, "#000000", false, false, null, false);
+        User user = new User(userDto);
+        Chatter chatter = new Chatter(0L, LocalRole.MOD, false, null, user);
+        Connection connection = spy(new TestConnection(user));
+        UserDto otherUserDto = new UserDto(1L, "username", GlobalRole.USER, "#000000", false, false, null, false);
+        User otherUser = new User(otherUserDto);
+        Chatter otherChatter = new Chatter(1L, LocalRole.USER, false, null, otherUser);
+        when(room.inRoom(connection)).thenReturn(true);
+        when(room.getOnlineChatter(userDto)).thenReturn(chatter);
+        when(room.getChatter("username")).thenReturn(otherChatter);
+        when(room.getName()).thenReturn("#main");
+        when(chatterService.unbanChatter(room, otherChatter, chatter)).thenReturn(true);
+        handler.handle(connection, user, room, chatter, new Message(ImmutableMap.of(
+            MessageProperty.TYPE, MessageType.UNBAN,
+            MessageProperty.ROOM, "#main",
+            MessageProperty.NAME, "username"
+        )));
+        verify(chatterService).unbanChatter(room, otherChatter, chatter);
+        verify(connection).send(Message.infoMessage("OK"));
+    }
+
+    @Test
     public void testExistingUserWithGoodRoleButInternalError() {
         UserDto otherUserDto = new UserDto(1L, "username", GlobalRole.USER, "#000000", false, false, null, false);
         User otherUser = new User(otherUserDto);

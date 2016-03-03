@@ -78,6 +78,31 @@ public class ClearUserHandlerTest {
     }
 
     @Test
+    public void localOnlyAdminShouldBeAbleToClear() {
+        UserDto userDto = new UserDto(0L, "user", GlobalRole.USER, "#000000", false, false, null, false);
+        User user = new User(userDto);
+        Chatter chatter = new Chatter(0L, LocalRole.MOD, false, null, user);
+        Connection connection = spy(new TestConnection(user));
+        UserDto otherUserDto = new UserDto(1L, "username", GlobalRole.USER, "#000000", false, false, null, false);
+        User otherUser = new User(otherUserDto);
+        Chatter otherChatter = new Chatter(1L, LocalRole.USER, false, null, otherUser);
+        when(room.inRoom(connection)).thenReturn(true);
+        when(room.getOnlineChatter(userDto)).thenReturn(chatter);
+        when(room.getOnlineChatterByName("username")).thenReturn(otherChatter);
+        when(room.getName()).thenReturn("#main");
+        handler.handle(connection, user, room, chatter, new Message(ImmutableMap.of(
+            MessageProperty.TYPE, MessageType.CLEAR,
+            MessageProperty.ROOM, "#main",
+            MessageProperty.NAME, "username"
+        )));
+        verify(messageBroadcaster, times(1)).submitMessage(
+            eq(Message.moderationMessage(MessageType.CLEAR, "#main", "user", "username")),
+            eq(room.FILTER)
+        );
+    }
+
+
+    @Test
     public void testExistingUserWithBadLocalRole() {
         UserDto otherUserDto = new UserDto(1L, "username", GlobalRole.USER, "#000000", false, false, null, false);
         User otherUser = new User(otherUserDto);

@@ -18,19 +18,19 @@ public abstract class AbstractModerationHandler extends AbstractRoomMessageHandl
             ),
             type,
             LocalRole.MOD,
-            false);
+            false
+        );
         this.fetchChatterIfOffline = fetchChatterIfOffline;
         this.deniedErrorName = deniedErrorName;
     }
 
     private static boolean canBan(Chatter modChatter, Chatter userChatter) {
         User user = userChatter.getUser();
-        User modUser = modChatter.getUser();
         return !userChatter.hasRole(LocalRole.MOD) &&
             (
                 modChatter.hasRole(LocalRole.MOD) &&
-                    modChatter.hasGreaterRole(userChatter.getRole()) &&
-                    modUser.hasGreaterRole(user.getRole())
+                modChatter.hasGreaterRole(userChatter.getRole()) &&
+                !user.hasRole(GlobalRole.MOD)
             );
     }
 
