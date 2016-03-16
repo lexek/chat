@@ -244,52 +244,68 @@ public class TwitterStreamingClient extends AbstractProxy {
                 String message = (((ByteBuf) msg).toString(StandardCharsets.UTF_8));
                 if (!message.isEmpty()) {
                     JsonNode rootNode = objectMapper.readTree(message);
-                    Set<String> hashtags = new HashSet<>();
-                    Set<String> links = new HashSet<>();
-                    Set<String> symbols = new HashSet<>();
-                    for (JsonNode node : rootNode.get("entities").get("hashtags")) {
-                        hashtags.add(node.get("text").asText().toLowerCase());
-                    }
-                    for (JsonNode node : rootNode.get("entities").get("urls")) {
-                        links.add(node.get("expanded_url").asText());
-                    }
-                    for (JsonNode node : rootNode.get("entities").get("symbols")) {
-                        symbols.add(node.get("text").asText().toLowerCase());
-                    }
-                    Tweet tweet = processTweet(rootNode);
-                    String from = tweet.getFrom().toLowerCase();
-                    boolean simpleRetweet = tweet.getRetweetedStatus() != null && tweet.getQuotedStatus() == null;
-                    boolean reply = tweet.getReplyToStatus() != null;
-                    boolean replyToSelf = reply && tweet.getReplyToStatus().getFrom().equalsIgnoreCase(from);
-                    boolean simpleTweet = !simpleRetweet && !reply;
-                    for (TwitterMessageConsumer consumer : consumers) {
-                        switch (consumer.getConsumerType()) {
-                            case TWEETS_HASHTAG:
-                                if (simpleTweet && hashtags.contains(consumer.getEntityName())) {
-                                    consumer.onTweet(tweet);
-                                }
-                                break;
-                            case TWEETS_LINK:
-                                if (simpleTweet && links.stream().anyMatch(s -> s.contains(consumer.getEntityName()))) {
-                                    consumer.onTweet(tweet);
-                                }
-                                break;
-                            case TWEETS_PHRASE:
-                                if (simpleTweet && tweet.getText().toLowerCase().contains(consumer.getEntityName())) {
-                                    consumer.onTweet(tweet);
-                                }
-                                break;
-                            case TWEETS_ACCOUNT:
-                                if ((!reply || replyToSelf) && from.equals(consumer.getEntityName())) {
-                                    consumer.onTweet(tweet);
-                                }
-                                break;
-                            case TWEETS_SYMBOL:
-                                if (simpleTweet && symbols.contains(consumer.getEntityName())) {
-                                    consumer.onTweet(tweet);
-                                }
+                    if (rootNode.hasNonNull("id")) {
+                        handleTweet(rootNode);
+                    } else {
+                        if (rootNode.hasNonNull("limit")) {
+                            logger.warn("limit {}", message);
+                        } else if (rootNode.hasNonNull("disconnect")) {
+                            logger.warn("disconnect notice {}", message);
+                        } else if (rootNode.hasNonNull("warning")) {
+                            logger.warn("warning {}", message);
+                        } else {
+                            logger.warn("unsupported message {}", message);
                         }
                     }
+                }
+            }
+        }
+
+        private void handleTweet(JsonNode rootNode) {
+            Set<String> hashtags = new HashSet<>();
+            Set<String> links = new HashSet<>();
+            Set<String> symbols = new HashSet<>();
+            for (JsonNode node : rootNode.get("entities").get("hashtags")) {
+                hashtags.add(node.get("text").asText().toLowerCase());
+            }
+            for (JsonNode node : rootNode.get("entities").get("urls")) {
+                links.add(node.get("expanded_url").asText());
+            }
+            for (JsonNode node : rootNode.get("entities").get("symbols")) {
+                symbols.add(node.get("text").asText().toLowerCase());
+            }
+            Tweet tweet = processTweet(rootNode);
+            String from = tweet.getFrom().toLowerCase();
+            boolean simpleRetweet = tweet.getRetweetedStatus() != null && tweet.getQuotedStatus() == null;
+            boolean reply = tweet.getReplyToStatus() != null;
+            boolean replyToSelf = reply && tweet.getReplyToStatus().getFrom().equalsIgnoreCase(from);
+            boolean simpleTweet = !simpleRetweet && !reply;
+            for (TwitterMessageConsumer consumer : consumers) {
+                switch (consumer.getConsumerType()) {
+                    case TWEETS_HASHTAG:
+                        if (simpleTweet && hashtags.contains(consumer.getEntityName())) {
+                            consumer.onTweet(tweet);
+                        }
+                        break;
+                    case TWEETS_LINK:
+                        if (simpleTweet && links.stream().anyMatch(s -> s.contains(consumer.getEntityName()))) {
+                            consumer.onTweet(tweet);
+                        }
+                        break;
+                    case TWEETS_PHRASE:
+                        if (simpleTweet && tweet.getText().toLowerCase().contains(consumer.getEntityName())) {
+                            consumer.onTweet(tweet);
+                        }
+                        break;
+                    case TWEETS_ACCOUNT:
+                        if ((!reply || replyToSelf) && from.equals(consumer.getEntityName())) {
+                            consumer.onTweet(tweet);
+                        }
+                        break;
+                    case TWEETS_SYMBOL:
+                        if (simpleTweet && symbols.contains(consumer.getEntityName())) {
+                            consumer.onTweet(tweet);
+                        }
                 }
             }
         }
