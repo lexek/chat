@@ -5,5 +5,7 @@ public interface TwitterMessageConsumer {
 
     String getEntityName();
 
+    String getDestination();
+
     void onTweet(Tweet tweet);
 }

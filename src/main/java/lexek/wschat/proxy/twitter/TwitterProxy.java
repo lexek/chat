@@ -108,6 +108,11 @@ public class TwitterProxy implements Proxy, TwitterMessageConsumer {
     }
 
     @Override
+    public String getDestination() {
+        return room.getName();
+    }
+
+    @Override
     public void onTweet(Tweet tweet) {
         Message msg = new Message(ImmutableMap.of(
             MessageProperty.TYPE, MessageType.TWEET,

@@ -280,31 +280,40 @@ public class TwitterStreamingClient extends AbstractProxy {
             boolean reply = tweet.getReplyToStatus() != null;
             boolean replyToSelf = reply && tweet.getReplyToStatus().getFrom().equalsIgnoreCase(from);
             boolean simpleTweet = !simpleRetweet && !reply;
+            Set<String> sentTo = new HashSet<>();
             for (TwitterMessageConsumer consumer : consumers) {
+                if (sentTo.contains(consumer.getDestination())) {
+                    continue;
+                }
                 switch (consumer.getConsumerType()) {
                     case TWEETS_HASHTAG:
                         if (simpleTweet && hashtags.contains(consumer.getEntityName())) {
                             consumer.onTweet(tweet);
+                            sentTo.add(consumer.getDestination());
                         }
                         break;
                     case TWEETS_LINK:
                         if (simpleTweet && links.stream().anyMatch(s -> s.contains(consumer.getEntityName()))) {
                             consumer.onTweet(tweet);
+                            sentTo.add(consumer.getDestination());
                         }
                         break;
                     case TWEETS_PHRASE:
                         if (simpleTweet && tweet.getText().toLowerCase().contains(consumer.getEntityName())) {
                             consumer.onTweet(tweet);
+                            sentTo.add(consumer.getDestination());
                         }
                         break;
                     case TWEETS_ACCOUNT:
                         if ((!reply || replyToSelf) && from.equals(consumer.getEntityName())) {
                             consumer.onTweet(tweet);
+                            sentTo.add(consumer.getDestination());
                         }
                         break;
                     case TWEETS_SYMBOL:
                         if (simpleTweet && symbols.contains(consumer.getEntityName())) {
                             consumer.onTweet(tweet);
+                            sentTo.add(consumer.getDestination());
                         }
                 }
             }
