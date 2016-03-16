@@ -405,6 +405,13 @@ public class TwitterStreamingClient extends AbstractProxy {
         }
 
         @Override
+        public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+            if (state() == ProxyState.RUNNING) {
+                minorFail("disconnected");
+            }
+        }
+
+        @Override
         public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
             logger.warn("exception", cause);
         }
