@@ -110,16 +110,16 @@
 <div id="content" ng-class="{'dark': isDark()}" ng-controller="StyleController">
 
 <script type="text/ng-template" id="emoticons.html">
-    <div style="height: 200px; width:120px; overflow-y: auto; overflow-x: hidden" ng-controller="EmoticonsController" bindonce>
+    <div style="height: 200px; width:120px; overflow-y: auto; overflow-x: hidden" ng-controller="EmoticonsController">
         <div
                 ng-repeat="emoticon in ::emoticons | orderBy:'code'"
                 style="display: inline-block; width: 25px; cursor: pointer;"
-                ng-click="::addToInput(unescapeCode(emoticon.code))"
-                ng-title="::unescapeCode(emoticon.code)"
+                ng-click="addToInput(unescapeCode(emoticon.code))"
+                ng-title="unescapeCode(::emoticon.code)"
                 >
             <img
                     style="max-height: 25px; max-width: 25px; height:auto; width: auto;"
-                    bo-src="'/emoticons/' + emoticon.fileName"
+                    ng-src="/emoticons/{{::emoticon.fileName}}"
                     />
         </div>
     </div>
