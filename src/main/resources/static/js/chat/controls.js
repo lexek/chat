@@ -675,3 +675,9 @@ controlsModule.directive('timer', ["$timeout", function($timeout) {
     }
 }]);
 
+controlsModule.controller("TitleController", ["$scope", "chatService", function($scope, chatService) {
+    $scope.getRoomName = function() {
+        return chatService.activeRoom;
+    }
+}])
+

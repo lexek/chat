@@ -11,6 +11,7 @@ public class CoreConfiguration {
     private final String graphitePrefix;
     private final String host;
     private final String dataDir;
+    private final String title;
 
     public CoreConfiguration(@JsonProperty("poolSize") int poolSize,
                              @JsonProperty("wsPort") int wsPort,
@@ -19,7 +20,8 @@ public class CoreConfiguration {
                              @JsonProperty("graphiteServer") String graphiteServer,
                              @JsonProperty("graphitePrefix") String graphitePrefix,
                              @JsonProperty("host") String host,
-                             @JsonProperty("dataDir") String dataDir) {
+                             @JsonProperty("dataDir") String dataDir,
+                             @JsonProperty("title") String title) {
         this.poolSize = poolSize;
         this.wsPort = wsPort;
         this.maxEmoticonHeight = maxEmoticonHeight;
@@ -28,6 +30,7 @@ public class CoreConfiguration {
         this.graphitePrefix = graphitePrefix;
         this.host = host;
         this.dataDir = dataDir;
+        this.title = title;
     }
 
     public int getPoolSize() {
@@ -60,5 +63,9 @@ public class CoreConfiguration {
 
     public String getGraphitePrefix() {
         return graphitePrefix;
+    }
+
+    public String getTitle() {
+        return title;
     }
 }
