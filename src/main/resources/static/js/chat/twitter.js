@@ -81,7 +81,7 @@ angular.module("chat.twitter", [])
                             'id="::displayTweet.id"/>'+
                     '</div>' +
                     '<twitter-avatar ' +
-                        'class="pull-left" style="margin-right: 2px;" ' +
+                        'class="pull-left twitter-avatar"' +
                         'url="::displayTweet.fromAvatar" ' +
                         'name="::displayTweet.from"' +
                         '></twitter-avatar>' +
