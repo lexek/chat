@@ -934,13 +934,7 @@ a:focus {
     transition: all .2s;
 }
 
-a:hover .link-icon,
-a:focus .link-icon {
-    color: #0e3855;
-}
-
 .link-icon {
-    color: #333;
     font-size: small;
     margin-right: 3px;
 }

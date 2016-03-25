@@ -4,6 +4,12 @@ module.service("linkResolver", ["$q", "$http", function($q, $http) {
     var STEAM_APP_REGEXP = /\/app\/([0-9]+).*/;
 
     var genLink = function(prefix, link, linkText) {
+        console.log(prefix);
+        if (prefix === "https://") {
+            linkText = "<i class='fa fa-lock link-icon fa-fw'></i>" + linkText;
+        } else {
+            linkText = "<i class='fa fa-external-link link-icon fa-fw'></i>" + linkText;
+        }
         return "<a href=\"" + prefix + htmlEscape(link) + "\" target=\"_blank\" title=\"" + htmlEscape(link) + "\">" + linkText + "</a>";
     };
 
