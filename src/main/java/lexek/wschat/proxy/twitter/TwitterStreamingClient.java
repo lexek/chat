@@ -38,6 +38,7 @@ import java.util.stream.Collectors;
 
 public class TwitterStreamingClient extends AbstractProxy {
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("E MMM dd HH:mm:ss Z yyyy");
+    private String lastTweetId = null;
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final TwitterApiClient profileSource;
     private final Bootstrap bootstrap;
@@ -243,6 +244,7 @@ public class TwitterStreamingClient extends AbstractProxy {
             if (msg instanceof ByteBuf) {
                 String message = (((ByteBuf) msg).toString(StandardCharsets.UTF_8));
                 if (!message.isEmpty()) {
+                    logger.trace("{}: {}", ctx.channel().localAddress(), message);
                     JsonNode rootNode = objectMapper.readTree(message);
                     if (rootNode.hasNonNull("id")) {
                         handleTweet(rootNode);
@@ -275,6 +277,10 @@ public class TwitterStreamingClient extends AbstractProxy {
                 symbols.add(node.get("text").asText().toLowerCase());
             }
             Tweet tweet = processTweet(rootNode);
+            if (tweet.getId().equals(lastTweetId)) {
+                return;
+            }
+            lastTweetId = tweet.getId();
             String from = tweet.getFrom().toLowerCase();
             boolean simpleRetweet = tweet.getRetweetedStatus() != null && tweet.getQuotedStatus() == null;
             boolean reply = tweet.getReplyToStatus() != null;
