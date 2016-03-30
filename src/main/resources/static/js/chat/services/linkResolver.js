@@ -10,7 +10,7 @@ module.service("linkResolver", ["$q", "$http", function($q, $http) {
     var genLink = function(prefix, link, linkText) {
         console.log(prefix);
         if (prefix === "https://") {
-            linkText = "<i class='fa fa-lock link-icon fa-fw'></i>" + linkText;
+            linkText = "<i class='fa fa-lock fa-fw'></i>" + linkText;
         } else {
             linkText = "<i class='fa fa-external-link link-icon fa-fw'></i>" + linkText;
         }
