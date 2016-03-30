@@ -3,6 +3,10 @@ var module = angular.module("chat.services.linkResolver", []);
 module.service("linkResolver", ["$q", "$http", function($q, $http) {
     var STEAM_APP_REGEXP = /\/app\/([0-9]+).*/;
 
+    var genLinkSimple = function(prefix, link, linkText) {
+        return "<a href=\"" + prefix + htmlEscape(link) + "\" target=\"_blank\" title=\"" + htmlEscape(link) + "\">" + linkText + "</a>";
+    }
+
     var genLink = function(prefix, link, linkText) {
         console.log(prefix);
         if (prefix === "https://") {
@@ -10,7 +14,7 @@ module.service("linkResolver", ["$q", "$http", function($q, $http) {
         } else {
             linkText = "<i class='fa fa-external-link link-icon fa-fw'></i>" + linkText;
         }
-        return "<a href=\"" + prefix + htmlEscape(link) + "\" target=\"_blank\" title=\"" + htmlEscape(link) + "\">" + linkText + "</a>";
+        return genLinkSimple(prefix, link, linkText);
     };
 
     var fetchYoutubeTitle = function(videoId, ytKey, prefix, link, linkText, second, deferred) {
@@ -42,7 +46,7 @@ module.service("linkResolver", ["$q", "$http", function($q, $http) {
                     }
                     text += " <strong>[<i class=\"fa fa-clock-o\"></i>" + durations.join(" ") + "]</strong>";
                 }
-                deferred.resolve(genLink(prefix, link, text));
+                deferred.resolve(genLinkSimple(prefix, link, text));
             } else {
                 deferred.resolve(genLink(prefix, link, linkText))
             }
@@ -106,7 +110,7 @@ module.service("linkResolver", ["$q", "$http", function($q, $http) {
                     }).success(function(data){
                         var text = "<span style=\"color: #156291;\" class=\"fa fa-steam-square\"></span> "
                             + htmlEscape(data["name"]);
-                        deferred.resolve(genLink(prefix, link, text));
+                        deferred.resolve(genLinkSimple(prefix, link, text));
                     }).error(function(){
                         deferred.resolve(genLink(prefix, link, linkText));
                     });
