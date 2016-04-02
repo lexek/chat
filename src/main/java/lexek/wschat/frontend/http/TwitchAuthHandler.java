@@ -37,6 +37,11 @@ public class TwitchAuthHandler extends SimpleHttpHandler {
             response.cookie(new DefaultCookie("twitch_state", token));
             response.redirect(authService.getRedirectUrl() + "&state=" + token);
         } else {
+            if (request.queryParam("error") != null) {
+                logger.info("{}", request.queryParam("error"), request.queryParam("error_description"));
+                response.internalError("twitch error");
+                return;
+            }
             try {
                 String cookieToken = request.cookieValue("twitch_state");
                 if (cookieToken == null) {

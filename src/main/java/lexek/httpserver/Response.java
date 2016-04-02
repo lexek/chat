@@ -2,6 +2,7 @@ package lexek.httpserver;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.google.common.collect.ImmutableMap;
 import freemarker.template.TemplateException;
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http.FullHttpResponse;
@@ -83,13 +84,17 @@ public class Response {
     }
 
     public void badRequest() {
-        wrappedResponse.setStatus(HttpResponseStatus.BAD_REQUEST);
-        stringContent("Bad request.");
+        badRequest("Bad request.");
     }
 
     public void badRequest(String message) {
         wrappedResponse.setStatus(HttpResponseStatus.BAD_REQUEST);
-        stringContent(message);
+        try {
+            renderTemplate("server_message", new ServerMessage(HttpResponseStatus.BAD_REQUEST, message));
+        } catch (Exception e) {
+            e.printStackTrace();
+            stringContent(message);
+        }
     }
 
     public void redirect(String location) {
@@ -98,8 +103,17 @@ public class Response {
     }
 
     public void internalError() {
+        internalError("A wild error appears, try again.");
+    }
+
+    public void internalError(String message) {
         wrappedResponse.setStatus(HttpResponseStatus.INTERNAL_SERVER_ERROR);
-        stringContent("A wild error appears, try again.");
+        try {
+            renderTemplate("server_message", new ServerMessage(HttpResponseStatus.INTERNAL_SERVER_ERROR, message));
+        } catch (Exception e) {
+            e.printStackTrace();
+            stringContent(message);
+        }
     }
 
     public void setSessionCookie(SessionDto session) {
