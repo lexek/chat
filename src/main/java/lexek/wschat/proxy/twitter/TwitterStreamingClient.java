@@ -19,6 +19,7 @@ import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateHandler;
+import io.netty.util.ReferenceCountUtil;
 import lexek.wschat.chat.model.Message;
 import lexek.wschat.proxy.AbstractProxy;
 import lexek.wschat.proxy.ModerationOperation;
@@ -28,6 +29,7 @@ import lexek.wschat.proxy.twitter.entity.*;
 import lexek.wschat.services.NotificationService;
 
 import javax.net.ssl.SSLException;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
@@ -230,6 +232,14 @@ public class TwitterStreamingClient extends AbstractProxy {
 
         @Override
         public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+            try {
+                handleMessage(ctx, msg);
+            } finally {
+                ReferenceCountUtil.release(msg);
+            }
+        }
+
+        private void handleMessage(ChannelHandlerContext ctx, Object msg) throws IOException {
             if (!ctx.channel().isActive()) {
                 return;
             }
