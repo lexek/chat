@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableSet;
 import lexek.wschat.chat.Connection;
 import lexek.wschat.chat.Room;
 import lexek.wschat.chat.RoomManager;
+import lexek.wschat.chat.e.InvalidInputException;
 import lexek.wschat.chat.model.*;
 import lexek.wschat.security.CaptchaService;
 import lexek.wschat.services.ChatterService;
@@ -51,6 +52,8 @@ public class HandlerInvoker {
     public void handle(Connection connection, Message message) {
         try {
             doHandle(connection, message);
+        } catch (InvalidInputException e) {
+            connection.send(Message.errorMessage(e.message()));
         } catch (Exception e) {
             connection.send(Message.errorMessage("INTERNAL_ERROR"));
             throw e;

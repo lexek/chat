@@ -1,6 +1,7 @@
 package lexek.wschat.db.dao;
 
 import lexek.wschat.chat.e.InternalErrorException;
+import lexek.wschat.chat.e.InvalidInputException;
 import lexek.wschat.db.model.DataPage;
 import lexek.wschat.db.model.UserData;
 import lexek.wschat.db.model.UserDto;
@@ -41,7 +42,9 @@ public class UserDao {
                 .set(USER.RENAME_AVAILABLE, false)
                 .where(condition)
                 .execute() == 1;
-        } catch (DataAccessException | SQLException e) {
+        } catch (DataAccessException e) {
+            throw new InvalidInputException("name", "NAME_TAKEN");
+        } catch(SQLException e) {
             throw new InternalErrorException(e);
         }
     }
