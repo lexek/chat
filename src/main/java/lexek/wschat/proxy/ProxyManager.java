@@ -78,7 +78,7 @@ public class ProxyManager extends AbstractService implements MessageConsumerServ
     public void stopProxy(Room room, String provider, String remoteRoom) {
         Proxy proxy = getProxy(room, provider, remoteRoom);
         if (proxy != null) {
-            if (proxy.state() == ProxyState.RUNNING) {
+            if (proxy.state() == ProxyState.RUNNING || proxy.state() == ProxyState.RECONNECTING) {
                 proxy.stop();
             } else {
                 throw new InvalidStateException("You can stop only running proxy.");
@@ -91,7 +91,7 @@ public class ProxyManager extends AbstractService implements MessageConsumerServ
     public void startProxy(Room room, String provider, String remoteRoom) {
         Proxy proxy = getProxy(room, provider, remoteRoom);
         if (proxy != null) {
-            if (proxy.state() == ProxyState.STOPPED || proxy.state() == ProxyState.FAILED) {
+            if (proxy.state() == ProxyState.STOPPED) {
                 proxy.start();
             } else {
                 throw new InvalidStateException("You can start only stopped or failed proxy.");

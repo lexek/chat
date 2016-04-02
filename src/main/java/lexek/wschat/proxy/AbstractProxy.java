@@ -20,6 +20,7 @@ public abstract class AbstractProxy implements Proxy {
     private volatile ProxyState state = ProxyState.NEW;
     private volatile String lastError = null;
     private volatile ScheduledFuture checkFuture = null;
+    private volatile ScheduledFuture reconnectFuture = null;
 
     protected AbstractProxy(
         ScheduledExecutorService scheduler,
@@ -61,19 +62,27 @@ public abstract class AbstractProxy implements Proxy {
     }
 
     @Override
-    final public void start() {
+    final public synchronized void start() {
         logger.info("proxy {}/{} starting", provider.getName(), remoteRoom);
+        if (checkFuture != null) {
+            checkFuture.cancel(false);
+            checkFuture = null;
+        }
         state = ProxyState.STARTING;
         connect();
         checkFuture = scheduler.schedule(this::checkIfRunning, 1, TimeUnit.MINUTES);
     }
 
     @Override
-    final public void stop() {
+    final public synchronized void stop() {
         logger.info("proxy {}/{} stopped", provider.getName(), remoteRoom);
         if (checkFuture != null) {
             checkFuture.cancel(false);
             checkFuture = null;
+        }
+        if (reconnectFuture != null) {
+            reconnectFuture.cancel(false);
+            reconnectFuture = null;
         }
         state = ProxyState.STOPPED;
         disconnect();
@@ -99,7 +108,7 @@ public abstract class AbstractProxy implements Proxy {
 
     protected void fail(String message, boolean minor) {
         logger.warn("proxy {}/{} failed: {} (minor: {})", provider.getName(), remoteRoom, message, minor);
-        state = ProxyState.FAILED;
+        state = ProxyState.RECONNECTING;
         lastError = message;
         disconnect();
         notificationService.notifyAdmins(
@@ -113,10 +122,10 @@ public abstract class AbstractProxy implements Proxy {
         } else {
             if (minor) {
                 //with minor issue we shouldn't increase reconnection interval
-                scheduler.schedule(this::start, 1, TimeUnit.MINUTES);
+                reconnectFuture = scheduler.schedule(this::start, 1, TimeUnit.MINUTES);
             } else {
                 long reconnectIn = failsInRow <= 5 ? Math.round(Math.pow(2, failsInRow)) : 32;
-                scheduler.schedule(this::start, reconnectIn, TimeUnit.MINUTES);
+                reconnectFuture = scheduler.schedule(this::start, reconnectIn, TimeUnit.MINUTES);
             }
         }
         failsInRow++;

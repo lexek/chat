@@ -5,5 +5,5 @@ public enum ProxyState {
     RUNNING,
     STOPPED,
     STARTING,
-    FAILED
+    RECONNECTING
 }

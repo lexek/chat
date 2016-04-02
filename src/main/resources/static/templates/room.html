@@ -196,12 +196,12 @@
                     <span
                             class="btn btn-xs btn-link-danger"
                             tooltip="stop"
-                            ng-if="proxy.state === 'RUNNING'"
+                            ng-if="proxy.state === 'RUNNING' || proxy.state === 'RECONNECTING'"
                             ng-click="stopProxy(proxy)">
                         <span class="fa fa-fw fa-stop"></span>
                     </span>
                     <span class="btn btn-xs btn-link-success"
-                          ng-if="proxy.state === 'STOPPED' || proxy.state === 'FAILED'"
+                          ng-if="proxy.state === 'STOPPED'"
                           tooltip="start"
                           ng-click="startProxy(proxy)">
                         <span class="fa fa-fw fa-play"></span>

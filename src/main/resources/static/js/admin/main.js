@@ -2028,7 +2028,7 @@ var RoomController = function($scope, $location, $http, $sce, $modal, alert, tit
             case "STOPPING":
             case "STARTING":
                 return "label-warning";
-            case "FAILED":
+            case "RECONNECTING":
                 return "label-danger";
         }
     };
