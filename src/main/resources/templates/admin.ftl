@@ -18,8 +18,8 @@
         document.SELF_ROLE = "${user.role}";
     </script>
 
-    <script src="//code.jquery.com/jquery-2.1.0.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js" charset="utf-8"></script>
+    <script src="/vendor/js/jquery-2.1.0.min.js"></script>
+    <script src="/vendor/js/d3.min.js" charset="utf-8"></script>
     <script src="/vendor/js/stringformatter.js"></script>
     <script src="/vendor/js/cal-heatmap.js"></script>
     <script src="/vendor/js/twemoji.js"></script>
