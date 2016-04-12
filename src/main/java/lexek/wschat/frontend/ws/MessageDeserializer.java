@@ -33,48 +33,52 @@ public class MessageDeserializer extends StdDeserializer<Message> {
         rootNode.fields().forEachRemaining(entry -> {
             String name = entry.getKey();
             JsonNode node = entry.getValue();
-            switch (name) {
-                case "type":
-                    try {
-                        mapBuilder.put(MessageProperty.TYPE, MessageType.valueOf(node.asText()));
-                    } catch (IllegalArgumentException e) {
-                        mapBuilder.put(MessageProperty.TYPE, MessageType.UNKNOWN);
-                    }
-                    break;
-                case "role":
-                    mapBuilder.put(MessageProperty.LOCAL_ROLE, LocalRole.valueOf(node.asText()));
-                    break;
-                case "room":
-                    mapBuilder.put(MessageProperty.ROOM, node.asText());
-                    break;
-                case "name":
-                    String value = node.asText();
-                    if (value != null) {
-                        value = value.trim().toLowerCase();
-                        mapBuilder.put(MessageProperty.NAME, value);
-                    }
-                    break;
-                case "color":
-                    mapBuilder.put(MessageProperty.COLOR, node.asText());
-                    break;
-                case "text":
-                    mapBuilder.put(MessageProperty.TEXT, node.asText());
-                    break;
-                case "messageId":
-                    mapBuilder.put(MessageProperty.MESSAGE_ID, node.asLong());
-                    break;
-                case "pollOption":
-                    mapBuilder.put(MessageProperty.POLL_OPTION, node.asInt());
-                    break;
-                case "service":
-                    mapBuilder.put(MessageProperty.SERVICE, node.asText());
-                    break;
-                case "serviceResource":
-                    mapBuilder.put(MessageProperty.SERVICE_RESOURCE, node.asText());
-                    break;
-                default:
-                    logger.warn("unsupported property {}", name);
-                    break;
+            try {
+                switch (name) {
+                    case "type":
+                        try {
+                            mapBuilder.put(MessageProperty.TYPE, MessageType.valueOf(node.asText()));
+                        } catch (IllegalArgumentException e) {
+                            mapBuilder.put(MessageProperty.TYPE, MessageType.UNKNOWN);
+                        }
+                        break;
+                    case "role":
+                        mapBuilder.put(MessageProperty.LOCAL_ROLE, LocalRole.valueOf(node.asText()));
+                        break;
+                    case "room":
+                        mapBuilder.put(MessageProperty.ROOM, node.asText());
+                        break;
+                    case "name":
+                        String value = node.asText();
+                        if (value != null) {
+                            value = value.trim().toLowerCase();
+                            mapBuilder.put(MessageProperty.NAME, value);
+                        }
+                        break;
+                    case "color":
+                        mapBuilder.put(MessageProperty.COLOR, node.asText());
+                        break;
+                    case "text":
+                        mapBuilder.put(MessageProperty.TEXT, node.asText());
+                        break;
+                    case "messageId":
+                        mapBuilder.put(MessageProperty.MESSAGE_ID, node.asLong());
+                        break;
+                    case "pollOption":
+                        mapBuilder.put(MessageProperty.POLL_OPTION, node.asInt());
+                        break;
+                    case "service":
+                        mapBuilder.put(MessageProperty.SERVICE, node.asText());
+                        break;
+                    case "serviceResource":
+                        mapBuilder.put(MessageProperty.SERVICE_RESOURCE, node.asText());
+                        break;
+                    default:
+                        logger.warn("unsupported property {}", name);
+                        break;
+                }
+            } catch (IllegalArgumentException e) {
+                logger.debug("illegal argument", e);
             }
         });
         return new Message(mapBuilder.build());
