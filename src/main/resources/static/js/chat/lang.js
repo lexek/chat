@@ -1,4 +1,22 @@
-var langModule = angular.module("chat.lang", ["pascalprecht.translate"]);
+var langModule = angular.module("chat.lang", ["pascalprecht.translate", "chat.services.settings"]);
+
+langModule.factory('$translateChatStorage', ["chatSettings", function $translateCookieStorageFactory($settings) {
+    var $translateChatStorage = {
+        get: function (name) {
+            return $settings.getS(name);
+        },
+
+        set: function (name, value) {
+            $settings.setS(name, value);
+        },
+
+        put: function (name, value) {
+            $settings.setS(name, value);
+        }
+    };
+
+    return $translateChatStorage;
+}]);
 
 langModule.config(['$translateProvider', function ($translateProvider) {
     $translateProvider.translations("en", {
@@ -390,6 +408,6 @@ langModule.config(['$translateProvider', function ($translateProvider) {
         "*": "en"
     });
     $translateProvider.determinePreferredLanguage();
-    $translateProvider.useCookieStorage();
+    $translateProvider.useStorage("$translateChatStorage");
     $translateProvider.useSanitizeValueStrategy("escapeParameters");
 }]);
