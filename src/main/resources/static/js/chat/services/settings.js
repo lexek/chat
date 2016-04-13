@@ -37,7 +37,12 @@ var getLocalStorageBackend = function() {
     }
 
     LocalStorageBackend.prototype.getString = function(key) {
-        return JSON.parse(window.localStorage.getItem(key));
+        var s = window.localStorage.getItem(key);
+        if (s !== "undefined") {
+            return JSON.parse(s);
+        } else {
+            return null;
+        }
     }
 
     var backend = new LocalStorageBackend();
@@ -47,8 +52,7 @@ var getLocalStorageBackend = function() {
         var cookieBackend = getCookieBackend();
         angular.forEach(migrateKeys, function(key) {
             var value = cookieBackend.getString(key);
-            console.log(value);
-            if (value !== null) {
+            if (value) {
                 backend.storeString(key, value);
             }
         });
