@@ -88,7 +88,7 @@ CREATE TABLE `history` (
   `type`      VARCHAR(32) NOT NULL
   COLLATE 'utf8mb4_unicode_ci',
   `message`   MEDIUMTEXT  NOT NULL
-  COLLATE 'utf8mb4_unicode_ci',
+  COLLATE 'utf8mb4_bin',
   `hidden`    BIT(1)      NOT NULL,
   PRIMARY KEY (`id`),
   INDEX `FK_ROOM` (`room_id`),

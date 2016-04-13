@@ -5,6 +5,7 @@ import com.codahale.metrics.health.HealthCheckRegistry;
 import com.google.common.collect.ImmutableMap;
 import lexek.wschat.chat.model.GlobalRole;
 import lexek.wschat.db.dao.StatisticsDao;
+import lexek.wschat.db.model.EmoticonCount;
 import lexek.wschat.db.model.UserMessageCount;
 import lexek.wschat.security.jersey.RequiredRole;
 
@@ -37,6 +38,13 @@ public class StatisticsResource {
         return statisticsDao.getUserActivity(userId);
     }
 
+    @Path("/user/{userId}/emoticons")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<EmoticonCount> getUserEmoticonUsage(@PathParam("userId") long userId) {
+        return statisticsDao.getEmoticonUage(System.currentTimeMillis() - TimeUnit.DAYS.toMillis(7), userId);
+    }
+
     @Path("/room/{roomId}/topChatters")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -63,5 +71,19 @@ public class StatisticsResource {
             "metrics", metricRegistry.getMetrics(),
             "healthChecks", healthCheckRegistry.runHealthChecks()
         );
+    }
+
+    @Path("/global/emoticons")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<EmoticonCount> getGlobalEmoticonUsage() {
+        return statisticsDao.getEmoticonUage(System.currentTimeMillis() - TimeUnit.DAYS.toMillis(7), null);
+    }
+
+    @Path("/global/emoticons/{emoticonId}")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<UserMessageCount> getGlobalEmoticonUsage(@PathParam("emoticonId") long emoticonId) {
+        return statisticsDao.getEmoticonUsers(System.currentTimeMillis() - TimeUnit.DAYS.toMillis(7), emoticonId);
     }
 }

@@ -44,7 +44,7 @@ public class UserDao {
                 .execute() == 1;
         } catch (DataAccessException e) {
             throw new InvalidInputException("name", "NAME_TAKEN");
-        } catch(SQLException e) {
+        } catch (SQLException e) {
             throw new InternalErrorException(e);
         }
     }

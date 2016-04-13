@@ -1,12 +1,13 @@
 package lexek.wschat.db.dao;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 import lexek.wschat.chat.e.InternalErrorException;
 import lexek.wschat.db.jooq.tables.pojos.Metric;
+import lexek.wschat.db.model.Emoticon;
+import lexek.wschat.db.model.EmoticonCount;
 import lexek.wschat.db.model.UserMessageCount;
-import org.jooq.Record1;
-import org.jooq.Record3;
-import org.jooq.Table;
+import org.jooq.*;
 import org.jooq.exception.DataAccessException;
 import org.jooq.impl.DSL;
 
@@ -22,6 +23,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import static lexek.wschat.db.jooq.tables.Emoticon.EMOTICON;
 import static lexek.wschat.db.jooq.tables.History.HISTORY;
 import static lexek.wschat.db.jooq.tables.Metric.METRIC;
 import static lexek.wschat.db.jooq.tables.User.USER;
@@ -108,6 +110,96 @@ public class StatisticsDao {
             throw new InternalErrorException(e);
         }
         return metrics;
+    }
 
+    public List<EmoticonCount> getEmoticonUage(long since, Long userId) {
+        Table<Record4<String, Long, String, String>> emoteTable = DSL.table(
+            DSL.select(
+                DSL.concat("%", EMOTICON.CODE.replace("\\", "\\\\").replace("_", "\\_")).concat("%").as("code"),
+                EMOTICON.ID.as("id"),
+                EMOTICON.FILE_NAME.as("file_name"),
+                EMOTICON.CODE.as("original_code")
+            ).from(EMOTICON)
+        ).as("emote");
+        List<Condition> where = Lists.newArrayList(
+            HISTORY.MESSAGE.like(emoteTable.field("code", String.class)),
+            HISTORY.TIMESTAMP.greaterOrEqual(since)
+        );
+        if (userId != null) {
+            where.add(HISTORY.USER_ID.equal(userId));
+        }
+        try (Connection connection = dataSource.getConnection()) {
+            return DSL.using(connection)
+                .select(
+                    emoteTable.field("id"),
+                    emoteTable.field("file_name"),
+                    emoteTable.field("original_code"),
+                    DSL.count().as("count")
+                )
+                .from(emoteTable, HISTORY)
+                .where(where)
+                .groupBy(emoteTable.field("id"))
+                .orderBy(DSL.field("count").desc(), emoteTable.field("id").asc())
+                .fetch()
+                .stream()
+                .map(record ->
+                    new EmoticonCount(
+                        new Emoticon(
+                            record.getValue("id", Long.class),
+                            record.getValue("original_code", String.class),
+                            record.getValue("file_name", String.class),
+                            null,
+                            null
+                        ),
+                        record.getValue("count", Long.class)
+                    )
+                )
+                .collect(Collectors.toList());
+        } catch (DataAccessException | SQLException e) {
+            throw new InternalErrorException(e);
+        }
+    }
+
+    public List<UserMessageCount> getEmoticonUsers(long since, long emoticonId) {
+        Table<Record4<String, Long, String, String>> emoteTable = DSL.table(DSL
+            .select(
+                DSL.concat("%", EMOTICON.CODE.replace("\\", "\\\\").replace("_", "\\_")).concat("%").as("code"),
+                EMOTICON.ID.as("id"),
+                EMOTICON.FILE_NAME.as("file_name"),
+                EMOTICON.CODE.as("original_code")
+            )
+            .from(EMOTICON)
+            .where(EMOTICON.ID.equal(emoticonId))
+        ).as("emote");
+        try (Connection connection = dataSource.getConnection()) {
+            return DSL.using(connection)
+                .select(
+                    USER.ID,
+                    USER.NAME,
+                    DSL.count().as("count")
+                )
+                .from(
+                    emoteTable,
+                    HISTORY.join(USER).on(HISTORY.USER_ID.equal(USER.ID))
+                )
+                .where(
+                    HISTORY.MESSAGE.like(emoteTable.field("code", String.class)),
+                    HISTORY.TIMESTAMP.greaterOrEqual(since)
+                )
+                .groupBy(USER.ID)
+                .orderBy(DSL.field("count").desc(), USER.NAME.asc())
+                .fetch()
+                .stream()
+                .map(record ->
+                    new UserMessageCount(
+                        record.getValue(USER.NAME),
+                        record.getValue(USER.ID),
+                        record.getValue("count", Long.class)
+                    )
+                )
+                .collect(Collectors.toList());
+        } catch (DataAccessException | SQLException e) {
+            throw new InternalErrorException(e);
+        }
     }
 }
