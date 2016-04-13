@@ -1,0 +1,19 @@
+<div class="modal-header">
+    <h3 class="modal-title">
+        {{user.name}} emoticon usage for last 7 days
+    </h3>
+</div>
+<div class="modal-body">
+    <div class="list-group">
+        <div class="list-group-item" ng-repeat="e in emoticons" href="">
+            <h4 class="list-group-item-heading">
+                <img ng-src="/emoticons/{{e.emoticon.fileName}}"/> <code>{{e.emoticon.code}}</code>
+            </h4>
+            <p class="list-group-item-text">
+                <progressbar value="e.count" max="total" type="success">
+                    {{e.count}}/{{total}}
+                </progressbar>
+            </p>
+        </div>
+    </div>
+</div>

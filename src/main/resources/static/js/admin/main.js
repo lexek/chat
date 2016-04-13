@@ -400,20 +400,88 @@ var RoomsController = function($scope, $http) {
 
 AdminApplication.controller("RoomsController", RoomsController);
 
-var EmoticonsController = function($scope, $http, alert) {
+var UserEmoticonsController = function($scope, $http, $modal, user) {
+    $scope.user = user;
+    $scope.users = [];
+    $scope.total = 0;
+
+    var load = function() {
+        $http({
+            method: "GET",
+            url: StringFormatter.format("/rest/stats/user/{number}/emoticons", user.id)
+        }).success(function(data) {
+            $scope.emoticons = data;
+            $scope.total = data.reduce(function(prev, e) {
+                return prev + e.count;
+            }, 0);
+        }).error(function(data) {
+            alert.alert("danger", data);
+        });
+    };
+
+    load();
+};
+
+var EmoticonUsersController = function($scope, $http, $modal, emoticon) {
+    $scope.emoticon = emoticon;
+    $scope.users = [];
+
+    var load = function() {
+        $http({
+            method: "GET",
+            url: StringFormatter.format("/rest/stats/global/emoticons/{number}", emoticon.id)
+        }).success(function(data) {
+            $scope.users = data;
+            $scope.total = data.reduce(function(prev, e) {
+                return prev + e.count;
+            }, 0);
+        }).error(function(data) {
+            alert.alert("danger", data);
+        });
+    };
+
+    $scope.showUser = function(id) {
+        $modal.open({
+            templateUrl: "/templates/user.html",
+            controller: UserModalController,
+            size: "sm",
+            resolve: {
+                id: function () {
+                    return id;
+                }
+            }
+        });
+    };
+
+    load();
+};
+
+var EmoticonsController = function($scope, $http, $modal, alert) {
     $scope.emoticons = [];
     $scope.formData = {};
     $scope.order = "code";
     $scope.orderDesc = false;
+    $scope.popularity = {};
 
     var loadEmoticons = function() {
         $scope.emoticons.length = 0;
         $http({
             method: "GET",
             url: "/rest/emoticons/all"
-        }).success(function (d) {
+        }).success(function(d) {
             $scope.emoticons = d;
-        }).error(function (data) {
+        }).error(function(data) {
+            alert.alert("danger", data);
+        });
+        $http({
+            method: "GET",
+            url: "/rest/stats/global/emoticons"
+        }).success(function(data) {
+            angular.forEach(data, function(e) {
+                console.log(e)
+                $scope.popularity[e.emoticon.id] = e.count
+            });
+        }).error(function(data) {
             alert.alert("danger", data);
         });
     };
@@ -440,10 +508,16 @@ var EmoticonsController = function($scope, $http, alert) {
         });
     };
 
+    $scope.pop = function(emoticon) {
+        return $scope.popularity[emoticon.id] || 0;
+    };
+
     $scope.orderBy = function(orderVar) {
+        console.log($scope.order + " -> " + orderVar)
         if (orderVar === $scope.order) {
             $scope.orderDesc = !$scope.orderDesc;
         } else {
+            $scope.order = orderVar;
             $scope.orderDesc = false;
         }
     };
@@ -458,6 +532,18 @@ var EmoticonsController = function($scope, $http, alert) {
         } else {
             return "fa-sort";
         }
+    };
+
+    $scope.showEmoticonUsers = function(emoticon) {
+        $modal.open({
+            templateUrl: "/templates/emoticon_users.html",
+            controller: EmoticonUsersController,
+            resolve: {
+                emoticon: function () {
+                    return emoticon;
+                }
+            }
+        });
     };
 
     loadEmoticons();
@@ -826,6 +912,18 @@ var UserController = function($scope, $route, $http, $modal, alert, id) {
         });
     };
 
+    $scope.showEmoticons = function() {
+        $modal.open({
+            templateUrl: "/templates/user_emoticons.html",
+            controller: UserEmoticonsController,
+            resolve: {
+                user: function () {
+                    return $scope.user;
+                }
+            }
+        });
+    };
+
     $scope.changePassword = function() {
         $modal.open({
             templateUrl: "/templates/password_modal.html",
@@ -1028,6 +1126,18 @@ var UserModalController = function($scope, $http, $modal, $modalInstance, id) {
         $modal.open({
             templateUrl: "user_activity.html",
             controller: UserActivityController,
+            resolve: {
+                user: function () {
+                    return $scope.user;
+                }
+            }
+        });
+    };
+
+    $scope.showEmoticons = function() {
+        $modal.open({
+            templateUrl: "/templates/user_emoticons.html",
+            controller: UserEmoticonsController,
             resolve: {
                 user: function () {
                     return $scope.user;
@@ -2264,7 +2374,7 @@ AdminApplication.config(["$routeProvider", "$locationProvider", function($routeP
     });
     $routeProvider.when("/emoticons", {
         "title": "emoticons",
-        "templateUrl": "emoticons.html",
+        "templateUrl": "/templates/emoticons.html",
         "controller": EmoticonsController,
         "menuId": "emoticons"
     });

@@ -62,63 +62,6 @@
     </div>
 </script>
 
-<script type="text/ng-template" id="emoticons.html">
-    <div class="col-sm-8">
-        <div class="panel panel-primary">
-            <div class="panel-heading">
-                <h4 class="panel-title">
-                    emoticons
-                </h4>
-            </div>
-            <table class="table table-hover">
-                <thead>
-                <tr>
-                    <th class="col-xs-1">Icon</th>
-                    <th class="col-xs-10 sortableTitle" ng-click="orderBy('code')">
-                        Code <span class="fa fa-fw pull-right" ng-class="getSortIconClass('code')"></span>
-                    </th>
-                    <th class="col-xs-1" style="text-align: center;">Delete</th>
-                </tr>
-                </thead>
-                <tr ng-repeat="emoticon in emoticons | orderBy:order:orderDesc">
-                    <td><img ng-src="/emoticons/{{emoticon.fileName}}"/></td>
-                    <td ng-bind="emoticon.code"></td>
-                    <td style="text-align: center;">
-                        <div class="btn btn-link btn-link-danger btn-xs" ng-click="requestDelete(emoticon.id)">
-                            <span class="fa fa-trash fa-fw"></span>
-                        </div>
-                    </td>
-                </tr>
-            </table>
-        </div>
-    </div>
-
-    <div class="col-sm-4">
-        <div class="panel panel-info">
-            <div class="panel-heading">
-                <h4 class="panel-title">
-                    <i class="fa fa-plus"></i> add emoticon
-                </h4>
-            </div>
-            <div class="panel-body">
-                <form action="/rest/emoticons/add" method="post" enctype="multipart/form-data" role="form" acceptcharset="UTF-8">
-                    <div class="form-group">
-                        <label>Emoticon code</label>
-                        <input type="text" name="code" placeholder="enter emoticon code" class="form-control"/>
-                    </div>
-                    <div class="form-group">
-                        <label>Emoticon file</label>
-                        <input type="file" name="file">
-                    </div>
-                    <div class="form-group">
-                        <button type="submit" class="btn btn-default">Submit</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-</script>
-
 <script type="text/ng-template" id="journal.html">
     <div class="panel panel-primary">
         <div class="panel-heading">
@@ -824,6 +767,9 @@
                 <hr/>
                 <div class="btn btn-link" ng-click="showActivity()">
                     <i class="fa fa-fw fa-bar-chart"></i> Show user activity
+                </div>
+                <div class="btn btn-link" ng-click="showEmoticons()">
+                    <i class="fa fa-fw fa-bar-chart"></i> Show emoticon usage
                 </div>
             </div>
             <div class="panel-footer">
