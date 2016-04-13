@@ -94,6 +94,7 @@ CREATE TABLE `history` (
   INDEX `FK_ROOM` (`room_id`),
   INDEX `FK_USER` (`user_id`),
   INDEX `timestamp` (`timestamp`),
+  INDEX `user_ts` (`user_id`, `timestamp`),
   CONSTRAINT `FK_HISTORY_ROOM` FOREIGN KEY (`room_id`) REFERENCES `room` (`id`)
     ON UPDATE CASCADE
     ON DELETE CASCADE,
