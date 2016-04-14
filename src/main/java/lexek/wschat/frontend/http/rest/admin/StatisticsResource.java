@@ -52,6 +52,13 @@ public class StatisticsResource {
         return statisticsDao.getTopChatters(roomId);
     }
 
+    @Path("/room/{roomId}/activity")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public Map<Long, Long> getRoomActivity(@PathParam("roomId") long roomId) {
+        return statisticsDao.getRoomActivity(roomId);
+    }
+
     @Path("/global/metrics")
     @GET
     @Produces(MediaType.APPLICATION_JSON)

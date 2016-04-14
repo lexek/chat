@@ -70,6 +70,43 @@ public class StatisticsDao {
         return result;
     }
 
+    public Map<Long, Long> getRoomActivity(long roomId) {
+        Map<Long, Long> result;
+        try (Connection connection = dataSource.getConnection()) {
+            Table<Record1<Date>> tempTable = DSL
+                .select(DSL.function("FROM_UNIXTIME", Date.class, HISTORY.TIMESTAMP.div(1000)).as("date"))
+                .from(HISTORY)
+                .where(
+                    HISTORY.ROOM_ID.equal(roomId),
+                    HISTORY.TIMESTAMP.greaterOrEqual(
+                        Instant.now()
+                            .minus(Duration.ofDays(7))
+                            .truncatedTo(ChronoUnit.DAYS)
+                            .toEpochMilli())
+                )
+                .asTable("t", "date");
+
+            result = DSL.using(connection)
+                .select(
+                    DSL.date(tempTable.field("date", Date.class)).as("d"),
+                    DSL.hour(tempTable.field("date", Date.class)).as("h"),
+                    DSL.count().as("count")
+                )
+                .from(tempTable)
+                .groupBy(DSL.field("d"), DSL.field("h"))
+                .orderBy(DSL.field("d"), DSL.field("h"))
+                .fetch()
+                .stream()
+                .collect(Collectors.groupingBy(
+                    r -> r.value1().getTime() + TimeUnit.HOURS.toMillis(r.value2()),
+                    Collectors.summingLong(Record3::value3)
+                ));
+        } catch (DataAccessException | SQLException e) {
+            throw new InternalErrorException(e);
+        }
+        return result;
+    }
+
     public List<UserMessageCount> getTopChatters(long roomId) {
         List<UserMessageCount> result;
         try (Connection connection = dataSource.getConnection()) {

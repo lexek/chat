@@ -1978,6 +1978,37 @@ var RoomController = function($scope, $location, $http, $sce, $modal, alert, tit
             .success(function (d) {
                 $scope.journal = d.data;
             });
+        $http({
+            method: "GET",
+            url: "/rest/stats/room/" + $scope.roomId + "/activity"
+        }).success(function(data, status, headers, config) {
+            var activity = {};
+            angular.forEach(data, function(v, k) {
+                activity[k/1000] = v;
+            });
+            var startDate = new Date();
+            startDate.setDate(startDate.getDate() - 7);
+            var cfg = {
+                label: {
+                    position: "left",
+                    align: "left",
+                    width: 50
+                },
+                itemSelector: "#roomActivity",
+                domain: 'day',
+                subDomain: 'hour',
+                range: 8,
+                cellSize: 20,
+                domainGutter: 10,
+                data: activity,
+                start: startDate,
+                colLimit: 24,
+                verticalOrientation: true,
+                itemName: ["message", "messages"]
+            };
+            var cal = new CalHeatMap();
+            cal.init(cfg);
+        });
         loadProxies();
     };
 
