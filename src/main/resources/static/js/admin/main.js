@@ -2005,10 +2005,10 @@ var RoomController = function($scope, $location, $http, $sce, $modal, alert, tit
                 colLimit: 24,
                 verticalOrientation: true,
                 itemName: ["message", "messages"],
-                legend: [10, 25, 50, 100, 250],
+                legend: [10, 25, 50, 100, 250, 500],
                 legendColors: {
                     min: "#D7E3ED",
-                    max: "#428bca",
+                    max: "#326A99",
                     empty: "white"
                 }
             };
