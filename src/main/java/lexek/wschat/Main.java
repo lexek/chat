@@ -253,6 +253,7 @@ public class Main {
         eventDispatcher.registerListener(ChatEventType.JOIN, new SendProxyListOnEventListener(proxyManager));
         eventDispatcher.registerListener(ChatEventType.JOIN, new SendNamesOnEventListener());
         eventDispatcher.registerListener(ChatEventType.JOIN, new SendHistoryOnEventListener());
+        eventDispatcher.registerListener(ChatEventType.JOIN, new SendTopicOnEventListener());
         eventDispatcher.registerListener(ChatEventType.JOIN, new SendAnnouncementsOnEventListener(announcementService));
         eventDispatcher.registerListener(ChatEventType.JOIN, new SendPollOnEventListener(pollService));
         eventDispatcher.registerListener(ChatEventType.JOIN, new SendNotificationsOnEventListener(notificationService));

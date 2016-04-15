@@ -210,7 +210,6 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
         if (chat.self.role === globalLevels.USER_UNCONFIRMED) {
             chat.addMessage(new Message("ERROR", $translate.instant("CHAT_HELLO_UNCONFIRMED"), ctx.room));
         }
-        chat.addMessage(new Message("INFO", msg.text), msg.room);
         chat.addRoom(ctx.room);
         chat.messagesUpdated();
     };

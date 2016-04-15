@@ -691,9 +691,12 @@ controlsModule.controller("TitleController", ["$scope", "chatService", "windowSt
     };
 
     chatService.countCallback = function() {
-        $scope.count = chatService.unreadMessages;
+        if (!windowState.isActive()) {
+            $scope.count = chatService.unreadMessages;
+        } else {
+            $scope.count = 0;
+        }
         $scope.$digest();
-        console.log($scope.count);
     };
 }])
 

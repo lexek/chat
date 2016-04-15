@@ -3,7 +3,7 @@ package lexek.wschat.chat.evt;
 import com.codahale.metrics.Gauge;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.health.HealthCheck;
-import com.google.common.collect.HashMultimap;
+import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.lmax.disruptor.BlockingWaitStrategy;
@@ -27,7 +27,7 @@ public class EventDispatcher extends AbstractService {
     private final Logger logger = LoggerFactory.getLogger(EventDispatcher.class);
     private final Disruptor<Event> disruptor;
     private final RingBuffer<Event> ringBuffer;
-    private final Multimap<ChatEventType, EventListener> listeners = HashMultimap.create();
+    private final Multimap<ChatEventType, EventListener> listeners = LinkedHashMultimap.create();
 
     public EventDispatcher() {
         super("eventDispatcher");
