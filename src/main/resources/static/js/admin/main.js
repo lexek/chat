@@ -2004,7 +2004,13 @@ var RoomController = function($scope, $location, $http, $sce, $modal, alert, tit
                 start: startDate,
                 colLimit: 24,
                 verticalOrientation: true,
-                itemName: ["message", "messages"]
+                itemName: ["message", "messages"],
+                legend: [10, 25, 50, 100, 250],
+                legendColors: {
+                    min: "#D7E3ED",
+                    max: "#428bca",
+                    empty: "white"
+                }
             };
             var cal = new CalHeatMap();
             cal.init(cfg);
