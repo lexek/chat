@@ -71,6 +71,7 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
             chat.addMessage(
                 new Message("INFO", $translate.instant("CHAT_CLEAR_USER", {"mod": msg.mod, "user": msg.name}))
             );
+            chat.incMessageCount();
         }
         chat.messagesUpdated();
         chat.hideMessagesFromUser(ctx.room, msg.name);
@@ -82,6 +83,7 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
             chat.addMessage(
                 new Message("INFO", $translate.instant("CHAT_CLEAR_USER", {"mod": ctx.msg.service, "user": msg.name}))
             );
+            chat.incMessageCount();
         }
         chat.messagesUpdated();
         chat.hideMessagesFromUser(ctx.room, msg.name, ctx.msg.service, ctx.msg.serviceResource);
@@ -132,6 +134,7 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
         console.log(chat.isProxyOutboundEnabled(ctx.room, service, serviceRes));
 
         if (!omit) {
+            chat.incMessageCount();
             var tempText = htmlEscape(ctx.proc.unprocessedText);
             var elem = null;
             var lastChatter = chat.lastChatterInRoom[ctx.room];
@@ -216,6 +219,7 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
         chat.lastChatter(ctx.room, null);
         chat.addMessage(
             new Message("INFO", $translate.instant("CHAT_TIMEOUT_USER", {"mod": msg.mod, "user": msg.name})), ctx.room);
+        chat.incMessageCount();
         chat.hideMessagesFromUser(ctx.room, msg.name);
         if (!ctx.history) {
             chat.messagesUpdated();
@@ -226,6 +230,7 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
         chat.lastChatter(ctx.room, null);
         chat.addMessage(
             new Message("INFO", $translate.instant("CHAT_BAN_USER", {"mod": msg.mod, "user": msg.name})), ctx.room);
+        chat.incMessageCount();
         chat.hideMessagesFromUser(ctx.room, msg.name);
         if (!ctx.history) {
             chat.messagesUpdated();
@@ -293,7 +298,8 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
     var processTweet = function(chat, msg) {
         chat.addMessage(new TweetMessage(msg.tweet), msg.room);
         chat.messagesUpdated();
-    }
+        chat.incMessageCount();
+    };
 
     var MessageProcessingService = function() {
 

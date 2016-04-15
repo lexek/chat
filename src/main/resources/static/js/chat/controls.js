@@ -1,4 +1,12 @@
-var controlsModule = angular.module("chat.controls", ["chat.services.chat", "ui.bootstrap", "colorpicker.module", "ngCookies", "vcRecaptcha", "ui.bootstrap.popover"]);
+var controlsModule = angular.module("chat.controls", [
+    "chat.services.chat",
+    "chat.services.windowState",
+    "ui.bootstrap",
+    "colorpicker.module",
+    "ngCookies",
+    "vcRecaptcha",
+    "ui.bootstrap.popover"
+]);
 
 controlsModule.controller("RoomWidgetController", ["$scope", "chatService", function($scope, chatService) {
     $scope.open = false;
@@ -675,9 +683,17 @@ controlsModule.directive('timer', ["$timeout", function($timeout) {
     }
 }]);
 
-controlsModule.controller("TitleController", ["$scope", "chatService", function($scope, chatService) {
+controlsModule.controller("TitleController", ["$scope", "chatService", "windowState", function($scope, chatService, windowState) {
+    $scope.count = 0;
+
     $scope.getRoomName = function() {
         return chatService.activeRoom;
-    }
+    };
+
+    chatService.countCallback = function() {
+        $scope.count = chatService.unreadMessages;
+        $scope.$digest();
+        console.log($scope.count);
+    };
 }])
 

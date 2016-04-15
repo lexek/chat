@@ -3,7 +3,7 @@
 <html ng-app="chatApplication">
 
 <head>
-    <title ng-controller="TitleController">${title} - {{getRoomName()}}</title>
+    <title ng-controller="TitleController">{{count ? "[" + count + "]" : ""}} ${title} - {{getRoomName()}}</title>
 
     <meta name="viewport" content="width=device-width, height = device-height, user-scalable=no"/>
 

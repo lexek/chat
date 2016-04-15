@@ -1,8 +1,8 @@
 var module = angular.module("chat.services.chat", ["chat.messageProcessing", "chat.services.settings", "chat.services.notifications"]);
 
 module.service("chatService",
-["$modal", "chatSettings", "$translate", "$http", "$timeout", "notificationService", "messageProcessingService",
-function($modal, settings, $translate, $http, $timeout, notificationService, msgs) {
+["$modal", "chatSettings", "$translate", "$http", "$timeout", "notificationService", "messageProcessingService", "windowState",
+function($modal, settings, $translate, $http, $timeout, notificationService, msgs, windowState) {
     /**
      * @constructor
      */
@@ -11,6 +11,7 @@ function($modal, settings, $translate, $http, $timeout, notificationService, msg
         this.messagesUpdatedCallbacks = [];
         this.selfUpdatedCallbacks = [];
         this.stateUpdatedCallback = angular.noop;
+        this.countCallback = angular.noop;
         this.messages = {};
         this.unreadCount = {};
         this.unreadMentions = {};
@@ -33,6 +34,15 @@ function($modal, settings, $translate, $http, $timeout, notificationService, msg
         this.proxies = {};
         this.ignoredNames = [];
         this.reconnect = true;
+        this.unreadMessages = 0;
+
+        var self = this;
+        var resetCount = function() {
+            self.unreadMessages = 0;
+            self.countCallback();
+        };
+        windowState.focus(resetCount);
+        windowState.blur(resetCount);
     };
 
     chatService.prototype.isProxyModerationEnabled = function(room, providerName, remoteRoom) {
@@ -121,6 +131,12 @@ function($modal, settings, $translate, $http, $timeout, notificationService, msg
     chatService.prototype.hasLocalRole = function(role, roomName) {
         return this.localRole[roomName] >= role;
     };
+
+    chatService.prototype.incMessageCount = function() {
+        this.unreadMessages++;
+        this.countCallback();
+        console.log(this.unreadMessages);
+    }
 
     chatService.prototype.addMessage = function(message, room, hist, mention) {
         message.internalId = this.idCounter++;
