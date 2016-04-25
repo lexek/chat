@@ -5,6 +5,7 @@ import lexek.wschat.chat.Room;
 import lexek.wschat.chat.filters.UserInRoomFilter;
 import lexek.wschat.chat.model.*;
 import lexek.wschat.db.dao.ChatterDao;
+import lexek.wschat.db.model.UserDto;
 
 public class ChatterService {
     private final ChatterDao chatterDao;
@@ -20,7 +21,11 @@ public class ChatterService {
     }
 
     public Chatter getChatter(Room room, String name) {
-        return chatterDao.getChatter(userService.cache(userService.fetchByName(name)), room.getId());
+        UserDto user = userService.fetchByName(name);
+        if (user != null) {
+            return chatterDao.getChatter(userService.cache(user), room.getId());
+        }
+        return null;
     }
 
     public Chatter getChatter(Room room, User user) {
