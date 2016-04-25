@@ -971,78 +971,6 @@
     </form>
 </script>
 
-<script type="text/ng-template" id="new_proxy.html">
-    <div class="modal-header">
-        <h3 class="modal-title">New proxy</h3>
-    </div>
-    <form ng-submit="submitForm()">
-        <div class="modal-body">
-            <div class="alert alert-danger" ng-if="error" ng-bind="error"></div>
-            <div class="form-group">
-                <label class="control-label" for="provider">Provider</label>
-                <select
-                        class="form-control"
-                        id="provider"
-                        ng-options="item as item.name for item in providers track by item.name"
-                        ng-model="input.provider"
-                        ng-change="reset()"
-                        required
-                        >
-                    <option style="display: none" value="">Select proxy provider</option>
-                </select>
-            </div>
-            <div class="form-group" ng-if="input.provider">
-                <label class="control-label" for="roomName">Room name</label>
-                <input
-                        type="text"
-                        class="form-control"
-                        id="roomName"
-                        ng-model="input.room"
-                        required
-                        ></input>
-            </div>
-            <div class="form-group" ng-if="input.provider && input.provider.supportsAuthentication">
-                <div class="checkbox">
-                    <label>
-                        <input type="checkbox" ng-model="input.authentication"> authenticate (needed for moderation)
-                    </label>
-                </div>
-            </div>
-            <div class="form-group" ng-if="input.authentication">
-                <label class="control-label" for="username">Username</label>
-                <input
-                        type="text"
-                        class="form-control"
-                        id="username"
-                        ng-model="input.name"
-                        required
-                        ></input>
-            </div>
-            <div class="form-group" ng-if="input.authentication">
-                <label class="control-label" for="key">Password/token</label>
-                <input
-                        type="password"
-                        class="form-control"
-                        id="key"
-                        ng-model="input.key"
-                        required
-                        ></input>
-            </div>
-            <div class="form-group" ng-if="input.provider && input.provider.supportsOutbound">
-                <div class="checkbox">
-                    <label>
-                        <input type="checkbox" ng-model="input.outbound"> enable outbound passing
-                    </label>
-                </div>
-            </div>
-        </div>
-        <div class="modal-footer">
-            <input type="button" class="btn btn-warning pull-left" value="cancel" ng-click="cancel()"/>
-            <input type="submit" class="btn btn-primary" value="submit"/>
-        </div>
-    </form>
-</script>
-
 <script type="text/ng-template" id="compose_announcement.html">
     <div class="modal-header">
         <h3 class="modal-title">Compose announcement</h3>
@@ -1101,11 +1029,6 @@
                     <li ng-class="{'active': menuId === 'users'}">
                         <a href="/admin/users?page=0"><i class="fa fa-fw fa-users"></i> users</a>
                     </li>
-                    <li ng-class="{'active': menuId === 'tickets'}">
-                        <a href="/admin/tickets?page=0">
-                            <i class="fa fa-fw fa-ticket"></i> tickets<span class="badge pull-right">{{getOpenTicketCount()}}</span>
-                        </a>
-                    </li>
                 <#if user.role == "SUPERADMIN">
                     <li ng-class="{'active': menuId === 'services'}">
                         <a href="/admin/services">
@@ -1113,6 +1036,18 @@
                         </a>
                     </li>
                 </#if>
+                </ul>
+                <ul class="nav nav-sidebar">
+                    <li ng-class="{'active': menuId === 'tickets'}">
+                        <a href="/admin/tickets?page=0">
+                            <i class="fa fa-fw fa-ticket"></i> tickets<span class="badge pull-right">{{getOpenTicketCount()}}</span>
+                        </a>
+                    </li>
+                    <li ng-class="{'active': menuId === 'proxyAuth'}">
+                        <a href="/admin/proxyAuth">
+                            <i class="fa fa-fw fa-key"></i> proxy auth
+                        </a>
+                    </li>
                 </ul>
             </div>
             <div class="main">

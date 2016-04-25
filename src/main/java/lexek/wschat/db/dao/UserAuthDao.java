@@ -5,7 +5,7 @@ import lexek.wschat.db.jooq.tables.pojos.PendingConfirmation;
 import lexek.wschat.db.model.SessionDto;
 import lexek.wschat.db.model.UserAuthDto;
 import lexek.wschat.db.model.UserDto;
-import lexek.wschat.security.social.SocialAuthProfile;
+import lexek.wschat.security.social.SocialProfile;
 import lexek.wschat.util.Colors;
 import org.jooq.DSLContext;
 import org.jooq.Record;
@@ -70,7 +70,7 @@ public class UserAuthDao {
         return auth;
     }
 
-    public UserAuthDto getOrCreateUserAuth(SocialAuthProfile profile) {
+    public UserAuthDto getOrCreateUserAuth(SocialProfile profile) {
         UserAuthDto auth = null;
         try (Connection connection = dataSource.getConnection()) {
             auth = DSL.using(connection).transactionResult(conf -> {
@@ -85,14 +85,14 @@ public class UserAuthDao {
                 if (result == null) {
                     record = DSL.using(conf)
                         .insertInto(USERAUTH, USERAUTH.AUTH_NAME, USERAUTH.AUTH_ID, USERAUTH.AUTH_KEY, USERAUTH.SERVICE)
-                        .values(profile.getName(), String.valueOf(profile.getId()), profile.getToken(), profile.getService())
+                        .values(profile.getName(), String.valueOf(profile.getId()), profile.getToken().getToken(), profile.getService())
                         .returning().fetchOne();
                     result = UserAuthDto.fromRecord(record, null);
                 } else {
                     DSL.using(conf)
                         .update(USERAUTH)
                         .set(USERAUTH.AUTH_NAME, profile.getName())
-                        .set(USERAUTH.AUTH_KEY, profile.getToken())
+                        .set(USERAUTH.AUTH_KEY, profile.getToken().getToken())
                         .where(USERAUTH.SERVICE.equal(profile.getService()).and(USERAUTH.AUTH_ID.equal(String.valueOf(profile.getId()))))
                         .execute();
                 }

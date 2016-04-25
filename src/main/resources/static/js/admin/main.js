@@ -1873,8 +1873,7 @@ var NewProxyController = function($scope, $http, $modalInstance, room) {
             $scope.error = null;
             var data = {
                 providerName: $scope.input.provider.name,
-                authName: $scope.input.authentication ? $scope.input.name : null,
-                authKey: $scope.input.authentication ? $scope.input.key : null,
+                authId: $scope.input.auth ? $scope.input.auth.id : null,
                 remoteRoom: $scope.input.room,
                 enableOutbound: $scope.input.outbound
             };
@@ -2113,7 +2112,7 @@ var RoomController = function($scope, $location, $http, $sce, $modal, alert, tit
 
     $scope.newProxy = function() {
         $modal.open({
-            templateUrl: 'new_proxy.html',
+            templateUrl: '/templates/new_proxy.html',
             controller: NewProxyController,
             size: "sm",
             resolve: {
@@ -2383,6 +2382,28 @@ var ComposeAnnouncementController = function($scope, $http, $modalInstance, room
     };
 };
 
+var ProxyAuthController = function($scope, $http) {
+    $scope.credentials = null;
+
+    var loadPage = function() {
+        $http({
+            method: "GET",
+            url: "/rest/proxy/auth/all"
+        }).success(function (credentials) {
+            $scope.credentials = credentials;
+        });
+    };
+
+    $scope.deleteAuth = function(id) {
+        $http({
+            method: "DELETE",
+            url: "/rest/proxy/auth/" + id
+        }).success(loadPage);
+    };
+
+    loadPage();
+};
+
 AdminApplication.config(["$routeProvider", "$locationProvider", function($routeProvider, $locationProvider) {
     $locationProvider.html5Mode(true);
     $routeProvider.when("/", {
@@ -2432,6 +2453,12 @@ AdminApplication.config(["$routeProvider", "$locationProvider", function($routeP
         "templateUrl": "services.html",
         "controller": ServicesController,
         "menuId": "services"
+    });
+    $routeProvider.when("/proxyAuth", {
+        "title": "Proxy credentials",
+        "templateUrl": "/templates/proxy_auth.html",
+        "controller": ProxyAuthController,
+        "menuId": "proxyAuth"
     });
 }]);
 

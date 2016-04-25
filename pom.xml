@@ -204,7 +204,8 @@
                                 pending_notification|
                                 steam_game|
                                 chat_proxy|
-                                ignore_list
+                                ignore_list|
+                                proxy_auth
                             </includes>
                             <inputSchema>chat</inputSchema>
                         </database>

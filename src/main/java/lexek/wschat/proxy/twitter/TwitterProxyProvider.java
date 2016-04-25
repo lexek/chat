@@ -25,14 +25,14 @@ public class TwitterProxyProvider extends ProxyProvider {
         TwitterCredentials credentials,
         TwitterApiClient profileSource
     ) {
-        super("twitter", false, false, EnumSet.noneOf(ModerationOperation.class));
+        super("twitter", false, false, false, ImmutableSet.of(), EnumSet.noneOf(ModerationOperation.class));
         this.messageBroadcaster = messageBroadcaster;
         this.profileSource = profileSource;
         this.twitterClient = new TwitterStreamingClient(notificationService, eventLoopGroup, this, profileSource, credentials);
     }
 
     @Override
-    public Proxy newProxy(long id, Room room, String remoteRoom, String name, String key, boolean outbound) {
+    public Proxy newProxy(long id, Room room, String remoteRoom, Long authId, boolean outbound) {
         if (remoteRoom.startsWith("#")) {
             return new TwitterProxy(
                 messageBroadcaster,
@@ -89,11 +89,6 @@ public class TwitterProxyProvider extends ProxyProvider {
             );
         }
         throw new UnsupportedOperationException("couldn't detect type");
-    }
-
-    @Override
-    public boolean validateCredentials(String name, String tokenPair) {
-        return false;
     }
 
     @Override

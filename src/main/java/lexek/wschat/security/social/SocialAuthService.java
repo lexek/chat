@@ -3,13 +3,13 @@ package lexek.wschat.security.social;
 import java.io.IOException;
 
 public interface SocialAuthService {
-    String getRedirectUrl();
+    SocialRedirect getRedirect();
 
-    /*
-     * @param authentication code
-     * @return token
-     */
-    String authenticate(String code) throws IOException;
+    SocialToken authenticate(String code) throws IOException;
 
-    SocialAuthProfile getProfile(String token) throws IOException;
+    SocialProfile getProfile(SocialToken token) throws IOException;
+
+    SocialToken refresh(SocialToken token) throws IOException;
+
+    boolean needsRefreshing();
 }

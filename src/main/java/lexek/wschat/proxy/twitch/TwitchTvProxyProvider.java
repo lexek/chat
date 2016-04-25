@@ -1,20 +1,17 @@
 package lexek.wschat.proxy.twitch;
 
+import com.google.common.collect.ImmutableSet;
 import io.netty.channel.EventLoopGroup;
 import lexek.wschat.chat.MessageBroadcaster;
 import lexek.wschat.chat.Room;
-import lexek.wschat.chat.e.InternalErrorException;
 import lexek.wschat.proxy.ModerationOperation;
 import lexek.wschat.proxy.Proxy;
+import lexek.wschat.proxy.ProxyAuthService;
 import lexek.wschat.proxy.ProxyProvider;
 import lexek.wschat.security.AuthenticationManager;
-import lexek.wschat.security.social.SocialAuthProfile;
-import lexek.wschat.security.social.TwitchTvSocialAuthService;
 import lexek.wschat.services.NotificationService;
 
-import java.io.IOException;
 import java.util.EnumSet;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class TwitchTvProxyProvider extends ProxyProvider {
@@ -22,7 +19,7 @@ public class TwitchTvProxyProvider extends ProxyProvider {
     private final MessageBroadcaster messageBroadcaster;
     private final AuthenticationManager authenticationManager;
     private final EventLoopGroup eventLoopGroup;
-    private final TwitchTvSocialAuthService authService;
+    private final ProxyAuthService authService;
     private final NotificationService notificationService;
 
     public TwitchTvProxyProvider(
@@ -30,10 +27,10 @@ public class TwitchTvProxyProvider extends ProxyProvider {
         MessageBroadcaster messageBroadcaster,
         AuthenticationManager authenticationManager,
         EventLoopGroup eventLoopGroup,
-        TwitchTvSocialAuthService authService,
+        ProxyAuthService authService,
         NotificationService notificationService
     ) {
-        super("twitch", true, true, EnumSet.allOf(ModerationOperation.class));
+        super("twitch", true, true, false, ImmutableSet.of("twitch"), EnumSet.allOf(ModerationOperation.class));
         this.messageId = messageId;
         this.messageBroadcaster = messageBroadcaster;
         this.authenticationManager = authenticationManager;
@@ -43,22 +40,11 @@ public class TwitchTvProxyProvider extends ProxyProvider {
     }
 
     @Override
-    public Proxy newProxy(long id, Room room, String remoteRoom, String name, String token, boolean outbound) {
+    public Proxy newProxy(long id, Room room, String remoteRoom, Long proxyAuthId, boolean outbound) {
         return new TwitchTvChatProxy(
-            notificationService, id, this, room, remoteRoom, name, token, outbound,
-            messageId, messageBroadcaster, authenticationManager, eventLoopGroup
+            notificationService, id, this, room, remoteRoom, proxyAuthId, outbound, messageId, messageBroadcaster,
+            authenticationManager, eventLoopGroup, authService
         );
-    }
-
-    @Override
-    public boolean validateCredentials(String name, String token) {
-        try {
-            Set<String> scopes = authService.getScopes(token);
-            SocialAuthProfile profile = authService.getProfile(token);
-            return scopes.contains("chat_login") && profile.getName().equals(name);
-        } catch (IOException e) {
-            throw new InternalErrorException(e);
-        }
     }
 
     @Override

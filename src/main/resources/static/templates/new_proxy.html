@@ -1,0 +1,54 @@
+<div class="modal-header">
+    <h3 class="modal-title">New proxy</h3>
+</div>
+<form ng-submit="submitForm()" name="proxyForm">
+    <div class="modal-body">
+        <div class="alert alert-danger" ng-if="error" ng-bind="error"></div>
+        <div class="form-group">
+            <label class="control-label" for="provider">Provider</label>
+            <select
+                    class="form-control"
+                    id="provider"
+                    ng-options="item as item.name for item in providers track by item.name"
+                    ng-model="input.provider"
+                    ng-change="reset()"
+                    required
+            >
+                <option style="display: none" value="">Select proxy provider</option>
+            </select>
+        </div>
+        <div class="form-group" ng-if="input.provider">
+            <label class="control-label" for="roomName">Room name</label>
+            <input
+                    type="text"
+                    class="form-control"
+                    id="roomName"
+                    ng-model="input.room"
+                    required
+            />
+        </div>
+        <div class="form-group" ng-if="input.provider.supportsAuth">
+            <label class="control-label" for="auth">Auth</label>
+            <select
+                class="form-control"
+                id="auth"
+                ng-model="input.auth"
+                ng-required="input.provider.requiresAuth"
+                ng-options="cred.externalName for cred in input.provider.availableCredentials track by cred.id"
+            >
+                <option value="">none</option>
+            </select>
+        </div>
+        <div class="form-group" ng-if="input.provider && input.provider.supportsOutbound">
+            <div class="checkbox">
+                <label>
+                    <input type="checkbox" ng-model="input.outbound"> enable outbound passing
+                </label>
+            </div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <input type="button" class="btn btn-warning pull-left" value="cancel" ng-click="cancel()"/>
+        <input type="submit" class="btn btn-primary" ng-disabled="proxyForm.$invalid" value="submit"/>
+    </div>
+</form>

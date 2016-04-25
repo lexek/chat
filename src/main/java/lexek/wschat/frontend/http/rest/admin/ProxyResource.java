@@ -1,11 +1,14 @@
 package lexek.wschat.frontend.http.rest.admin;
 
+import lexek.wschat.chat.e.EntityNotFoundException;
 import lexek.wschat.chat.model.GlobalRole;
 import lexek.wschat.db.jooq.tables.pojos.ChatProxy;
+import lexek.wschat.db.model.ProxyAuth;
 import lexek.wschat.db.model.UserDto;
 import lexek.wschat.db.model.rest.ProxyProviderRestModel;
 import lexek.wschat.db.model.rest.ProxyRestModel;
 import lexek.wschat.proxy.Proxy;
+import lexek.wschat.proxy.ProxyAuthService;
 import lexek.wschat.proxy.ProxyManager;
 import lexek.wschat.security.jersey.Auth;
 import lexek.wschat.security.jersey.RequiredRole;
@@ -23,10 +26,12 @@ import java.util.stream.Collectors;
 public class ProxyResource {
     private final RoomService roomService;
     private final ProxyManager proxyManager;
+    private final ProxyAuthService proxyAuthService;
 
-    public ProxyResource(RoomService roomService, ProxyManager proxyManager) {
+    public ProxyResource(RoomService roomService, ProxyManager proxyManager, ProxyAuthService proxyAuthService) {
         this.roomService = roomService;
         this.proxyManager = proxyManager;
+        this.proxyAuthService = proxyAuthService;
     }
 
     @Path("/list")
@@ -50,14 +55,16 @@ public class ProxyResource {
     @Path("/providers")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public List<ProxyProviderRestModel> providers() {
+    public List<ProxyProviderRestModel> providers(@Auth UserDto currentUser) {
         return proxyManager
             .getProviders()
             .stream()
             .map(provider -> new ProxyProviderRestModel(
                 provider.getName(),
-                provider.isSupportsAuthentication(),
-                provider.isSupportsOutbound()
+                provider.isSupportsAuth(),
+                provider.requiresAuth(),
+                provider.isSupportsOutbound(),
+                proxyAuthService.getAvailableCredentials(currentUser, provider.getSupportedAuthServices())
             ))
             .collect(Collectors.toList());
     }
@@ -70,13 +77,19 @@ public class ProxyResource {
         @Auth UserDto admin,
         ChatProxy chatProxy
     ) {
+        ProxyAuth proxyAuth = null;
+        if (chatProxy.getAuthId() != null) {
+            proxyAuth = proxyAuthService.getAuth(chatProxy.getAuthId());
+            if (proxyAuth == null) {
+                throw new EntityNotFoundException("proxyAuth");
+            }
+        }
         Proxy result = proxyManager.newProxy(
             admin,
             roomService.getRoomInstance(roomId),
             chatProxy.getProviderName(),
             chatProxy.getRemoteRoom().toLowerCase(),
-            chatProxy.getAuthName(),
-            chatProxy.getAuthKey(),
+            proxyAuth,
             chatProxy.getEnableOutbound()
         );
         return new ProxyRestModel(

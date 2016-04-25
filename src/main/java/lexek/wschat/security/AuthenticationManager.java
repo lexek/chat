@@ -11,7 +11,7 @@ import lexek.wschat.db.model.Email;
 import lexek.wschat.db.model.SessionDto;
 import lexek.wschat.db.model.UserAuthDto;
 import lexek.wschat.db.model.UserDto;
-import lexek.wschat.security.social.SocialAuthProfile;
+import lexek.wschat.security.social.SocialProfile;
 import lexek.wschat.services.EmailService;
 import lexek.wschat.util.Colors;
 import org.apache.http.HttpHeaders;
@@ -21,7 +21,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.security.SecureRandom;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Map;
@@ -31,15 +30,21 @@ public class AuthenticationManager {
     private final Logger logger = LoggerFactory.getLogger(AuthenticationManager.class);
     private final Map<String, AtomicInteger> failedLogin = new ConcurrentHashMapV8<>();
     private final Map<Long, Instant> latestEmailChanges = new ConcurrentHashMapV8<>();
-    private final SecureRandom secureRandom = new SecureRandom();
+    private final SecureTokenGenerator secureTokenGenerator;
     private final String host;
     private final EmailService emailService;
     private final ConnectionManager connectionManager;
     private final UserAuthDao userAuthDao;
 
-    public AuthenticationManager(String host, EmailService emailService, ConnectionManager connectionManager,
-                                 UserAuthDao userAuthDao) {
+    public AuthenticationManager(
+        String host,
+        SecureTokenGenerator secureTokenGenerator,
+        EmailService emailService,
+        ConnectionManager connectionManager,
+        UserAuthDao userAuthDao
+    ) {
         this.host = host;
+        this.secureTokenGenerator = secureTokenGenerator;
         this.emailService = emailService;
         this.connectionManager = connectionManager;
         this.userAuthDao = userAuthDao;
@@ -87,7 +92,7 @@ public class AuthenticationManager {
         if (userAuth == null || ip == null) {
             throw new NullPointerException();
         }
-        String sid = userAuth.getId() + "_" + generateSessionId();
+        String sid = userAuth.getId() + "_" + secureTokenGenerator.generateSessionId();
         return userAuthDao.newSession(
             sid,
             ip,
@@ -96,7 +101,7 @@ public class AuthenticationManager {
         );
     }
 
-    public UserAuthDto getOrCreateUserAuth(SocialAuthProfile profile) {
+    public UserAuthDto getOrCreateUserAuth(SocialProfile profile) {
         return userAuthDao.getOrCreateUserAuth(profile);
     }
 
@@ -158,27 +163,9 @@ public class AuthenticationManager {
         }
     }
 
-    private String generateVerificationCode() {
-        byte[] bytes = new byte[64];
-        secureRandom.nextBytes(bytes);
-        return BaseEncoding.base32Hex().encode(bytes);
-    }
-
-    private String generateSessionId() {
-        byte[] bytes = new byte[32];
-        secureRandom.nextBytes(bytes);
-        return BaseEncoding.base16().encode(bytes);
-    }
-
-    public String generateRandomToken(int length) {
-        byte[] bytes = new byte[length];
-        secureRandom.nextBytes(bytes);
-        return BaseEncoding.base64Url().encode(bytes);
-    }
-
     public synchronized boolean registerWithPassword(final String name, final String password, final String email) {
         final String color = Colors.generateColor(name);
-        String verificationCode = generateVerificationCode();
+        String verificationCode = secureTokenGenerator.generateVerificationCode();
         Long userId = userAuthDao.registerWithPassword(name, password, email, color, verificationCode);
         if (userId != null) {
             sendVerificationEmail(email, verificationCode, userId);
@@ -209,7 +196,7 @@ public class AuthenticationManager {
     }
 
     private void doChangeEmail(UserDto user, String email) {
-        String verificationCode = generateVerificationCode();
+        String verificationCode = secureTokenGenerator.generateVerificationCode();
         if (userAuthDao.setEmail(user.getId(), email, verificationCode)) {
             user.setEmail(email);
             user.setEmailVerified(false);
@@ -265,7 +252,7 @@ public class AuthenticationManager {
 
     public String createTokenForUser(UserDto user) {
         byte[] bytes = new byte[128];
-        secureRandom.nextBytes(bytes);
+        secureTokenGenerator.nextBytes(bytes);
         String token = user.getId() + "_" + BaseEncoding.base64().encode(bytes);
         if (userAuthDao.setToken(user.getId(), token)) {
             return token;

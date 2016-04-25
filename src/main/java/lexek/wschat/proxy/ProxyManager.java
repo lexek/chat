@@ -13,6 +13,7 @@ import lexek.wschat.chat.model.Message;
 import lexek.wschat.chat.model.MessageType;
 import lexek.wschat.db.dao.ProxyDao;
 import lexek.wschat.db.jooq.tables.pojos.ChatProxy;
+import lexek.wschat.db.model.ProxyAuth;
 import lexek.wschat.db.model.UserDto;
 import lexek.wschat.services.AbstractService;
 import lexek.wschat.services.JournalService;
@@ -43,21 +44,29 @@ public class ProxyManager extends AbstractService implements MessageConsumerServ
         providers.put(proxyProvider.getName(), proxyProvider);
     }
 
-    public Proxy newProxy(UserDto admin, Room room, String providerName, String remoteRoom, String name, String token, boolean outbound) {
+    public Proxy newProxy(
+        UserDto admin,
+        Room room,
+        String providerName,
+        String remoteRoom,
+        ProxyAuth proxyAuth,
+        boolean outbound
+    ) {
         ProxyProvider provider = providers.get(providerName);
         if (provider == null) {
             throw new InvalidInputException("name", "Unknown proxy name");
         }
-        if (token != null && name != null && provider.isSupportsAuthentication() && !provider.validateCredentials(name, token)) {
+        if (proxyAuth != null && !provider.supportsAuthService(proxyAuth.getService())) {
             throw new InvalidInputException("token", "Invalid credentials.");
         }
         if (!provider.validateRemoteRoom(remoteRoom)) {
             throw new InvalidInputException("remoteRoom", "Invalid remote room");
         }
-        ChatProxy chatProxy = new ChatProxy(null, room.getId(), providerName, name, token, remoteRoom, outbound);
+        Long proxyAuthId = proxyAuth != null ? proxyAuth.getId() : null;
+        ChatProxy chatProxy = new ChatProxy(null, room.getId(), providerName, remoteRoom, proxyAuthId, outbound);
         proxyDao.store(chatProxy);
         journalService.newProxy(admin, room, providerName, remoteRoom);
-        Proxy proxy = provider.newProxy(chatProxy.getId(), room, remoteRoom, name, token, outbound);
+        Proxy proxy = provider.newProxy(chatProxy.getId(), room, remoteRoom, proxyAuthId, outbound);
         proxies.put(room.getId(), proxy);
         proxy.start();
         return proxy;
@@ -116,7 +125,7 @@ public class ProxyManager extends AbstractService implements MessageConsumerServ
     public void moderate(Room room, String providerName, String remoteRoom, ModerationOperation operation, String name) {
         Proxy proxy = getProxy(room, providerName, remoteRoom);
         if (proxy != null && proxy.state() == ProxyState.RUNNING) {
-            if (proxy.provider().supports(operation)) {
+            if (proxy.provider().supportsModerationOperation(operation)) {
                 proxy.moderate(operation, name);
             }
         }
@@ -139,8 +148,7 @@ public class ProxyManager extends AbstractService implements MessageConsumerServ
                 chatProxy.getId(),
                 room,
                 chatProxy.getRemoteRoom(),
-                chatProxy.getAuthName(),
-                chatProxy.getAuthKey(),
+                chatProxy.getAuthId(),
                 chatProxy.getEnableOutbound()
             );
             proxies.put(room.getId(), proxy);

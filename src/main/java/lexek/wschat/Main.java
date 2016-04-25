@@ -14,6 +14,8 @@ import com.codahale.metrics.jvm.GarbageCollectorMetricSet;
 import com.codahale.metrics.jvm.MemoryUsageGaugeSet;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
@@ -42,21 +44,19 @@ import lexek.wschat.frontend.ws.WebSocketChatHandler;
 import lexek.wschat.frontend.ws.WebSocketChatServer;
 import lexek.wschat.frontend.ws.WebSocketConnectionGroup;
 import lexek.wschat.frontend.ws.WebSocketProtocol;
+import lexek.wschat.proxy.ProxyAuthService;
 import lexek.wschat.proxy.ProxyManager;
 import lexek.wschat.proxy.SendProxyListOnEventListener;
-import lexek.wschat.proxy.cybergame.CybergameTvProxyProvider;
 import lexek.wschat.proxy.goodgame.GoodGameProxyProvider;
 import lexek.wschat.proxy.sc2tv.Sc2tvProxyProvider;
 import lexek.wschat.proxy.twitch.TwitchTvProxyProvider;
 import lexek.wschat.proxy.twitter.TwitterApiClient;
 import lexek.wschat.proxy.twitter.TwitterProxyProvider;
-import lexek.wschat.security.AuthenticationManager;
-import lexek.wschat.security.AuthenticationService;
-import lexek.wschat.security.CaptchaService;
-import lexek.wschat.security.ReCaptcha;
+import lexek.wschat.security.*;
 import lexek.wschat.security.jersey.Auth;
 import lexek.wschat.security.jersey.SecurityFeature;
 import lexek.wschat.security.jersey.UserParamValueFactoryProvider;
+import lexek.wschat.security.social.GoogleSocialAuthService;
 import lexek.wschat.security.social.TwitchTvSocialAuthService;
 import lexek.wschat.services.*;
 import lexek.wschat.services.poll.PollService;
@@ -102,6 +102,8 @@ public class Main {
         } catch (Exception ex) {
             ex.printStackTrace();
         }
+
+        SecureTokenGenerator secureTokenGenerator = new SecureTokenGenerator();
 
         int httpClientTimeout = 3000;
         PoolingHttpClientConnectionManager httpConnectionManager = new PoolingHttpClientConnectionManager();
@@ -180,7 +182,7 @@ public class Main {
         IgnoreDao ignoreDao = new IgnoreDao(dataSource);
 
         ConnectionManager connectionManager = new ConnectionManager(metricRegistry);
-        AuthenticationManager authenticationManager = new AuthenticationManager(ircHost, emailService, connectionManager, userAuthDao);
+        AuthenticationManager authenticationManager = new AuthenticationManager(ircHost, secureTokenGenerator, emailService, connectionManager, userAuthDao);
         UserService userService = new UserService(connectionManager, authenticationManager, userDao, journalService);
         EventDispatcher eventDispatcher = new EventDispatcher();
 
@@ -210,12 +212,44 @@ public class Main {
         );
         SteamGameDao steamGameDao = new SteamGameDao(dataSource);
         SteamGameResolver steamGameResolver = new SteamGameResolver(steamGameDao, httpClient);
+
         TwitchTvSocialAuthService twitchAuthService = new TwitchTvSocialAuthService(settings.getHttp().getTwitchClientId(),
             settings.getHttp().getTwitchSecret(),
-            settings.getHttp().getTwitchUrl(), httpClient);
+            settings.getHttp().getTwitchUrl(), httpClient, secureTokenGenerator, "twitch.tv");
         IgnoreService ignoreService = new IgnoreService(ignoreDao);
 
         Set<String> bannedIps = new CopyOnWriteArraySet<>();
+
+        ProxyAuthDao proxyAuthDao = new ProxyAuthDao(dataSource);
+        ProxyAuthCredentials twitch = settings.getProxy().getTwitch();
+        ProxyAuthCredentials google = settings.getProxy().getGoogle();
+        ProxyAuthService proxyAuthService = new ProxyAuthService(
+            ImmutableMap.of(
+                "twitch", new TwitchTvSocialAuthService(
+                    twitch.getClientId(),
+                    twitch.getClientSecret(),
+                    twitch.getRedirectUrl(),
+                    httpClient,
+                    secureTokenGenerator,
+                    "twitch"
+                ),
+                "google", new GoogleSocialAuthService(
+                    google.getClientId(),
+                    google.getClientSecret(),
+                    google.getRedirectUrl(),
+                    ImmutableSet.of(
+                        "https://www.googleapis.com/auth/youtube.readonly",
+                        "profile",
+                        "email"
+                    ),
+                    "google",
+                    httpClient,
+                    secureTokenGenerator
+                )
+            ),
+            proxyAuthDao
+        );
+        proxyAuthService.loadTokens();
 
         EventLoopGroup proxyEventLoopGroup;
         if (Epoll.isAvailable()) {
@@ -225,9 +259,8 @@ public class Main {
         }
         ProxyManager proxyManager = new ProxyManager(proxyDao, roomManager, journalService);
         proxyManager.registerProvider(new GoodGameProxyProvider(notificationService, proxyEventLoopGroup, messageBroadcaster, messageId));
-        proxyManager.registerProvider(new TwitchTvProxyProvider(messageId, messageBroadcaster, authenticationManager, proxyEventLoopGroup, twitchAuthService, notificationService));
+        proxyManager.registerProvider(new TwitchTvProxyProvider(messageId, messageBroadcaster, authenticationManager, proxyEventLoopGroup, proxyAuthService, notificationService));
         proxyManager.registerProvider(new Sc2tvProxyProvider(notificationService, proxyEventLoopGroup, messageBroadcaster, messageId));
-        proxyManager.registerProvider(new CybergameTvProxyProvider(notificationService, messageBroadcaster, proxyEventLoopGroup, messageId));
         if (settings.getTwitter() != null) {
             TwitterApiClient twitterApiClient = new TwitterApiClient(httpClient, settings.getTwitter());
             twitterApiClient.loadNames(
@@ -355,9 +388,10 @@ public class Main {
                     new EmailResource(authenticationManager),
                     new ProfileResource(userService),
                     new SteamGameResource(steamGameResolver),
-                    new ProxyResource(roomService, proxyManager),
+                    new ProxyResource(roomService, proxyManager, proxyAuthService),
                     new PasswordResource(authenticationManager),
-                    new CheckUsernameResource(userService)
+                    new CheckUsernameResource(userService),
+                    new ProxyAuthResource(proxyAuthService)
                 );
             }
         };

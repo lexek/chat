@@ -7,7 +7,9 @@ import lexek.httpserver.SimpleHttpHandler;
 import lexek.wschat.db.model.SessionDto;
 import lexek.wschat.db.model.UserAuthDto;
 import lexek.wschat.security.AuthenticationManager;
-import lexek.wschat.security.social.SocialAuthProfile;
+import lexek.wschat.security.social.SocialProfile;
+import lexek.wschat.security.social.SocialRedirect;
+import lexek.wschat.security.social.SocialToken;
 import lexek.wschat.security.social.TwitchTvSocialAuthService;
 import org.apache.http.client.ClientProtocolException;
 import org.slf4j.Logger;
@@ -33,9 +35,9 @@ public class TwitchAuthHandler extends SimpleHttpHandler {
                 response.redirect("/setup_profile");
             }
         } else if (request.queryParamKeys().isEmpty()) {
-            String token = authenticationManager.generateRandomToken(32);
-            response.cookie(new DefaultCookie("twitch_state", token));
-            response.redirect(authService.getRedirectUrl() + "&state=" + token);
+            SocialRedirect redirect = authService.getRedirect();
+            response.cookie(new DefaultCookie("twitch_state", redirect.getState()));
+            response.redirect(redirect.getUrl());
         } else {
             if (request.queryParam("error") != null) {
                 logger.info("{}", request.queryParam("error"), request.queryParam("error_description"));
@@ -59,8 +61,8 @@ public class TwitchAuthHandler extends SimpleHttpHandler {
                 }
                 String code = request.queryParam("code");
                 if (code != null) {
-                    String token = authService.authenticate(code);
-                    SocialAuthProfile profile = authService.getProfile(token);
+                    SocialToken token = authService.authenticate(code);
+                    SocialProfile profile = authService.getProfile(token);
                     if (profile.getEmail() != null) {
                         //do authentication/registration
                         UserAuthDto userAccount = authenticationManager.getOrCreateUserAuth(profile);

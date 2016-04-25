@@ -11,19 +11,22 @@ public class Configuration {
     private final JdbcDataBaseConfiguration db;
     private final EmailConfiguration email;
     private final TwitterCredentials twitter;
+    private final ProxyAuthConfig proxy;
 
     Configuration(
         @JsonProperty("http") HttpConfiguration http,
         @JsonProperty("core") CoreConfiguration core,
         @JsonProperty("db") JdbcDataBaseConfiguration db,
         @JsonProperty("email") EmailConfiguration email,
-        @JsonProperty("twitter") TwitterCredentials twitter
+        @JsonProperty("twitter") TwitterCredentials twitter,
+        @JsonProperty("proxy") ProxyAuthConfig proxy
     ) {
         this.http = http;
         this.core = core;
         this.db = db;
         this.email = email;
         this.twitter = twitter;
+        this.proxy = proxy;
     }
 
     public HttpConfiguration getHttp() {
@@ -44,5 +47,9 @@ public class Configuration {
 
     public TwitterCredentials getTwitter() {
         return twitter;
+    }
+
+    public ProxyAuthConfig getProxy() {
+        return proxy;
     }
 }

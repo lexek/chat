@@ -1,0 +1,64 @@
+<div class="col-sm-8">
+    <div class="panel panel-primary">
+        <div class="panel-heading">
+            <h4 class="panel-title">
+                emoticons
+            </h4>
+        </div>
+        <table class="table table-hover">
+            <thead>
+            <tr>
+                <th class="col-xs-3">Service</th>
+                <th class="col-xs-3">
+                    Ext ID
+                </th>
+                <th class="col-xs-3">
+                    Ext Name
+                </th>
+                <th class="col-xs-3">
+                    Owner
+                </th>
+            </tr>
+            </thead>
+            <tr ng-repeat="credential in credentials">
+                <td>
+                    {{credential.service}}
+                </td>
+                <td>
+                    {{credential.externalId}}
+                </td>
+                <td>
+                    {{credential.externalName}}
+                </td>
+                <td>
+                    {{credential.owner.name}}
+                </td>
+                <td style="text-align: center;">
+                    <div class="btn btn-link btn-link-danger btn-xs" ng-click="deleteAuth(credential.id)">
+                        <span class="fa fa-trash fa-fw"></span>
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>
+
+<div class="col-sm-4">
+    <div class="panel panel-info">
+        <div class="panel-heading">
+            <h4 class="panel-title">
+                <i class="fa fa-plus"></i> add auth
+            </h4>
+        </div>
+        <div class="panel-body">
+            <!--TODO: better ui-->
+            <a href="/rest/proxy/auth/oauth/twitch" target="_blank">
+                twitch
+            </a>
+            <br/>
+            <a href="/rest/proxy/auth/oauth/google" target="_blank">
+                google
+            </a>
+        </div>
+    </div>
+</div>
