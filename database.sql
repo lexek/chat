@@ -253,7 +253,7 @@ CREATE TABLE `steam_game` (
   PRIMARY KEY (`id`)
 );
 
-CREATE TABLE `proxy` (
+CREATE TABLE `chat_proxy` (
   `id`              BIGINT(20)  NOT NULL AUTO_INCREMENT,
   `room_id`         BIGINT(20)  NOT NULL,
   `provider_name`   VARCHAR(64) NOT NULL
