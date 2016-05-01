@@ -41,10 +41,7 @@ public class ProxyAuthService {
             if (expires != null) {
                 if (expires < System.currentTimeMillis()) {
                     try {
-                        SocialToken refreshedToken = socialAuthService.refresh(cachedToken);
-                        if (!refreshedToken.getRefreshToken().equals(cachedToken.getRefreshToken())) {
-                            proxyAuthDao.updateToken(authId, refreshedToken.getRefreshToken());
-                        }
+                        SocialToken refreshedToken = refresh(socialAuthService, cachedToken, authId);
                         tokenCache.put(authId, new SocialProfile(
                             cachedProfile.getId(),
                             cachedProfile.getService(),
@@ -114,16 +111,16 @@ public class ProxyAuthService {
 
     public synchronized void loadTokens() {
         for (ProxyAuth proxyAuth : proxyAuthDao.getAll()) {
-            String service = proxyAuth.getService();
-            SocialAuthService authService = getAuthService(service);
-            if (authService == null) {
-                logger.error("no service with name {}", service);
+            String serviceName = proxyAuth.getService();
+            SocialAuthService service = getAuthService(serviceName);
+            if (service == null) {
+                logger.error("no service with name {}", serviceName);
                 return;
             }
             Long id = proxyAuth.getId();
-            if (authService.needsRefreshing()) {
+            if (service.needsRefreshing()) {
                 SocialToken tempToken = new SocialToken(
-                    service,
+                    serviceName,
                     null,
                     0L,
                     proxyAuth.getKey()
@@ -131,16 +128,16 @@ public class ProxyAuthService {
                 try {
                     tokenCache.put(id, new SocialProfile(
                         proxyAuth.getExternalId(),
-                        service,
+                        serviceName,
                         proxyAuth.getExternalName(),
                         null,
-                        authService.refresh(tempToken)
+                        refresh(service, tempToken, id)
                     ));
                 } catch (IOException e) {
                     logger.error("couldn't refresh token {}", tempToken);
                     tokenCache.put(id, new SocialProfile(
                         proxyAuth.getExternalId(),
-                        service,
+                        serviceName,
                         proxyAuth.getExternalName(),
                         null,
                         tempToken
@@ -151,11 +148,11 @@ public class ProxyAuthService {
                     id,
                     new SocialProfile(
                         proxyAuth.getExternalId(),
-                        service,
+                        serviceName,
                         proxyAuth.getExternalName(),
                         null,
                         new SocialToken(
-                            service,
+                            serviceName,
                             proxyAuth.getKey(),
                             null,
                             null
@@ -164,5 +161,13 @@ public class ProxyAuthService {
                 );
             }
         }
+    }
+
+    private SocialToken refresh(SocialAuthService service, SocialToken token, long authId) throws IOException {
+        SocialToken refreshedToken = service.refresh(token);
+        if (!refreshedToken.getRefreshToken().equals(token.getRefreshToken())) {
+            proxyAuthDao.updateToken(authId, refreshedToken.getRefreshToken());
+        }
+        return refreshedToken;
     }
 }
