@@ -253,6 +253,24 @@ CREATE TABLE `steam_game` (
   PRIMARY KEY (`id`)
 );
 
+CREATE TABLE `proxy_auth` (
+  `id`            BIGINT(20)   NOT NULL AUTO_INCREMENT,
+  `service`       VARCHAR(255) NOT NULL
+  COLLATE 'utf8_unicode_ci',
+  `external_id`   VARCHAR(255) NOT NULL
+  COLLATE 'utf8_unicode_ci',
+  `external_name` VARCHAR(255) NOT NULL
+  COLLATE 'utf8_unicode_ci',
+  `owner_id`      BIGINT(20)   NOT NULL,
+  `key`         TEXT         NOT NULL
+  COLLATE 'utf8_unicode_ci',
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `service_external_id` (`service`, `external_id`),
+  INDEX `PROXY_AUTH_OWNER` (`owner_id`),
+  CONSTRAINT `PROXY_AUTH_OWNER` FOREIGN KEY (`owner_id`) REFERENCES `user` (`id`)
+    ON UPDATE CASCADE
+);
+
 CREATE TABLE `chat_proxy` (
   `id`              BIGINT(20)  NOT NULL AUTO_INCREMENT,
   `room_id`         BIGINT(20)  NOT NULL,
@@ -271,24 +289,6 @@ CREATE TABLE `chat_proxy` (
   CONSTRAINT `PROXY_ROOM` FOREIGN KEY (`room_id`) REFERENCES `room` (`id`)
     ON UPDATE CASCADE
     ON DELETE CASCADE
-);
-
-CREATE TABLE `proxy_auth` (
-  `id`            BIGINT(20)   NOT NULL AUTO_INCREMENT,
-  `service`       VARCHAR(255) NOT NULL
-  COLLATE 'utf8_unicode_ci',
-  `external_id`   VARCHAR(255) NOT NULL
-  COLLATE 'utf8_unicode_ci',
-  `external_name` VARCHAR(255) NOT NULL
-  COLLATE 'utf8_unicode_ci',
-  `owner_id`      BIGINT(20)   NOT NULL,
-  `key`         TEXT         NOT NULL
-  COLLATE 'utf8_unicode_ci',
-  PRIMARY KEY (`id`),
-  UNIQUE INDEX `service_external_id` (`service`, `external_id`),
-  INDEX `PROXY_AUTH_OWNER` (`owner_id`),
-  CONSTRAINT `PROXY_AUTH_OWNER` FOREIGN KEY (`owner_id`) REFERENCES `user` (`id`)
-    ON UPDATE CASCADE
 );
 
 CREATE TABLE `ignore_list` (
