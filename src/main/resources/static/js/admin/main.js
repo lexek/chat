@@ -2384,6 +2384,7 @@ var ComposeAnnouncementController = function($scope, $http, $modalInstance, room
 
 var ProxyAuthController = function($scope, $http) {
     $scope.credentials = null;
+    $scope.services = null;
 
     var loadPage = function() {
         $http({
@@ -2392,6 +2393,23 @@ var ProxyAuthController = function($scope, $http) {
         }).success(function (credentials) {
             $scope.credentials = credentials;
         });
+        $http({
+            method: "GET",
+            url: "/rest/proxy/auth/services"
+        }).success(function (services) {
+            $scope.services = services;
+        });
+    };
+
+    $scope.getIconClass = function(serviceName) {
+        switch (serviceName) {
+            case "twitch":
+                return "fa-twitch";
+            case "google":
+                return "fa-google";
+            default:
+                return "fa-key";
+        }
     };
 
     $scope.deleteAuth = function(id) {

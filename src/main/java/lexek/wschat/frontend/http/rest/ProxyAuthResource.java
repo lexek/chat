@@ -19,6 +19,8 @@ import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Path("/proxy/auth")
 @RequiredRole(GlobalRole.ADMIN)
@@ -74,5 +76,19 @@ public class ProxyAuthResource {
     public Response delete(@PathParam("authId") long authId, @Auth UserDto owner) {
         proxyAuthService.deleteAuth(authId, owner);
         return Response.noContent().build();
+    }
+
+    @Path("/services")
+    @Produces(MediaType.APPLICATION_JSON)
+    @GET
+    public List<Map<String, String>> getServices() {
+        return proxyAuthService
+            .getServices()
+            .stream()
+            .map(service -> ImmutableMap.of(
+                "name", service.getName(),
+                "url", service.getUrl()
+            ))
+            .collect(Collectors.toList());
     }
 }

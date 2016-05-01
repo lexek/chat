@@ -119,4 +119,14 @@ public class GoogleSocialAuthService implements SocialAuthService {
     public boolean needsRefreshing() {
         return true;
     }
+
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public String getUrl() {
+        return url;
+    }
 }

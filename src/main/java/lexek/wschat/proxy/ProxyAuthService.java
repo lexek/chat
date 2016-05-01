@@ -11,10 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class ProxyAuthService {
     private final Logger logger = LoggerFactory.getLogger(ProxyAuthService.class);
@@ -29,6 +26,10 @@ public class ProxyAuthService {
 
     public SocialAuthService getAuthService(String name) {
         return socialAuthServices.get(name);
+    }
+
+    public Collection<SocialAuthService> getServices() {
+        return socialAuthServices.values();
     }
 
     public synchronized String getToken(Long authId) {

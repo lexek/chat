@@ -12,4 +12,8 @@ public interface SocialAuthService {
     SocialToken refresh(SocialToken token) throws IOException;
 
     boolean needsRefreshing();
+
+    String getName();
+
+    String getUrl();
 }
