@@ -56,6 +56,7 @@ import lexek.wschat.security.*;
 import lexek.wschat.security.jersey.Auth;
 import lexek.wschat.security.jersey.SecurityFeature;
 import lexek.wschat.security.jersey.UserParamValueFactoryProvider;
+import lexek.wschat.security.social.GoodGameSocialAuthService;
 import lexek.wschat.security.social.GoogleSocialAuthService;
 import lexek.wschat.security.social.TwitchTvSocialAuthService;
 import lexek.wschat.services.*;
@@ -221,8 +222,9 @@ public class Main {
         Set<String> bannedIps = new CopyOnWriteArraySet<>();
 
         ProxyAuthDao proxyAuthDao = new ProxyAuthDao(dataSource);
-        ProxyAuthCredentials twitch = settings.getProxy().getTwitch();
-        ProxyAuthCredentials google = settings.getProxy().getGoogle();
+        ProxyAuthCredentials twitch = settings.getProxy().get("twitch");
+        ProxyAuthCredentials google = settings.getProxy().get("google");
+        ProxyAuthCredentials goodGame = settings.getProxy().get("goodgame");
         ProxyAuthService proxyAuthService = new ProxyAuthService(
             ImmutableMap.of(
                 "twitch", new TwitchTvSocialAuthService(
@@ -243,6 +245,14 @@ public class Main {
                         "email"
                     ),
                     "google",
+                    httpClient,
+                    secureTokenGenerator
+                ),
+                "goodgame", new GoodGameSocialAuthService(
+                    goodGame.getClientId(),
+                    goodGame.getClientSecret(),
+                    goodGame.getRedirectUrl(),
+                    "goodgame",
                     httpClient,
                     secureTokenGenerator
                 )

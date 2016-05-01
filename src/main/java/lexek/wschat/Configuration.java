@@ -5,13 +5,15 @@ import lexek.wschat.db.JdbcDataBaseConfiguration;
 import lexek.wschat.frontend.http.HttpConfiguration;
 import lexek.wschat.proxy.twitter.TwitterCredentials;
 
+import java.util.Map;
+
 public class Configuration {
     private final HttpConfiguration http;
     private final CoreConfiguration core;
     private final JdbcDataBaseConfiguration db;
     private final EmailConfiguration email;
     private final TwitterCredentials twitter;
-    private final ProxyAuthConfig proxy;
+    private final Map<String, ProxyAuthCredentials> proxy;
 
     Configuration(
         @JsonProperty("http") HttpConfiguration http,
@@ -19,7 +21,7 @@ public class Configuration {
         @JsonProperty("db") JdbcDataBaseConfiguration db,
         @JsonProperty("email") EmailConfiguration email,
         @JsonProperty("twitter") TwitterCredentials twitter,
-        @JsonProperty("proxy") ProxyAuthConfig proxy
+        @JsonProperty("proxy") Map<String, ProxyAuthCredentials> proxy
     ) {
         this.http = http;
         this.core = core;
@@ -49,7 +51,7 @@ public class Configuration {
         return twitter;
     }
 
-    public ProxyAuthConfig getProxy() {
+    public Map<String, ProxyAuthCredentials> getProxy() {
         return proxy;
     }
 }

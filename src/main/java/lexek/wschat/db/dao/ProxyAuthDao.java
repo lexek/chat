@@ -273,4 +273,19 @@ public class ProxyAuthDao {
             throw new InternalErrorException(e);
         }
     }
+
+    public void updateToken(Long id, String newToken) {
+        try (Connection connection = dataSource.getConnection()) {
+            DSL
+                .using(connection)
+                .update(PROXY_AUTH)
+                .set(PROXY_AUTH.KEY, newToken)
+                .where(
+                    PROXY_AUTH.ID.equal(id)
+                )
+                .execute();
+        } catch (DataAccessException | SQLException e) {
+            throw new InternalErrorException(e);
+        }
+    }
 }
