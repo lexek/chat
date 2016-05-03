@@ -52,6 +52,7 @@ import lexek.wschat.proxy.sc2tv.Sc2tvProxyProvider;
 import lexek.wschat.proxy.twitch.TwitchTvProxyProvider;
 import lexek.wschat.proxy.twitter.TwitterApiClient;
 import lexek.wschat.proxy.twitter.TwitterProxyProvider;
+import lexek.wschat.proxy.youtube.YouTubeProxyProvider;
 import lexek.wschat.security.*;
 import lexek.wschat.security.jersey.Auth;
 import lexek.wschat.security.jersey.SecurityFeature;
@@ -271,6 +272,7 @@ public class Main {
         proxyManager.registerProvider(new GoodGameProxyProvider(notificationService, proxyAuthService, proxyEventLoopGroup, messageBroadcaster, messageId, httpClient));
         proxyManager.registerProvider(new TwitchTvProxyProvider(messageId, messageBroadcaster, authenticationManager, proxyEventLoopGroup, proxyAuthService, notificationService));
         proxyManager.registerProvider(new Sc2tvProxyProvider(notificationService, proxyEventLoopGroup, messageBroadcaster, messageId));
+        proxyManager.registerProvider(new YouTubeProxyProvider(messageId, messageBroadcaster, notificationService, scheduledExecutorService, proxyAuthService, httpClient));
         if (settings.getTwitter() != null) {
             TwitterApiClient twitterApiClient = new TwitterApiClient(httpClient, settings.getTwitter());
             twitterApiClient.loadNames(
