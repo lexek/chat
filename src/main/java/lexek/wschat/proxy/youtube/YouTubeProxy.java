@@ -108,6 +108,7 @@ public class YouTubeProxy extends AbstractProxy {
                 }
                 if (liveChatId != null) {
                     List<YouTubeMessage> messages = getMessages();
+                    logger.debug("received {} messages", messages.size());
                     logger.trace("received messages", messages);
                     messages
                         .stream()
@@ -179,6 +180,7 @@ public class YouTubeProxy extends AbstractProxy {
         }
         JsonNode offlineAt = root.get("offlineAt");
         if (offlineAt != null && !offlineAt.isNull()) {
+            logger.debug("broadcast went offline");
             lastPageToken = null;
             liveChatId = null;
         } else {

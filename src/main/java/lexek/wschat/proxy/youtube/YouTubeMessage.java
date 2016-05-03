@@ -22,4 +22,13 @@ public class YouTubeMessage {
     public long getPublishedAt() {
         return publishedAt;
     }
+
+    @Override
+    public String toString() {
+        return "YouTubeMessage{" +
+            "name='" + name + '\'' +
+            ", message='" + message + '\'' +
+            ", publishedAt=" + publishedAt +
+            '}';
+    }
 }
