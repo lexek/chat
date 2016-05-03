@@ -44,22 +44,30 @@ public class GoodGameChatProxy extends AbstractProxy {
     private volatile Channel channel;
 
     public GoodGameChatProxy(
-        NotificationService notificationService, MessageBroadcaster messageBroadcaster, EventLoopGroup eventLoopGroup,
-        AtomicLong messageId, ProxyProvider provider, long id, Room room, String remoteRoom, String name, String token
+        NotificationService notificationService,
+        MessageBroadcaster messageBroadcaster,
+        EventLoopGroup eventLoopGroup,
+        AtomicLong messageId,
+        ProxyProvider provider,
+        long id,
+        Room room,
+        String remoteRoom,
+        String userId,
+        CredentialsProvider credentialsProvider
     ) {
         super(eventLoopGroup, notificationService, provider, id, remoteRoom);
+
         this.messageBroadcaster = messageBroadcaster;
         this.messageId = messageId;
         this.room = room;
-        this.userId = name;
-        this.bootstrap = createBootstrap(eventLoopGroup, remoteRoom, name, token, new Handler());
+        this.userId = userId;
+        this.bootstrap = createBootstrap(eventLoopGroup, remoteRoom, credentialsProvider, new Handler());
     }
 
     private static Bootstrap createBootstrap(
         EventLoopGroup eventLoopGroup,
         String channelName,
-        String username,
-        String password,
+        CredentialsProvider tokenProvider,
         Handler handler
     ) {
         URI uri = URI.create("ws://chat.goodgame.ru:8081/chat/websocket");
@@ -73,7 +81,7 @@ public class GoodGameChatProxy extends AbstractProxy {
         bootstrap.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
         JsonCodec jsonCodec = new JsonCodec();
         GoodGameCodec goodGameCodec = new GoodGameCodec();
-        GoodGameProtocolHandler goodGameProtocolHandler = new GoodGameProtocolHandler(channelName, username, password);
+        GoodGameProtocolHandler goodGameProtocolHandler = new GoodGameProtocolHandler(channelName, tokenProvider);
         bootstrap.handler(new ChannelInitializer<SocketChannel>() {
             @Override
             public void initChannel(final SocketChannel c) throws Exception {

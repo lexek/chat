@@ -64,6 +64,10 @@ public class ProxyAuthService {
         return null;
     }
 
+    public SocialProfile getProfile(long authId) {
+        return tokenCache.get(authId);
+    }
+
     public ProxyAuth getAuth(Long authId) {
         return proxyAuthDao.get(authId);
     }
@@ -134,7 +138,7 @@ public class ProxyAuthService {
                         refresh(service, tempToken, id)
                     ));
                 } catch (IOException e) {
-                    logger.error("couldn't refresh token {}", tempToken);
+                    logger.error("couldn't refresh token {}/{}", service, proxyAuth.getExternalName());
                     tokenCache.put(id, new SocialProfile(
                         proxyAuth.getExternalId(),
                         serviceName,

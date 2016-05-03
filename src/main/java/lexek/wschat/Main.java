@@ -268,7 +268,7 @@ public class Main {
             proxyEventLoopGroup = new NioEventLoopGroup(1);
         }
         ProxyManager proxyManager = new ProxyManager(proxyDao, roomManager, journalService);
-        proxyManager.registerProvider(new GoodGameProxyProvider(notificationService, proxyEventLoopGroup, messageBroadcaster, messageId));
+        proxyManager.registerProvider(new GoodGameProxyProvider(notificationService, proxyAuthService, proxyEventLoopGroup, messageBroadcaster, messageId, httpClient));
         proxyManager.registerProvider(new TwitchTvProxyProvider(messageId, messageBroadcaster, authenticationManager, proxyEventLoopGroup, proxyAuthService, notificationService));
         proxyManager.registerProvider(new Sc2tvProxyProvider(notificationService, proxyEventLoopGroup, messageBroadcaster, messageId));
         if (settings.getTwitter() != null) {
