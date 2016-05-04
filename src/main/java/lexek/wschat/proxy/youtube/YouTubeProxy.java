@@ -172,11 +172,15 @@ public class YouTubeProxy extends AbstractProxy {
         for (JsonNode item : root.get("items")) {
             JsonNode snippet = item.get("snippet");
             JsonNode authorDetails = item.get("authorDetails");
-            messages.add(new YouTubeMessage(
-                authorDetails.get("displayName").asText(),
-                snippet.get("textMessageDetails").get("messageText").asText(),
-                Instant.parse(snippet.get("publishedAt").asText()).toEpochMilli()
-            ));
+            String type = snippet.get("type").asText();
+            //todo: handle bans
+            if (type.equals("textMessageEvent")) {
+                messages.add(new YouTubeMessage(
+                    authorDetails.get("displayName").asText(),
+                    snippet.get("textMessageDetails").get("messageText").asText(),
+                    Instant.parse(snippet.get("publishedAt").asText()).toEpochMilli()
+                ));
+            }
         }
         JsonNode offlineAt = root.get("offlineAt");
         if (offlineAt != null && !offlineAt.isNull()) {
