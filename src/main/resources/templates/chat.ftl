@@ -40,6 +40,8 @@
         DEFAULT_ROOM = "${room}";
 
         PROTOCOL_VERSION = ${protocolVersion};
+
+        DEBUG = ${debug?c}
     </script>
 
     <script src="https://www.google.com/recaptcha/api.js?onload=vcRecapthaApiLoaded&render=explicit" async defer></script>
