@@ -51,3 +51,10 @@ document.chatApplication = angular.module("chatApplication", [
     "chat.ui.profile",
     "chat.ui.tickets"
 ]);
+
+document.chatApplication.config(['$compileProvider', function ($compileProvider) {
+    console.log("debug: " + DEBUG)
+    if (!DEBUG) {
+        $compileProvider.debugInfoEnabled(false);
+    }
+}]);
