@@ -195,6 +195,10 @@ fieldset[disabled] .btn-link-danger.active {
     padding-bottom: 0;
 }
 
+.mainContent {
+    min-height: 200px;
+}
+
 .mainContent.ng-enter {
     -webkit-animation-name: fadeIn;
     -webkit-animation-duration: .50s;
