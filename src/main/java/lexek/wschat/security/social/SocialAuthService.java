@@ -5,6 +5,10 @@ import java.io.IOException;
 public interface SocialAuthService {
     SocialRedirect getRedirect();
 
+    default SocialToken authenticate(String token, String verifier) throws IOException {
+        throw new UnsupportedOperationException();
+    }
+
     SocialToken authenticate(String code) throws IOException;
 
     SocialProfile getProfile(SocialToken token) throws IOException;
@@ -16,4 +20,8 @@ public interface SocialAuthService {
     String getName();
 
     String getUrl();
+
+    default boolean isV1() {
+        return false;
+    }
 }

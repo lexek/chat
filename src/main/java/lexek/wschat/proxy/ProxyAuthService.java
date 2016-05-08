@@ -38,7 +38,7 @@ public class ProxyAuthService {
             SocialToken cachedToken = cachedProfile.getToken();
             SocialAuthService socialAuthService = getAuthService(cachedToken.getService());
             Long expires = cachedToken.getExpires();
-            if (expires != null) {
+            if (expires != null && socialAuthService.needsRefreshing()) {
                 if (expires < System.currentTimeMillis()) {
                     try {
                         SocialToken refreshedToken = refresh(socialAuthService, cachedToken, authId);

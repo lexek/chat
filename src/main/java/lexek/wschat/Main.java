@@ -60,6 +60,7 @@ import lexek.wschat.security.jersey.UserParamValueFactoryProvider;
 import lexek.wschat.security.social.GoodGameSocialAuthService;
 import lexek.wschat.security.social.GoogleSocialAuthService;
 import lexek.wschat.security.social.TwitchTvSocialAuthService;
+import lexek.wschat.security.social.TwitterSocialAuthService;
 import lexek.wschat.services.*;
 import lexek.wschat.services.poll.PollService;
 import org.apache.http.client.HttpClient;
@@ -226,6 +227,7 @@ public class Main {
         ProxyAuthCredentials twitch = settings.getProxy().get("twitch");
         ProxyAuthCredentials google = settings.getProxy().get("google");
         ProxyAuthCredentials goodGame = settings.getProxy().get("goodgame");
+        ProxyAuthCredentials twitter = settings.getProxy().get("twitter");
         ProxyAuthService proxyAuthService = new ProxyAuthService(
             ImmutableMap.of(
                 "twitch", new TwitchTvSocialAuthService(
@@ -256,6 +258,13 @@ public class Main {
                     "goodgame",
                     httpClient,
                     secureTokenGenerator
+                ),
+                "twitter", new TwitterSocialAuthService(
+                    twitter.getClientId(),
+                    twitter.getClientSecret(),
+                    twitter.getRedirectUrl(),
+                    "twitter",
+                    httpClient
                 )
             ),
             proxyAuthDao

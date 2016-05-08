@@ -37,6 +37,8 @@ public class ProxyAuthResource {
     public Response socialAuth(
         @PathParam("serviceName") @NotEmpty String serviceName,
         @QueryParam("code") String code,
+        @QueryParam("oauth_token") String oauthToken,
+        @QueryParam("oauth_verifier") String oauthVerifier,
         @QueryParam("error") String error,
         @QueryParam("state") String state,
         @CookieParam("social_state") String cookieState,
@@ -46,17 +48,29 @@ public class ProxyAuthResource {
         if (socialAuthService == null) {
             return Response.status(404).entity(ImmutableMap.of("error", "not found")).build();
         }
-        if (code != null) {
-            if (state != null && cookieState != null && !state.equals(cookieState)) {
-                return Response.status(400).entity(ImmutableMap.of("error", "state mismatch")).build();
+        SocialToken token = null;
+        if (socialAuthService.isV1()) {
+            if (oauthToken != null && oauthVerifier != null) {
+                if (!oauthToken.equals(cookieState)) {
+                    return Response.status(400).entity(ImmutableMap.of("error", "state mismatch")).build();
+                }
+                token = socialAuthService.authenticate(oauthToken, oauthVerifier);
             }
-            SocialToken token = socialAuthService.authenticate(code);
+        } else {
+            if (code != null) {
+                if (state != null && cookieState != null && !state.equals(cookieState)) {
+                    return Response.status(400).entity(ImmutableMap.of("error", "state mismatch")).build();
+                }
+                token = socialAuthService.authenticate(code);
+            }
+        }
+
+        if (token != null) {
             SocialProfile profile = socialAuthService.getProfile(token);
             proxyAuthService.registerToken(owner, profile);
             //todo
             return Response.ok(ImmutableMap.of("success", true)).build();
-        }
-        if (error != null) {
+        } else if (error != null) {
             return Response.status(500).entity(ImmutableMap.of("error", error)).build();
         }
         SocialRedirect socialRedirect = socialAuthService.getRedirect();

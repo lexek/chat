@@ -10,6 +10,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Collections;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
@@ -38,10 +39,32 @@ public class OAuthUtil {
         return oauthHeader(parameters);
     }
 
-    private static String genNonce() {
+    public static String generateRequestHeader(
+        String consumerKey,
+        String consumerSecret,
+        String callback,
+        String url,
+        HttpMethod method,
+        Map<String, String> query
+    ) throws UnsupportedEncodingException, NoSuchAlgorithmException, InvalidKeyException {
+        String timestamp = String.valueOf(System.currentTimeMillis() / 1000);
+        String nonce = genNonce();
+        TreeMap<String, String> parameters = new TreeMap<>();
+        parameters.put("oauth_callback", callback);
+        parameters.put("oauth_consumer_key", consumerKey);
+        parameters.put("oauth_nonce", nonce);
+        parameters.put("oauth_signature_method", "HMAC-SHA1");
+        parameters.put("oauth_timestamp", timestamp);
+        parameters.put("oauth_version", "1.0");
+        String signature = signature(parameters, query, method, url, consumerSecret, null);
+        parameters.put("oauth_signature", signature);
+        return oauthHeader(parameters);
+    }
+
+    public static String genNonce() {
         byte[] bytes = new byte[32];
         ThreadLocalRandom.current().nextBytes(bytes);
-        return BaseEncoding.base16().encode(bytes).replaceAll("[^a-zA-Z]+", "");
+        return BaseEncoding.base16().encode(bytes).replaceAll("[^a-zA-Z0-9]+", "");
     }
 
     private static String collectParameters(Map<String, String> parameters) {
@@ -64,7 +87,10 @@ public class OAuthUtil {
         parameters.putAll(oauthParameters);
         parameters.putAll(requestParameters);
         String base = method.toString() + '&' + encode(url) + '&' + encode(collectParameters(parameters));
-        String signingKey = consumerSecret + '&' + accessTokenSecret;
+        String signingKey = consumerSecret + '&';
+        if (accessTokenSecret != null) {
+            signingKey += accessTokenSecret;
+        }
         SecretKeySpec keySpec = new SecretKeySpec(
             signingKey.getBytes(),
             "HmacSHA1"
