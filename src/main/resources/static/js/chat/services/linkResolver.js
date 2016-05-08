@@ -4,7 +4,7 @@ module.service("linkResolver", ["$q", "$http", function($q, $http) {
     var STEAM_APP_REGEXP = /\/app\/([0-9]+).*/;
 
     var genLinkSimple = function(prefix, link, linkText) {
-        return "<a href=\"" + prefix + htmlEscape(link) + "\" target=\"_blank\" title=\"" + htmlEscape(link) + "\">" + linkText + "</a>";
+        return "<a href=\"" + prefix + htmlEscape(link) + "\" rel=\"noopener\" target=\"_blank\" title=\"" + htmlEscape(link) + "\">" + linkText + "</a>";
     }
 
     var genLink = function(prefix, link, linkText) {
