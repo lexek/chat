@@ -34,7 +34,7 @@
             <th style="width: 24px;"></th>
         </tr>
         </thead>
-        <tr ng-repeat="credential in credentials">
+        <tr ng-repeat="credential in credentials | orderBy:['service', 'name']">
             <td>
                 {{credential.service}}
             </td>
