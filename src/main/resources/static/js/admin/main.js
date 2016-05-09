@@ -2407,6 +2407,8 @@ var ProxyAuthController = function($scope, $http) {
                 return "fa-twitch";
             case "google":
                 return "fa-google";
+            case "twitter":
+                return "fa-twitter";
             default:
                 return "fa-key";
         }
