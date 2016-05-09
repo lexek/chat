@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 
 public class TwitterSocialAuthService implements SocialAuthService {
     //todo: change to cache with time expiration
+    private final boolean signIn;
     private final Map<String, String> secrets = new HashMap<>();
     private final String name;
     private final String consumerKey;
@@ -36,12 +37,14 @@ public class TwitterSocialAuthService implements SocialAuthService {
     private final HttpClient httpClient;
 
     public TwitterSocialAuthService(
+        boolean signIn,
         String consumerKey,
         String consumerSecret,
         String url,
         String name,
         HttpClient httpClient
     ) {
+        this.signIn = signIn;
         this.consumerKey = consumerKey;
         this.consumerSecret = consumerSecret;
         this.url = url;
@@ -75,8 +78,10 @@ public class TwitterSocialAuthService implements SocialAuthService {
             Map<String, List<NameValuePair>> map = parsedEntities
                 .stream()
                 .collect(Collectors.groupingBy(NameValuePair::getName));
-            //todo: for sign in https://api.twitter.com/oauth/authenticate
             String url = "https://api.twitter.com/oauth/authorize";
+            if (signIn) {
+                url = "https://api.twitter.com/oauth/authenticate";
+            }
             String token = map.get("oauth_token").get(0).getValue();
             String secret = map.get("oauth_token_secret").get(0).getValue();
             addSecret(token, secret);

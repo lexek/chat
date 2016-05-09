@@ -260,6 +260,7 @@ public class Main {
                     secureTokenGenerator
                 ),
                 "twitter", new TwitterSocialAuthService(
+                    false,
                     twitter.getClientId(),
                     twitter.getClientSecret(),
                     twitter.getRedirectUrl(),
