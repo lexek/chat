@@ -362,7 +362,7 @@ public class Main {
         ViewResolvers viewResolvers = new ViewResolvers(freemarker);
         ServerMessageHandler serverMessageHandler = new ServerMessageHandler();
 
-        SocialAuthService socialAuthService = new SocialAuthService();
+        SocialAuthService socialAuthService = new SocialAuthService(authenticationManager, secureTokenGenerator);
         SocialAuthCredentials twitchAuth = settings.getSocialAuth().get("twitch");
         SocialAuthCredentials googleAuth = settings.getSocialAuth().get("google");
         SocialAuthCredentials goodGameAuth = settings.getSocialAuth().get("goodgame");

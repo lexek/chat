@@ -70,7 +70,7 @@ public class UserAuthDao {
         return auth;
     }
 
-    public UserAuthDto getOrCreateUserAuth(SocialProfile profile) {
+    public UserAuthDto getOrCreateUserAuth(SocialProfile profile, boolean create) {
         UserAuthDto auth = null;
         try (Connection connection = dataSource.getConnection()) {
             auth = DSL.using(connection).transactionResult(conf -> {
@@ -82,7 +82,7 @@ public class UserAuthDao {
                         .and(USERAUTH.AUTH_ID.equal(String.valueOf(profile.getId()))))
                     .fetchOne();
                 result = UserAuthDto.fromRecord(record);
-                if (result == null) {
+                if (result == null && create) {
                     record = DSL.using(conf)
                         .insertInto(USERAUTH, USERAUTH.AUTH_NAME, USERAUTH.AUTH_ID, USERAUTH.AUTH_KEY, USERAUTH.SERVICE)
                         .values(profile.getName(), String.valueOf(profile.getId()), profile.getToken().getToken(), profile.getService())

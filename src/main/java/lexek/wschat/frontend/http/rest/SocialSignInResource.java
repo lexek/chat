@@ -2,8 +2,6 @@ package lexek.wschat.frontend.http.rest;
 
 import com.google.common.collect.ImmutableMap;
 import lexek.httpserver.Request;
-import lexek.wschat.chat.e.InternalErrorException;
-import lexek.wschat.db.model.SessionDto;
 import lexek.wschat.db.model.UserAuthDto;
 import lexek.wschat.db.model.UserDto;
 import lexek.wschat.db.model.rest.ErrorModel;
@@ -78,26 +76,24 @@ public class SocialSignInResource {
             if (profile.getEmail() != null || !socialAuthProvider.checkEmail()) {
                 //do authentication/registration
                 if (user == null) {
-                    UserAuthDto userAccount = authenticationManager.getOrCreateUserAuth(profile);
-                    SessionDto session = authenticationManager.createSession(userAccount, request.ip(), System.currentTimeMillis());
-                    if (session != null) {
-                        NewCookie sessionCookie =
-                            new NewCookie("sid", session.getSessionId(), "/", null, null, COOKIE_MAX_AGE, true);
-                        if (session.getUserAuth().getUser() != null) {
-                            return Response
-                                .ok(new Viewable("/auth", null))
-                                .cookie(sessionCookie)
-                                .build();
-                        } else {
-                            return Response
-                                .status(302)
-                                .header("Location", "/rest/sign-in/social/setup_profile")
-                                .cookie(sessionCookie)
-                                .build();
-                        }
+                    SessionResult sessionResult = socialAuthService.getSession(profile, request.ip());
+                    if (sessionResult.getType() == SocialAuthResultType.SESSION) {
+                        NewCookie sessionCookie = sessionCookie("sid", sessionResult.getSessionId());
+                        return Response
+                            .ok(new Viewable("/auth", null))
+                            .cookie(sessionCookie)
+                            .build();
+                    }
+                    if (sessionResult.getType() == SocialAuthResultType.TEMP_SESSION) {
+                        NewCookie sessionCookie = sessionCookie("temp_sid", sessionResult.getSessionId());
+                        return Response
+                            .status(302)
+                            .header("Location", "/rest/sign-in/social/setup_profile")
+                            .cookie(sessionCookie)
+                            .build();
                     }
                 } else {
-                    UserAuthDto userAuthDto = authenticationManager.getOrCreateUserAuth(profile);
+                    UserAuthDto userAuthDto = authenticationManager.getOrCreateUserAuth(profile, true);
                     authenticationManager.tieUserWithExistingAuth(user, userAuthDto);
                     return Response
                         .ok(new Viewable("/auth", null))
@@ -119,31 +115,42 @@ public class SocialSignInResource {
     @Path("/setup_profile")
     @GET
     public Viewable setupProfilePage(@Context Request request) {
-        UserAuthDto userAuth = authenticationManager.checkFullAuthentication(
-            request.cookieValue("sid"),
+        SocialProfile profile = socialAuthService.getTempSession(
+            request.cookieValue("temp_sid"),
             request.ip()
         );
-        if (userAuth == null || userAuth.getUser() != null) {
-            throw new WebApplicationException(403);
-        }
         String ip = request.ip();
         boolean captchaRequired = authenticationManager.failedLoginTries(ip) > 10;
-        return new Viewable("/setup_profile", ImmutableMap.of("captchaRequired", captchaRequired));
+        return new Viewable(
+            "/setup_profile",
+            ImmutableMap.of(
+                "captchaRequired", captchaRequired,
+                "profile", profile
+            )
+        );
     }
 
     @Path("/setup_profile")
     @POST
     public Viewable setupProfilePost(@Context Request request) {
-        UserAuthDto userAuth = authenticationManager.checkFullAuthentication(
-            request.cookieValue("sid"),
+        SocialProfile profile = socialAuthService.getTempSession(
+            request.cookieValue("temp_sid"),
             request.ip()
         );
-        if (userAuth == null || userAuth.getUser() != null) {
-            throw new WebApplicationException(403);
-        }
         //todo: do setup profile
+        //todo: expire temporary session on success
         String ip = request.ip();
         boolean captchaRequired = authenticationManager.failedLoginTries(ip) > 10;
-        return new Viewable("/setup_profile", ImmutableMap.of("captchaRequired", captchaRequired));
+        return new Viewable(
+            "/setup_profile",
+            ImmutableMap.of(
+                "captchaRequired", captchaRequired,
+                "profile", profile
+            )
+        );
+    }
+
+    private static NewCookie sessionCookie(String name, String id) {
+        return new NewCookie(name, id, "/", null, null, COOKIE_MAX_AGE, true);
     }
 }

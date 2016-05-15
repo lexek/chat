@@ -19,6 +19,12 @@ public class SecureTokenGenerator {
         return BaseEncoding.base16().encode(bytes);
     }
 
+    public String generateShortSessionId() {
+        byte[] bytes = new byte[32];
+        secureRandom.nextBytes(bytes);
+        return BaseEncoding.base16().encode(bytes);
+    }
+
     public String generateRandomToken(int length) {
         byte[] bytes = new byte[length];
         secureRandom.nextBytes(bytes);

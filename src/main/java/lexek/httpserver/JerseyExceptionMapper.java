@@ -1,9 +1,6 @@
 package lexek.httpserver;
 
-import lexek.wschat.chat.e.DomainException;
-import lexek.wschat.chat.e.EntityNotFoundException;
-import lexek.wschat.chat.e.InvalidInputException;
-import lexek.wschat.chat.e.InvalidStateException;
+import lexek.wschat.chat.e.*;
 import lexek.wschat.db.model.rest.ErrorModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,7 +16,7 @@ public class JerseyExceptionMapper implements ExceptionMapper<Throwable> {
 
     @Override
     public Response toResponse(Throwable exception) {
-        logger.debug("", exception);
+        logger.trace("", exception);
         if (exception instanceof DomainException) {
             if (exception instanceof EntityNotFoundException) {
                 return Response.status(404).entity(new ErrorModel(exception.getMessage())).build();
@@ -32,6 +29,9 @@ public class JerseyExceptionMapper implements ExceptionMapper<Throwable> {
                     "error",
                     ((InvalidInputException) exception).getData()
                 )).build();
+            }
+            if (exception instanceof AccessDeniedException) {
+                return Response.status(403).entity(new ErrorModel(exception.getMessage())).build();
             }
             logger.warn("exception", exception);
             return Response.status(500).entity(new ErrorModel(exception.getMessage())).build();

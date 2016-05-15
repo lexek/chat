@@ -101,8 +101,8 @@ public class AuthenticationManager {
         );
     }
 
-    public UserAuthDto getOrCreateUserAuth(SocialProfile profile) {
-        return userAuthDao.getOrCreateUserAuth(profile);
+    public UserAuthDto getOrCreateUserAuth(SocialProfile profile, boolean create) {
+        return userAuthDao.getOrCreateUserAuth(profile, create);
     }
 
     public void tieUserWithExistingAuth(UserDto userDto, UserAuthDto userAuthDto) {
