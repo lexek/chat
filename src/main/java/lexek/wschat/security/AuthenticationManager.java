@@ -80,15 +80,15 @@ public class AuthenticationManager {
         return i != null ? i.get() : 0;
     }
 
-    public SessionDto authenticate(String username, String password, String ip, long timestamp) {
+    public SessionDto authenticate(String username, String password, String ip) {
         UserAuthDto user = fastAuth(username, password, ip);
         if (user != null) {
-            return createSession(user, ip, timestamp);
+            return createSession(user, ip);
         }
         return null;
     }
 
-    public SessionDto createSession(UserAuthDto userAuth, String ip, long timestamp) {
+    public SessionDto createSession(UserAuthDto userAuth, String ip) {
         if (userAuth == null || ip == null) {
             throw new NullPointerException();
         }
@@ -97,7 +97,7 @@ public class AuthenticationManager {
             sid,
             ip,
             userAuth,
-            timestamp
+            System.currentTimeMillis()
         );
     }
 
@@ -263,6 +263,14 @@ public class AuthenticationManager {
 
     public boolean addUserAndTieToAuth(String name, UserAuthDto auth) {
         return userAuthDao.addUserAndTieToAuth(name, auth);
+    }
+
+    public UserAuthDto createUserWithProfile(String name, SocialProfile socialProfile) {
+        return userAuthDao.createUserWithProfile(name, socialProfile);
+    }
+
+    public UserAuthDto createUserAuthFromProfile(UserDto user, SocialProfile profile) {
+        return userAuthDao.createAuthFromProfile(user, profile);
     }
 
     public UserAuthDto getAuthDataForUser(UserDto user, String service) {

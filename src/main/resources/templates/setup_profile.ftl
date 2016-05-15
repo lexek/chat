@@ -36,7 +36,7 @@
             <#if new_account_error?has_content>
                 <div class="alert alert-danger" role="alert">${new_account_error}</div>
             </#if>
-            <form class="form" id="authForm" method="post" action="/setup_profile?newAccount=true">
+            <form class="form" id="authForm" method="post" action="/rest/sign-in/social/setup_profile?newAccount=true">
                 <div class="form-group">
                     <label class="control-label">Username</label>
                     <input type="text" class="form-control" name="username" placeholder="Username" pattern='[a-zA-Z0-9]{3,16}'/>
@@ -53,7 +53,7 @@
             <#if login_error?has_content>
                 <div class="alert alert-danger" role="alert">${login_error}</div>
             </#if>
-            <form class="form" id="loginForm" method="post" action="/setup_profile?newAccount=false">
+            <form class="form" id="loginForm" method="post" action="/rest/sign-in/social/setup_profile?newAccount=false">
                 <div class="form-group">
                     <label class="control-label">Username</label>
                     <input type="text" class="form-control" name="username" placeholder="Username" pattern='[a-zA-Z0-9]{3,16}'/>

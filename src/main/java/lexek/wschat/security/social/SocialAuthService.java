@@ -38,7 +38,7 @@ public class SocialAuthService {
     public SessionResult getSession(SocialProfile profile, String ip) {
         UserAuthDto userAuth = authenticationManager.getOrCreateUserAuth(profile, false);
         if (userAuth != null) {
-            SessionDto session = authenticationManager.createSession(userAuth, ip, System.currentTimeMillis());
+            SessionDto session = authenticationManager.createSession(userAuth, ip);
             return new SessionResult(
                 SocialAuthResultType.SESSION,
                 session.getSessionId()
@@ -54,7 +54,7 @@ public class SocialAuthService {
         }
     }
 
-    public void expireSession(String id) {
+    public void expireTemporarySession(String id) {
         temporarySessions.invalidate(id);
     }
 

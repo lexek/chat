@@ -1,5 +1,6 @@
 package lexek.wschat.db.dao;
 
+import lexek.wschat.chat.e.InternalErrorException;
 import lexek.wschat.chat.model.GlobalRole;
 import lexek.wschat.db.jooq.tables.pojos.PendingConfirmation;
 import lexek.wschat.db.model.SessionDto;
@@ -7,6 +8,7 @@ import lexek.wschat.db.model.UserAuthDto;
 import lexek.wschat.db.model.UserDto;
 import lexek.wschat.security.social.SocialProfile;
 import lexek.wschat.util.Colors;
+import org.jooq.Configuration;
 import org.jooq.DSLContext;
 import org.jooq.Record;
 import org.jooq.exception.DataAccessException;
@@ -344,5 +346,53 @@ public class UserAuthDao {
             logger.error(e.getMessage());
         }
         return code;
+    }
+
+    public UserAuthDto createUserWithProfile(String name, SocialProfile profile) {
+        final String color = Colors.generateColor(name);
+        try (Connection connection = dataSource.getConnection()) {
+            return DSL.using(connection).transactionResult(conf -> {
+                UserDto userDto = UserDto.fromRecord(
+                    DSL.using(conf)
+                        .insertInto(USER, USER.NAME, USER.BANNED, USER.COLOR, USER.RENAME_AVAILABLE, USER.ROLE, USER.EMAIL, USER.EMAIL_VERIFIED)
+                        .values(name, false, color, false, GlobalRole.USER.toString(), null, false)
+                        .returning()
+                        .fetchOne()
+                );
+                return createAuthFromProfile(conf, profile, userDto);
+            });
+        } catch (DataAccessException | SQLException e) {
+            throw new InternalErrorException(e);
+        }
+    }
+
+    public UserAuthDto createAuthFromProfile(UserDto user, SocialProfile profile) {
+        try (Connection connection = dataSource.getConnection()) {
+            return DSL.using(connection).transactionResult(conf -> createAuthFromProfile(conf, profile, user));
+        } catch (DataAccessException | SQLException e) {
+            throw new InternalErrorException(e);
+        }
+    }
+
+    private UserAuthDto createAuthFromProfile(Configuration conf, SocialProfile profile, UserDto user) {
+        return UserAuthDto.fromRecord(
+            DSL.using(conf)
+                .insertInto(
+                    USERAUTH,
+                    USERAUTH.AUTH_NAME,
+                    USERAUTH.AUTH_ID,
+                    USERAUTH.AUTH_KEY,
+                    USERAUTH.SERVICE,
+                    USERAUTH.USER_ID)
+                .values(
+                    profile.getName(),
+                    String.valueOf(profile.getId()),
+                    profile.getToken().getToken(),
+                    profile.getService(),
+                    user.getId())
+                .returning()
+                .fetchOne(),
+            user
+        );
     }
 }

@@ -2,14 +2,18 @@ package lexek.wschat.frontend.http.rest;
 
 import com.google.common.collect.ImmutableMap;
 import lexek.httpserver.Request;
+import lexek.wschat.db.model.SessionDto;
 import lexek.wschat.db.model.UserAuthDto;
 import lexek.wschat.db.model.UserDto;
 import lexek.wschat.db.model.rest.ErrorModel;
 import lexek.wschat.security.AuthenticationManager;
+import lexek.wschat.security.ReCaptcha;
 import lexek.wschat.security.jersey.Auth;
 import lexek.wschat.security.social.*;
 import org.glassfish.jersey.server.mvc.Viewable;
 import org.hibernate.validator.constraints.NotEmpty;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
@@ -18,16 +22,22 @@ import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 
+import static lexek.wschat.util.Names.PASSWORD_PATTERN;
+import static lexek.wschat.util.Names.USERNAME_PATTERN;
+
 @Path("/sign-in/social")
 public class SocialSignInResource {
     private static final int COOKIE_MAX_AGE = 2592000;
 
+    private final Logger logger = LoggerFactory.getLogger(SocialSignInResource.class);
     private final SocialAuthService socialAuthService;
     private final AuthenticationManager authenticationManager;
+    private final ReCaptcha reCaptcha;
 
-    public SocialSignInResource(SocialAuthService socialAuthService, AuthenticationManager authenticationManager) {
+    public SocialSignInResource(SocialAuthService socialAuthService, AuthenticationManager authenticationManager, ReCaptcha reCaptcha) {
         this.socialAuthService = socialAuthService;
         this.authenticationManager = authenticationManager;
+        this.reCaptcha = reCaptcha;
     }
 
     @Path("/{serviceName}")
@@ -131,23 +141,91 @@ public class SocialSignInResource {
     }
 
     @Path("/setup_profile")
+    @Produces(MediaType.TEXT_HTML)
     @POST
-    public Viewable setupProfilePost(@Context Request request) {
-        SocialProfile profile = socialAuthService.getTempSession(
-            request.cookieValue("temp_sid"),
-            request.ip()
-        );
-        //todo: do setup profile
-        //todo: expire temporary session on success
+    public Response setupProfilePost(
+        @QueryParam("newAccount") @DefaultValue("false") boolean newAccount,
+        @FormParam("username") String username,
+        @FormParam("password") String password,
+        @FormParam("g-recaptcha-response") String captchaValue,
+        @Context Request request
+    ) {
+        String tempSessionId = request.cookieValue("temp_sid");
+        SocialProfile profile = socialAuthService.getTempSession(tempSessionId, request.ip());
         String ip = request.ip();
         boolean captchaRequired = authenticationManager.failedLoginTries(ip) > 10;
-        return new Viewable(
+        if (username != null) {
+            if (newAccount) {
+                if (USERNAME_PATTERN.matcher(username).matches()) {
+                    try {
+                        UserAuthDto userAuth = authenticationManager.createUserWithProfile(username, profile);
+                        SessionDto sessionDto = authenticationManager.createSession(userAuth, request.ip());
+                        socialAuthService.expireTemporarySession(tempSessionId);
+                        return Response
+                            .ok(new Viewable("/auth"))
+                            .cookie(sessionCookie("sid", sessionDto.getSessionId()))
+                            .build();
+                    } catch (Exception e) {
+                        return Response.ok(new Viewable(
+                            "/setup_profile",
+                            ImmutableMap.of(
+                                "new_account_error", "This name is already taken.",
+                                "captchaRequired", captchaRequired
+                            )
+                        )).build();
+                    }
+                }
+            } else {
+                if (password != null &&
+                    USERNAME_PATTERN.matcher(username).matches() &&
+                    PASSWORD_PATTERN.matcher(password).matches()) {
+                    boolean captchaValid = false;
+                    if (captchaRequired) {
+                        if (captchaValue != null) {
+                            captchaValid = reCaptcha.verify(captchaValue, ip);
+                        }
+                    } else {
+                        captchaValid = true;
+                    }
+
+                    if (captchaValid) {
+                        UserAuthDto userAuth = authenticationManager.fastAuth(username, password, ip);
+                        if (userAuth == null) {
+                            return Response.ok(new Viewable(
+                                "/setup_profile",
+                                ImmutableMap.of(
+                                    "login_error", "Bas username or password.",
+                                    "captchaRequired", captchaRequired
+                                ))).build();
+                        } else {
+                            UserAuthDto newAuth =
+                                authenticationManager.createUserAuthFromProfile(userAuth.getUser(), profile);
+                            SessionDto sessionDto = authenticationManager.createSession(newAuth, ip);
+                            socialAuthService.expireTemporarySession(tempSessionId);
+                            return Response
+                                .ok(new Viewable("/auth"))
+                                .cookie(sessionCookie("sid", sessionDto.getSessionId()))
+                                .build();
+                        }
+                    } else {
+                        return Response.ok(new Viewable(
+                            "/setup_profile",
+                            ImmutableMap.of(
+                                "login_error", "Invalid captcha.",
+                                "captchaRequired", true
+                            )
+                        )).build();
+                    }
+                }
+            }
+        }
+        return Response.ok(new Viewable(
             "/setup_profile",
             ImmutableMap.of(
                 "captchaRequired", captchaRequired,
                 "profile", profile
             )
-        );
+        )).build();
     }
 
     private static NewCookie sessionCookie(String name, String id) {

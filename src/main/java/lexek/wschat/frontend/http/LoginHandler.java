@@ -55,7 +55,7 @@ public class LoginHandler extends SimpleHttpHandler {
             if (username != null && password != null) {
                 username = username.toLowerCase();
                 if (USERNAME_PATTERN.matcher(username).matches() && PASSWORD_PATTERN.matcher(password).matches()) {
-                    SessionDto session = authenticationManager.authenticate(username, password, ip, System.currentTimeMillis());
+                    SessionDto session = authenticationManager.authenticate(username, password, ip);
                     if (session != null) {
                         Cookie cookie = new DefaultCookie("sid", session.getSessionId());
                         cookie.setMaxAge(COOKIE_MAX_AGE);
