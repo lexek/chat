@@ -5,25 +5,66 @@ import lexek.wschat.db.model.UserDto;
 import lexek.wschat.security.AuthenticationManager;
 import lexek.wschat.util.BufferInputStream;
 import lexek.wschat.util.BufferOutputStream;
+import org.glassfish.hk2.api.TypeLiteral;
+import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.internal.MapPropertiesDelegate;
+import org.glassfish.jersey.internal.inject.ReferencingFactory;
+import org.glassfish.jersey.internal.util.collection.Ref;
+import org.glassfish.jersey.process.internal.RequestScoped;
 import org.glassfish.jersey.server.*;
 import org.glassfish.jersey.server.spi.Container;
 import org.glassfish.jersey.server.spi.ContainerResponseWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.inject.Inject;
+import javax.inject.Provider;
+import javax.ws.rs.core.Application;
 import java.io.OutputStream;
+import java.lang.reflect.Type;
 import java.net.URI;
 import java.util.concurrent.TimeUnit;
 
 public class JerseyContainer extends SimpleHttpHandler implements Container {
+    private final Type RequestType = (new TypeLiteral<Ref<Request>>() {}).getType();
+    private final Type ResponseType = (new TypeLiteral<Ref<Response>>() {}).getType();
+
     private final Logger logger = LoggerFactory.getLogger(JerseyContainer.class);
     private final AuthenticationManager authenticationManager;
     private final ApplicationHandler applicationHandler;
 
-    public JerseyContainer(AuthenticationManager authenticationManager, ApplicationHandler applicationHandler) {
+    private static class GrizzlyRequestReferencingFactory extends ReferencingFactory<Request> {
+        @Inject
+        public GrizzlyRequestReferencingFactory(final Provider<Ref<Request>> referenceFactory) {
+            super(referenceFactory);
+        }
+    }
+
+    private static class GrizzlyResponseReferencingFactory extends ReferencingFactory<Response> {
+        @Inject
+        public GrizzlyResponseReferencingFactory(final Provider<Ref<Response>> referenceFactory) {
+            super(referenceFactory);
+        }
+    }
+
+    private static class RequestResponseBinder extends AbstractBinder {
+        @Override
+        protected void configure() {
+            bindFactory(GrizzlyRequestReferencingFactory.class).to(Request.class)
+                .proxy(false).in(RequestScoped.class);
+            bindFactory(ReferencingFactory.<Request>referenceFactory()).to(new TypeLiteral<Ref<Request>>() {})
+                .in(RequestScoped.class);
+
+            bindFactory(GrizzlyResponseReferencingFactory.class).to(Response.class)
+                .proxy(true).proxyForSameScope(false).in(RequestScoped.class);
+            bindFactory(ReferencingFactory.<Response>referenceFactory()).to(new TypeLiteral<Ref<Response>>() {})
+                .in(RequestScoped.class);
+        }
+    }
+
+    public JerseyContainer(AuthenticationManager authenticationManager, Application resourceConfig) {
         this.authenticationManager = authenticationManager;
-        this.applicationHandler = applicationHandler;
+        this.applicationHandler = new ApplicationHandler(resourceConfig, new RequestResponseBinder());
     }
 
     @Override
@@ -53,12 +94,20 @@ public class JerseyContainer extends SimpleHttpHandler implements Container {
         URI requestUri = new URI("https://" + hostHeader + request.uri());
         UserDto userDto = authenticationManager.checkAuthentication(request);
         ContainerRequest containerRequest = new ContainerRequest(
-            baseUri, requestUri, request.method().name(), new JerseySecurityContext(userDto), new MapPropertiesDelegate()
+            baseUri,
+            requestUri,
+            request.method().name(),
+            new JerseySecurityContext(userDto),
+            new MapPropertiesDelegate()
         );
         ResponseWriter responseWriter = new ResponseWriter(response);
         containerRequest.setEntityStream(new BufferInputStream(request.content()));
         request.headers().forEach(e -> containerRequest.getHeaders().putSingle(e.getKey(), e.getValue()));
         containerRequest.setWriter(responseWriter);
+        containerRequest.setRequestScopedInitializer(locator -> {
+            locator.<Ref<Request>>getService(RequestType).set(request);
+            locator.<Ref<Response>>getService(ResponseType).set(response);
+        });
         try {
             applicationHandler.handle(containerRequest);
         } catch (Exception e) {

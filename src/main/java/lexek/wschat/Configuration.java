@@ -13,7 +13,8 @@ public class Configuration {
     private final JdbcDataBaseConfiguration db;
     private final EmailConfiguration email;
     private final TwitterCredentials twitter;
-    private final Map<String, ProxyAuthCredentials> proxy;
+    private final Map<String, SocialAuthCredentials> socialAuth;
+    private final Map<String, SocialAuthCredentials> proxy;
 
     Configuration(
         @JsonProperty("http") HttpConfiguration http,
@@ -21,13 +22,15 @@ public class Configuration {
         @JsonProperty("db") JdbcDataBaseConfiguration db,
         @JsonProperty("email") EmailConfiguration email,
         @JsonProperty("twitter") TwitterCredentials twitter,
-        @JsonProperty("proxy") Map<String, ProxyAuthCredentials> proxy
+        @JsonProperty("socialAuth") Map<String, SocialAuthCredentials> socialAuth,
+        @JsonProperty("proxy") Map<String, SocialAuthCredentials> proxy
     ) {
         this.http = http;
         this.core = core;
         this.db = db;
         this.email = email;
         this.twitter = twitter;
+        this.socialAuth = socialAuth;
         this.proxy = proxy;
     }
 
@@ -51,7 +54,11 @@ public class Configuration {
         return twitter;
     }
 
-    public Map<String, ProxyAuthCredentials> getProxy() {
+    public Map<String, SocialAuthCredentials> getProxy() {
         return proxy;
+    }
+
+    public Map<String, SocialAuthCredentials> getSocialAuth() {
+        return socialAuth;
     }
 }

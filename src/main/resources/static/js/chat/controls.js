@@ -259,8 +259,8 @@ controlsModule.controller("SettingsController", ["$scope", "chatService", "$moda
         }
     };
 
-    $scope.twitchAuth = function() {
-        window.open("https://" + HOST_NAME + ":1337/twitch_auth");
+    $scope.socialAuth = function(service) {
+        window.open("https://" + HOST_NAME + ":1337/rest/sign-in/social/" + service);
     };
 
     $scope.showSignIn = function () {
@@ -327,8 +327,8 @@ var AnonCaptchaController = function($scope, $modalInstance, id, isUser) {
         });
     };
 
-    $scope.twitchAuth = function() {
-        window.open("https://" + HOST_NAME + ":1337/twitch_auth");
+    $scope.socialAuth = function(service) {
+        window.open("https://" + HOST_NAME + ":1337/rest/sign-in/social/" + service);
     };
 
     $scope.showSignIn = function() {
@@ -356,8 +356,8 @@ var AuthenticationController = function($scope, $modalInstance, chat, action) {
         $scope.recaptchaWidgetId = widgetId;
     };
 
-    $scope.twitchAuth = function() {
-        window.open("https://" + HOST_NAME + ":1337/twitch_auth");
+    $scope.socialAuth = function(service) {
+        window.open("https://" + HOST_NAME + ":1337/rest/sign-in/social/" + service);
     };
 
     $scope.submitSignIn = function() {

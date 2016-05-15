@@ -26,9 +26,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class TwitterSocialAuthService implements SocialAuthService {
+public class TwitterSocialAuthProvider implements SocialAuthProvider {
     //todo: change to cache with time expiration
     private final boolean signIn;
+    private final boolean checkEmail;
     private final Map<String, String> secrets = new HashMap<>();
     private final String name;
     private final String consumerKey;
@@ -36,8 +37,9 @@ public class TwitterSocialAuthService implements SocialAuthService {
     private final String url;
     private final HttpClient httpClient;
 
-    public TwitterSocialAuthService(
+    public TwitterSocialAuthProvider(
         boolean signIn,
+        boolean checkEmail,
         String consumerKey,
         String consumerSecret,
         String url,
@@ -45,6 +47,7 @@ public class TwitterSocialAuthService implements SocialAuthService {
         HttpClient httpClient
     ) {
         this.signIn = signIn;
+        this.checkEmail = checkEmail;
         this.consumerKey = consumerKey;
         this.consumerSecret = consumerSecret;
         this.url = url;
@@ -173,6 +176,11 @@ public class TwitterSocialAuthService implements SocialAuthService {
     @Override
     public boolean needsRefreshing() {
         return false;
+    }
+
+    @Override
+    public boolean checkEmail() {
+        return checkEmail;
     }
 
     @Override

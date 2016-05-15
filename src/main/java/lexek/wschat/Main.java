@@ -57,9 +57,7 @@ import lexek.wschat.security.*;
 import lexek.wschat.security.jersey.Auth;
 import lexek.wschat.security.jersey.SecurityFeature;
 import lexek.wschat.security.jersey.UserParamValueFactoryProvider;
-import lexek.wschat.security.social.GoodGameSocialAuthService;
-import lexek.wschat.security.social.GoogleSocialAuthService;
-import lexek.wschat.security.social.TwitchTvSocialAuthService;
+import lexek.wschat.security.social.*;
 import lexek.wschat.services.*;
 import lexek.wschat.services.poll.PollService;
 import org.apache.http.client.HttpClient;
@@ -74,6 +72,7 @@ import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.ServerProperties;
+import org.glassfish.jersey.server.mvc.freemarker.FreemarkerMvcFeature;
 import org.glassfish.jersey.server.spi.internal.ValueFactoryProvider;
 import org.slf4j.LoggerFactory;
 
@@ -215,20 +214,17 @@ public class Main {
         SteamGameDao steamGameDao = new SteamGameDao(dataSource);
         SteamGameResolver steamGameResolver = new SteamGameResolver(steamGameDao, httpClient);
 
-        TwitchTvSocialAuthService twitchAuthService = new TwitchTvSocialAuthService(settings.getHttp().getTwitchClientId(),
-            settings.getHttp().getTwitchSecret(),
-            settings.getHttp().getTwitchUrl(), httpClient, secureTokenGenerator, "twitch.tv");
         IgnoreService ignoreService = new IgnoreService(ignoreDao);
 
         Set<String> bannedIps = new CopyOnWriteArraySet<>();
 
         ProxyAuthDao proxyAuthDao = new ProxyAuthDao(dataSource);
-        ProxyAuthCredentials twitch = settings.getProxy().get("twitch");
-        ProxyAuthCredentials google = settings.getProxy().get("google");
-        ProxyAuthCredentials goodGame = settings.getProxy().get("goodgame");
+        SocialAuthCredentials twitch = settings.getProxy().get("twitch");
+        SocialAuthCredentials google = settings.getProxy().get("google");
+        SocialAuthCredentials goodGame = settings.getProxy().get("goodgame");
         ProxyAuthService proxyAuthService = new ProxyAuthService(
             ImmutableMap.of(
-                "twitch", new TwitchTvSocialAuthService(
+                "twitch", new TwitchTvSocialAuthProvider(
                     twitch.getClientId(),
                     twitch.getClientSecret(),
                     twitch.getRedirectUrl(),
@@ -236,7 +232,7 @@ public class Main {
                     secureTokenGenerator,
                     "twitch"
                 ),
-                "google", new GoogleSocialAuthService(
+                "google", new GoogleSocialAuthProvider(
                     google.getClientId(),
                     google.getClientSecret(),
                     google.getRedirectUrl(),
@@ -249,7 +245,7 @@ public class Main {
                     httpClient,
                     secureTokenGenerator
                 ),
-                "goodgame", new GoodGameSocialAuthService(
+                "goodgame", new GoodGameSocialAuthProvider(
                     goodGame.getClientId(),
                     goodGame.getClientSecret(),
                     goodGame.getRedirectUrl(),
@@ -366,16 +362,63 @@ public class Main {
         ViewResolvers viewResolvers = new ViewResolvers(freemarker);
         ServerMessageHandler serverMessageHandler = new ServerMessageHandler();
 
+        SocialAuthService socialAuthService = new SocialAuthService();
+        SocialAuthCredentials twitchAuth = settings.getSocialAuth().get("twitch");
+        SocialAuthCredentials googleAuth = settings.getSocialAuth().get("google");
+        SocialAuthCredentials goodGameAuth = settings.getSocialAuth().get("goodgame");
+        SocialAuthCredentials twitterAuth = settings.getSocialAuth().get("twitter");
+        socialAuthService.registerProvider(new TwitchTvSocialAuthProvider(
+            twitchAuth.getClientId(),
+            twitchAuth.getClientSecret(),
+            twitchAuth.getRedirectUrl(),
+            httpClient,
+            secureTokenGenerator,
+            "twitch"
+        ));
+        socialAuthService.registerProvider(new TwitterSocialAuthProvider(
+            true,
+            false,
+            twitterAuth.getClientId(),
+            twitterAuth.getClientSecret(),
+            twitterAuth.getRedirectUrl(),
+            "twitter",
+            httpClient
+        ));
+        socialAuthService.registerProvider(new GoodGameSocialAuthProvider(
+            goodGameAuth.getClientId(),
+            goodGameAuth.getClientSecret(),
+            goodGameAuth.getRedirectUrl(),
+            "goodgame",
+            httpClient,
+            secureTokenGenerator
+        ));
+        socialAuthService.registerProvider(new GoogleSocialAuthProvider(
+            googleAuth.getClientId(),
+            googleAuth.getClientSecret(),
+            googleAuth.getRedirectUrl(),
+            ImmutableSet.of(
+                "profile",
+                "email"
+            ),
+            "google",
+            httpClient,
+            secureTokenGenerator
+        ));
+
         ResourceConfig resourceConfig = new ResourceConfig() {
             {
                 property(ServerProperties.WADL_FEATURE_DISABLE, Boolean.TRUE);
                 //property(ServerProperties.TRACING, "ALL");
+                register(ErrorBodyWriter.class);
                 register(ObjectMapperProvider.class);
                 register(new Slf4jLoggingFilter());
                 register(JerseyExceptionMapper.class);
                 register(JacksonFeature.class);
                 register(MultiPartFeature.class);
                 register(SecurityFeature.class);
+                register(FreemarkerMvcFeature.class);
+                property(FreemarkerMvcFeature.TEMPLATE_BASE_PATH, "/templates/");
+                property(FreemarkerMvcFeature.ENCODING, "UTF-8");
                 register(new AbstractBinder() {
                     @Override
                     protected void configure() {
@@ -403,7 +446,8 @@ public class Main {
                     new ProxyResource(roomService, proxyManager, proxyAuthService),
                     new PasswordResource(authenticationManager),
                     new CheckUsernameResource(userService),
-                    new ProxyAuthResource(proxyAuthService)
+                    new ProxyAuthResource(proxyAuthService),
+                    new SocialSignInResource(socialAuthService, authenticationManager)
                 );
             }
         };
@@ -418,10 +462,6 @@ public class Main {
         httpRequestDispatcher.add("/api/tickets", new UserTicketsHandler(authenticationManager, ticketService));
         httpRequestDispatcher.add("/admin/.*", new AdminPageHandler(authenticationManager));
         httpRequestDispatcher.add("/login", new LoginHandler(authenticationManager, reCaptcha));
-        httpRequestDispatcher.add("/twitch_auth", new TwitchAuthHandler(
-            authenticationManager,
-            twitchAuthService));
-        httpRequestDispatcher.add("/setup_profile", new SetupProfileHandler(authenticationManager, reCaptcha));
         httpRequestDispatcher.add("/register", new RegistrationHandler(authenticationManager, reCaptcha, bannedIps));
         httpRequestDispatcher.add("/token", new TokenHandler(authenticationManager));
 

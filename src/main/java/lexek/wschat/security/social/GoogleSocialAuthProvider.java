@@ -19,7 +19,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-public class GoogleSocialAuthService implements SocialAuthService {
+public class GoogleSocialAuthProvider implements SocialAuthProvider {
     private final String name;
     private final String clientId;
     private final String clientSecret;
@@ -28,7 +28,7 @@ public class GoogleSocialAuthService implements SocialAuthService {
     private final SecureTokenGenerator secureTokenGenerator;
     private final String scopesString;
 
-    public GoogleSocialAuthService(
+    public GoogleSocialAuthProvider(
         String clientId,
         String clientSecret,
         String url,
@@ -117,6 +117,11 @@ public class GoogleSocialAuthService implements SocialAuthService {
 
     @Override
     public boolean needsRefreshing() {
+        return true;
+    }
+
+    @Override
+    public boolean checkEmail() {
         return true;
     }
 

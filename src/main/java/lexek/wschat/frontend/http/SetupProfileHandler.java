@@ -79,21 +79,15 @@ public class SetupProfileHandler extends SimpleHttpHandler {
                                         ));
                                     return;
                                 } else {
-                                    if (authenticationManager.tieUserWithExistingAuth(userAuth.getUser(), auth)) {
-                                        response.renderTemplate("auth", null);
-                                        return;
-                                    } else {
-                                        response.renderTemplate("setup_profile",
-                                            ImmutableMap.of(
-                                                "login_error", "Couldn't tie this account.",
-                                                "captchaRequired", captchaRequired
-                                            ));
-                                        return;
-                                    }
+                                    authenticationManager.tieUserWithExistingAuth(userAuth.getUser(), auth);
+                                    response.renderTemplate("auth", null);
+                                    return;
                                 }
                             } else {
-                                response.renderTemplate("setup_profile",
-                                    ImmutableMap.of("login_error", "Invalid captcha.", "captchaRequired", true));
+                                response.renderTemplate(
+                                    "setup_profile",
+                                    ImmutableMap.of("login_error", "Invalid captcha.", "captchaRequired", true)
+                                );
                                 return;
                             }
                         }

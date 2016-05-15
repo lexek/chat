@@ -104,19 +104,17 @@ public class UserAuthDao {
         return auth;
     }
 
-    public boolean tieUserWithExistingAuth(UserDto userDto, UserAuthDto userAuthDto) {
-        boolean success = false;
+    public void tieUserWithExistingAuth(UserDto userDto, UserAuthDto userAuthDto) {
         try (Connection connection = dataSource.getConnection()) {
-            success = DSL.using(connection).transactionResult(conf ->
-                DSL.using(conf)
-                    .update(USERAUTH)
-                    .set(USERAUTH.USER_ID, userDto.getId())
-                    .where(USERAUTH.ID.equal(userAuthDto.getId()).and(USERAUTH.USER_ID.isNull()))
-                    .execute() == 1);
+            DSL.using(connection).transaction(conf -> DSL.using(conf)
+                .update(USERAUTH)
+                .set(USERAUTH.USER_ID, userDto.getId())
+                .where(USERAUTH.ID.equal(userAuthDto.getId()).and(USERAUTH.USER_ID.isNull()))
+                .execute()
+            );
         } catch (DataAccessException | SQLException e) {
             logger.error(e.getMessage());
         }
-        return success;
     }
 
     public Long registerWithPassword(String name, String password, String email, String color, String verificationCode) {

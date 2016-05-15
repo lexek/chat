@@ -14,6 +14,7 @@ import io.netty.handler.codec.http.multipart.Attribute;
 import io.netty.handler.codec.http.multipart.FileUpload;
 import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder;
 import io.netty.handler.codec.http.multipart.InterfaceHttpData;
+import lexek.wschat.db.model.SessionDto;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -28,6 +29,7 @@ public class Request {
     private HttpPostRequestDecoder postRequestDecoder;
     private QueryStringDecoder queryDecoder;
     private Map<String, String> cookies;
+    private SessionDto session;
 
     public Request(String ip, FullHttpRequest nettyRequest) {
         this.ip = ip;

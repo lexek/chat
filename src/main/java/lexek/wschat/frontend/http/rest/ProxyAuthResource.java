@@ -7,7 +7,7 @@ import lexek.wschat.db.model.UserDto;
 import lexek.wschat.proxy.ProxyAuthService;
 import lexek.wschat.security.jersey.Auth;
 import lexek.wschat.security.jersey.RequiredRole;
-import lexek.wschat.security.social.SocialAuthService;
+import lexek.wschat.security.social.SocialAuthProvider;
 import lexek.wschat.security.social.SocialProfile;
 import lexek.wschat.security.social.SocialRedirect;
 import lexek.wschat.security.social.SocialToken;
@@ -44,36 +44,36 @@ public class ProxyAuthResource {
         @CookieParam("social_state") String cookieState,
         @Auth UserDto owner
     ) throws IOException {
-        SocialAuthService socialAuthService = proxyAuthService.getAuthService(serviceName);
-        if (socialAuthService == null) {
+        SocialAuthProvider socialAuthProvider = proxyAuthService.getAuthService(serviceName);
+        if (socialAuthProvider == null) {
             return Response.status(404).entity(ImmutableMap.of("error", "not found")).build();
         }
         SocialToken token = null;
-        if (socialAuthService.isV1()) {
+        if (socialAuthProvider.isV1()) {
             if (oauthToken != null && oauthVerifier != null) {
                 if (!oauthToken.equals(cookieState)) {
                     return Response.status(400).entity(ImmutableMap.of("error", "state mismatch")).build();
                 }
-                token = socialAuthService.authenticate(oauthToken, oauthVerifier);
+                token = socialAuthProvider.authenticate(oauthToken, oauthVerifier);
             }
         } else {
             if (code != null) {
                 if (state != null && cookieState != null && !state.equals(cookieState)) {
                     return Response.status(400).entity(ImmutableMap.of("error", "state mismatch")).build();
                 }
-                token = socialAuthService.authenticate(code);
+                token = socialAuthProvider.authenticate(code);
             }
         }
 
         if (token != null) {
-            SocialProfile profile = socialAuthService.getProfile(token);
+            SocialProfile profile = socialAuthProvider.getProfile(token);
             proxyAuthService.registerToken(owner, profile);
             //todo
             return Response.ok(ImmutableMap.of("success", true)).build();
         } else if (error != null) {
             return Response.status(500).entity(ImmutableMap.of("error", error)).build();
         }
-        SocialRedirect socialRedirect = socialAuthService.getRedirect();
+        SocialRedirect socialRedirect = socialAuthProvider.getRedirect();
         NewCookie stateCookie = new NewCookie("social_state", socialRedirect.getState());
         return Response.status(302).header("Location", socialRedirect.getUrl()).cookie(stateCookie).build();
     }

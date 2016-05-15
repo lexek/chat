@@ -676,7 +676,7 @@
                         <div class="col-sm-10">
                             <div class="form-control-static">
                                 <span class="auth default fa fa-fw fa-key" ng-class="{'active': hasAuth('password')}" tooltip="Password"></span>
-                                <span class="auth fa fa-fw fa-twitch" ng-class="{'active': hasAuth('twitch.tv')}" tooltip="{{auth['twitch.tv']}}"></span>
+                                <span class="auth fa fa-fw fa-twitch" ng-class="{'active': hasAuth('twitch')}" tooltip="{{auth['twitch']}}"></span>
                                 <span class="auth default fa fa-fw fa-globe" ng-class="{'active': hasAuth('token')}" tooltip="API access token"></span>
                             </div>
                         </div>

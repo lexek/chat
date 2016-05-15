@@ -2,12 +2,12 @@ package lexek.wschat;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class ProxyAuthCredentials {
+public class SocialAuthCredentials {
     private final String clientId;
     private final String clientSecret;
     private final String redirectUrl;
 
-    public ProxyAuthCredentials(
+    public SocialAuthCredentials(
         @JsonProperty("clientId") String clientId,
         @JsonProperty("clientSecret") String clientSecret,
         @JsonProperty("redirectUrl") String redirectUrl

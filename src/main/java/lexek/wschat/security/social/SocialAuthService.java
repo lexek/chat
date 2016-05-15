@@ -1,27 +1,17 @@
 package lexek.wschat.security.social;
 
-import java.io.IOException;
+import io.netty.util.internal.chmv8.ConcurrentHashMapV8;
 
-public interface SocialAuthService {
-    SocialRedirect getRedirect();
+import java.util.Map;
 
-    default SocialToken authenticate(String token, String verifier) throws IOException {
-        throw new UnsupportedOperationException();
+public class SocialAuthService {
+    private final Map<String, SocialAuthProvider> providers = new ConcurrentHashMapV8<>();
+
+    public void registerProvider(SocialAuthProvider provider) {
+        providers.put(provider.getName(), provider);
     }
 
-    SocialToken authenticate(String code) throws IOException;
-
-    SocialProfile getProfile(SocialToken token) throws IOException;
-
-    SocialToken refresh(SocialToken token) throws IOException;
-
-    boolean needsRefreshing();
-
-    String getName();
-
-    String getUrl();
-
-    default boolean isV1() {
-        return false;
+    public SocialAuthProvider getAuthService(String name) {
+        return providers.get(name);
     }
 }

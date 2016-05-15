@@ -105,8 +105,8 @@ public class AuthenticationManager {
         return userAuthDao.getOrCreateUserAuth(profile);
     }
 
-    public boolean tieUserWithExistingAuth(UserDto userDto, UserAuthDto userAuthDto) {
-        return userAuthDao.tieUserWithExistingAuth(userDto, userAuthDto);
+    public void tieUserWithExistingAuth(UserDto userDto, UserAuthDto userAuthDto) {
+        userAuthDao.tieUserWithExistingAuth(userDto, userAuthDto);
     }
 
     public UserAuthDto checkFullAuthentication(String sid, String ip) {

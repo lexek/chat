@@ -21,7 +21,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-public class TwitchTvSocialAuthService implements SocialAuthService {
+public class TwitchTvSocialAuthProvider implements SocialAuthProvider {
     private final String name;
     private final String clientId;
     private final String secret;
@@ -30,7 +30,7 @@ public class TwitchTvSocialAuthService implements SocialAuthService {
     private final SecureTokenGenerator secureTokenGenerator;
     private final String scopesString;
 
-    public TwitchTvSocialAuthService(
+    public TwitchTvSocialAuthProvider(
         String clientId,
         String secret,
         String url,
@@ -48,7 +48,7 @@ public class TwitchTvSocialAuthService implements SocialAuthService {
         this.scopesString = scopes.stream().collect(Collectors.joining(" "));
     }
 
-    public TwitchTvSocialAuthService(
+    public TwitchTvSocialAuthProvider(
         String clientId,
         String secret,
         String url,
@@ -93,6 +93,11 @@ public class TwitchTvSocialAuthService implements SocialAuthService {
     @Override
     public boolean needsRefreshing() {
         return false;
+    }
+
+    @Override
+    public boolean checkEmail() {
+        return true;
     }
 
     @Override

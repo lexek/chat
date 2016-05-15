@@ -5,7 +5,7 @@ import lexek.wschat.chat.model.GlobalRole;
 import lexek.wschat.db.dao.ProxyAuthDao;
 import lexek.wschat.db.model.ProxyAuth;
 import lexek.wschat.db.model.UserDto;
-import lexek.wschat.security.social.SocialAuthService;
+import lexek.wschat.security.social.SocialAuthProvider;
 import lexek.wschat.security.social.SocialProfile;
 import lexek.wschat.security.social.SocialToken;
 import org.slf4j.Logger;
@@ -16,20 +16,20 @@ import java.util.*;
 
 public class ProxyAuthService {
     private final Logger logger = LoggerFactory.getLogger(ProxyAuthService.class);
-    private final Map<String, SocialAuthService> socialAuthServices;
+    private final Map<String, SocialAuthProvider> socialAuthServices;
     private final ProxyAuthDao proxyAuthDao;
     private final HashMap<Long, SocialProfile> tokenCache = new HashMap<>();
 
-    public ProxyAuthService(Map<String, SocialAuthService> socialAuthServices, ProxyAuthDao proxyAuthDao) {
+    public ProxyAuthService(Map<String, SocialAuthProvider> socialAuthServices, ProxyAuthDao proxyAuthDao) {
         this.socialAuthServices = socialAuthServices;
         this.proxyAuthDao = proxyAuthDao;
     }
 
-    public SocialAuthService getAuthService(String name) {
+    public SocialAuthProvider getAuthService(String name) {
         return socialAuthServices.get(name);
     }
 
-    public Collection<SocialAuthService> getServices() {
+    public Collection<SocialAuthProvider> getServices() {
         return socialAuthServices.values();
     }
 
@@ -37,12 +37,12 @@ public class ProxyAuthService {
         SocialProfile cachedProfile = tokenCache.get(authId);
         if (cachedProfile != null) {
             SocialToken cachedToken = cachedProfile.getToken();
-            SocialAuthService socialAuthService = getAuthService(cachedToken.getService());
+            SocialAuthProvider socialAuthProvider = getAuthService(cachedToken.getService());
             Long expires = cachedToken.getExpires();
-            if (expires != null && socialAuthService.needsRefreshing()) {
+            if (expires != null && socialAuthProvider.needsRefreshing()) {
                 if (expires < System.currentTimeMillis()) {
                     try {
-                        SocialToken refreshedToken = refresh(socialAuthService, cachedToken, authId);
+                        SocialToken refreshedToken = refresh(socialAuthProvider, cachedToken, authId);
                         tokenCache.put(authId, new SocialProfile(
                             cachedProfile.getId(),
                             cachedProfile.getService(),
@@ -116,7 +116,7 @@ public class ProxyAuthService {
     public synchronized void loadTokens() {
         for (ProxyAuth proxyAuth : proxyAuthDao.getAll()) {
             String serviceName = proxyAuth.getService();
-            SocialAuthService service = getAuthService(serviceName);
+            SocialAuthProvider service = getAuthService(serviceName);
             if (service == null) {
                 logger.error("no service with name {}", serviceName);
                 return;
@@ -167,7 +167,7 @@ public class ProxyAuthService {
         }
     }
 
-    private SocialToken refresh(SocialAuthService service, SocialToken token, long authId) throws IOException {
+    private SocialToken refresh(SocialAuthProvider service, SocialToken token, long authId) throws IOException {
         SocialToken refreshedToken = service.refresh(token);
         if (!refreshedToken.getRefreshToken().equals(token.getRefreshToken())) {
             proxyAuthDao.updateToken(authId, refreshedToken.getRefreshToken());

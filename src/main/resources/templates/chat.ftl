@@ -440,7 +440,7 @@
     <div class="modal-body">
         <div ng-if="action === 'sign_in'">
             <div class="form-group">
-                <div class="btn btn-default btn-modal" ng-click="twitchAuth()"><span class="fa fa-twitch"></span> {{'AUTH_WITH_TWITCH' | translate}}</div>
+                <div class="btn btn-default btn-modal" ng-click="socialAuth('twitch')"><span class="fa fa-twitch"></span> {{'AUTH_WITH_TWITCH' | translate}}</div>
             </div>
             <div ng-if="error" class="alert alert-danger" role="alert">{{error}}</div>
             <div ng-if="info" class="alert alert-info" role="alert">{{info}}</div>
@@ -487,7 +487,7 @@
 
         <div ng-if="action === 'registration'">
             <div class="form-group">
-                <div class="btn btn-default btn-modal" ng-click="twitchAuth()"><span class="fa fa-twitch"></span> {{'AUTH_WITH_TWITCH' | translate}}</div>
+                <div class="btn btn-default btn-modal" ng-click="socialAuth('twitch')"><span class="fa fa-twitch"></span> {{'AUTH_WITH_TWITCH' | translate}}</div>
             </div>
             <div ng-if="error" class="alert alert-danger" role="alert">{{error}}</div>
 
@@ -861,7 +861,7 @@
                                     <span class="fa fa-circle" ng-style="{color: getSelf().color}" id="color"></span> {{'CONTROLS_MENU_COLOR' | translate}}</a>
                             </li>
                             <li ng-if="!canLogin()"><a ng-click="logOut()"><span class="fa fa-sign-out"></span> {{'CONTROLS_MENU_LOG_OUT' | translate}}</a></li>
-                            <li ng-if="canLogin()"><a ng-click="twitchAuth()"><span class="fa fa-twitch"></span> {{'CONTROLS_MENU_TWITCH_AUTH' | translate}}</a></li>
+                            <li ng-if="canLogin()"><a ng-click="socialAuth('twitch')"><span class="fa fa-twitch"></span> {{'CONTROLS_MENU_TWITCH_AUTH' | translate}}</a></li>
                             <li ng-if="canLogin()"><a ng-click="showSignIn()"><span class="fa fa-sign-in"></span> {{'CONTROLS_MENU_SIGN_IN' | translate}}</a></li>
                             <li ng-if="canLogin()"><a ng-click="showSignUp()"><span class="fa fa-sign-in"></span> {{'CONTROLS_MENU_SIGN_UP' | translate}}</a></li>
                             <li class="divider"></li>

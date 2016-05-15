@@ -17,7 +17,7 @@ import org.apache.http.message.BasicNameValuePair;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
-public class GoodGameSocialAuthService implements SocialAuthService {
+public class GoodGameSocialAuthProvider implements SocialAuthProvider {
     private final String name;
     private final String clientId;
     private final String clientSecret;
@@ -25,7 +25,7 @@ public class GoodGameSocialAuthService implements SocialAuthService {
     private final HttpClient httpClient;
     private final SecureTokenGenerator secureTokenGenerator;
 
-    public GoodGameSocialAuthService(
+    public GoodGameSocialAuthProvider(
         String clientId,
         String clientSecret,
         String url,
@@ -115,6 +115,11 @@ public class GoodGameSocialAuthService implements SocialAuthService {
     @Override
     public boolean needsRefreshing() {
         return true;
+    }
+
+    @Override
+    public boolean checkEmail() {
+        return false;
     }
 
     @Override

@@ -8,7 +8,6 @@ import io.netty.channel.*;
 import io.netty.handler.codec.http.*;
 import lexek.wschat.security.AuthenticationManager;
 import org.apache.http.entity.ContentType;
-import org.glassfish.jersey.server.ApplicationHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,8 +54,7 @@ public class RequestDispatcher extends SimpleChannelInboundHandler<FullHttpReque
         this.host = hostname + ":1337";
         this.hostname = hostname;
         this.origin = "https://" + this.host;
-        ApplicationHandler applicationHandler = new ApplicationHandler(resourceConfig);
-        JerseyContainer jerseyContainer = new JerseyContainer(authenticationManager, applicationHandler);
+        JerseyContainer jerseyContainer = new JerseyContainer(authenticationManager, resourceConfig);
         this.matcherEntries.add(new MatcherEntry(Pattern.compile("/rest/.*"), jerseyContainer));
         this.timer = metricRegistry.register("httpServer.requests", new Timer());
     }

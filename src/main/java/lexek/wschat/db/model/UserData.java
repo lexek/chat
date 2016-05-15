@@ -2,6 +2,7 @@ package lexek.wschat.db.model;
 
 public class UserData {
     private final UserDto user;
+    //todo: change to map authservice->name
     private final String authServices;
     private final String authNames;
 

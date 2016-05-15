@@ -19,6 +19,7 @@ public class JerseyExceptionMapper implements ExceptionMapper<Throwable> {
 
     @Override
     public Response toResponse(Throwable exception) {
+        logger.debug("", exception);
         if (exception instanceof DomainException) {
             if (exception instanceof EntityNotFoundException) {
                 return Response.status(404).entity(new ErrorModel(exception.getMessage())).build();
@@ -27,7 +28,10 @@ public class JerseyExceptionMapper implements ExceptionMapper<Throwable> {
                 return Response.status(400).entity(new ErrorModel(exception.getMessage())).build();
             }
             if (exception instanceof InvalidInputException) {
-                return Response.status(400).entity(((InvalidInputException) exception).getData()).build();
+                return Response.status(400).entity(new ErrorModel(
+                    "error",
+                    ((InvalidInputException) exception).getData()
+                )).build();
             }
             logger.warn("exception", exception);
             return Response.status(500).entity(new ErrorModel(exception.getMessage())).build();
