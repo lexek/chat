@@ -121,8 +121,22 @@ AdminServices.factory("alert", AlertServiceFactory);
 AdminServices.factory("title", TitleServiceFactory);
 AdminServices.factory("tickets", TicketCountServiceFactory);
 
-var AdminApplication = angular.module("AdminApplication", ["ngRoute", "ngAnimate", "AdminServices", "relativeDate",
-    "ui.inflector", "ui.bootstrap", "ui.bootstrap.datetimepicker", "highcharts-ng", "ngSanitize", "rgkevin.datetimeRangePicker"]);
+var AdminApplication = angular.module(
+    "AdminApplication",
+    [
+        "ngRoute",
+        "ngAnimate",
+        "AdminServices",
+        "relativeDate",
+        "ui.inflector",
+        "ui.bootstrap",
+        "ui.bootstrap.datetimepicker",
+        "highcharts-ng",
+        "ngSanitize",
+        "rgkevin.datetimeRangePicker",
+        "chat.admin.auth"
+    ]
+);
 
 Role = function(title, value) {
     this.title = title;
@@ -564,12 +578,10 @@ var UsersController = function($scope, $location, $http, alert, title) {
                 page: $scope.page
             }
         }).success(function (d) {
-            $scope.users = [];
-            angular.forEach(d["data"], function(e) {
-                var u = e.user;
-                u.authServices = e.authServices;
-                u.authNames = e.authNames;
-                $scope.users.push(u);
+            $scope.users = d["data"].map(function(userData) {
+                var u = userData.user;
+                u.auth = userData.authServices;
+                return u;
             });
             $scope.totalPages = d["pageCount"];
             title.secondary = "page " + ($scope.page+1) + "/" + ($scope.totalPages);
@@ -938,13 +950,6 @@ var UserController = function($scope, $route, $http, $modal, alert, id) {
     };
 
     var init = function() {
-        $scope.auth = {};
-        if ($scope.user && $scope.user.authServices) {
-            var namesArray = $scope.user.authNames.split(",");
-            angular.forEach($scope.user.authServices.split(","), function(e, i) {
-                $scope.auth[e] = namesArray[i];
-            });
-        }
         $scope.input.name = $scope.user.name;
         $scope.input.role = $scope.user.role;
         $scope.input.banned = $scope.user.banned;
@@ -1018,12 +1023,7 @@ var UserModalController = function($scope, $http, $modal, $modalInstance, id) {
             $scope.input.role = $scope.user.role;
             $scope.input.banned = $scope.user.banned;
             $scope.input.renameAvailable = $scope.user.renameAvailable;
-            if (d.authServices) {
-                var namesArray = d.authNames.split(",");
-                angular.forEach(d.authServices.split(","), function(e, i) {
-                    $scope.auth[e] = namesArray[i];
-                });
-            }
+            $scope.auth = d.authServices;
         });
     };
 
@@ -2458,7 +2458,7 @@ AdminApplication.config(["$routeProvider", "$locationProvider", function($routeP
     });
     $routeProvider.when("/users", {
         "title": "users",
-        "templateUrl": "users.html",
+        "templateUrl": "/templates/users.html",
         "controller": UsersController,
         "menuId": "users"
     });

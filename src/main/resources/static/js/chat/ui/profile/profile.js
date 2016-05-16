@@ -31,7 +31,7 @@
                 size: "sm",
                 resolve: {
                     hasPassword: function() {
-                        return $scope.profile.authServices.split(",").indexOf("password") !== -1;
+                        return $scope.profile.authServices["password"] === "";
                     }
                 }
             }).result.then(function() {
