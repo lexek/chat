@@ -82,7 +82,6 @@ public class SocialSignInResource {
 
         if (token != null) {
             SocialProfile profile = socialAuthProvider.getProfile(token);
-            //todo: register or add to account
             if (profile.getEmail() != null || !socialAuthProvider.checkEmail()) {
                 //do authentication/registration
                 if (user == null) {
