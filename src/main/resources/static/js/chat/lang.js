@@ -34,6 +34,7 @@ langModule.config(['$translateProvider', function ($translateProvider) {
         "CONTROLS_USE_TWITCH": "Use twitch.tv account",
         "CONTROLS_SIGN_IN": "Sign in",
         "CONTROLS_SIGN_UP": "Register",
+        "CONTROLS_MENU_SIGN_IN_WITH": "with",
 
         "CONTROLS_MENU_ADMIN_PANEL": "admin panel",
         "CONTROLS_MENU_COLOR": "color",
@@ -100,6 +101,7 @@ langModule.config(['$translateProvider', function ($translateProvider) {
         "AUTH_PASSWORD_FORMAT": "Password length must be between 6 and 30 symbols.",
         "AUTH_USERNAME_CHECK_PENDING": "Checking if this name is available...",
         "AUTH_USERNAME_NOT_AVAILABLE": "This username is not available.",
+        "AUTH_SOCIAL": "Social sign in",
 
         "HELP_ABOUT": "About this chat",
         "HELP_ABOUT_TEXT": "Our github: <a href='https://github.com/lexek/chat' target='_blank'><i class='fa fa-fw fa-github'/>lexek/chat</a>",
@@ -195,6 +197,7 @@ langModule.config(['$translateProvider', function ($translateProvider) {
         "CONTROLS_USE_TWITCH": "Вход через twitch.tv",
         "CONTROLS_SIGN_IN": "Войти",
         "CONTROLS_SIGN_UP": "Зарегистрироваться",
+        "CONTROLS_MENU_SIGN_IN_WITH": "через",
 
         "CONTROLS_MENU_ADMIN_PANEL": "админка",
         "CONTROLS_MENU_COLOR": "цвет",
@@ -261,6 +264,7 @@ langModule.config(['$translateProvider', function ($translateProvider) {
         "AUTH_PASSWORD_FORMAT": "Длина пароля должны быть от 6 до 30 символов.",
         "AUTH_USERNAME_CHECK_PENDING": "Проверка доступности имени...",
         "AUTH_USERNAME_NOT_AVAILABLE": "Это имя уже занято.",
+        "AUTH_SOCIAL": "Социальные сети",
 
         "HELP_ABOUT": "О чате",
         "HELP_ABOUT_TEXT": "Наш гитхаб: <a href='https://github.com/lexek/chat' target='_blank'><i class='fa fa-fw fa-github'/>lexek/chat</a>",

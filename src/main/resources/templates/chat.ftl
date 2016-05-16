@@ -434,14 +434,30 @@
 
 <script type="text/ng-template" id="authentication.html">
     <div class="modal-header">
+        <h3>{{'AUTH_SOCIAL' | translate}}</h3>
+    </div>
+    <div class="modal-body" style="text-align: center;">
+        <div class="btn-group">
+            <div class="btn btn-default btn-modal" ng-click="socialAuth('twitch')">
+                <span class="fa fa-twitch"></span>
+            </div>
+            <div class="btn btn-default btn-modal" ng-click="socialAuth('twitter')">
+                <span class="fa fa-twitter"></span>
+            </div>
+            <div class="btn btn-default btn-modal" ng-click="socialAuth('google')">
+                <span class="fa fa-google"></span>
+            </div>
+            <div class="btn btn-default btn-modal" ng-click="socialAuth('goodgame')" style="color: #73ADFF">
+                <img src="/img/goodgame.png" style="width: 1em; height: auto; padding-bottom: 3px;"></img>
+            </div>
+        </div>
+    </div>
+    <div class="modal-header">
         <h3 ng-if="action === 'sign_in'">{{'AUTH_SIGN_IN' | translate}}</h3>
         <h3 ng-if="action === 'registration'">{{'AUTH_NEW_ACCOUNT' | translate}}</h3>
     </div>
     <div class="modal-body">
         <div ng-if="action === 'sign_in'">
-            <div class="form-group">
-                <div class="btn btn-default btn-modal" ng-click="socialAuth('twitch')"><span class="fa fa-twitch"></span> {{'AUTH_WITH_TWITCH' | translate}}</div>
-            </div>
             <div ng-if="error" class="alert alert-danger" role="alert">{{error}}</div>
             <div ng-if="info" class="alert alert-info" role="alert">{{info}}</div>
 
@@ -486,9 +502,6 @@
         </div>
 
         <div ng-if="action === 'registration'">
-            <div class="form-group">
-                <div class="btn btn-default btn-modal" ng-click="socialAuth('twitch')"><span class="fa fa-twitch"></span> {{'AUTH_WITH_TWITCH' | translate}}</div>
-            </div>
             <div ng-if="error" class="alert alert-danger" role="alert">{{error}}</div>
 
             <form name="form" class="form" id="regForm" ng-submit="submitRegistration()">
@@ -861,8 +874,24 @@
                                     <span class="fa fa-circle" ng-style="{color: getSelf().color}" id="color"></span> {{'CONTROLS_MENU_COLOR' | translate}}</a>
                             </li>
                             <li ng-if="!canLogin()"><a ng-click="logOut()"><span class="fa fa-sign-out"></span> {{'CONTROLS_MENU_LOG_OUT' | translate}}</a></li>
-                            <li ng-if="canLogin()"><a ng-click="socialAuth('twitch')"><span class="fa fa-twitch"></span> {{'CONTROLS_MENU_TWITCH_AUTH' | translate}}</a></li>
                             <li ng-if="canLogin()"><a ng-click="showSignIn()"><span class="fa fa-sign-in"></span> {{'CONTROLS_MENU_SIGN_IN' | translate}}</a></li>
+                            <li ng-if="canLogin()" style="padding-left: 20px; padding-right: 20px">
+                                <span class="fa fa-sign-in"></span> {{'CONTROLS_MENU_SIGN_IN_WITH' | translate}}
+                                <div class="btn-group btn-group-xs pull-right">
+                                    <div class="btn btn-link" ng-click="socialAuth('twitch')">
+                                        <span class="fa fa-twitch" style="color: black"></span>
+                                    </div>
+                                    <div class="btn btn-link" ng-click="socialAuth('twitter')">
+                                        <span class="fa fa-twitter" style="color: black"></span>
+                                    </div>
+                                    <div class="btn btn-link" ng-click="socialAuth('google')">
+                                        <span class="fa fa-google" style="color: black"></span>
+                                    </div>
+                                    <div class="btn btn-link" ng-click="socialAuth('goodgame')" style="color: #73ADFF">
+                                        <img src="/img/goodgame.png" style="width: 1em; height: auto; padding-bottom: 3px;"></img>
+                                    </div>
+                                </div>
+                            </li>
                             <li ng-if="canLogin()"><a ng-click="showSignUp()"><span class="fa fa-sign-in"></span> {{'CONTROLS_MENU_SIGN_UP' | translate}}</a></li>
                             <li class="divider"></li>
                             <li ng-if="!canLogin()"><a ng-click="showTickets()"><span class="fa fa-ticket"></span> {{'CONTROLS_MENU_TICKETS' | translate}}</a></li>
