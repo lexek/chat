@@ -1,6 +1,7 @@
 angular.module("chat.admin.auth", [])
     .directive("auth", function() {
         return {
+            replace:true,
             restrict: "E",
             scope: {
                 "auth": "="
