@@ -6,7 +6,7 @@ before_install:
   - mysql -u root -e "CREATE USER chat@localhost IDENTIFIED BY '135792468';"
   - mysql -u root -e "GRANT ALL ON chat.* TO chat@localhost; FLUSH PRIVILEGES;"
   - mysql chat < database.sql
-  - for sql_file in `ls migrations`; do mysql -uUSER -pPASSWORD DATABASE < migrations/$sql_file; done
+  - for sql_file in `ls migrations`; do mysql -u root < migrations/$sql_file; done
 cache:
   directories:
     - $HOME/.m2/repository
