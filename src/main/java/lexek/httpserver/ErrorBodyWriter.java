@@ -14,7 +14,7 @@ import java.lang.reflect.Type;
 public class ErrorBodyWriter implements MessageBodyWriter<ErrorModel> {
     @Override
     public boolean isWriteable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
-        return mediaType != MediaType.APPLICATION_JSON_TYPE;
+        return !mediaType.equals(MediaType.APPLICATION_JSON_TYPE) && !mediaType.equals(MediaType.WILDCARD_TYPE);
     }
 
     @Override
