@@ -262,7 +262,7 @@ controlsModule.controller("SettingsController", ["$scope", "chatService", "$moda
     };
 
     $scope.socialAuth = function(service) {
-        window.open("https://" + HOST_NAME + ":1337/rest/sign-in/social/" + service);
+        window.open("https://" + HOST_NAME + ":1337/rest/auth/social/" + service);
     };
 
     $scope.showSignIn = function () {
@@ -330,7 +330,7 @@ var AnonCaptchaController = function($scope, $modalInstance, id, isUser) {
     };
 
     $scope.socialAuth = function(service) {
-        window.open("https://" + HOST_NAME + ":1337/rest/sign-in/social/" + service);
+        window.open("https://" + HOST_NAME + ":1337/rest/auth/social/" + service);
     };
 
     $scope.showSignIn = function() {
@@ -359,7 +359,7 @@ var AuthenticationController = function($scope, $modalInstance, chat, action) {
     };
 
     $scope.socialAuth = function(service) {
-        window.open("https://" + HOST_NAME + ":1337/rest/sign-in/social/" + service);
+        window.open("https://" + HOST_NAME + ":1337/rest/auth/social/" + service);
     };
 
     $scope.submitSignIn = function() {

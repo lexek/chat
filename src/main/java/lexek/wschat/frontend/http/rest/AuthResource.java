@@ -2,6 +2,7 @@ package lexek.wschat.frontend.http.rest;
 
 import com.google.common.collect.ImmutableMap;
 import lexek.httpserver.Request;
+import lexek.wschat.chat.model.GlobalRole;
 import lexek.wschat.db.model.SessionDto;
 import lexek.wschat.db.model.UserAuthDto;
 import lexek.wschat.db.model.UserDto;
@@ -9,11 +10,10 @@ import lexek.wschat.db.model.rest.ErrorModel;
 import lexek.wschat.security.AuthenticationManager;
 import lexek.wschat.security.ReCaptcha;
 import lexek.wschat.security.jersey.Auth;
+import lexek.wschat.security.jersey.RequiredRole;
 import lexek.wschat.security.social.*;
 import org.glassfish.jersey.server.mvc.Viewable;
 import org.hibernate.validator.constraints.NotEmpty;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
@@ -25,22 +25,21 @@ import java.io.IOException;
 import static lexek.wschat.util.Names.PASSWORD_PATTERN;
 import static lexek.wschat.util.Names.USERNAME_PATTERN;
 
-@Path("/sign-in/social")
-public class SocialSignInResource {
+@Path("/auth")
+public class AuthResource {
     private static final int COOKIE_MAX_AGE = 2592000;
 
-    private final Logger logger = LoggerFactory.getLogger(SocialSignInResource.class);
     private final SocialAuthService socialAuthService;
     private final AuthenticationManager authenticationManager;
     private final ReCaptcha reCaptcha;
 
-    public SocialSignInResource(SocialAuthService socialAuthService, AuthenticationManager authenticationManager, ReCaptcha reCaptcha) {
+    public AuthResource(SocialAuthService socialAuthService, AuthenticationManager authenticationManager, ReCaptcha reCaptcha) {
         this.socialAuthService = socialAuthService;
         this.authenticationManager = authenticationManager;
         this.reCaptcha = reCaptcha;
     }
 
-    @Path("/{serviceName}")
+    @Path("/social/{serviceName}")
     @Produces(MediaType.TEXT_HTML)
     @GET
     public Response socialAuth(
@@ -97,13 +96,12 @@ public class SocialSignInResource {
                         NewCookie sessionCookie = sessionCookie("temp_sid", sessionResult.getSessionId());
                         return Response
                             .status(302)
-                            .header("Location", "/rest/sign-in/social/setup_profile")
+                            .header("Location", "/rest/auth/social/setup_profile")
                             .cookie(sessionCookie)
                             .build();
                     }
                 } else {
-                    UserAuthDto userAuthDto = authenticationManager.getOrCreateUserAuth(profile, true);
-                    authenticationManager.tieUserWithExistingAuth(user, userAuthDto);
+                    authenticationManager.getOrCreateUserAuth(profile, user);
                     return Response
                         .ok(new Viewable("/auth", null))
                         .build();
@@ -121,7 +119,7 @@ public class SocialSignInResource {
         return Response.status(302).header("Location", socialRedirect.getUrl()).cookie(stateCookie).build();
     }
 
-    @Path("/setup_profile")
+    @Path("/social/setup_profile")
     @GET
     public Viewable setupProfilePage(@Context Request request) {
         SocialProfile profile = socialAuthService.getTempSession(
@@ -139,7 +137,7 @@ public class SocialSignInResource {
         );
     }
 
-    @Path("/setup_profile")
+    @Path("/social/setup_profile")
     @Produces(MediaType.TEXT_HTML)
     @POST
     public Response setupProfilePost(
@@ -225,6 +223,22 @@ public class SocialSignInResource {
                 "profile", profile
             )
         )).build();
+    }
+
+    @DELETE
+    @Path("/{serviceName}")
+    @RequiredRole(GlobalRole.USER_UNCONFIRMED)
+    public Response deleteAuth(
+        @PathParam("serviceName") @NotEmpty String serviceName,
+        @Auth UserDto user
+    ) {
+        serviceName = serviceName.toLowerCase().trim();
+        if (serviceName.equals("password") || serviceName.equals("token")) {
+            authenticationManager.deleteAuth(user, serviceName);
+        } else {
+            socialAuthService.deleteAuth(user, serviceName);
+        }
+        return Response.ok().build();
     }
 
     private static NewCookie sessionCookie(String name, String id) {

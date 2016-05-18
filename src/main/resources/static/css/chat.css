@@ -163,7 +163,10 @@ img.emoji {
     text-align: center;
 }
 
-.btn, .form-control, .btn-group > .btn {
+.btn,
+.form-control,
+.btn-group > .btn,
+.input-group-btn > .btn{
     border-radius: 0;
 }
 
@@ -951,4 +954,18 @@ a:focus {
 .twitter-avatar {
     margin-right: 2px;
     padding-top: 2px;
+}
+
+.gg-icon {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    background-image: url("/img/goodgame.png");
+    background-size: 12px 12px;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.auth-button {
+    width: 100%;
 }

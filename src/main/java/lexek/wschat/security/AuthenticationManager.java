@@ -101,12 +101,8 @@ public class AuthenticationManager {
         );
     }
 
-    public UserAuthDto getOrCreateUserAuth(SocialProfile profile, boolean create) {
-        return userAuthDao.getOrCreateUserAuth(profile, create);
-    }
-
-    public void tieUserWithExistingAuth(UserDto userDto, UserAuthDto userAuthDto) {
-        userAuthDao.tieUserWithExistingAuth(userDto, userAuthDto);
+    public UserAuthDto getOrCreateUserAuth(SocialProfile profile, UserDto user) {
+        return userAuthDao.getOrCreateUserAuth(profile, user);
     }
 
     public UserAuthDto checkFullAuthentication(String sid, String ip) {
@@ -250,7 +246,7 @@ public class AuthenticationManager {
         userAuthDao.setPassword(user.getId(), BCrypt.hashpw(password, BCrypt.gensalt()));
     }
 
-    public String createTokenForUser(UserDto user) {
+    public synchronized String createTokenForUser(UserDto user) {
         byte[] bytes = new byte[128];
         secureTokenGenerator.nextBytes(bytes);
         String token = user.getId() + "_" + BaseEncoding.base64().encode(bytes);
@@ -261,23 +257,19 @@ public class AuthenticationManager {
         }
     }
 
-    public boolean addUserAndTieToAuth(String name, UserAuthDto auth) {
-        return userAuthDao.addUserAndTieToAuth(name, auth);
-    }
-
-    public UserAuthDto createUserWithProfile(String name, SocialProfile socialProfile) {
+    public synchronized UserAuthDto createUserWithProfile(String name, SocialProfile socialProfile) {
         return userAuthDao.createUserWithProfile(name, socialProfile);
     }
 
-    public UserAuthDto createUserAuthFromProfile(UserDto user, SocialProfile profile) {
+    public synchronized UserAuthDto createUserAuthFromProfile(UserDto user, SocialProfile profile) {
         return userAuthDao.createAuthFromProfile(user, profile);
     }
 
-    public UserAuthDto getAuthDataForUser(UserDto user, String service) {
+    public synchronized UserAuthDto getAuthDataForUser(UserDto user, String service) {
         return userAuthDao.getAuthDataForUser(user.getId(), service);
     }
 
-    public UserAuthDto getAuthDataForUser(long userId, String service) {
+    public synchronized UserAuthDto getAuthDataForUser(long userId, String service) {
         return userAuthDao.getAuthDataForUser(userId, service);
     }
 
@@ -288,5 +280,9 @@ public class AuthenticationManager {
 
     public void invalidateSession(String sid) {
         userAuthDao.invalidateSession(sid);
+    }
+
+    public synchronized void deleteAuth(UserDto user, String serviceName) {
+        userAuthDao.deleteAuth(user, serviceName);
     }
 }

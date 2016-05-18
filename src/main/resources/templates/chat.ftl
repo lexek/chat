@@ -305,7 +305,6 @@
         <h3>
             <i class='fa fa-user'></i>
             {{self.name}}
-            <span class='btn btn-link btn-xs pull-right' ng-if="profile" ng-click='showPasswordSettings()'><i class='fa fa-key'></i></span>
         </h3>
     </div>
     <div class='modal-body'>
@@ -348,22 +347,14 @@
                     </div>
                 </div>
             </form>
-        <div class='panel panel-default' ng-if="profile">
-            <div class='panel-heading'>
-                <div class='panel-title'>API token</div>
-            </div>
-            <div class='panel-body'>
-                <div class='input-group'>
-                    <input type='text' class='form-control' ng-model='apiToken' readonly
-                        placeholder='press button to get token'>
-                    <span class='input-group-btn'>
-                        <button class='btn btn-default' type='button' ng-click='newToken()'>
-                            <i class='fa fa-fw fa-refresh'></i>
-                        </button>
-                    </span>
-                </div>
-            </div>
-        </div>
+    </div>
+    <div class="modal-header" ng-if="profile">
+        <h3>
+            <i class="fa fa-key"></i> {{"AUTH_METHODS" | translate}}
+        </h3>
+    </div>
+    <div class="modal-body" ng-if="profile">
+        <social-connect connected="profile.authServices" change="update()"/>
     </div>
     <div class='modal-footer'>
         <div class='btn btn-default pull-left' ng-click='close()' translate='CONTROLS_CLOSE'></div>

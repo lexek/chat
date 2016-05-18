@@ -1,8 +1,8 @@
 var module = angular.module("chat.services.chat", ["chat.messageProcessing", "chat.services.settings", "chat.services.notifications"]);
 
 module.service("chatService",
-["$modal", "chatSettings", "$translate", "$http", "$timeout", "notificationService", "messageProcessingService", "windowState",
-function($modal, settings, $translate, $http, $timeout, notificationService, msgs, windowState) {
+["$rootScope", "$modal", "chatSettings", "$translate", "$http", "$timeout", "notificationService", "messageProcessingService", "windowState",
+function($root, $modal, settings, $translate, $http, $timeout, notificationService, msgs, windowState) {
     /**
      * @constructor
      */
@@ -12,7 +12,6 @@ function($modal, settings, $translate, $http, $timeout, notificationService, msg
         this.selfUpdatedCallbacks = [];
         this.stateUpdatedCallbacks = [];
         this.countCallback = angular.noop;
-        this.authUpdated = angular.noop;
         this.messages = {};
         this.unreadCount = {};
         this.unreadMentions = {};
@@ -142,7 +141,7 @@ function($modal, settings, $translate, $http, $timeout, notificationService, msg
         this.unreadMessages++;
         this.countCallback();
         console.log(this.unreadMessages);
-    }
+    };
 
     chatService.prototype.addMessage = function(message, room, hist, mention) {
         message.internalId = this.idCounter++;
@@ -295,9 +294,13 @@ function($modal, settings, $translate, $http, $timeout, notificationService, msg
         window.addEventListener('message', function(event) {
             if (event.origin == 'https://' + HOST_NAME + ':1337') {
                 if (event.data === 'auth-notify') {
-                    chat.ws.close();
-                    if (document.lastModal) {
-                        document.lastModal.close();
+                    if (chat.state == CHAT_STATE.AUTHENTICATED && chat.self.role >= globalLevels.USER_UNCONFIRMED) {
+                        $root.$broadcast("auth-updated");
+                    } else {
+                        chat.ws.close();
+                        if (document.lastModal) {
+                            document.lastModal.close();
+                        }
                     }
                 }
             }

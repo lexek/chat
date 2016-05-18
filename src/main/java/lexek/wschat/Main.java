@@ -447,7 +447,7 @@ public class Main {
                     new PasswordResource(authenticationManager),
                     new CheckUsernameResource(userService),
                     new ProxyAuthResource(proxyAuthService),
-                    new SocialSignInResource(socialAuthService, authenticationManager, reCaptcha)
+                    new AuthResource(socialAuthService, authenticationManager, reCaptcha)
                 );
             }
         };

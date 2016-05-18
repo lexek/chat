@@ -4,9 +4,11 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import io.netty.util.internal.chmv8.ConcurrentHashMapV8;
 import lexek.wschat.chat.e.AccessDeniedException;
+import lexek.wschat.chat.e.EntityNotFoundException;
 import lexek.wschat.chat.e.InvalidInputException;
 import lexek.wschat.db.model.SessionDto;
 import lexek.wschat.db.model.UserAuthDto;
+import lexek.wschat.db.model.UserDto;
 import lexek.wschat.security.AuthenticationManager;
 import lexek.wschat.security.SecureTokenGenerator;
 
@@ -36,7 +38,7 @@ public class SocialAuthService {
     }
 
     public SessionResult getSession(SocialProfile profile, String ip) {
-        UserAuthDto userAuth = authenticationManager.getOrCreateUserAuth(profile, false);
+        UserAuthDto userAuth = authenticationManager.getOrCreateUserAuth(profile, null);
         if (userAuth != null) {
             SessionDto session = authenticationManager.createSession(userAuth, ip);
             return new SessionResult(
@@ -69,6 +71,15 @@ public class SocialAuthService {
             }
         }
         throw new AccessDeniedException("Temporary session is invalid or expired");
+    }
+
+    public void deleteAuth(UserDto user, String serviceName) {
+        SocialAuthProvider socialAuthProvider = getAuthService(serviceName);
+        if (socialAuthProvider == null) {
+            throw new EntityNotFoundException("service");
+        }
+        authenticationManager.deleteAuth(user, serviceName);
+        //todo: invalidate
     }
 
     private class TemporarySession {

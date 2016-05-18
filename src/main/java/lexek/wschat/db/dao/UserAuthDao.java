@@ -1,6 +1,7 @@
 package lexek.wschat.db.dao;
 
 import lexek.wschat.chat.e.InternalErrorException;
+import lexek.wschat.chat.e.InvalidStateException;
 import lexek.wschat.chat.model.GlobalRole;
 import lexek.wschat.db.jooq.tables.pojos.PendingConfirmation;
 import lexek.wschat.db.model.SessionDto;
@@ -10,6 +11,7 @@ import lexek.wschat.security.social.SocialProfile;
 import lexek.wschat.util.Colors;
 import org.jooq.Configuration;
 import org.jooq.DSLContext;
+import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.exception.DataAccessException;
 import org.jooq.impl.DSL;
@@ -19,6 +21,8 @@ import org.slf4j.LoggerFactory;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import static lexek.wschat.db.jooq.tables.PendingConfirmation.PENDING_CONFIRMATION;
@@ -72,7 +76,7 @@ public class UserAuthDao {
         return auth;
     }
 
-    public UserAuthDto getOrCreateUserAuth(SocialProfile profile, boolean create) {
+    public UserAuthDto getOrCreateUserAuth(SocialProfile profile, UserDto user) {
         UserAuthDto auth = null;
         try (Connection connection = dataSource.getConnection()) {
             auth = DSL.using(connection).transactionResult(conf -> {
@@ -84,17 +88,24 @@ public class UserAuthDao {
                         .and(USERAUTH.AUTH_ID.equal(String.valueOf(profile.getId()))))
                     .fetchOne();
                 result = UserAuthDto.fromRecord(record);
-                if (result == null && create) {
-                    record = DSL.using(conf)
-                        .insertInto(USERAUTH, USERAUTH.AUTH_NAME, USERAUTH.AUTH_ID, USERAUTH.AUTH_KEY, USERAUTH.SERVICE)
-                        .values(profile.getName(), String.valueOf(profile.getId()), profile.getToken().getToken(), profile.getService())
-                        .returning().fetchOne();
-                    result = UserAuthDto.fromRecord(record, null);
+                if (result == null) {
+                    if (user != null) {
+                        record = DSL.using(conf)
+                            .insertInto(USERAUTH, USERAUTH.AUTH_NAME, USERAUTH.AUTH_ID, USERAUTH.AUTH_KEY, USERAUTH.SERVICE, USERAUTH.USER_ID)
+                            .values(profile.getName(), String.valueOf(profile.getId()), profile.getToken().getToken(), profile.getService(), user.getId())
+                            .returning().fetchOne();
+                        result = UserAuthDto.fromRecord(record, null);
+                    }
                 } else {
+                    Map<Field<?>, Object> extras = new HashMap<>();
+                    if (user != null) {
+                        extras.put(USERAUTH.USER_ID, user.getId());
+                    }
                     DSL.using(conf)
                         .update(USERAUTH)
                         .set(USERAUTH.AUTH_NAME, profile.getName())
                         .set(USERAUTH.AUTH_KEY, profile.getToken().getToken())
+                        .set(extras)
                         .where(USERAUTH.SERVICE.equal(profile.getService()).and(USERAUTH.AUTH_ID.equal(String.valueOf(profile.getId()))))
                         .execute();
                 }
@@ -104,19 +115,6 @@ public class UserAuthDao {
             logger.error(e.getMessage());
         }
         return auth;
-    }
-
-    public void tieUserWithExistingAuth(UserDto userDto, UserAuthDto userAuthDto) {
-        try (Connection connection = dataSource.getConnection()) {
-            DSL.using(connection).transaction(conf -> DSL.using(conf)
-                .update(USERAUTH)
-                .set(USERAUTH.USER_ID, userDto.getId())
-                .where(USERAUTH.ID.equal(userAuthDto.getId()).and(USERAUTH.USER_ID.isNull()))
-                .execute()
-            );
-        } catch (DataAccessException | SQLException e) {
-            logger.error(e.getMessage());
-        }
     }
 
     public Long registerWithPassword(String name, String password, String email, String color, String verificationCode) {
@@ -195,33 +193,6 @@ public class UserAuthDao {
                 .set(USERAUTH.AUTH_KEY, token)
                 .execute();
             success = true;
-        } catch (DataAccessException | SQLException e) {
-            logger.error(e.getMessage());
-        }
-        return success;
-    }
-
-    public boolean addUserAndTieToAuth(final String name, final UserAuthDto auth) {
-        boolean success = false;
-        final String color = Colors.generateColor(name);
-        try (Connection connection = dataSource.getConnection()) {
-            success = DSL.using(connection).transactionResult(conf -> {
-                Long id = DSL.using(conf)
-                    .insertInto(USER, USER.NAME, USER.BANNED, USER.COLOR, USER.RENAME_AVAILABLE, USER.ROLE, USER.EMAIL, USER.EMAIL_VERIFIED)
-                    .values(name, false, color, false, GlobalRole.USER.toString(), null, false)
-                    .returning()
-                    .fetchOne()
-                    .getValue(USER.ID);
-                if (id != null) {
-                    DSL.using(conf)
-                        .update(USERAUTH)
-                        .set(USERAUTH.USER_ID, id)
-                        .where(USERAUTH.ID.equal(auth.getId()))
-                        .execute();
-                    return true;
-                }
-                return false;
-            });
         } catch (DataAccessException | SQLException e) {
             logger.error(e.getMessage());
         }
@@ -394,5 +365,37 @@ public class UserAuthDao {
                 .fetchOne(),
             user
         );
+    }
+
+    public void deleteAuth(UserDto user, String serviceName) {
+        try (Connection connection = dataSource.getConnection()) {
+            DSL.using(connection).transaction(conf -> {
+                //excluding token because user can be easily locked out with only token auth
+                if (!"token".equals(serviceName)) {
+                    int authCount = DSL
+                        .using(conf)
+                        .fetchCount(
+                            USERAUTH,
+                            USERAUTH.USER_ID.equal(user.getId()).and(USERAUTH.SERVICE.notEqual("token"))
+                        );
+                    if (authCount <= 1) {
+                        throw new InvalidStateException("You can't delete last auth method.");
+                    }
+                }
+                int deleted = DSL
+                    .using(conf)
+                    .delete(USERAUTH)
+                    .where(
+                        USERAUTH.USER_ID.equal(user.getId()),
+                        USERAUTH.SERVICE.equal(serviceName)
+                    )
+                    .execute();
+                if (deleted != 1) {
+                    throw new InvalidStateException("service not connected");
+                }
+            });
+        } catch (DataAccessException | SQLException e) {
+            throw new InternalErrorException(e);
+        }
     }
 }
