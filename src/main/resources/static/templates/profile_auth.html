@@ -41,7 +41,7 @@
     <div class="form-group">
         <label translate="AUTH_TOKEN"></label>
         <div class='input-group input-group-sm'>
-            <input type='text' class='form-control' ng-model='apiToken' readonly placeholder='press button to get token' />
+            <input type='text' class='form-control' ng-model='apiToken' readonly placeholder="{{'AUTH_GET_TOKEN' | translate}}" />
             <span class='input-group-btn'>
                 <button class='btn btn-default' type='button' ng-click='newToken()'>
                     <i class='fa fa-fw fa-refresh'></i>

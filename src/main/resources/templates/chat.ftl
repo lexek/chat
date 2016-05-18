@@ -309,11 +309,11 @@
     </div>
     <div class='modal-body'>
         <form class='form-horizontal' ng-if='profile'>
-            <div class='form-group' ng-if='profile.user.email'>
+            <div class='form-group'>
                 <label class='col-sm-2 control-label'>Email</label>
                 <div class='col-sm-10'>
                     <div class='form-control-static'>
-                        {{profile.user.email}}
+                        {{profile.user.email ? profile.user.email : ("PROFILE_EMAIL_EMPTY" | translate)}}
                         <i class='fa fa-fw fa-check text-success' ng-if='profile.user.emailVerified'></i>
                         <i class='fa fa-fw fa-times text-danger' ng-if='!profile.user.emailVerified'></i>
                         <span class='btn btn-link btn-xs pull-right' ng-click='showEmailSettings()'><i class='fa fa-pencil'></i></span>
@@ -321,7 +321,7 @@
                 </div>
             </div>
             <div class='form-group'>
-                <label class='col-sm-2 control-label'>Name</label>
+                <label class='col-sm-2 control-label' translate="PROFILE_NAME"></label>
                 <div class='col-sm-10'>
                     <div class='form-control-static'>
                         {{profile.user.name}}
@@ -329,17 +329,15 @@
                 </div>
             </div>
             <div class='form-group'>
-                <label class='col-sm-2 control-label'>Role</label>
+                <label class='col-sm-2 control-label' translate="PROFILE_ROLE"></label>
                 <div class='col-sm-10'>
                     <div class='form-control-static'>
-                        {{profile.user.role}}
+                        {{('ROLE_' + profile.user.role) | translate}}
                     </div>
                 </div>
             </div>
             <div class='form-group'>
-                <label class='col-sm-2 control-label'>
-                    Color
-                    </label>
+                <label class='col-sm-2 control-label' translate="PROFILE_COLOR"></label>
                 <div class='col-sm-10'>
                     <div class='form-control-static'>
                         {{profile.user.color}} <span class='fa fa-circle fa-fw' ng-style='{"color": profile.user.color}'></span>
@@ -354,7 +352,7 @@
         </h3>
     </div>
     <div class="modal-body" ng-if="profile">
-        <social-connect connected="profile.authServices" change="update()"/>
+        <social-connect connected="profile.authServices" change="update()"></social-connect>
     </div>
     <div class='modal-footer'>
         <div class='btn btn-default pull-left' ng-click='close()' translate='CONTROLS_CLOSE'></div>

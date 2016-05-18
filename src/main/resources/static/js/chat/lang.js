@@ -58,6 +58,10 @@ langModule.config(['$translateProvider', function ($translateProvider) {
 
         "PROFILE_EMAIL_SETTINGS": "Email settings",
         "PROFILE_EMAIL_RESEND": "Resend verification email",
+        "PROFILE_EMAIL_EMPTY": "not set",
+        "PROFILE_NAME": "Name",
+        "PROFILE_ROLE": "Role",
+        "PROFILE_COLOR": "Color",
 
         "CHAT_HELLO_UNCONFIRMED": "You must verify your email before you can post messages often",
         "CHAT_HELLO_UNAUTHENTICATED": "Hello, you joined {{room}} and you are unauthenticated.",
@@ -108,6 +112,7 @@ langModule.config(['$translateProvider', function ($translateProvider) {
         "AUTH_NEW_PASSWORD": "Add password",
         "AUTH_CHANGE_PASSWORD": "Change password",
         "AUTH_TOKEN": "API token",
+        "AUTH_GET_TOKEN": "Press button to get token",
 
         "HELP_ABOUT": "About this chat",
         "HELP_ABOUT_TEXT": "Our github: <a href='https://github.com/lexek/chat' target='_blank'><i class='fa fa-fw fa-github'/>lexek/chat</a>",
@@ -244,6 +249,10 @@ langModule.config(['$translateProvider', function ($translateProvider) {
 
         "PROFILE_EMAIL_SETTINGS": "Настройки email",
         "PROFILE_EMAIL_RESEND": "Выслать подтверждение",
+        "PROFILE_EMAIL_EMPTY": "не задан",
+        "PROFILE_NAME": "Имя",
+        "PROFILE_ROLE": "Роль",
+        "PROFILE_COLOR": "Цвет",
 
         "USERS_MODS": "модераторы",
         "USERS_USERS": "пользователи",
@@ -277,6 +286,7 @@ langModule.config(['$translateProvider', function ($translateProvider) {
         "AUTH_NEW_PASSWORD": "Добавить пароль",
         "AUTH_CHANGE_PASSWORD": "Изменить пароль",
         "AUTH_TOKEN": "API токен",
+        "AUTH_GET_TOKEN": "Нажми кнопку для получения токена",
 
         "HELP_ABOUT": "О чате",
         "HELP_ABOUT_TEXT": "Наш гитхаб: <a href='https://github.com/lexek/chat' target='_blank'><i class='fa fa-fw fa-github'/>lexek/chat</a>",
