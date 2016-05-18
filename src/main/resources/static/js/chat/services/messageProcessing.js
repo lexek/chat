@@ -389,7 +389,7 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
                 chat.self = message.user;
                 chat.self.role = globalLevels[chat.self.role];
                 chat.state = CHAT_STATE.AUTHENTICATED;
-                chat.stateUpdatedCallback();
+                chat.stateUpdated();
                 if (chat.rooms.length > 0) {
                     angular.forEach(chat.rooms, function (e) {
                         chat.sendMessage({"type": "JOIN", "room": e});

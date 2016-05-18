@@ -149,6 +149,8 @@ controlsModule.controller("MenuController", ["$scope", function($scope) {
 
 controlsModule.controller("SettingsController", ["$scope", "chatService", "$modal", "chatSettings", "$cookieStore",
 "$translate", "notificationService", function($scope, chat, $modal, settings, $cookieStore, $translate, notificationService) {
+    chat.stateUpdatedCallbacks.push(function() {$scope.$digest()});
+
     $scope.langs = {
         "ru": {"short": "ru", "title": "russian"},
         "en": {"short": "en", "title": "english"},
@@ -532,7 +534,7 @@ controlsModule.directive('textcomplete', ['Textcomplete', "chatService", functio
 }]);
 
 messagesModule.controller("UserInputController", ["$scope", "$modal", "chatService", "chatSettings", "$cookieStore", function($scope, $modal, chat, settings, $cookieStore) {
-    chat.stateUpdatedCallback = function() {$scope.$digest()};
+    chat.stateUpdatedCallbacks.push(function() {$scope.$digest()});
     $scope.message = "";
 
     chat.addToInputCallback = function(string) {

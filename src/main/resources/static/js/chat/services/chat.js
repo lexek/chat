@@ -10,8 +10,9 @@ function($modal, settings, $translate, $http, $timeout, notificationService, msg
         this.connectionAttempt = 0;
         this.messagesUpdatedCallbacks = [];
         this.selfUpdatedCallbacks = [];
-        this.stateUpdatedCallback = angular.noop;
+        this.stateUpdatedCallbacks = [];
         this.countCallback = angular.noop;
+        this.authUpdated = angular.noop;
         this.messages = {};
         this.unreadCount = {};
         this.unreadMentions = {};
@@ -71,6 +72,11 @@ function($modal, settings, $translate, $http, $timeout, notificationService, msg
         return result;
     };
 
+    chatService.prototype.stateUpdated = function() {
+        angular.forEach(this.stateUpdatedCallbacks, function (callback) {
+            callback()
+        });
+    };
 
     /**
      * @param {User} user
@@ -246,7 +252,7 @@ function($modal, settings, $translate, $http, $timeout, notificationService, msg
             chat.ws.onopen = function () {
                 console.log("open");
                 chat.state = CHAT_STATE.AUTHENTICATING;
-                chat.stateUpdatedCallback();
+                chat.stateUpdated();
                 chat.sendMessage({"type": "SESSION", "text": read_cookie("sid")});
                 chat.connectionAttempt = 0;
             };
@@ -266,7 +272,7 @@ function($modal, settings, $translate, $http, $timeout, notificationService, msg
                 chat.polls = {};
                 chat.pollsUpdatedCallback();
                 chat.state = CHAT_STATE.DISCONNECTED;
-                chat.stateUpdatedCallback();
+                chat.stateUpdated();
             };
             chat.ws.onmessage = function (msg) {
                 var message = angular.fromJson(msg.data);
