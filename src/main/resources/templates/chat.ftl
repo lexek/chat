@@ -855,7 +855,15 @@
                             </div>
                         </div>
                         <ul class="settings-menu" ng-show="active === 'settings'" ng-controller="SettingsController">
-                            <li><a ng-click="showProfile()"><h4><span class="fa fa-user"></span> {{getSelf().name | inflector:'capital'}}</h4></a></li>
+                            <li>
+                                <a ng-click="showProfile()">
+                                    <h4>
+                                        <span class="fa fa-fw fa-cog pull-right"></span>
+                                        <span class="fa fa-user"></span>
+                                        {{getSelf().name | inflector:'capital'}}
+                                    </h4>
+                                </a>
+                            </li>
                             <li ng-if="isAdmin()"><a href="/admin/" target="_blank"><span class="fa fa-cogs"></span> {{'CONTROLS_MENU_ADMIN_PANEL' | translate}}</a></li>
                             <li>
                                 <a colorpicker="hex" ng-model="color" colorpicker-position="left"
