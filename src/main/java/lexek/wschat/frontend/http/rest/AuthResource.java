@@ -156,7 +156,7 @@ public class AuthResource {
                 if (USERNAME_PATTERN.matcher(username).matches()) {
                     try {
                         UserAuthDto userAuth = authenticationManager.createUserWithProfile(username, profile);
-                        SessionDto sessionDto = authenticationManager.createSession(userAuth, request.ip());
+                        SessionDto sessionDto = authenticationManager.createSession(userAuth.getUser(), request.ip());
                         socialAuthService.expireTemporarySession(tempSessionId);
                         return Response
                             .ok(new Viewable("/auth"))
@@ -186,8 +186,8 @@ public class AuthResource {
                     }
 
                     if (captchaValid) {
-                        UserAuthDto userAuth = authenticationManager.fastAuth(username, password, ip);
-                        if (userAuth == null) {
+                        UserDto user = authenticationManager.fastAuth(username, password, ip);
+                        if (user == null) {
                             return Response.ok(new Viewable(
                                 "/setup_profile",
                                 ImmutableMap.of(
@@ -196,8 +196,8 @@ public class AuthResource {
                                 ))).build();
                         } else {
                             UserAuthDto newAuth =
-                                authenticationManager.createUserAuthFromProfile(userAuth.getUser(), profile);
-                            SessionDto sessionDto = authenticationManager.createSession(newAuth, ip);
+                                authenticationManager.createUserAuthFromProfile(user, profile);
+                            SessionDto sessionDto = authenticationManager.createSession(newAuth.getUser(), ip);
                             socialAuthService.expireTemporarySession(tempSessionId);
                             return Response
                                 .ok(new Viewable("/auth"))

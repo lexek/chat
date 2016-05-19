@@ -57,8 +57,7 @@ public class UserAuthDao {
         return auth;
     }
 
-    public UserAuthDto getTokenAuth(String token) {
-        UserAuthDto auth = null;
+    public UserDto getUserForToken(String token) {
         try (Connection connection = dataSource.getConnection()) {
             Record record = DSL.using(connection)
                 .select()
@@ -67,13 +66,12 @@ public class UserAuthDao {
                 .where(USERAUTH.SERVICE.equal("token").and(USERAUTH.AUTH_KEY.equal(token)))
                 .fetchOne();
             if (record != null) {
-                auth = UserAuthDto.fromRecord(record);
+                return UserAuthDto.fromRecord(record).getUser();
             }
         } catch (DataAccessException | SQLException e) {
-            auth = null;
             logger.warn("", e);
         }
-        return auth;
+        return null;
     }
 
     public UserAuthDto getOrCreateUserAuth(SocialProfile profile, UserDto user) {
@@ -223,8 +221,7 @@ public class UserAuthDao {
             Record record = DSL.using(connection)
                 .select()
                 .from(SESSION)
-                .join(USERAUTH).on(SESSION.USERAUTH_ID.eq(USERAUTH.ID))
-                .leftOuterJoin(USER).on(USERAUTH.USER_ID.equal(USER.ID))
+                .leftOuterJoin(USER).on(SESSION.USER_ID.equal(USER.ID))
                 .where(SESSION.SID.equal(sid)
                     .and(SESSION.IP.equal(ip))
                     .and(SESSION.EXPIRES.greaterOrEqual(System.currentTimeMillis())))
@@ -236,17 +233,16 @@ public class UserAuthDao {
         return session;
     }
 
-    public SessionDto newSession(String sid, String ip, UserAuthDto userAuth, long timestamp) {
+    public SessionDto newSession(String sid, String ip, UserDto user, long timestamp) {
         SessionDto session = null;
         try (Connection connection = dataSource.getConnection()) {
             session = DSL.using(connection).transactionResult(txConf -> {
                 Record record = DSL.using(txConf)
-                    .insertInto(SESSION, SESSION.IP, SESSION.SID, SESSION.USERAUTH_ID, SESSION.EXPIRES)
-                    .values(ip, sid, userAuth.getId(), timestamp + TimeUnit.DAYS.toMillis(30))
+                    .insertInto(SESSION, SESSION.IP, SESSION.SID, SESSION.USER_ID, SESSION.EXPIRES)
+                    .values(ip, sid, user.getId(), timestamp + TimeUnit.DAYS.toMillis(30))
                     .returning().fetchOne();
-                return SessionDto.fromRecord(record, userAuth);
+                return SessionDto.fromRecord(record, user);
             });
-            session.setUserAuth(userAuth);
         } catch (DataAccessException | SQLException e) {
             logger.error(e.getMessage());
         }

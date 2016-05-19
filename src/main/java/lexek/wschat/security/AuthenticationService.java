@@ -15,7 +15,7 @@ import lexek.wschat.chat.evt.EventDispatcher;
 import lexek.wschat.chat.model.ConnectionState;
 import lexek.wschat.chat.model.Message;
 import lexek.wschat.chat.model.User;
-import lexek.wschat.db.model.UserAuthDto;
+import lexek.wschat.db.model.UserDto;
 import lexek.wschat.services.AbstractService;
 import lexek.wschat.services.UserService;
 import lexek.wschat.util.LoggingExceptionHandler;
@@ -176,7 +176,7 @@ public class AuthenticationService extends AbstractService {
         @Override
         public void onEvent(final AuthenticationEvent event, long l, boolean b) throws Exception {
             if (event.connection.getState() == ConnectionState.AUTHENTICATING) {
-                UserAuthDto auth = null;
+                UserDto auth = null;
                 final String ip = event.getConnection().getIp();
                 final AuthenticationCallback callback = event.getCallback();
                 final Connection connection = event.getConnection();
@@ -196,10 +196,10 @@ public class AuthenticationService extends AbstractService {
             }
         }
 
-        private void finishAuthentication(UserAuthDto auth, Connection connection, AuthenticationCallback callback) {
+        private void finishAuthentication(UserDto user, Connection connection, AuthenticationCallback callback) {
             if (connection.getState() == ConnectionState.AUTHENTICATING) {
-                if (auth != null && auth.getUser() != null) {
-                    connection.setUser(userService.cache(auth.getUser()));
+                if (user != null) {
+                    connection.setUser(userService.cache(user));
                 } else {
                     connection.setUser(User.UNAUTHENTICATED_USER);
                 }

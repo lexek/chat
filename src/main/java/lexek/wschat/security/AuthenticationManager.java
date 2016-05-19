@@ -50,11 +50,11 @@ public class AuthenticationManager {
         this.userAuthDao = userAuthDao;
     }
 
-    public UserAuthDto fastAuth(String name, String password, String ip) {
+    public UserDto fastAuth(String name, String password, String ip) {
         AtomicInteger tries = failedLogin.get(ip);
         UserAuthDto auth = userAuthDao.getPasswordAuth(name);
         if (auth != null && auth.getAuthenticationKey() != null && validatePassword(password, auth.getAuthenticationKey())) {
-            return auth;
+            return auth.getUser();
         } else {
             if (tries == null) {
                 tries = new AtomicInteger(1);
@@ -71,8 +71,8 @@ public class AuthenticationManager {
         return BCrypt.checkpw(password, hash);
     }
 
-    public UserAuthDto fastAuthToken(String token) {
-        return userAuthDao.getTokenAuth(token);
+    public UserDto fastAuthToken(String token) {
+        return userAuthDao.getUserForToken(token);
     }
 
     public int failedLoginTries(String ip) {
@@ -81,14 +81,14 @@ public class AuthenticationManager {
     }
 
     public SessionDto authenticate(String username, String password, String ip) {
-        UserAuthDto user = fastAuth(username, password, ip);
+        UserDto user = fastAuth(username, password, ip);
         if (user != null) {
             return createSession(user, ip);
         }
         return null;
     }
 
-    public SessionDto createSession(UserAuthDto userAuth, String ip) {
+    public SessionDto createSession(UserDto userAuth, String ip) {
         if (userAuth == null || ip == null) {
             throw new NullPointerException();
         }
@@ -105,17 +105,18 @@ public class AuthenticationManager {
         return userAuthDao.getOrCreateUserAuth(profile, user);
     }
 
-    public UserAuthDto checkFullAuthentication(String sid, String ip) {
-        UserAuthDto auth = null;
+    public UserDto checkFullAuthentication(String sid, String ip) {
+        UserDto user = null;
         SessionDto session = userAuthDao.getSession(sid, ip);
         if (session != null) {
-            auth = session.getUserAuth();
+            user = session.getUserAuth();
         }
-        return auth;
+        return user;
     }
 
-    public UserAuthDto checkFullAuthentication(Request request) {
-        UserAuthDto user = null;
+    //todo:rename
+    public UserDto checkFullAuthentication(Request request) {
+        UserDto user = null;
         if (request.hasHeader(HttpHeaders.AUTHORIZATION)) {
             String[] tmp = request.header(HttpHeaders.AUTHORIZATION).split(" ", 2);
             if (tmp.length == 2) {
@@ -150,13 +151,9 @@ public class AuthenticationManager {
         return user;
     }
 
+    @Deprecated
     public UserDto checkAuthentication(Request request) {
-        UserAuthDto auth = checkFullAuthentication(request);
-        if (auth != null && auth.getUser() != null) {
-            return auth.getUser();
-        } else {
-            return null;
-        }
+        return checkFullAuthentication(request);
     }
 
     public synchronized boolean registerWithPassword(final String name, final String password, final String email) {
@@ -274,8 +271,8 @@ public class AuthenticationManager {
     }
 
     public boolean hasRole(Request request, GlobalRole role) {
-        UserAuthDto auth = checkFullAuthentication(request);
-        return auth != null && auth.getUser() != null && auth.getUser().getRole().compareTo(role) >= 0;
+        UserDto user = checkFullAuthentication(request);
+        return user != null && user.hasRole(role);
     }
 
     public void invalidateSession(String sid) {

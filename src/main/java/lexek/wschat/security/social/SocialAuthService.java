@@ -40,7 +40,7 @@ public class SocialAuthService {
     public SessionResult getSession(SocialProfile profile, String ip) {
         UserAuthDto userAuth = authenticationManager.getOrCreateUserAuth(profile, null);
         if (userAuth != null) {
-            SessionDto session = authenticationManager.createSession(userAuth, ip);
+            SessionDto session = authenticationManager.createSession(userAuth.getUser(), ip);
             return new SessionResult(
                 SocialAuthResultType.SESSION,
                 session.getSessionId()
