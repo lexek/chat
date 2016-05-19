@@ -19,22 +19,24 @@
     </button>
 </div>
 
-<div ng-repeat="service in services" style="margin: 5px 0;">
-    <div ng-if="isSocial(service)">
-        <div ng-if="!isConnected(service)" class="btn btn-success btn-sm auth-button" ng-click="addAuth(service)">
-            <span ng-class="getIcon(service)" tooltip="{{service}}"></span>
-            {{"AUTH_CONNECT" | translate}}
-        </div>
-        <button
-            ng-if="isConnected(service)"
-            ng-disabled="isSingleAuth()"
-            ng-click="removeAuth(service)"
-            class="btn btn-danger btn-sm auth-button"
-        >
-            <span ng-class="getIcon(service)" tooltip="{{service}}"></span>
-            {{"AUTH_DISCONNECT" | translate}}
-        </button>
-    </div>
+<div ng-repeat="service in ::services" style="margin: 5px 0;">
+    <button
+            ng-if="!isConnected(service)"
+            class="btn btn-success btn-sm auth-button"
+            ng-click="::addAuth(service)"
+    >
+        <span ng-class="::getIcon(service)"></span>
+        <strong ng-bind="::service | inflector:'capital'"></strong> - {{"AUTH_CONNECT" | translate}}
+    </button>
+    <button
+        ng-if="isConnected(service)"
+        ng-disabled="isSingleAuth()"
+        ng-click="::removeAuth(service)"
+        class="btn btn-danger btn-sm auth-button"
+    >
+        <span ng-class="::getIcon(service)"></span>
+        <strong ng-bind="::service | inflector:'capital'"></strong> - {{"AUTH_DISCONNECT" | translate}}
+    </button>
 </div>
 
 <form>

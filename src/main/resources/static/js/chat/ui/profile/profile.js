@@ -82,12 +82,7 @@ angular.module("chat.ui.profile", ["chat.ui.profile.email", "chat.ui.profile.pas
                 return $scope.connected.hasOwnProperty(service);
             };
 
-            $scope.isSocial = function(service) {
-                return service !== "password" && service !== "token";
-            };
-
             $scope.addAuth = function(service) {
-                //todo: update after success
                 window.open("https://" + HOST_NAME + ":1337/rest/auth/social/" + service);
             };
 

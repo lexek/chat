@@ -427,19 +427,19 @@
     </div>
     <div class="modal-body" style="text-align: center;">
         <div class="btn-group">
-            <div class="btn btn-default btn-modal" ng-click="socialAuth('twitch')">
+            <div class="btn btn-default btn-modal" ng-click="socialAuth('twitch')" tooltip="twitch" tooltip-append-to-body="true">
                 <span class="fa fa-twitch"></span>
             </div>
-            <div class="btn btn-default btn-modal" ng-click="socialAuth('twitter')">
+            <div class="btn btn-default btn-modal" ng-click="socialAuth('twitter')" tooltip="twitter" tooltip-append-to-body="true">
                 <span class="fa fa-twitter"></span>
             </div>
-            <div class="btn btn-default btn-modal" ng-click="socialAuth('vk')">
+            <div class="btn btn-default btn-modal" ng-click="socialAuth('vk')" tooltip="vk" tooltip-append-to-body="true">
                 <span class="fa fa-vk"></span>
             </div>
-            <div class="btn btn-default btn-modal" ng-click="socialAuth('google')">
+            <div class="btn btn-default btn-modal" ng-click="socialAuth('google')" tooltip="google" tooltip-append-to-body="true">
                 <span class="fa fa-google"></span>
             </div>
-            <div class="btn btn-default btn-modal" ng-click="socialAuth('goodgame')">
+            <div class="btn btn-default btn-modal" ng-click="socialAuth('goodgame')" tooltip="goodgame" tooltip-append-to-body="true">
                 <img src="/img/goodgame.png" style="width: 1em; height: auto; padding-bottom: 3px;"/>
             </div>
         </div>
