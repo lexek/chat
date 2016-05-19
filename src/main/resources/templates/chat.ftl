@@ -433,14 +433,14 @@
             <div class="btn btn-default btn-modal" ng-click="socialAuth('twitter')">
                 <span class="fa fa-twitter"></span>
             </div>
-            <div class="btn btn-default btn-modal" ng-click="socialAuth('vk')" style="color: #73ADFF">
+            <div class="btn btn-default btn-modal" ng-click="socialAuth('vk')">
                 <span class="fa fa-vk"></span>
             </div>
             <div class="btn btn-default btn-modal" ng-click="socialAuth('google')">
                 <span class="fa fa-google"></span>
             </div>
-            <div class="btn btn-default btn-modal" ng-click="socialAuth('goodgame')" style="color: #73ADFF">
-                <img src="/img/goodgame.png" style="width: 1em; height: auto; padding-bottom: 3px;"></img>
+            <div class="btn btn-default btn-modal" ng-click="socialAuth('goodgame')">
+                <img src="/img/goodgame.png" style="width: 1em; height: auto; padding-bottom: 3px;"/>
             </div>
         </div>
     </div>
