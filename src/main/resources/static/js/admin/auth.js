@@ -13,6 +13,8 @@ angular.module("chat.admin.auth", [])
                             return "fa fa-fw fa-twitch";
                         case "google":
                             return "fa fa-fw fa-google";
+                        case "vk":
+                            return "fa fa-fw fa-vk";
                         case "twitter":
                             return "fa fa-fw fa-twitter";
                         case "token":
@@ -28,4 +30,4 @@ angular.module("chat.admin.auth", [])
             },
             templateUrl: "/templates/auth.html"
         }
-    })
+    });

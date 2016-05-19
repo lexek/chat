@@ -367,6 +367,7 @@ public class Main {
         SocialAuthCredentials googleAuth = settings.getSocialAuth().get("google");
         SocialAuthCredentials goodGameAuth = settings.getSocialAuth().get("goodgame");
         SocialAuthCredentials twitterAuth = settings.getSocialAuth().get("twitter");
+        SocialAuthCredentials vkAuth = settings.getSocialAuth().get("vk");
         socialAuthService.registerProvider(new TwitchTvSocialAuthProvider(
             twitchAuth.getClientId(),
             twitchAuth.getClientSecret(),
@@ -401,6 +402,14 @@ public class Main {
                 "email"
             ),
             "google",
+            httpClient,
+            secureTokenGenerator
+        ));
+        socialAuthService.registerProvider(new VkSocialAuthProvider(
+            vkAuth.getClientId(),
+            vkAuth.getClientSecret(),
+            vkAuth.getRedirectUrl(),
+            "vk",
             httpClient,
             secureTokenGenerator
         ));

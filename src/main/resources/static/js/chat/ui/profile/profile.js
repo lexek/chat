@@ -55,6 +55,7 @@ angular.module("chat.ui.profile", ["chat.ui.profile.email", "chat.ui.profile.pas
             $scope.services = [
                 "twitch",
                 "twitter",
+                "vk",
                 "google",
                 "goodgame"
             ];
@@ -63,6 +64,7 @@ angular.module("chat.ui.profile", ["chat.ui.profile.email", "chat.ui.profile.pas
                 "twitch": "fa fa-fw fa-twitch",
                 "google": "fa fa-fw fa-google",
                 "twitter": "fa fa-fw fa-twitter",
+                "vk": "fa fa-fw fa-vk",
                 "token": "fa fa-fw fa-globe",
                 "password": "fa fa-fw fa-key",
                 "goodgame": "gg-icon"
