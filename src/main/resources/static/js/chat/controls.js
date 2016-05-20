@@ -518,9 +518,9 @@ controlsModule.directive('textcomplete', ['Textcomplete', "chatService", functio
 
             $(textcomplete).on({
                 'textComplete:select': function (e, value) {
-                    scope.$digest(function() {
-                        scope.message = value
-                    })
+                    scope.$apply(function() {
+                        scope.message = value;
+                    });
                 },
                 'textComplete:show': function (e) {
                     $(this).data('autocompleting', true);
