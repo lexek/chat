@@ -700,5 +700,4 @@ controlsModule.controller("TitleController", ["$scope", "chatService", "windowSt
         }
         $scope.$digest();
     };
-}])
-
+}]);
