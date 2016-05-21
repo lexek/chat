@@ -14,8 +14,6 @@ import com.codahale.metrics.jvm.GarbageCollectorMetricSet;
 import com.codahale.metrics.jvm.MemoryUsageGaugeSet;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
@@ -57,7 +55,8 @@ import lexek.wschat.security.*;
 import lexek.wschat.security.jersey.Auth;
 import lexek.wschat.security.jersey.SecurityFeature;
 import lexek.wschat.security.jersey.UserParamValueFactoryProvider;
-import lexek.wschat.security.social.*;
+import lexek.wschat.security.social.SocialAuthProviderFactory;
+import lexek.wschat.security.social.SocialAuthService;
 import lexek.wschat.services.*;
 import lexek.wschat.services.poll.PollService;
 import org.apache.http.client.HttpClient;
@@ -133,7 +132,8 @@ public class Main {
         CoreConfiguration coreSettings = settings.getCore();
 
         int wsPort = settings.getCore().getWsPort();
-        String ircHost = settings.getCore().getHost();
+        String hostName = settings.getCore().getHost();
+        String baseUrl = "https://" + hostName + ":1337";
         File dataDir = new File(settings.getCore().getDataDir());
 
         MetricRegistry metricRegistry = new MetricRegistry();
@@ -183,7 +183,7 @@ public class Main {
         IgnoreDao ignoreDao = new IgnoreDao(dataSource);
 
         ConnectionManager connectionManager = new ConnectionManager(metricRegistry);
-        AuthenticationManager authenticationManager = new AuthenticationManager(ircHost, secureTokenGenerator, emailService, connectionManager, userAuthDao);
+        AuthenticationManager authenticationManager = new AuthenticationManager(hostName, secureTokenGenerator, emailService, connectionManager, userAuthDao);
         UserService userService = new UserService(connectionManager, authenticationManager, userDao, journalService);
         EventDispatcher eventDispatcher = new EventDispatcher();
 
@@ -217,44 +217,13 @@ public class Main {
         IgnoreService ignoreService = new IgnoreService(ignoreDao);
 
         Set<String> bannedIps = new CopyOnWriteArraySet<>();
+        SocialAuthProviderFactory socialAuthProviderFactory = new SocialAuthProviderFactory(baseUrl, httpClient, secureTokenGenerator);
 
         ProxyAuthDao proxyAuthDao = new ProxyAuthDao(dataSource);
-        SocialAuthCredentials twitch = settings.getProxy().get("twitch");
-        SocialAuthCredentials google = settings.getProxy().get("google");
-        SocialAuthCredentials goodGame = settings.getProxy().get("goodgame");
-        ProxyAuthService proxyAuthService = new ProxyAuthService(
-            ImmutableMap.of(
-                "twitch", new TwitchTvSocialAuthProvider(
-                    twitch.getClientId(),
-                    twitch.getClientSecret(),
-                    twitch.getRedirectUrl(),
-                    httpClient,
-                    secureTokenGenerator,
-                    "twitch"
-                ),
-                "google", new GoogleSocialAuthProvider(
-                    google.getClientId(),
-                    google.getClientSecret(),
-                    google.getRedirectUrl(),
-                    ImmutableSet.of(
-                        "https://www.googleapis.com/auth/youtube.readonly",
-                        "profile",
-                        "email"
-                    ),
-                    "google",
-                    httpClient,
-                    secureTokenGenerator
-                ),
-                "goodgame", new GoodGameSocialAuthProvider(
-                    goodGame.getClientId(),
-                    goodGame.getClientSecret(),
-                    goodGame.getRedirectUrl(),
-                    "goodgame",
-                    httpClient,
-                    secureTokenGenerator
-                )
-            ),
-            proxyAuthDao
+
+        ProxyAuthService proxyAuthService = new ProxyAuthService(proxyAuthDao);
+        settings.getProxy().forEach((name, credentials) ->
+            proxyAuthService.registerProvider(socialAuthProviderFactory.newProvider(name, credentials, false))
         );
         proxyAuthService.loadTokens();
 
@@ -346,10 +315,10 @@ public class Main {
         WebSocketChatServer webSocketChatServer = new WebSocketChatServer(wsPort, webSocketChatHandler, bossGroup,
             childGroup, sslContext);
 
-        IrcProtocol ircProtocol = new IrcProtocol(new IrcCodec(ircHost));
+        IrcProtocol ircProtocol = new IrcProtocol(new IrcCodec(hostName));
         IrcConnectionGroup ircConnectionGroup = new IrcConnectionGroup(ircProtocol.getCodec());
         connectionManager.registerGroup(ircConnectionGroup);
-        IrcServerHandler ircServerHandler = new IrcServerHandler(messageReactor, ircHost,
+        IrcServerHandler ircServerHandler = new IrcServerHandler(messageReactor, hostName,
             authenticationService, ircConnectionGroup, roomManager, ircProtocol);
         IrcServer ircServer = new IrcServer(ircServerHandler, bossGroup, childGroup, sslContext);
 
@@ -363,56 +332,9 @@ public class Main {
         ServerMessageHandler serverMessageHandler = new ServerMessageHandler();
 
         SocialAuthService socialAuthService = new SocialAuthService(authenticationManager, secureTokenGenerator);
-        SocialAuthCredentials twitchAuth = settings.getSocialAuth().get("twitch");
-        SocialAuthCredentials googleAuth = settings.getSocialAuth().get("google");
-        SocialAuthCredentials goodGameAuth = settings.getSocialAuth().get("goodgame");
-        SocialAuthCredentials twitterAuth = settings.getSocialAuth().get("twitter");
-        SocialAuthCredentials vkAuth = settings.getSocialAuth().get("vk");
-        socialAuthService.registerProvider(new TwitchTvSocialAuthProvider(
-            twitchAuth.getClientId(),
-            twitchAuth.getClientSecret(),
-            twitchAuth.getRedirectUrl(),
-            httpClient,
-            secureTokenGenerator,
-            "twitch"
-        ));
-        socialAuthService.registerProvider(new TwitterSocialAuthProvider(
-            true,
-            false,
-            twitterAuth.getClientId(),
-            twitterAuth.getClientSecret(),
-            twitterAuth.getRedirectUrl(),
-            "twitter",
-            httpClient
-        ));
-        socialAuthService.registerProvider(new GoodGameSocialAuthProvider(
-            goodGameAuth.getClientId(),
-            goodGameAuth.getClientSecret(),
-            goodGameAuth.getRedirectUrl(),
-            "goodgame",
-            httpClient,
-            secureTokenGenerator
-        ));
-        socialAuthService.registerProvider(new GoogleSocialAuthProvider(
-            googleAuth.getClientId(),
-            googleAuth.getClientSecret(),
-            googleAuth.getRedirectUrl(),
-            ImmutableSet.of(
-                "profile",
-                "email"
-            ),
-            "google",
-            httpClient,
-            secureTokenGenerator
-        ));
-        socialAuthService.registerProvider(new VkSocialAuthProvider(
-            vkAuth.getClientId(),
-            vkAuth.getClientSecret(),
-            vkAuth.getRedirectUrl(),
-            "vk",
-            httpClient,
-            secureTokenGenerator
-        ));
+        settings.getSocialAuth().forEach((name, credentials) ->
+            socialAuthService.registerProvider(socialAuthProviderFactory.newProvider(name, credentials, true))
+        );
 
         ResourceConfig resourceConfig = new ResourceConfig() {
             {
@@ -461,7 +383,7 @@ public class Main {
             }
         };
 
-        final RequestDispatcher httpRequestDispatcher = new RequestDispatcher(serverMessageHandler, viewResolvers, authenticationManager, resourceConfig, runtimeMetricRegistry, ircHost);
+        final RequestDispatcher httpRequestDispatcher = new RequestDispatcher(serverMessageHandler, viewResolvers, authenticationManager, resourceConfig, runtimeMetricRegistry, hostName);
         httpRequestDispatcher.add("/", new RedirectToAppHandler());
         httpRequestDispatcher.add("/.*", new FileSystemStaticHandler(dataDir));
         httpRequestDispatcher.add("/.*", new ClassPathStaticHandler(ClassPathStaticHandler.class, "/static/"));

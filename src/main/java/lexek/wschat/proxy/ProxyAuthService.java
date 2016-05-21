@@ -1,5 +1,6 @@
 package lexek.wschat.proxy;
 
+import io.netty.util.internal.chmv8.ConcurrentHashMapV8;
 import lexek.wschat.chat.e.InternalErrorException;
 import lexek.wschat.chat.model.GlobalRole;
 import lexek.wschat.db.dao.ProxyAuthDao;
@@ -16,13 +17,16 @@ import java.util.*;
 
 public class ProxyAuthService {
     private final Logger logger = LoggerFactory.getLogger(ProxyAuthService.class);
-    private final Map<String, SocialAuthProvider> socialAuthServices;
+    private final Map<String, SocialAuthProvider> socialAuthServices = new ConcurrentHashMapV8<>();
     private final ProxyAuthDao proxyAuthDao;
     private final HashMap<Long, SocialProfile> tokenCache = new HashMap<>();
 
-    public ProxyAuthService(Map<String, SocialAuthProvider> socialAuthServices, ProxyAuthDao proxyAuthDao) {
-        this.socialAuthServices = socialAuthServices;
+    public ProxyAuthService(ProxyAuthDao proxyAuthDao) {
         this.proxyAuthDao = proxyAuthDao;
+    }
+
+    public void registerProvider(SocialAuthProvider provider) {
+        socialAuthServices.put(provider.getName(), provider);
     }
 
     public SocialAuthProvider getAuthService(String name) {

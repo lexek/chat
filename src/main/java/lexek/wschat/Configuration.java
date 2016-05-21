@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lexek.wschat.db.JdbcDataBaseConfiguration;
 import lexek.wschat.frontend.http.HttpConfiguration;
 import lexek.wschat.proxy.twitter.TwitterCredentials;
+import lexek.wschat.security.social.SocialAuthCredentials;
 
 import java.util.Map;
 

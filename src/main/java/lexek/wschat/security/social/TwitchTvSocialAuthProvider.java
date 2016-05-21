@@ -2,7 +2,6 @@ package lexek.wschat.security.social;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.net.HttpHeaders;
 import com.google.common.net.UrlEscapers;
 import io.netty.util.CharsetUtil;
@@ -46,17 +45,6 @@ public class TwitchTvSocialAuthProvider implements SocialAuthProvider {
         this.httpClient = httpClient;
         this.secureTokenGenerator = secureTokenGenerator;
         this.scopesString = scopes.stream().collect(Collectors.joining(" "));
-    }
-
-    public TwitchTvSocialAuthProvider(
-        String clientId,
-        String secret,
-        String url,
-        HttpClient httpClient,
-        SecureTokenGenerator secureTokenGenerator,
-        String name
-    ) {
-        this(clientId, secret, url, ImmutableSet.of("user_read", "chat_login"), name, httpClient, secureTokenGenerator);
     }
 
     @Override
@@ -123,20 +111,5 @@ public class TwitchTvSocialAuthProvider implements SocialAuthProvider {
         String externalName = userData.get("name").asText().toLowerCase();
         long externalId = userData.get("_id").asLong();
         return new SocialProfile(String.valueOf(externalId), name, externalName, email, token);
-    }
-
-    public Set<String> getScopes(String token) throws IOException {
-        HttpGet request = new HttpGet("https://api.twitch.tv/kraken?oauth_token=" + token);
-        request.setHeader(HttpHeaders.ACCEPT, "application/json");
-        JsonNode root = httpClient.execute(request, JsonResponseHandler.INSTANCE);
-        JsonNode tokenData = root.get("token");
-        boolean isValid = tokenData.get("valid").asBoolean();
-        if (!isValid) {
-            throw new InvalidInputException("token", "invalid token");
-        }
-        JsonNode authNode = tokenData.get("authorization");
-        return StreamSupport.stream(authNode.get("scopes").spliterator(), false)
-            .map(JsonNode::asText)
-            .collect(Collectors.toSet());
     }
 }
