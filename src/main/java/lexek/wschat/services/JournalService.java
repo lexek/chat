@@ -3,6 +3,7 @@ package lexek.wschat.services;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import lexek.wschat.chat.Room;
 import lexek.wschat.chat.model.LocalRole;
 import lexek.wschat.db.dao.JournalDao;
@@ -15,7 +16,25 @@ import lexek.wschat.services.poll.Poll;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Map;
+import java.util.Set;
+
 public class JournalService {
+    private static final Map<String, Set<String>> GLOBAL_CATEGORIES = ImmutableMap.of(
+        "user_self", ImmutableSet.of("NAME_CHANGE"),
+        "user_admin", ImmutableSet.of("USER_UPDATE", "PASSWORD"),
+        "emoticon", ImmutableSet.of("NEW_EMOTICON", "IMAGE_EMOTICON", "DELETE_EMOTICON"),
+        "room_admin", ImmutableSet.of("NEW_ROOM", "DELETE_ROOM")
+    );
+    private static final Map<String, Set<String>> ROOM_CATEGORIES = ImmutableMap.<String, Set<String>>builder()
+        .put("poll", ImmutableSet.of("NEW_POLL", "CLOSE_POLL"))
+        .put("ban", ImmutableSet.of("USER_BAN", "USER_UNBAN"))
+        .put("role", ImmutableSet.of("ROOM_ROLE"))
+        .put("announcement", ImmutableSet.of("NEW_ANNOUNCEMENT", "INACTIVE_ANNOUNCEMENT"))
+        .put("proxy", ImmutableSet.of("NEW_PROXY", "DELETED_PROXY"))
+        .put("topic", ImmutableSet.of("TOPIC_CHANGED"))
+        .build();
+
     private final Logger logger = LoggerFactory.getLogger(JournalService.class);
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final JournalDao journalDao;
@@ -40,7 +59,8 @@ public class JournalService {
         try {
             String description = objectMapper.writeValueAsString(ImmutableMap.of(
                 "oldState", user,
-                "newState", changeSet));
+                "newState", changeSet
+            ));
             journalDao.add(new JournalEntry(user, admin, "USER_UPDATE", description, now(), null));
         } catch (JsonProcessingException e) {
             logger.warn("", e);
@@ -206,5 +226,13 @@ public class JournalService {
 
     private long now() {
         return System.currentTimeMillis();
+    }
+
+    public Map<String, Set<String>> getGlobalCategories() {
+        return GLOBAL_CATEGORIES;
+    }
+
+    public Map<String, Set<String>> getRoomCategories() {
+        return GLOBAL_CATEGORIES;
     }
 }

@@ -134,7 +134,9 @@ var AdminApplication = angular.module(
         "highcharts-ng",
         "ngSanitize",
         "rgkevin.datetimeRangePicker",
-        "chat.admin.auth"
+        "chat.admin.auth",
+        "chat.admin.journal",
+        "chat.admin.utils"
     ]
 );
 
@@ -1166,182 +1168,24 @@ var UserModalController = function($scope, $http, $modal, $modalInstance, id) {
     loadPage();
 };
 
-var JournalController = function($scope, $location, $http, $modal, alert, title) {
-    $scope.entries = [];
-    $scope.totalPages = 0;
-    $scope.secondaryTitle = $scope.page;
-
-    var loadPage = function() {
-        $http({method: "GET", url: "/rest/journal/global", params: {page: $scope.page}})
-            .success(function (d, status, headers, config) {
-                $scope.entries = d["data"];
-                $scope.totalPages = d["pageCount"];
-                title.secondary = "page " + ($scope.page+1) + "/" + ($scope.totalPages);
-            })
-            .error(function (data, status, headers, config) {
-                alert.alert("danger", data);
-            });
-    };
-
-    $scope.previousPage = function() {
-        if ($scope.page !== 0) {
-            $location.search("page", ($scope.page-1).toString());
-        }
-    };
-
-    $scope.nextPage = function() {
-        if ((page+1) < $scope.totalPages) {
-            $location.search("page", ($scope.page+1).toString());
-        }
-    };
-
-    $scope.hasNextPage = function() {
-        return (page+1) < $scope.totalPages
-    };
-
-    $scope.showUser = function(id) {
-        $modal.open({
-            templateUrl: "/templates/user.html",
-            controller: UserModalController,
-            size: "sm",
-            resolve: {
-                id: function () {
-                    return id;
-                }
-            }
-        });
-    };
-
-    var classMap = {
-        "DELETED_EMOTICON": "warning"
-    };
-
-    var actionMap = {
-        "USER_UPDATE": "User changed",
-        "NAME_CHANGE": "User name changed",
-        "NEW_EMOTICON": "New emoticon",
-        "IMAGE_EMOTICON": "Updated emoticon image",
-        "DELETED_EMOTICON": "Deleted emoticon",
-        "NEW_ROOM": "Created room",
-        "DELETED_ROOM": "Deleted room",
-        "PASSWORD": "Changed password"
-    };
-
-    $scope.getClassForJournalAction = function(action) {
-        return 'list-group-item-' + classMap[action];
-    };
-
-    $scope.translateAction = function(action) {
-        return actionMap[action];
-    };
-
-    {
-        var locationSearch = $location.search();
-        var page = parseInt(locationSearch["page"]);
-        if (isNaN(page) || page < 0) {
-            $location.search("page", "0");
-        } else {
-            $scope.page = page;
-            loadPage();
-        }
+var JournalController = function($scope, title) {
+    $scope.onPageChange = function(current, total) {
+        title.secondary = "page " + (current + 1) + "/" + (total);
     }
 };
 
-var RoomJournalModalController = function($scope, $http, $modal, room) {
-    $scope.journal = [];
+var RoomJournalModalController = function($scope, room) {
     $scope.totalPages = 0;
     $scope.page = 0;
+    $scope.room = room;
 
-    var loadPage = function() {
-        $http({
-            method: "GET",
-            url: StringFormatter.format("/rest/journal/room/{number}", room.id),
-            params: {page: $scope.page}
-        }).success(function (d, status, headers, config) {
-            $scope.journal = d["data"];
-            $scope.totalPages = d["pageCount"];
-        });
-    };
-
-    $scope.previousPage = function() {
-        if ($scope.page !== 0) {
-            $scope.page--;
-            loadPage();
-        }
-    };
-
-    $scope.nextPage = function() {
-        if (($scope.page+1) < $scope.totalPages) {
-            $scope.page++;
-            loadPage();
-        }
-    };
-
-    $scope.hasNextPage = function() {
-        return ($scope.page+1) < $scope.totalPages
-    };
-
-    $scope.showUser = function(id) {
-        $modal.open({
-            templateUrl: "/templates/user.html",
-            controller: UserModalController,
-            size: "sm",
-            resolve: {
-                id: function () {
-                    return id;
-                }
-            }
-        });
-    };
-
-    var classMap = {
-        "ROOM_BAN": "warning",
-        "DELETED_PROXY": "warning",
-        "ROOM_UNBAN": "success",
-        "ROOM_ROLE": "success"
-    };
-
-    var actionMap = {
-        "NEW_PROXY": "Proxy added",
-        "DELETED_PROXY": "Proxy removed",
-        "NEW_ROOM": "Room created",
-        "NEW_POLL": "Poll created",
-        "CLOSE_POLL": "Poll closed",
-        "ROOM_BAN": "User banned",
-        "ROOM_UNBAN": "User unbanned",
-        "ROOM_ROLE": "Role changed",
-        "NEW_ANNOUNCEMENT": "Announcement created",
-        "INACTIVE_ANNOUNCEMENT": "Announcement archived"
-    };
-
-    $scope.getClassForJournalAction = function(action) {
-        return 'list-group-item-' + classMap[action];
-    };
-
-    $scope.translateAction = function(action) {
-        return actionMap[action];
-    };
-
-    $scope.showBanContext = function(time) {
-        $modal.open({
-            templateUrl: 'history.html',
-            controller: HistoryController,
-            resolve: {
-                options: function () {
-                    return {
-                        "room": room,
-                        "since": time - 600000,
-                        "until": time + 600000
-                    }
-                }
-            }
-        });
-    };
-
-    loadPage();
+    $scope.onPageChange = function(current, total) {
+        $scope.page = current;
+        $scope.totalPages = total;
+    }
 };
 
-var TicketController = function($scope, $http) {
+var TicketController = function($scope) {
     $scope.showReply = false;
     $scope.text = "";
 
@@ -1350,7 +1194,7 @@ var TicketController = function($scope, $http) {
     };
 };
 
-AdminApplication.controller("TicketController", ["$scope", "$http", TicketController]);
+AdminApplication.controller("TicketController", ["$scope", TicketController]);
 
 var TicketsController = function($scope, $location, $http, $modal, alert, title) {
     $scope.entries = [];

@@ -366,7 +366,7 @@ public class Main {
                     new EmoticonsResource(emoticonService),
                     new HistoryResource(historyService),
                     new IpBlockResource(bannedIps),
-                    new JournalResource(journalDao),
+                    new JournalResource(journalDao, journalService),
                     new UsersResource(connectionManager, userService),
                     new PollResource(roomService, pollService),
                     new RoomResource(roomService),

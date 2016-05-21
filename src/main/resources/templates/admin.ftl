@@ -37,6 +37,8 @@
     <script src="/vendor/js/highcharts.js"></script>
     <script src="/vendor/js/highcharts-ng.js"></script>
     <script src="/js/admin/auth.js"></script>
+    <script src="/js/admin/journal.js"></script>
+    <script src="/js/admin/utils.js"></script>
     <script src="/js/admin/main.js"></script>
 </head>
 <body>
@@ -70,89 +72,8 @@
                 journal
             </h4>
         </div>
-        <div class="list-group">
-            <div class="list-group-item" ng-repeat="entry in entries" ng-class="getClassForJournalAction(entry.action)">
-                <h4 class="list-group-item-heading">
-                    {{translateAction(entry.action)}}
-                    <small class="" ng-if="entry.admin">
-                        <i class="fa fa-fw fa-wrench" tooltip="admin"></i><!--
-                        --><a href="" ng-click="showUser(entry.admin.id)">{{entry.admin.name}}</a>
-                    </small>
-                    <small class="" ng-if="entry.user">
-                        <i class="fa fa-fw fa-user" tooltip="user"></i><!--
-                        --><a href="" ng-click="showUser(entry.user.id)">{{entry.user.name}}</a>
-                    </small>
-                    <small class="pull-right">
-                        <a href="" ng-click="showBanContext(entry.time)" ng-if="entry.action==='ROOM_BAN'"><!--
-                                    --><span class="fa fa-fw fa-comments"></span><!--
-                                --></a>
-                        <abbr title="{{entry.time | date:'dd.MM.yyyy HH:mm'}}">{{entry.time | relativeDate}}</abbr>
-                    </small>
-                </h4>
-                <p class="list-group-item-text">
-                    <div class="" ng-if="entry.actionDescription">
-                        <div ng-switch="entry.action">
-                            <div ng-switch-when="NEW_EMOTICON">
-                                <img ng-src="/emoticons/{{entry.actionDescription.fileName}}">
-                                <code ng-bind="entry.actionDescription.code"></code>
-                            </div>
-                            <div ng-switch-when="IMAGE_EMOTICON">
-                                <img ng-src="/emoticons/{{entry.actionDescription.oldImage}}">
-                                <span class="fa fa-long-arrow-right"></span>
-                                <img ng-src="/emoticons/{{entry.actionDescription.newImage}}">
-                                <code ng-bind="entry.actionDescription.code"></code>
-                            </div>
-                            <div ng-switch-when="DELETED_EMOTICON">
-                                <img ng-src="/emoticons/{{entry.actionDescription.fileName}}">
-                                <code ng-bind="entry.actionDescription.code"></code>
-                            </div>
-                            <div ng-switch-when="DELETED_ROOM">
-                                <code ng-bind="entry.actionDescription.name"></code>
-                            </div>
-                            <div ng-switch-when="NEW_ROOM">
-                                <code ng-bind="entry.actionDescription.name"></code>
-                            </div>
-                            <div ng-switch-when="NAME_CHANGE">
-                                <code ng-bind="entry.actionDescription.oldName"></code>
-                                <span class="fa fa-long-arrow-right"></span>
-                                <code ng-bind="entry.actionDescription.newName"></code>
-                            </div>
-                            <div ng-switch-when="USER_UPDATE">
-                                <table class="table">
-                                    <thead>
-                                    <tr>
-                                        <th class="col-xs-6">
-                                            attribute
-                                        </th>
-                                        <th class="col-xs-6">
-                                            value
-                                        </th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    <tr ng-repeat="(k,v) in entry.actionDescription.oldState"
-                                        ng-if="entry.actionDescription.newState.hasOwnProperty(k)">
-                                        <td ng-bind="k"></td>
-                                        <td>
-                                            {{v}}
-                                            <span class="fa fa-long-arrow-right"></span>
-                                            {{entry.actionDescription.newState[k]}}
-                                        </td>
-                                    </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                            <span ng-switch-default ng-bind="entry.actionDescription | json"></span>
-                        </div>
-                    </div>
-                </p>
-            </div>
-        </div>
-        <div class="panel-footer" ng-if="(page !== 0) || hasNextPage()">
-            <ul class="pager">
-                <li class="previous" ng-if="page !== 0" ng-click="previousPage()"><a href="">&larr; Previous page</a></li>
-                <li class="next" ng-if="hasNextPage()" ng-click="nextPage()"><a href="">Next page &rarr;</a></li>
-            </ul>
+        <div class="panel-body">
+            <journal global="true" use-location="true" on-page-change="onPageChange"/>
         </div>
     </div>
 </script>
