@@ -41,7 +41,6 @@ public class ProxyAuthDao {
                     .select(PROXY_AUTH.ID)
                     .from(PROXY_AUTH)
                     .where(
-                        PROXY_AUTH.OWNER_ID.equal(owner.getId()),
                         PROXY_AUTH.SERVICE.equal(service),
                         PROXY_AUTH.EXTERNAL_ID.equal(externalId)
                     )
@@ -52,6 +51,8 @@ public class ProxyAuthDao {
                     ctx
                         .update(PROXY_AUTH)
                         .set(PROXY_AUTH.KEY, proxyAuth.getKey())
+                        .set(PROXY_AUTH.OWNER_ID, owner.getId())
+                        .set(PROXY_AUTH.EXTERNAL_NAME, proxyAuth.getExternalName())
                         .where(PROXY_AUTH.ID.equal(id))
                         .execute();
                 } else {
