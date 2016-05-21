@@ -152,6 +152,7 @@ public class AuthResource {
         String ip = request.ip();
         boolean captchaRequired = authenticationManager.failedLoginTries(ip) > 10;
         if (username != null) {
+            username = username.toLowerCase();
             if (newAccount) {
                 if (USERNAME_PATTERN.matcher(username).matches()) {
                     try {
@@ -171,6 +172,14 @@ public class AuthResource {
                             )
                         )).build();
                     }
+                } else {
+                    return Response.ok(new Viewable(
+                        "/setup_profile",
+                        ImmutableMap.of(
+                            "new_account_error", "Incorrect name format.",
+                            "captchaRequired", captchaRequired
+                        )
+                    )).build();
                 }
             } else {
                 if (password != null &&
@@ -213,6 +222,14 @@ public class AuthResource {
                             )
                         )).build();
                     }
+                } else {
+                    return Response.ok(new Viewable(
+                        "/setup_profile",
+                        ImmutableMap.of(
+                            "login_error", "Incorrect password of name format.",
+                            "captchaRequired", true
+                        )
+                    )).build();
                 }
             }
         }

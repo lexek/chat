@@ -39,7 +39,7 @@
             <form class="form" id="authForm" method="post" action="/rest/auth/social/setup_profile?newAccount=true">
                 <div class="form-group">
                     <label class="control-label">Username</label>
-                    <input type="text" class="form-control" name="username" placeholder="Username" pattern='[a-zA-Z0-9]{3,16}'/>
+                    <input type="text" class="form-control" name="username" placeholder="Username" pattern='[a-z][a-z0-9_]{2,16}'/>
                 </div>
                 <input type="submit" class="btn btn-primary" value="Create account"/>
             </form>
@@ -56,7 +56,7 @@
             <form class="form" id="loginForm" method="post" action="/rest/auth/social/setup_profile?newAccount=false">
                 <div class="form-group">
                     <label class="control-label">Username</label>
-                    <input type="text" class="form-control" name="username" placeholder="Username" pattern='[a-zA-Z0-9]{3,16}'/>
+                    <input type="text" class="form-control" name="username" placeholder="Username" pattern='[a-z][a-z0-9_]{2,16}'/>
                 </div>
                 <div class="form-group">
                     <label class="control-label">Password</label>
