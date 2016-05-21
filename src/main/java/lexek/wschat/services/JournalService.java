@@ -233,6 +233,6 @@ public class JournalService {
     }
 
     public Map<String, Set<String>> getRoomCategories() {
-        return GLOBAL_CATEGORIES;
+        return ROOM_CATEGORIES;
     }
 }

@@ -64,7 +64,7 @@ public class JournalResource {
     @GET
     @Produces
     public Set<String> getRoomCategories() {
-        return journalService.getGlobalCategories().keySet();
+        return journalService.getRoomCategories().keySet();
     }
 
 }
