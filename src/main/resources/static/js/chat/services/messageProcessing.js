@@ -73,8 +73,8 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
             );
             chat.incMessageCount();
         }
-        chat.messagesUpdated();
         chat.hideMessagesFromUser(ctx.room, msg.name);
+        chat.messagesUpdated();
     };
 
     var processProxyClearMessage = function (chat, ctx, msg) {
@@ -85,8 +85,8 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
             );
             chat.incMessageCount();
         }
-        chat.messagesUpdated();
         chat.hideMessagesFromUser(ctx.room, msg.name, ctx.msg.service, ctx.msg.serviceResource);
+        chat.messagesUpdated();
     };
 
     var processClearRoomMessage = function(chat, ctx) {
