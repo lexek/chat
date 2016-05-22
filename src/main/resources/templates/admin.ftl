@@ -516,9 +516,9 @@
                         </td>
                         <td class="col-xs-10">
                             <progressbar class="progress"
-                                         max="getQueueSize('notificationService')"
-                                         value="getQueueLoad('notificationService')">
-                                {{getQueueLoad('notificationService')}}/{{getQueueSize('notificationService')}}
+                                         max="getQueueSize('eventDispatcher')"
+                                         value="getQueueLoad('eventDispatcher')">
+                                {{getQueueLoad('eventDispatcher')}}/{{getQueueSize('eventDispatcher')}}
                             </progressbar>
                         </td>
                     </tr>
