@@ -269,6 +269,7 @@ controlsModule.controller("SettingsController", ["$scope", "chatService", "$moda
         $modal.open({
             templateUrl: 'authentication.html',
             controller: AuthenticationController,
+            size: "sm",
             resolve: {
                 "action": function () { return "sign_in"; },
                 "chat": function () { return chat; }
@@ -280,6 +281,7 @@ controlsModule.controller("SettingsController", ["$scope", "chatService", "$moda
         $modal.open({
             templateUrl: 'authentication.html',
             controller: AuthenticationController,
+            size: "sm",
             resolve: {
                 "action": function () { return "registration"; },
                 "chat": function () { return chat; }
@@ -574,6 +576,7 @@ messagesModule.controller("UserInputController", ["$scope", "$modal", "chatServi
         $modal.open({
             templateUrl: 'authentication.html',
             controller: AuthenticationController,
+            size: "sm",
             resolve: {
                 "action": function () { return "sign_in"; },
                 "chat": function () { return chat; }

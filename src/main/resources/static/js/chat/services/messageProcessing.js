@@ -364,6 +364,7 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
                 $modal.open({
                     templateUrl: 'authentication.html',
                     controller: AuthenticationController,
+                    size: "sm",
                     resolve: {
                         "action": function() { return "sign_in"; },
                         "chat": function () { return chat; }
