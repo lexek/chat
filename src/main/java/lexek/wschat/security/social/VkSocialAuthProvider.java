@@ -3,8 +3,11 @@ package lexek.wschat.security.social;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.net.HttpHeaders;
 import com.google.common.net.UrlEscapers;
+import lexek.wschat.chat.e.InvalidStateException;
 import lexek.wschat.security.SecureTokenGenerator;
 import lexek.wschat.util.JsonResponseHandler;
+import lexek.wschat.util.RestResponse;
+import lexek.wschat.util.RestResponseHandler;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 
@@ -57,15 +60,20 @@ public class VkSocialAuthProvider implements SocialAuthProvider {
             "&code=" + UrlEscapers.urlPathSegmentEscaper().escape(code);
         HttpGet request = new HttpGet(tokenUrl);
         request.setHeader(HttpHeaders.ACCEPT, "application/json");
-        JsonNode response = httpClient.execute(request, JsonResponseHandler.INSTANCE);
-        String token = response.get("access_token").asText();
-        long expiresIn = TimeUnit.SECONDS.toMillis(response.get("expires_in").asLong() - 60);
-        return new SocialToken(
-            name,
-            token,
-            System.currentTimeMillis() + expiresIn,
-            null
-        );
+        RestResponse response = httpClient.execute(request, RestResponseHandler.INSTANCE);
+        JsonNode rootNode = response.getRootNode();
+        if (response.isSuccess()) {
+            String token = rootNode.get("access_token").asText();
+            long expiresIn = TimeUnit.SECONDS.toMillis(rootNode.get("expires_in").asLong() - 60);
+            return new SocialToken(
+                name,
+                token,
+                System.currentTimeMillis() + expiresIn,
+                null
+            );
+        } else {
+            throw new InvalidStateException(rootNode.get("error_description").asText());
+        }
     }
 
     @Override
