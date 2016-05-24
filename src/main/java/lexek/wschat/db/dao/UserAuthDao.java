@@ -1,7 +1,7 @@
 package lexek.wschat.db.dao;
 
 import lexek.wschat.chat.e.InternalErrorException;
-import lexek.wschat.chat.e.InvalidStateException;
+import lexek.wschat.chat.e.BadRequestException;
 import lexek.wschat.chat.model.GlobalRole;
 import lexek.wschat.db.jooq.tables.pojos.PendingConfirmation;
 import lexek.wschat.db.model.SessionDto;
@@ -375,7 +375,7 @@ public class UserAuthDao {
                             USERAUTH.USER_ID.equal(user.getId()).and(USERAUTH.SERVICE.notEqual("token"))
                         );
                     if (authCount <= 1) {
-                        throw new InvalidStateException("You can't delete last auth method.");
+                        throw new BadRequestException("You can't delete last auth method.");
                     }
                 }
                 int deleted = DSL
@@ -387,7 +387,7 @@ public class UserAuthDao {
                     )
                     .execute();
                 if (deleted != 1) {
-                    throw new InvalidStateException("service not connected");
+                    throw new BadRequestException("service not connected");
                 }
             });
         } catch (DataAccessException | SQLException e) {

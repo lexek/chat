@@ -5,7 +5,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.net.HttpHeaders;
 import com.google.common.net.UrlEscapers;
 import io.netty.util.CharsetUtil;
-import lexek.wschat.chat.e.InvalidStateException;
+import lexek.wschat.chat.e.BadRequestException;
 import lexek.wschat.security.SecureTokenGenerator;
 import lexek.wschat.security.social.SocialProfile;
 import lexek.wschat.security.social.SocialRedirect;
@@ -78,7 +78,7 @@ public class TwitchAuthProvider implements SocialAuthProvider {
         if (response.isSuccess()) {
             return new SocialToken(name, rootNode.get("access_token").asText(), null, null);
         } else {
-            throw new InvalidStateException(rootNode.get("message").asText());
+            throw new BadRequestException(rootNode.get("message").asText());
         }
     }
 

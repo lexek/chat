@@ -21,7 +21,7 @@ public class JerseyExceptionMapper implements ExceptionMapper<Throwable> {
             if (exception instanceof EntityNotFoundException) {
                 return Response.status(404).entity(new ErrorModel(exception.getMessage())).build();
             }
-            if (exception instanceof InvalidStateException) {
+            if (exception instanceof BadRequestException) {
                 return Response.status(400).entity(new ErrorModel(exception.getMessage())).build();
             }
             if (exception instanceof InvalidInputException) {

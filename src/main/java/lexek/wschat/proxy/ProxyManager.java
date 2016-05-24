@@ -7,7 +7,7 @@ import lexek.wschat.chat.Room;
 import lexek.wschat.chat.RoomManager;
 import lexek.wschat.chat.e.EntityNotFoundException;
 import lexek.wschat.chat.e.InvalidInputException;
-import lexek.wschat.chat.e.InvalidStateException;
+import lexek.wschat.chat.e.BadRequestException;
 import lexek.wschat.chat.filters.BroadcastFilter;
 import lexek.wschat.chat.model.Message;
 import lexek.wschat.chat.model.MessageType;
@@ -90,7 +90,7 @@ public class ProxyManager extends AbstractService implements MessageConsumerServ
             if (proxy.state() == ProxyState.RUNNING || proxy.state() == ProxyState.RECONNECTING) {
                 proxy.stop();
             } else {
-                throw new InvalidStateException("You can stop only running proxy.");
+                throw new BadRequestException("You can stop only running proxy.");
             }
         } else {
             throw new EntityNotFoundException("Proxy doesn't exist.");
@@ -103,7 +103,7 @@ public class ProxyManager extends AbstractService implements MessageConsumerServ
             if (proxy.state() == ProxyState.STOPPED) {
                 proxy.start();
             } else {
-                throw new InvalidStateException("You can start only stopped or failed proxy.");
+                throw new BadRequestException("You can start only stopped or failed proxy.");
             }
         } else {
             throw new EntityNotFoundException("Proxy doesn't exist.");

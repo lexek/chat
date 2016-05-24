@@ -3,7 +3,7 @@ package lexek.wschat.frontend.http.rest;
 import com.google.common.collect.ImmutableMap;
 import lexek.httpserver.Request;
 import lexek.wschat.chat.e.EntityNotFoundException;
-import lexek.wschat.chat.e.InvalidStateException;
+import lexek.wschat.chat.e.BadRequestException;
 import lexek.wschat.chat.model.GlobalRole;
 import lexek.wschat.db.model.SessionDto;
 import lexek.wschat.db.model.UserAuthDto;
@@ -62,24 +62,24 @@ public class AuthResource {
         }
 
         if (errorDescription != null) {
-            throw new InvalidStateException(errorDescription);
+            throw new BadRequestException(errorDescription);
         }
         if (error != null) {
-            throw new InvalidStateException(error);
+            throw new BadRequestException(error);
         }
 
         SocialToken token = null;
         if (socialAuthProvider.isV1()) {
             if (oauthToken != null && oauthVerifier != null) {
                 if (!oauthToken.equals(cookieState)) {
-                    throw new InvalidStateException("State mismatch");
+                    throw new BadRequestException("State mismatch");
                 }
                 token = socialAuthProvider.authenticate(oauthToken, oauthVerifier);
             }
         } else {
             if (code != null) {
                 if (state != null && cookieState != null && !state.equals(cookieState)) {
-                    throw new InvalidStateException("State mismatch");
+                    throw new BadRequestException("State mismatch");
                 }
                 token = socialAuthProvider.authenticate(code);
             }
@@ -112,7 +112,7 @@ public class AuthResource {
                         .build();
                 }
             } else {
-                throw new InvalidStateException("Your account must have verified email");
+                throw new BadRequestException("Your account must have verified email");
             }
             return Response.ok(ImmutableMap.of("success", true)).build();
         }

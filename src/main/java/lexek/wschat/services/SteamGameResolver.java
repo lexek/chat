@@ -3,7 +3,7 @@ package lexek.wschat.services;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import lexek.wschat.chat.e.InvalidStateException;
+import lexek.wschat.chat.e.BadRequestException;
 import lexek.wschat.db.dao.SteamGameDao;
 import lexek.wschat.db.jooq.tables.pojos.SteamGame;
 import lexek.wschat.util.JsonResponseHandler;
@@ -44,7 +44,7 @@ public class SteamGameResolver {
 
     public void syncDatabase() {
         if (syncInProgress.get()) {
-            throw new InvalidStateException("sync is already in progress");
+            throw new BadRequestException("sync is already in progress");
         }
         syncInProgress.set(true);
         try {
