@@ -60,6 +60,7 @@ import lexek.wschat.security.social.SocialAuthService;
 import lexek.wschat.services.*;
 import lexek.wschat.services.poll.PollService;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.config.SocketConfig;
 import org.apache.http.impl.client.HttpClients;
@@ -118,6 +119,7 @@ public class Main {
                     .setConnectionRequestTimeout(httpClientTimeout)
                     .setConnectTimeout(httpClientTimeout)
                     .setSocketTimeout(httpClientTimeout)
+                    .setCookieSpec(CookieSpecs.STANDARD)
                     .build()
             )
             .setConnectionManager(httpConnectionManager)
