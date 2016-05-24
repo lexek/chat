@@ -10,7 +10,6 @@ import lexek.wschat.security.SecureTokenGenerator;
 import lexek.wschat.security.social.SocialProfile;
 import lexek.wschat.security.social.SocialRedirect;
 import lexek.wschat.security.social.SocialToken;
-import lexek.wschat.security.social.provider.SocialAuthProvider;
 import lexek.wschat.util.JsonResponseHandler;
 import lexek.wschat.util.RestResponse;
 import lexek.wschat.util.RestResponseHandler;

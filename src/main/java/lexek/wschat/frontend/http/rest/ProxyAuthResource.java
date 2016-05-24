@@ -7,10 +7,10 @@ import lexek.wschat.db.model.UserDto;
 import lexek.wschat.proxy.ProxyAuthService;
 import lexek.wschat.security.jersey.Auth;
 import lexek.wschat.security.jersey.RequiredRole;
-import lexek.wschat.security.social.provider.SocialAuthProvider;
 import lexek.wschat.security.social.SocialProfile;
 import lexek.wschat.security.social.SocialRedirect;
 import lexek.wschat.security.social.SocialToken;
+import lexek.wschat.security.social.provider.SocialAuthProvider;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import javax.ws.rs.*;

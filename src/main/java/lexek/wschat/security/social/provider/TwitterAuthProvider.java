@@ -5,7 +5,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.net.HttpHeaders;
 import io.netty.handler.codec.http.HttpMethod;
-import lexek.wschat.chat.e.InternalErrorException;
 import lexek.wschat.proxy.twitter.OAuthUtil;
 import lexek.wschat.security.social.SocialProfile;
 import lexek.wschat.security.social.SocialRedirect;
