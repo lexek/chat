@@ -2,11 +2,12 @@ package lexek.wschat.frontend.http.rest;
 
 import com.google.common.collect.ImmutableMap;
 import lexek.httpserver.Request;
+import lexek.wschat.chat.e.EntityNotFoundException;
+import lexek.wschat.chat.e.InvalidStateException;
 import lexek.wschat.chat.model.GlobalRole;
 import lexek.wschat.db.model.SessionDto;
 import lexek.wschat.db.model.UserAuthDto;
 import lexek.wschat.db.model.UserDto;
-import lexek.wschat.db.model.rest.ErrorModel;
 import lexek.wschat.security.AuthenticationManager;
 import lexek.wschat.security.ReCaptcha;
 import lexek.wschat.security.jersey.Auth;
@@ -49,31 +50,35 @@ public class AuthResource {
         @QueryParam("oauth_token") String oauthToken,
         @QueryParam("oauth_verifier") String oauthVerifier,
         @QueryParam("error") String error,
+        @QueryParam("error_description") String errorDescription,
         @QueryParam("state") String state,
         @CookieParam("social_state") String cookieState,
         @Auth UserDto user
     ) throws IOException {
         SocialAuthProvider socialAuthProvider = socialAuthService.getAuthService(provider);
         if (socialAuthProvider == null) {
-            return Response.status(404).entity(ImmutableMap.of("error", "not found")).build();
+            throw new EntityNotFoundException("Auth provider not found.");
         }
 
+        if (errorDescription != null) {
+            throw new InvalidStateException(errorDescription);
+        }
         if (error != null) {
-            return Response.status(500).entity(ImmutableMap.of("error", error)).build();
+            throw new InvalidStateException(error);
         }
 
         SocialToken token = null;
         if (socialAuthProvider.isV1()) {
             if (oauthToken != null && oauthVerifier != null) {
                 if (!oauthToken.equals(cookieState)) {
-                    return Response.status(400).entity(ImmutableMap.of("error", "state mismatch")).build();
+                    throw new InvalidStateException("State mismatch");
                 }
                 token = socialAuthProvider.authenticate(oauthToken, oauthVerifier);
             }
         } else {
             if (code != null) {
                 if (state != null && cookieState != null && !state.equals(cookieState)) {
-                    return Response.status(400).entity(ImmutableMap.of("error", "state mismatch")).build();
+                    throw new InvalidStateException("State mismatch");
                 }
                 token = socialAuthProvider.authenticate(code);
             }
@@ -82,7 +87,6 @@ public class AuthResource {
         if (token != null) {
             SocialProfile profile = socialAuthProvider.getProfile(token);
             if (profile.getEmail() != null || !socialAuthProvider.checkEmail()) {
-                //do authentication/registration
                 if (user == null) {
                     SessionResult sessionResult = socialAuthService.getSession(profile, request.ip());
                     if (sessionResult.getType() == SocialAuthResultType.SESSION) {
@@ -107,10 +111,7 @@ public class AuthResource {
                         .build();
                 }
             } else {
-                throw new WebApplicationException(Response
-                    .status(403)
-                    .entity(new ErrorModel("Your account must have verified email"))
-                    .build());
+                throw new InvalidStateException("Your account must have verified email");
             }
             return Response.ok(ImmutableMap.of("success", true)).build();
         }
