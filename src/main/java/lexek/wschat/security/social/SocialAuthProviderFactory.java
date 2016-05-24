@@ -20,7 +20,7 @@ public class SocialAuthProviderFactory {
     public SocialAuthProvider newProvider(String providerName, SocialAuthCredentials credentials, boolean signIn) {
         switch (providerName) {
             case "twitch":
-                return new TwitchTvSocialAuthProvider(
+                return new TwitchAuthProvider(
                     credentials.getClientId(),
                     credentials.getClientSecret(),
                     getUrl(providerName, signIn),

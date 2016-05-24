@@ -6,8 +6,11 @@ import com.google.common.net.HttpHeaders;
 import com.google.common.net.UrlEscapers;
 import io.netty.util.CharsetUtil;
 import lexek.wschat.chat.e.InvalidInputException;
+import lexek.wschat.chat.e.InvalidStateException;
 import lexek.wschat.security.SecureTokenGenerator;
 import lexek.wschat.util.JsonResponseHandler;
+import lexek.wschat.util.RestResponse;
+import lexek.wschat.util.RestResponseHandler;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
@@ -20,7 +23,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-public class TwitchTvSocialAuthProvider implements SocialAuthProvider {
+public class TwitchAuthProvider implements SocialAuthProvider {
     private final String name;
     private final String clientId;
     private final String secret;
@@ -29,7 +32,7 @@ public class TwitchTvSocialAuthProvider implements SocialAuthProvider {
     private final SecureTokenGenerator secureTokenGenerator;
     private final String scopesString;
 
-    public TwitchTvSocialAuthProvider(
+    public TwitchAuthProvider(
         String clientId,
         String secret,
         String url,
@@ -69,8 +72,13 @@ public class TwitchTvSocialAuthProvider implements SocialAuthProvider {
         ), CharsetUtil.UTF_8);
         request.setEntity(entity);
         request.setHeader(HttpHeaders.ACCEPT, "application/json");
-        JsonNode response = httpClient.execute(request, JsonResponseHandler.INSTANCE);
-        return new SocialToken(name, response.get("access_token").asText(), null, null);
+        RestResponse response = httpClient.execute(request, RestResponseHandler.INSTANCE);
+        JsonNode rootNode = response.getRootNode();
+        if (response.isSuccess()) {
+            return new SocialToken(name, rootNode.get("access_token").asText(), null, null);
+        } else {
+            throw new InvalidStateException(rootNode.get("message").asText());
+        }
     }
 
     @Override
