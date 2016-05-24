@@ -4,8 +4,6 @@ import com.google.common.collect.ImmutableSet;
 import lexek.wschat.security.SecureTokenGenerator;
 import lexek.wschat.security.social.provider.*;
 import org.apache.http.client.HttpClient;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Set;
 

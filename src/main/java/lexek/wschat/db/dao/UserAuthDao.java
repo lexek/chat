@@ -1,7 +1,7 @@
 package lexek.wschat.db.dao;
 
-import lexek.wschat.chat.e.InternalErrorException;
 import lexek.wschat.chat.e.BadRequestException;
+import lexek.wschat.chat.e.InternalErrorException;
 import lexek.wschat.chat.model.GlobalRole;
 import lexek.wschat.db.jooq.tables.pojos.PendingConfirmation;
 import lexek.wschat.db.model.SessionDto;

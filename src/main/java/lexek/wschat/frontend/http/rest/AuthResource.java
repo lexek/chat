@@ -2,8 +2,8 @@ package lexek.wschat.frontend.http.rest;
 
 import com.google.common.collect.ImmutableMap;
 import lexek.httpserver.Request;
-import lexek.wschat.chat.e.EntityNotFoundException;
 import lexek.wschat.chat.e.BadRequestException;
+import lexek.wschat.chat.e.EntityNotFoundException;
 import lexek.wschat.chat.model.GlobalRole;
 import lexek.wschat.db.model.SessionDto;
 import lexek.wschat.db.model.UserAuthDto;
