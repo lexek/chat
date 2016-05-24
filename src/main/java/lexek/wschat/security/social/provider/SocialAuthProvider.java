@@ -27,7 +27,5 @@ public interface SocialAuthProvider {
 
     String getUrl();
 
-    default boolean isV1() {
-        return false;
-    }
+    ProviderType getProviderType();
 }

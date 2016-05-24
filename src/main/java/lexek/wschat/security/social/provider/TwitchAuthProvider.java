@@ -108,6 +108,11 @@ public class TwitchAuthProvider implements SocialAuthProvider {
     }
 
     @Override
+    public ProviderType getProviderType() {
+        return ProviderType.OAUTH_2;
+    }
+
+    @Override
     public SocialProfile getProfile(SocialToken token) throws IOException {
         HttpGet request = new HttpGet("https://api.twitch.tv/kraken/user?oauth_token=" + token.getToken());
         request.setHeader(HttpHeaders.ACCEPT, "application/json");

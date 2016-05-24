@@ -181,8 +181,8 @@ public class TwitterAuthProvider implements SocialAuthProvider {
     }
 
     @Override
-    public boolean isV1() {
-        return true;
+    public ProviderType getProviderType() {
+        return ProviderType.OAUTH_1;
     }
 
     private class Token {

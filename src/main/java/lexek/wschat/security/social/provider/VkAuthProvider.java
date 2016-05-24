@@ -120,4 +120,9 @@ public class VkAuthProvider implements SocialAuthProvider {
     public String getUrl() {
         return url;
     }
+
+    @Override
+    public ProviderType getProviderType() {
+        return ProviderType.OAUTH_2;
+    }
 }

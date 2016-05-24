@@ -14,9 +14,7 @@ import lexek.wschat.security.social.provider.SocialAuthProvider;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.NewCookie;
-import javax.ws.rs.core.Response;
+import javax.ws.rs.core.*;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -36,12 +34,10 @@ public class ProxyAuthResource {
     @GET
     public Response socialAuth(
         @PathParam("serviceName") @NotEmpty String serviceName,
-        @QueryParam("code") String code,
-        @QueryParam("oauth_token") String oauthToken,
-        @QueryParam("oauth_verifier") String oauthVerifier,
         @QueryParam("error") String error,
         @QueryParam("state") String state,
         @CookieParam("social_state") String cookieState,
+        @Context UriInfo uriInfo,
         @Auth UserDto owner
     ) throws IOException {
         SocialAuthProvider socialAuthProvider = proxyAuthService.getAuthService(serviceName);
@@ -49,20 +45,26 @@ public class ProxyAuthResource {
             return Response.status(404).entity(ImmutableMap.of("error", "not found")).build();
         }
         SocialToken token = null;
-        if (socialAuthProvider.isV1()) {
-            if (oauthToken != null && oauthVerifier != null) {
-                if (!oauthToken.equals(cookieState)) {
-                    return Response.status(400).entity(ImmutableMap.of("error", "state mismatch")).build();
+
+        MultivaluedMap<String, String> parameters = uriInfo.getQueryParameters();
+        switch (socialAuthProvider.getProviderType()) {
+            case OAUTH_1:
+                String oauthToken = parameters.getFirst("oauth_token");
+                String oauthVerifier = parameters.getFirst("oauth_verifier");
+                if (oauthToken != null && oauthVerifier != null) {
+                    if (!oauthToken.equals(cookieState)) {
+                        return Response.status(400).entity(ImmutableMap.of("error", "state mismatch")).build();
+                    }
+                    token = socialAuthProvider.authenticate(oauthToken, oauthVerifier);
                 }
-                token = socialAuthProvider.authenticate(oauthToken, oauthVerifier);
-            }
-        } else {
-            if (code != null) {
-                if (state != null && cookieState != null && !state.equals(cookieState)) {
-                    return Response.status(400).entity(ImmutableMap.of("error", "state mismatch")).build();
+            case OAUTH_2:
+                String code = parameters.getFirst("code");
+                if (code != null) {
+                    if (state != null && cookieState != null && !state.equals(cookieState)) {
+                        return Response.status(400).entity(ImmutableMap.of("error", "state mismatch")).build();
+                    }
+                    token = socialAuthProvider.authenticate(code);
                 }
-                token = socialAuthProvider.authenticate(code);
-            }
         }
 
         if (token != null) {

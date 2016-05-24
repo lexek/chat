@@ -18,10 +18,7 @@ import org.glassfish.jersey.server.mvc.Viewable;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.NewCookie;
-import javax.ws.rs.core.Response;
+import javax.ws.rs.core.*;
 import java.io.IOException;
 
 import static lexek.wschat.util.Names.PASSWORD_PATTERN;
@@ -47,13 +44,11 @@ public class AuthResource {
     public Response socialAuth(
         @Context Request request,
         @PathParam("serviceName") @NotEmpty String provider,
-        @QueryParam("code") String code,
-        @QueryParam("oauth_token") String oauthToken,
-        @QueryParam("oauth_verifier") String oauthVerifier,
         @QueryParam("error") String error,
         @QueryParam("error_description") String errorDescription,
         @QueryParam("state") String state,
         @CookieParam("social_state") String cookieState,
+        @Context UriInfo uriInfo,
         @Auth UserDto user
     ) throws IOException {
         SocialAuthProvider socialAuthProvider = socialAuthService.getAuthService(provider);
@@ -68,21 +63,26 @@ public class AuthResource {
             throw new BadRequestException(error);
         }
 
+        MultivaluedMap<String, String> parameters = uriInfo.getQueryParameters();
         SocialToken token = null;
-        if (socialAuthProvider.isV1()) {
-            if (oauthToken != null && oauthVerifier != null) {
-                if (!oauthToken.equals(cookieState)) {
-                    throw new BadRequestException("State mismatch");
+        switch (socialAuthProvider.getProviderType()) {
+            case OAUTH_1:
+                String oauthToken = parameters.getFirst("oauth_token");
+                String oauthVerifier = parameters.getFirst("oauth_verifier");
+                if (oauthToken != null && oauthVerifier != null) {
+                    if (!oauthToken.equals(cookieState)) {
+                        throw new BadRequestException("State mismatch");
+                    }
+                    token = socialAuthProvider.authenticate(oauthToken, oauthVerifier);
                 }
-                token = socialAuthProvider.authenticate(oauthToken, oauthVerifier);
-            }
-        } else {
-            if (code != null) {
-                if (state != null && cookieState != null && !state.equals(cookieState)) {
-                    throw new BadRequestException("State mismatch");
+            case OAUTH_2:
+                String code = parameters.getFirst("code");
+                if (code != null) {
+                    if (state != null && cookieState != null && !state.equals(cookieState)) {
+                        throw new BadRequestException("State mismatch");
+                    }
+                    token = socialAuthProvider.authenticate(code);
                 }
-                token = socialAuthProvider.authenticate(code);
-            }
         }
 
         if (token != null) {
