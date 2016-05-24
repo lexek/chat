@@ -1,4 +1,4 @@
-package lexek.wschat.security.social;
+package lexek.wschat.security.social.provider;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
@@ -7,6 +7,9 @@ import com.google.common.net.HttpHeaders;
 import io.netty.handler.codec.http.HttpMethod;
 import lexek.wschat.chat.e.InternalErrorException;
 import lexek.wschat.proxy.twitter.OAuthUtil;
+import lexek.wschat.security.social.SocialProfile;
+import lexek.wschat.security.social.SocialRedirect;
+import lexek.wschat.security.social.SocialToken;
 import lexek.wschat.util.JsonResponseHandler;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
@@ -26,7 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class TwitterSocialAuthProvider implements SocialAuthProvider {
+public class TwitterAuthProvider implements SocialAuthProvider {
     //todo: change to cache with time expiration
     private final boolean signIn;
     private final boolean checkEmail;
@@ -37,7 +40,7 @@ public class TwitterSocialAuthProvider implements SocialAuthProvider {
     private final String url;
     private final HttpClient httpClient;
 
-    public TwitterSocialAuthProvider(
+    public TwitterAuthProvider(
         boolean signIn,
         boolean checkEmail,
         String consumerKey,

@@ -11,6 +11,7 @@ import lexek.wschat.db.model.UserAuthDto;
 import lexek.wschat.db.model.UserDto;
 import lexek.wschat.security.AuthenticationManager;
 import lexek.wschat.security.SecureTokenGenerator;
+import lexek.wschat.security.social.provider.SocialAuthProvider;
 
 import java.util.Map;
 import java.util.concurrent.TimeUnit;

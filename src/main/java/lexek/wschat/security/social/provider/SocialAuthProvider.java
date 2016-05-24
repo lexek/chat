@@ -1,4 +1,8 @@
-package lexek.wschat.security.social;
+package lexek.wschat.security.social.provider;
+
+import lexek.wschat.security.social.SocialProfile;
+import lexek.wschat.security.social.SocialRedirect;
+import lexek.wschat.security.social.SocialToken;
 
 import java.io.IOException;
 

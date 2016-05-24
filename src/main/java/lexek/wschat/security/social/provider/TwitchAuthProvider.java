@@ -1,13 +1,16 @@
-package lexek.wschat.security.social;
+package lexek.wschat.security.social.provider;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.net.HttpHeaders;
 import com.google.common.net.UrlEscapers;
 import io.netty.util.CharsetUtil;
-import lexek.wschat.chat.e.InvalidInputException;
 import lexek.wschat.chat.e.InvalidStateException;
 import lexek.wschat.security.SecureTokenGenerator;
+import lexek.wschat.security.social.SocialProfile;
+import lexek.wschat.security.social.SocialRedirect;
+import lexek.wschat.security.social.SocialToken;
+import lexek.wschat.security.social.provider.SocialAuthProvider;
 import lexek.wschat.util.JsonResponseHandler;
 import lexek.wschat.util.RestResponse;
 import lexek.wschat.util.RestResponseHandler;
@@ -21,7 +24,6 @@ import org.apache.http.message.BasicNameValuePair;
 import java.io.IOException;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 public class TwitchAuthProvider implements SocialAuthProvider {
     private final String name;

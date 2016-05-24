@@ -13,6 +13,7 @@ import lexek.wschat.security.ReCaptcha;
 import lexek.wschat.security.jersey.Auth;
 import lexek.wschat.security.jersey.RequiredRole;
 import lexek.wschat.security.social.*;
+import lexek.wschat.security.social.provider.SocialAuthProvider;
 import org.glassfish.jersey.server.mvc.Viewable;
 import org.hibernate.validator.constraints.NotEmpty;
 

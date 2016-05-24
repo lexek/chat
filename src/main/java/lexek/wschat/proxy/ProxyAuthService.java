@@ -6,7 +6,7 @@ import lexek.wschat.chat.model.GlobalRole;
 import lexek.wschat.db.dao.ProxyAuthDao;
 import lexek.wschat.db.model.ProxyAuth;
 import lexek.wschat.db.model.UserDto;
-import lexek.wschat.security.social.SocialAuthProvider;
+import lexek.wschat.security.social.provider.SocialAuthProvider;
 import lexek.wschat.security.social.SocialProfile;
 import lexek.wschat.security.social.SocialToken;
 import org.slf4j.Logger;

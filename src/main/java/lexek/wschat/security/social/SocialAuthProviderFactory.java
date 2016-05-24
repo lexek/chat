@@ -2,6 +2,7 @@ package lexek.wschat.security.social;
 
 import com.google.common.collect.ImmutableSet;
 import lexek.wschat.security.SecureTokenGenerator;
+import lexek.wschat.security.social.provider.*;
 import org.apache.http.client.HttpClient;
 
 import java.util.Set;
@@ -30,7 +31,7 @@ public class SocialAuthProviderFactory {
                     secureTokenGenerator
                 );
             case "twitter":
-                return new TwitterSocialAuthProvider(
+                return new TwitterAuthProvider(
                     signIn,
                     false,
                     credentials.getClientId(),
@@ -53,7 +54,7 @@ public class SocialAuthProviderFactory {
                         "email"
                     );
                 }
-                return new GoogleSocialAuthProvider(
+                return new GoogleAuthProvider(
                     credentials.getClientId(),
                     credentials.getClientSecret(),
                     getUrl(providerName, signIn),
@@ -64,7 +65,7 @@ public class SocialAuthProviderFactory {
                 );
             }
             case "vk":
-                return new VkSocialAuthProvider(
+                return new VkAuthProvider(
                     credentials.getClientId(),
                     credentials.getClientSecret(),
                     getUrl(providerName, signIn),
@@ -73,7 +74,7 @@ public class SocialAuthProviderFactory {
                     secureTokenGenerator
                 );
             case "goodgame":
-                return new GoodGameSocialAuthProvider(
+                return new GoodGameAuthProvider(
                     credentials.getClientId(),
                     credentials.getClientSecret(),
                     getUrl(providerName, signIn),
