@@ -47,24 +47,11 @@ public class ProxyAuthResource {
         SocialToken token = null;
 
         MultivaluedMap<String, String> parameters = uriInfo.getQueryParameters();
-        switch (socialAuthProvider.getProviderType()) {
-            case OAUTH_1:
-                String oauthToken = parameters.getFirst("oauth_token");
-                String oauthVerifier = parameters.getFirst("oauth_verifier");
-                if (oauthToken != null && oauthVerifier != null) {
-                    if (!oauthToken.equals(cookieState)) {
-                        return Response.status(400).entity(ImmutableMap.of("error", "state mismatch")).build();
-                    }
-                    token = socialAuthProvider.authenticate(oauthToken, oauthVerifier);
-                }
-            case OAUTH_2:
-                String code = parameters.getFirst("code");
-                if (code != null) {
-                    if (state != null && cookieState != null && !state.equals(cookieState)) {
-                        return Response.status(400).entity(ImmutableMap.of("error", "state mismatch")).build();
-                    }
-                    token = socialAuthProvider.authenticate(code);
-                }
+        if (socialAuthProvider.validateParams(parameters)) {
+            if (!socialAuthProvider.validateState(parameters, cookieState)) {
+                return Response.status(400).entity(ImmutableMap.of("error", "state mismatch")).build();
+            }
+            token = socialAuthProvider.authenticate(parameters);
         }
 
         if (token != null) {

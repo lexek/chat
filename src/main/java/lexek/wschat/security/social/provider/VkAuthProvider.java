@@ -17,7 +17,7 @@ import org.apache.http.client.methods.HttpGet;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
-public class VkAuthProvider implements SocialAuthProvider {
+public class VkAuthProvider extends AbstractOauth2Provider {
     private final String name;
     private final String clientId;
     private final String clientSecret;
@@ -55,7 +55,7 @@ public class VkAuthProvider implements SocialAuthProvider {
     }
 
     @Override
-    public SocialToken authenticate(String code) throws IOException {
+    protected SocialToken authenticate(String code) throws IOException {
         String tokenUrl = "https://oauth.vk.com/access_token" +
             "?client_id=" + UrlEscapers.urlPathSegmentEscaper().escape(clientId) +
             "&client_secret=" + UrlEscapers.urlPathSegmentEscaper().escape(clientSecret) +
@@ -119,10 +119,5 @@ public class VkAuthProvider implements SocialAuthProvider {
     @Override
     public String getUrl() {
         return url;
-    }
-
-    @Override
-    public ProviderType getProviderType() {
-        return ProviderType.OAUTH_2;
     }
 }

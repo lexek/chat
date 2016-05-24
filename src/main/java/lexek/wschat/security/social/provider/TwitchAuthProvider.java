@@ -24,7 +24,7 @@ import java.io.IOException;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class TwitchAuthProvider implements SocialAuthProvider {
+public class TwitchAuthProvider extends AbstractOauth2Provider {
     private final String name;
     private final String clientId;
     private final String secret;
@@ -62,7 +62,7 @@ public class TwitchAuthProvider implements SocialAuthProvider {
     }
 
     @Override
-    public SocialToken authenticate(String code) throws IOException {
+    protected SocialToken authenticate(String code) throws IOException {
         HttpPost request = new HttpPost("https://api.twitch.tv/kraken/oauth2/token");
         HttpEntity entity = new UrlEncodedFormEntity(ImmutableList.of(
             new BasicNameValuePair("client_secret", secret),
@@ -105,11 +105,6 @@ public class TwitchAuthProvider implements SocialAuthProvider {
     @Override
     public String getUrl() {
         return url;
-    }
-
-    @Override
-    public ProviderType getProviderType() {
-        return ProviderType.OAUTH_2;
     }
 
     @Override

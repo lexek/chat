@@ -65,24 +65,12 @@ public class AuthResource {
 
         MultivaluedMap<String, String> parameters = uriInfo.getQueryParameters();
         SocialToken token = null;
-        switch (socialAuthProvider.getProviderType()) {
-            case OAUTH_1:
-                String oauthToken = parameters.getFirst("oauth_token");
-                String oauthVerifier = parameters.getFirst("oauth_verifier");
-                if (oauthToken != null && oauthVerifier != null) {
-                    if (!oauthToken.equals(cookieState)) {
-                        throw new BadRequestException("State mismatch");
-                    }
-                    token = socialAuthProvider.authenticate(oauthToken, oauthVerifier);
-                }
-            case OAUTH_2:
-                String code = parameters.getFirst("code");
-                if (code != null) {
-                    if (state != null && cookieState != null && !state.equals(cookieState)) {
-                        throw new BadRequestException("State mismatch");
-                    }
-                    token = socialAuthProvider.authenticate(code);
-                }
+
+        if (socialAuthProvider.validateParams(parameters)) {
+            if (!socialAuthProvider.validateState(parameters, cookieState)) {
+                throw new BadRequestException("State mismatch");
+            }
+            token = socialAuthProvider.authenticate(parameters);
         }
 
         if (token != null) {

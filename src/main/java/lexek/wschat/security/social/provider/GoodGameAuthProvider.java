@@ -23,7 +23,7 @@ import org.apache.http.message.BasicNameValuePair;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
-public class GoodGameAuthProvider implements SocialAuthProvider {
+public class GoodGameAuthProvider extends AbstractOauth2Provider {
     private final String name;
     private final String clientId;
     private final String clientSecret;
@@ -61,7 +61,7 @@ public class GoodGameAuthProvider implements SocialAuthProvider {
     }
 
     @Override
-    public SocialToken authenticate(String code) throws IOException {
+    protected SocialToken authenticate(String code) throws IOException {
         HttpPost request = new HttpPost("http://api2.goodgame.ru/oauth");
         HttpEntity entity = new UrlEncodedFormEntity(ImmutableList.of(
             new BasicNameValuePair("client_secret", clientSecret),
@@ -141,10 +141,5 @@ public class GoodGameAuthProvider implements SocialAuthProvider {
     @Override
     public String getUrl() {
         return url;
-    }
-
-    @Override
-    public ProviderType getProviderType() {
-        return ProviderType.OAUTH_2;
     }
 }

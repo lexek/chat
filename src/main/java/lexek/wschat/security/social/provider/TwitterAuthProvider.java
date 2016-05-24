@@ -19,6 +19,7 @@ import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.impl.client.BasicResponseHandler;
 import org.apache.http.message.BasicNameValuePair;
 
+import javax.ws.rs.core.MultivaluedMap;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
@@ -27,9 +28,9 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class TwitterAuthProvider implements SocialAuthProvider {
-    //todo: change to cache with time expiration
     private final boolean signIn;
     private final boolean checkEmail;
+    //todo: change to cache with time expiration
     private final Map<String, String> secrets = new HashMap<>();
     private final String name;
     private final String consumerKey;
@@ -90,7 +91,20 @@ public class TwitterAuthProvider implements SocialAuthProvider {
     }
 
     @Override
-    public SocialToken authenticate(String token, String verifier) throws IOException {
+    public boolean validateParams(MultivaluedMap<String, String> params) {
+        return params.getFirst("oauth_token") != null && params.getFirst("oauth_verifier") != null;
+    }
+
+    @Override
+    public boolean validateState(MultivaluedMap<String, String> params, String cookieState) {
+        return cookieState == null || cookieState.equals(params.getFirst("oauth_token"));
+    }
+
+    @Override
+    public SocialToken authenticate(MultivaluedMap<String, String> params) throws IOException {
+        String token = params.getFirst("oauth_token");
+        String verifier = params.getFirst("oauth_verifier");
+
         HttpPost request = new HttpPost("https://api.twitter.com/oauth/access_token");
         request.setHeader(HttpHeaders.AUTHORIZATION, OAuthUtil.generateAuthorizationHeader(
             consumerKey,
@@ -115,11 +129,6 @@ public class TwitterAuthProvider implements SocialAuthProvider {
             null,
             null
         );
-    }
-
-    @Override
-    public SocialToken authenticate(String code) throws IOException {
-        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -178,11 +187,6 @@ public class TwitterAuthProvider implements SocialAuthProvider {
     @Override
     public String getUrl() {
         return url;
-    }
-
-    @Override
-    public ProviderType getProviderType() {
-        return ProviderType.OAUTH_1;
     }
 
     private class Token {

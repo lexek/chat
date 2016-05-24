@@ -25,7 +25,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-public class GoogleAuthProvider implements SocialAuthProvider {
+public class GoogleAuthProvider extends AbstractOauth2Provider {
     private final String name;
     private final String clientId;
     private final String clientSecret;
@@ -65,7 +65,7 @@ public class GoogleAuthProvider implements SocialAuthProvider {
     }
 
     @Override
-    public SocialToken authenticate(String code) throws IOException {
+    protected SocialToken authenticate(String code) throws IOException {
         HttpPost request = new HttpPost("https://www.googleapis.com/oauth2/v4/token");
         HttpEntity entity = new UrlEncodedFormEntity(ImmutableList.of(
             new BasicNameValuePair("client_secret", clientSecret),
@@ -144,10 +144,5 @@ public class GoogleAuthProvider implements SocialAuthProvider {
     @Override
     public String getUrl() {
         return url;
-    }
-
-    @Override
-    public ProviderType getProviderType() {
-        return ProviderType.OAUTH_2;
     }
 }
