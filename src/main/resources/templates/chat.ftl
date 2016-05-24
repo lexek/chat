@@ -543,7 +543,12 @@
                 </div>
                 <div class="form-group">
                     <label class="control-label">{{'AUTH_CAPTCHA' | translate}}</label>
-                    <div vc-recaptcha="" key="'6Lepxv4SAAAAAMFC4jmtZvnzyekEQ3XuX0xQ-3TB'" on-create="recaptchaCreated(widgetId)"></div>
+                    <div
+                            vc-recaptcha=""
+                            key="'6Lepxv4SAAAAAMFC4jmtZvnzyekEQ3XuX0xQ-3TB'"
+                            on-create="recaptchaCreated(widgetId)"
+                            style="transform:scale(0.89);-webkit-transform:scale(0.89);transform-origin:0 0;-webkit-transform-origin:0 0;"
+                    ></div>
                 </div>
                 <div class="form-group">
                     <div ng-disabled="busy" class="btn btn-default" ng-click="switchTo('sign_in')">{{'AUTH_SIGN_IN' | translate}}</div>
