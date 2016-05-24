@@ -388,7 +388,6 @@ public class Main {
         httpRequestDispatcher.add("/.*", new FileSystemStaticHandler(dataDir));
         httpRequestDispatcher.add("/.*", new ClassPathStaticHandler(ClassPathStaticHandler.class, "/static/"));
         httpRequestDispatcher.add("/chat.html", new ChatHomeHandler(coreSettings.getTitle(), settings.getHttp().isAllowLikes(), settings.getHttp().isSingleRoom()));
-        httpRequestDispatcher.add("/confirm_email", new ConfirmEmailHandler());
         httpRequestDispatcher.add("/recaptcha/[0-9]+", new RecaptchaHandler(captchaService, reCaptcha));
         httpRequestDispatcher.add("/api/tickets", new UserTicketsHandler(authenticationManager, ticketService));
         httpRequestDispatcher.add("/admin/.*", new AdminPageHandler(authenticationManager));
