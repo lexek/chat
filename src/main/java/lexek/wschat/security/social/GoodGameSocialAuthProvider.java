@@ -5,8 +5,11 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.net.HttpHeaders;
 import com.google.common.net.UrlEscapers;
 import io.netty.util.CharsetUtil;
+import lexek.wschat.chat.e.InvalidStateException;
 import lexek.wschat.security.SecureTokenGenerator;
 import lexek.wschat.util.JsonResponseHandler;
+import lexek.wschat.util.RestResponse;
+import lexek.wschat.util.RestResponseHandler;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
@@ -66,16 +69,21 @@ public class GoodGameSocialAuthProvider implements SocialAuthProvider {
         ), CharsetUtil.UTF_8);
         request.setEntity(entity);
         request.setHeader(HttpHeaders.ACCEPT, "application/json");
-        JsonNode response = httpClient.execute(request, JsonResponseHandler.INSTANCE);
-        String token = response.get("access_token").asText();
-        String refreshToken = response.get("refresh_token").asText();
-        long expiresIn = TimeUnit.SECONDS.toMillis(response.get("expires_in").asLong() - 60);
-        return new SocialToken(
-            name,
-            token,
-            System.currentTimeMillis() + expiresIn,
-            refreshToken
-        );
+        RestResponse response = httpClient.execute(request, RestResponseHandler.INSTANCE);
+        JsonNode rootNode = response.getRootNode();
+        if (response.isSuccess()) {
+            String token = rootNode.get("access_token").asText();
+            String refreshToken = rootNode.get("refresh_token").asText();
+            long expiresIn = TimeUnit.SECONDS.toMillis(rootNode.get("expires_in").asLong() - 60);
+            return new SocialToken(
+                name,
+                token,
+                System.currentTimeMillis() + expiresIn,
+                refreshToken
+            );
+        } else {
+            throw new InvalidStateException(rootNode.get("detail").asText());
+        }
     }
 
     @Override
