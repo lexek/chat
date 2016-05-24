@@ -7,7 +7,7 @@ import lexek.wschat.security.social.SocialToken;
 import java.io.IOException;
 
 public interface SocialAuthProvider {
-    SocialRedirect getRedirect();
+    SocialRedirect getRedirect() throws IOException;
 
     default SocialToken authenticate(String token, String verifier) throws IOException {
         throw new UnsupportedOperationException();

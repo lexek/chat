@@ -22,8 +22,6 @@ import org.apache.http.message.BasicNameValuePair;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -67,66 +65,57 @@ public class TwitterAuthProvider implements SocialAuthProvider {
     }
 
     @Override
-    public SocialRedirect getRedirect() {
-
-        try {
-            HttpPost request = new HttpPost("https://api.twitter.com/oauth/request_token");
-            request.setHeader(HttpHeaders.AUTHORIZATION, OAuthUtil.generateRequestHeader(
-                consumerKey,
-                consumerSecret,
-                url,
-                "https://api.twitter.com/oauth/request_token",
-                HttpMethod.POST,
-                ImmutableMap.<String, String>of()
-            ));
-            String response = httpClient.execute(request, new BasicResponseHandler());
-            List<NameValuePair> parsedEntities = URLEncodedUtils.parse(response, StandardCharsets.UTF_8);
-            Map<String, List<NameValuePair>> map = parsedEntities
-                .stream()
-                .collect(Collectors.groupingBy(NameValuePair::getName));
-            String url = "https://api.twitter.com/oauth/authorize";
-            if (signIn) {
-                url = "https://api.twitter.com/oauth/authenticate";
-            }
-            String token = map.get("oauth_token").get(0).getValue();
-            String secret = map.get("oauth_token_secret").get(0).getValue();
-            addSecret(token, secret);
-            return new SocialRedirect(url + "?oauth_token=" + token, token);
-        } catch (NoSuchAlgorithmException | InvalidKeyException | IOException e) {
-            throw new InternalErrorException(e);
+    public SocialRedirect getRedirect() throws IOException {
+        HttpPost request = new HttpPost("https://api.twitter.com/oauth/request_token");
+        request.setHeader(HttpHeaders.AUTHORIZATION, OAuthUtil.generateRequestHeader(
+            consumerKey,
+            consumerSecret,
+            url,
+            "https://api.twitter.com/oauth/request_token",
+            HttpMethod.POST,
+            ImmutableMap.<String, String>of()
+        ));
+        String response = httpClient.execute(request, new BasicResponseHandler());
+        List<NameValuePair> parsedEntities = URLEncodedUtils.parse(response, StandardCharsets.UTF_8);
+        Map<String, List<NameValuePair>> map = parsedEntities
+            .stream()
+            .collect(Collectors.groupingBy(NameValuePair::getName));
+        String url = "https://api.twitter.com/oauth/authorize";
+        if (signIn) {
+            url = "https://api.twitter.com/oauth/authenticate";
         }
+        String token = map.get("oauth_token").get(0).getValue();
+        String secret = map.get("oauth_token_secret").get(0).getValue();
+        addSecret(token, secret);
+        return new SocialRedirect(url + "?oauth_token=" + token, token);
     }
 
     @Override
     public SocialToken authenticate(String token, String verifier) throws IOException {
-        try {
-            HttpPost request = new HttpPost("https://api.twitter.com/oauth/access_token");
-            request.setHeader(HttpHeaders.AUTHORIZATION, OAuthUtil.generateAuthorizationHeader(
-                consumerKey,
-                consumerSecret,
-                token,
-                deleteSecret(token),
-                "https://api.twitter.com/oauth/request_token",
-                HttpMethod.POST,
-                ImmutableMap.of("oauth_verifier", verifier)
-            ));
-            request.setEntity(new UrlEncodedFormEntity(ImmutableList.of(
-                new BasicNameValuePair("oauth_verifier", verifier)
-            )));
-            String response = httpClient.execute(request, new BasicResponseHandler());
-            Map<String, List<NameValuePair>> map = URLEncodedUtils
-                .parse(response, StandardCharsets.UTF_8)
-                .stream()
-                .collect(Collectors.groupingBy(NameValuePair::getName));
-            return new SocialToken(
-                this.name,
-                map.get("oauth_token").get(0).getValue() + ":" + map.get("oauth_token_secret").get(0).getValue(),
-                null,
-                null
-            );
-        } catch (NoSuchAlgorithmException | InvalidKeyException e) {
-            throw new InternalErrorException(e);
-        }
+        HttpPost request = new HttpPost("https://api.twitter.com/oauth/access_token");
+        request.setHeader(HttpHeaders.AUTHORIZATION, OAuthUtil.generateAuthorizationHeader(
+            consumerKey,
+            consumerSecret,
+            token,
+            deleteSecret(token),
+            "https://api.twitter.com/oauth/request_token",
+            HttpMethod.POST,
+            ImmutableMap.of("oauth_verifier", verifier)
+        ));
+        request.setEntity(new UrlEncodedFormEntity(ImmutableList.of(
+            new BasicNameValuePair("oauth_verifier", verifier)
+        )));
+        String response = httpClient.execute(request, new BasicResponseHandler());
+        Map<String, List<NameValuePair>> map = URLEncodedUtils
+            .parse(response, StandardCharsets.UTF_8)
+            .stream()
+            .collect(Collectors.groupingBy(NameValuePair::getName));
+        return new SocialToken(
+            this.name,
+            map.get("oauth_token").get(0).getValue() + ":" + map.get("oauth_token_secret").get(0).getValue(),
+            null,
+            null
+        );
     }
 
     @Override
@@ -136,39 +125,35 @@ public class TwitterAuthProvider implements SocialAuthProvider {
 
     @Override
     public SocialProfile getProfile(SocialToken socialToken) throws IOException {
-        try {
-            Token token = new Token(socialToken.getToken());
-            HttpGet request = new HttpGet("https://api.twitter.com/1.1/account/verify_credentials.json" +
-                "?skip_status=true" +
-                "&include_email=true"
-            );
-            request.setHeader(HttpHeaders.AUTHORIZATION, OAuthUtil.generateAuthorizationHeader(
-                consumerKey,
-                consumerSecret,
-                token.getKey(),
-                token.getSecret(),
-                "https://api.twitter.com/1.1/account/verify_credentials.json",
-                HttpMethod.GET,
-                ImmutableMap.of(
-                    "skip_status", "true",
-                    "include_email", "true"
-                )
-            ));
-            JsonNode response = httpClient.execute(request, JsonResponseHandler.INSTANCE);
-            String email = null;
-            if (response.get("email") != null) {
-                email = response.get("email").asText();
-            }
-            return new SocialProfile(
-                response.get("id_str").asText(),
-                this.name,
-                response.get("screen_name").asText().toLowerCase(),
-                email,
-                socialToken
-            );
-        } catch (NoSuchAlgorithmException | InvalidKeyException e) {
-            throw new InternalErrorException(e);
+        Token token = new Token(socialToken.getToken());
+        HttpGet request = new HttpGet("https://api.twitter.com/1.1/account/verify_credentials.json" +
+            "?skip_status=true" +
+            "&include_email=true"
+        );
+        request.setHeader(HttpHeaders.AUTHORIZATION, OAuthUtil.generateAuthorizationHeader(
+            consumerKey,
+            consumerSecret,
+            token.getKey(),
+            token.getSecret(),
+            "https://api.twitter.com/1.1/account/verify_credentials.json",
+            HttpMethod.GET,
+            ImmutableMap.of(
+                "skip_status", "true",
+                "include_email", "true"
+            )
+        ));
+        JsonNode response = httpClient.execute(request, JsonResponseHandler.INSTANCE);
+        String email = null;
+        if (response.get("email") != null) {
+            email = response.get("email").asText();
         }
+        return new SocialProfile(
+            response.get("id_str").asText(),
+            this.name,
+            response.get("screen_name").asText().toLowerCase(),
+            email,
+            socialToken
+        );
     }
 
     @Override

@@ -23,19 +23,23 @@ public class OAuthUtil {
         String url,
         HttpMethod method,
         Map<String, String> query
-    ) throws UnsupportedEncodingException, NoSuchAlgorithmException, InvalidKeyException {
-        String timestamp = String.valueOf(System.currentTimeMillis() / 1000);
-        String nonce = genNonce();
-        TreeMap<String, String> parameters = new TreeMap<>();
-        parameters.put("oauth_consumer_key", consumerKey);
-        parameters.put("oauth_nonce", nonce);
-        parameters.put("oauth_signature_method", "HMAC-SHA1");
-        parameters.put("oauth_timestamp", timestamp);
-        parameters.put("oauth_token", accessToken);
-        parameters.put("oauth_version", "1.0");
-        String signature = signature(parameters, query, method, url, consumerSecret, accessTokenSecret);
-        parameters.put("oauth_signature", signature);
-        return oauthHeader(parameters);
+    ) {
+        try {
+            String timestamp = String.valueOf(System.currentTimeMillis() / 1000);
+            String nonce = genNonce();
+            TreeMap<String, String> parameters = new TreeMap<>();
+            parameters.put("oauth_consumer_key", consumerKey);
+            parameters.put("oauth_nonce", nonce);
+            parameters.put("oauth_signature_method", "HMAC-SHA1");
+            parameters.put("oauth_timestamp", timestamp);
+            parameters.put("oauth_token", accessToken);
+            parameters.put("oauth_version", "1.0");
+            String signature = signature(parameters, query, method, url, consumerSecret, accessTokenSecret);
+            parameters.put("oauth_signature", signature);
+            return oauthHeader(parameters);
+        } catch (Exception e) {
+            throw new RuntimeException("this shouldn't happen", e);
+        }
     }
 
     public static String generateRequestHeader(
@@ -45,19 +49,23 @@ public class OAuthUtil {
         String url,
         HttpMethod method,
         Map<String, String> query
-    ) throws UnsupportedEncodingException, NoSuchAlgorithmException, InvalidKeyException {
-        String timestamp = String.valueOf(System.currentTimeMillis() / 1000);
-        String nonce = genNonce();
-        TreeMap<String, String> parameters = new TreeMap<>();
-        parameters.put("oauth_callback", callback);
-        parameters.put("oauth_consumer_key", consumerKey);
-        parameters.put("oauth_nonce", nonce);
-        parameters.put("oauth_signature_method", "HMAC-SHA1");
-        parameters.put("oauth_timestamp", timestamp);
-        parameters.put("oauth_version", "1.0");
-        String signature = signature(parameters, query, method, url, consumerSecret, null);
-        parameters.put("oauth_signature", signature);
-        return oauthHeader(parameters);
+    ) {
+        try {
+            String timestamp = String.valueOf(System.currentTimeMillis() / 1000);
+            String nonce = genNonce();
+            TreeMap<String, String> parameters = new TreeMap<>();
+            parameters.put("oauth_callback", callback);
+            parameters.put("oauth_consumer_key", consumerKey);
+            parameters.put("oauth_nonce", nonce);
+            parameters.put("oauth_signature_method", "HMAC-SHA1");
+            parameters.put("oauth_timestamp", timestamp);
+            parameters.put("oauth_version", "1.0");
+            String signature = signature(parameters, query, method, url, consumerSecret, null);
+            parameters.put("oauth_signature", signature);
+            return oauthHeader(parameters);
+        } catch (Exception e) {
+            throw new RuntimeException("this shouldn't happen", e);
+        }
     }
 
     public static String genNonce() {

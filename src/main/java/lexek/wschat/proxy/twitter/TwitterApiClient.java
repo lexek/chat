@@ -61,7 +61,7 @@ public class TwitterApiClient {
                 id,
                 root.get("protected").asBoolean()
             );
-        } catch (NoSuchAlgorithmException | InvalidKeyException | IOException e) {
+        } catch (IOException e) {
             throw new InternalErrorException(e);
         }
     }
