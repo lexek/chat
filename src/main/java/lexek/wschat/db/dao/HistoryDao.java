@@ -7,6 +7,8 @@ import lexek.wschat.db.model.DataPage;
 import lexek.wschat.db.model.HistoryData;
 import lexek.wschat.util.Pages;
 import org.jooq.Condition;
+import org.jooq.Operator;
+import org.jooq.Table;
 import org.jooq.exception.DataAccessException;
 import org.jooq.impl.DSL;
 
@@ -72,13 +74,24 @@ public class HistoryDao {
     ) {
         List<Condition> conditions = new ArrayList<>();
         conditions.add(HISTORY.ROOM_ID.equal(roomId));
-        users.ifPresent(names -> conditions.add(USER.NAME.in(names)));
+        boolean userInvolved = false;
+        if (users.isPresent()) {
+            conditions.add(USER.NAME.in(users.get()));
+            userInvolved = true;
+        }
         since.ifPresent(value -> conditions.add(HISTORY.TIMESTAMP.greaterOrEqual(value)));
         until.ifPresent(value -> conditions.add(HISTORY.TIMESTAMP.lessOrEqual(value)));
         try (Connection connection = dataSource.getConnection()) {
-            int count = DSL.using(connection).fetchCount(DSL.select(DSL.one())
-                .from(HISTORY.join(USER).on(HISTORY.USER_ID.equal(USER.ID)))
-                .where(conditions));
+            Table countTable = HISTORY;
+            if (userInvolved) {
+                countTable = HISTORY.join(USER).on(HISTORY.USER_ID.equal(USER.ID));
+            }
+            int count = DSL
+                .using(connection)
+                .fetchCount(
+                    countTable,
+                    DSL.condition(Operator.AND, conditions)
+                );
             List<HistoryData> data = DSL.using(connection)
                 .select(HISTORY.MESSAGE, HISTORY.TYPE, HISTORY.TIMESTAMP, USER.NAME, HISTORY.HIDDEN)
                 .from(HISTORY.join(USER).on(HISTORY.USER_ID.equal(USER.ID)))
