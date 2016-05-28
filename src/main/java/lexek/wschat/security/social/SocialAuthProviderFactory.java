@@ -83,7 +83,7 @@ public class SocialAuthProviderFactory {
                     secureTokenGenerator
                 );
             default:
-                throw new IllegalArgumentException("Unsupported provider.");
+                throw new IllegalArgumentException("Unsupported provider " + providerName);
         }
     }
 
