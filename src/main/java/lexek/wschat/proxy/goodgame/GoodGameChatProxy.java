@@ -42,6 +42,7 @@ public class GoodGameChatProxy extends AbstractProxy {
     private final Bootstrap bootstrap;
     private final String userId;
     private volatile Channel channel;
+    private String channelName;
 
     public GoodGameChatProxy(
         NotificationService notificationService,
@@ -104,7 +105,7 @@ public class GoodGameChatProxy extends AbstractProxy {
         if (type == ModerationOperation.BAN) {
             String id = idCache.getIfPresent(name);
             if (id != null && !id.equals(userId)) {
-                channel.writeAndFlush(new GoodGameEvent(GoodGameEventType.BAN, remoteRoom(), null, null, id));
+                channel.writeAndFlush(new GoodGameEvent(GoodGameEventType.BAN, remoteRoom(), null, null, null, id));
             }
         } else {
             throw new UnsupportedOperationException();
@@ -177,6 +178,7 @@ public class GoodGameChatProxy extends AbstractProxy {
                 fail("bad rights");
                 channel.close();
             } else if (msg.getType() == GoodGameEventType.SUCCESS_JOIN) {
+                channelName = msg.getChannelName();
                 started();
             } else if (msg.getType() == GoodGameEventType.MESSAGE) {
                 idCache.put(msg.getUser(), msg.getId());
@@ -190,7 +192,8 @@ public class GoodGameChatProxy extends AbstractProxy {
                     System.currentTimeMillis(),
                     msg.getText(),
                     "goodgame",
-                    "GoodGame"
+                    msg.getChannel(),
+                    channelName
                 );
                 messageBroadcaster.submitMessage(message, room.FILTER);
             } else if (msg.getType() == GoodGameEventType.USER_BAN) {

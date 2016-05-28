@@ -158,6 +158,7 @@ public class TwitchTvChatProxy extends AbstractProxy {
                     System.currentTimeMillis(),
                     message,
                     "twitch",
+                    remoteRoom(),
                     remoteRoom()
                 );
                 messageBroadcaster.submitMessage(msg, room.FILTER);

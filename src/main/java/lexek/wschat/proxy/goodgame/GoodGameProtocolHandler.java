@@ -37,13 +37,13 @@ public class GoodGameProtocolHandler extends SimpleChannelInboundHandler<GoodGam
                     password = credentials.getToken();
                 }
                 lastUser = name;
-                ctx.writeAndFlush(new GoodGameEvent(GoodGameEventType.AUTH, null, password, name, null));
+                ctx.writeAndFlush(new GoodGameEvent(GoodGameEventType.AUTH, null, null, password, name, null));
                 break;
             case SUCCESS_AUTH:
                 if (lastUser == null || msg.getUser().equals(lastUser)) {
-                    ctx.writeAndFlush(new GoodGameEvent(GoodGameEventType.JOIN, channelId, null, null, null));
+                    ctx.writeAndFlush(new GoodGameEvent(GoodGameEventType.JOIN, channelId, null, null, null, null));
                 } else {
-                    ctx.fireChannelRead(new GoodGameEvent(GoodGameEventType.FAILED_AUTH, null, null, null, null));
+                    ctx.fireChannelRead(new GoodGameEvent(GoodGameEventType.FAILED_AUTH, null, null, null, null, null));
                 }
                 break;
             case SUCCESS_JOIN:

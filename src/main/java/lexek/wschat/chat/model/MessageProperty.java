@@ -31,6 +31,7 @@ public class MessageProperty<T> {
     public static final MessageProperty<String> ERROR_DATA = valueOf("errorData");
     public static final MessageProperty<String> SERVICE = valueOf("service");
     public static final MessageProperty<String> SERVICE_RESOURCE = valueOf("serviceResource");
+    public static final MessageProperty<String> SERVICE_RESOURCE_NAME = valueOf("serviceResourceName");
     public static final MessageProperty<String> POLL_DATA = valueOf("pollData");
     public static final MessageProperty<Integer> POLL_OPTION = valueOf("pollOption");
     public static final MessageProperty<List<ProxyRestModel>> PROXIES = valueOf("proxies");

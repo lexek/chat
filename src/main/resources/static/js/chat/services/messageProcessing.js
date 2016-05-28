@@ -105,7 +105,8 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
         };
         var service = msg.type === "MSG_EXT" ? ctx.msg["service"] : null;
         var serviceRes = service ? ctx.msg["serviceResource"] : null;
-        var user = new User(msg.name, msg.color, levels[msg.role], globalLevels[msg.globalRole], service, serviceRes);
+        var serviceResName = service ? ctx.msg["serviceResourceName"] : null;
+        var user = new User(msg.name, msg.color, levels[msg.role], globalLevels[msg.globalRole], service, serviceRes, serviceResName);
         ctx.proc.user = user;
 
         var showModButtons = (user.role !== levels.ADMIN) &&

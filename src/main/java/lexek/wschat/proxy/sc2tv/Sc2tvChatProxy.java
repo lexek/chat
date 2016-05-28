@@ -154,6 +154,7 @@ public class Sc2tvChatProxy extends AbstractProxy {
                         String userName = message.get("from").get("name").asText();
                         String text = message.get("text").asText();
                         JsonNode to = message.get("to");
+                        String channel = message.get("channel").asText();
                         if (!to.isNull()) {
                             text = "@" + to.get("name").asText() + " " + text;
                         }
@@ -167,6 +168,7 @@ public class Sc2tvChatProxy extends AbstractProxy {
                             System.currentTimeMillis(),
                             text,
                             "sc2tv",
+                            channel,
                             "sc2tv"
                         );
                         messageBroadcaster.submitMessage(out, room.FILTER);

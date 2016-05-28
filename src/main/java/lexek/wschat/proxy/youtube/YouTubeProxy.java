@@ -40,6 +40,7 @@ public class YouTubeProxy extends AbstractProxy {
     private int pollInterval = 5000;
     private String lastPageToken = null;
     private String liveChatId = null;
+    private String channelId;
 
     //todo: custom response handler
     public YouTubeProxy(
@@ -103,7 +104,7 @@ public class YouTubeProxy extends AbstractProxy {
         if (running.get()) {
             try {
                 if (liveChatId == null) {
-                    liveChatId = getLiveChatId();
+                    getLiveChatId();
                     logger.debug("got chat id {}", liveChatId);
                 }
                 if (liveChatId != null) {
@@ -123,6 +124,7 @@ public class YouTubeProxy extends AbstractProxy {
                             e.getPublishedAt(),
                             e.getMessage(),
                             "youtube",
+                            channelId,
                             ownerName
                         ))
                         .forEach(e -> messageBroadcaster.submitMessage(e, room.FILTER));
@@ -140,7 +142,7 @@ public class YouTubeProxy extends AbstractProxy {
         }
     }
 
-    private String getLiveChatId() throws IOException {
+    private void getLiveChatId() throws IOException {
         String token = proxyAuthService.getToken(authId);
         HttpGet request = new HttpGet("https://www.googleapis.com/youtube/v3/liveBroadcasts" +
             "?part=snippet&broadcastStatus=active&broadcastType=all");
@@ -151,9 +153,9 @@ public class YouTubeProxy extends AbstractProxy {
         if (totalResults > 0) {
             JsonNode firstItem = root.get("items").get(0);
             JsonNode snippet = firstItem.get("snippet");
-            return snippet.get("liveChatId").asText();
+            this.channelId = snippet.get("channelId").asText();
+            this.liveChatId = snippet.get("liveChatId").asText();
         }
-        return null;
     }
 
     private List<YouTubeMessage> getMessages() throws IOException {
