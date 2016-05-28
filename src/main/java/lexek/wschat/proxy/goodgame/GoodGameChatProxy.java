@@ -42,24 +42,33 @@ public class GoodGameChatProxy extends AbstractProxy {
     private final Bootstrap bootstrap;
     private final String userId;
     private volatile Channel channel;
+    private String channelName;
 
     public GoodGameChatProxy(
-        NotificationService notificationService, MessageBroadcaster messageBroadcaster, EventLoopGroup eventLoopGroup,
-        AtomicLong messageId, ProxyProvider provider, long id, Room room, String remoteRoom, String name, String token
+        NotificationService notificationService,
+        MessageBroadcaster messageBroadcaster,
+        EventLoopGroup eventLoopGroup,
+        AtomicLong messageId,
+        ProxyProvider provider,
+        long id,
+        Room room,
+        String remoteRoom,
+        String userId,
+        CredentialsProvider credentialsProvider
     ) {
         super(eventLoopGroup, notificationService, provider, id, remoteRoom);
+
         this.messageBroadcaster = messageBroadcaster;
         this.messageId = messageId;
         this.room = room;
-        this.userId = name;
-        this.bootstrap = createBootstrap(eventLoopGroup, remoteRoom, name, token, new Handler());
+        this.userId = userId;
+        this.bootstrap = createBootstrap(eventLoopGroup, remoteRoom, credentialsProvider, new Handler());
     }
 
     private static Bootstrap createBootstrap(
         EventLoopGroup eventLoopGroup,
         String channelName,
-        String username,
-        String password,
+        CredentialsProvider tokenProvider,
         Handler handler
     ) {
         URI uri = URI.create("ws://chat.goodgame.ru:8081/chat/websocket");
@@ -73,7 +82,7 @@ public class GoodGameChatProxy extends AbstractProxy {
         bootstrap.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
         JsonCodec jsonCodec = new JsonCodec();
         GoodGameCodec goodGameCodec = new GoodGameCodec();
-        GoodGameProtocolHandler goodGameProtocolHandler = new GoodGameProtocolHandler(channelName, username, password);
+        GoodGameProtocolHandler goodGameProtocolHandler = new GoodGameProtocolHandler(channelName, tokenProvider);
         bootstrap.handler(new ChannelInitializer<SocketChannel>() {
             @Override
             public void initChannel(final SocketChannel c) throws Exception {
@@ -96,7 +105,7 @@ public class GoodGameChatProxy extends AbstractProxy {
         if (type == ModerationOperation.BAN) {
             String id = idCache.getIfPresent(name);
             if (id != null && !id.equals(userId)) {
-                channel.writeAndFlush(new GoodGameEvent(GoodGameEventType.BAN, remoteRoom(), null, null, id));
+                channel.writeAndFlush(new GoodGameEvent(GoodGameEventType.BAN, remoteRoom(), null, null, null, id));
             }
         } else {
             throw new UnsupportedOperationException();
@@ -169,6 +178,7 @@ public class GoodGameChatProxy extends AbstractProxy {
                 fail("bad rights");
                 channel.close();
             } else if (msg.getType() == GoodGameEventType.SUCCESS_JOIN) {
+                channelName = msg.getChannelName();
                 started();
             } else if (msg.getType() == GoodGameEventType.MESSAGE) {
                 idCache.put(msg.getUser(), msg.getId());
@@ -182,7 +192,8 @@ public class GoodGameChatProxy extends AbstractProxy {
                     System.currentTimeMillis(),
                     msg.getText(),
                     "goodgame",
-                    "GoodGame"
+                    msg.getChannel(),
+                    channelName
                 );
                 messageBroadcaster.submitMessage(message, room.FILTER);
             } else if (msg.getType() == GoodGameEventType.USER_BAN) {

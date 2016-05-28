@@ -1,0 +1,57 @@
+<div class="btn-group btn-group-sm auth-button" style="display: flex">
+    <div
+        class="btn auth-button"
+        ng-click="setPassword()"
+        ng-class="isConnected('password') ? 'btn-primary' : 'btn-success'"
+        style="flex-grow: 1"
+    >
+        <span class="fa fa-fw fa-key"></span>
+        {{isConnected("password") ? "AUTH_CHANGE_PASSWORD" : "AUTH_NEW_PASSWORD" | translate}}
+    </div>
+    <button
+            ng-if="isConnected('password')"
+            ng-disabled="isSingleAuth()"
+            ng-click="removeAuth('password')"
+            class="btn btn-danger"
+            style="flex-grow: 0"
+    >
+        <span class="fa fa-fw fa-times"></span>
+    </button>
+</div>
+
+<div ng-repeat="service in ::services" style="margin: 5px 0;">
+    <button
+            ng-if="!isConnected(service)"
+            class="btn btn-success btn-sm auth-button"
+            ng-click="::addAuth(service)"
+    >
+        <span ng-class="::getIcon(service)"></span>
+        <strong ng-bind="::service | inflector:'capital'"></strong> - {{"AUTH_CONNECT" | translate}}
+    </button>
+    <button
+        ng-if="isConnected(service)"
+        ng-disabled="isSingleAuth()"
+        ng-click="::removeAuth(service)"
+        class="btn btn-danger btn-sm auth-button"
+    >
+        <span ng-class="::getIcon(service)"></span>
+        <strong ng-bind="::service | inflector:'capital'"></strong> - {{"AUTH_DISCONNECT" | translate}}
+    </button>
+</div>
+
+<form>
+    <div class="form-group">
+        <label translate="AUTH_TOKEN"></label>
+        <div class='input-group input-group-sm'>
+            <input type='text' class='form-control' ng-model='apiToken' readonly placeholder="{{'AUTH_GET_TOKEN' | translate}}" />
+            <span class='input-group-btn'>
+                <button class='btn btn-default' type='button' ng-click='newToken()'>
+                    <i class='fa fa-fw fa-refresh'></i>
+                </button>
+                <button class="btn btn-danger" type="button" ng-if="isConnected('token')" ng-click="removeAuth('token')">
+                    <span class="fa fa-fw fa-times"></span>
+                </button>
+            </span>
+        </div>
+    </div>
+</form>

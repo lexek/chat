@@ -19,7 +19,6 @@
                 data: $scope.input
             }).success(function() {
                 $modalInstance.close();
-                alert("Password changed.")
             }).error(function(data) {
                 $scope.info = null;
                 $scope.errors = data;

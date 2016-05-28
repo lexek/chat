@@ -13,6 +13,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 public enum JsonResponseHandler implements ResponseHandler<JsonNode> {
     INSTANCE;
@@ -29,7 +31,11 @@ public enum JsonResponseHandler implements ResponseHandler<JsonNode> {
                 throw new ClientProtocolException("Response contains no content");
             }
             ContentType contentType = ContentType.get(entity);
-            InputStreamReader inputStreamReader = new InputStreamReader(entity.getContent(), contentType.getCharset());
+            Charset charset = contentType.getCharset();
+            if (charset == null) {
+                charset = StandardCharsets.UTF_8;
+            }
+            InputStreamReader inputStreamReader = new InputStreamReader(entity.getContent(), charset);
             return parser.readTree(inputStreamReader);
         } else {
             if (entity != null) {

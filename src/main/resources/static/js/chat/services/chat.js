@@ -1,8 +1,8 @@
 var module = angular.module("chat.services.chat", ["chat.messageProcessing", "chat.services.settings", "chat.services.notifications"]);
 
 module.service("chatService",
-["$modal", "chatSettings", "$translate", "$http", "$timeout", "notificationService", "messageProcessingService", "windowState",
-function($modal, settings, $translate, $http, $timeout, notificationService, msgs, windowState) {
+["$rootScope", "$modal", "chatSettings", "$translate", "$http", "$timeout", "notificationService", "messageProcessingService", "windowState",
+function($root, $modal, settings, $translate, $http, $timeout, notificationService, msgs, windowState) {
     /**
      * @constructor
      */
@@ -10,7 +10,7 @@ function($modal, settings, $translate, $http, $timeout, notificationService, msg
         this.connectionAttempt = 0;
         this.messagesUpdatedCallbacks = [];
         this.selfUpdatedCallbacks = [];
-        this.stateUpdatedCallback = angular.noop;
+        this.stateUpdatedCallbacks = [];
         this.countCallback = angular.noop;
         this.messages = {};
         this.unreadCount = {};
@@ -71,6 +71,11 @@ function($modal, settings, $translate, $http, $timeout, notificationService, msg
         return result;
     };
 
+    chatService.prototype.stateUpdated = function() {
+        angular.forEach(this.stateUpdatedCallbacks, function (callback) {
+            callback()
+        });
+    };
 
     /**
      * @param {User} user
@@ -136,7 +141,7 @@ function($modal, settings, $translate, $http, $timeout, notificationService, msg
         this.unreadMessages++;
         this.countCallback();
         console.log(this.unreadMessages);
-    }
+    };
 
     chatService.prototype.addMessage = function(message, room, hist, mention) {
         message.internalId = this.idCounter++;
@@ -246,7 +251,7 @@ function($modal, settings, $translate, $http, $timeout, notificationService, msg
             chat.ws.onopen = function () {
                 console.log("open");
                 chat.state = CHAT_STATE.AUTHENTICATING;
-                chat.stateUpdatedCallback();
+                chat.stateUpdated();
                 chat.sendMessage({"type": "SESSION", "text": read_cookie("sid")});
                 chat.connectionAttempt = 0;
             };
@@ -266,7 +271,7 @@ function($modal, settings, $translate, $http, $timeout, notificationService, msg
                 chat.polls = {};
                 chat.pollsUpdatedCallback();
                 chat.state = CHAT_STATE.DISCONNECTED;
-                chat.stateUpdatedCallback();
+                chat.stateUpdated();
             };
             chat.ws.onmessage = function (msg) {
                 var message = angular.fromJson(msg.data);
@@ -289,9 +294,13 @@ function($modal, settings, $translate, $http, $timeout, notificationService, msg
         window.addEventListener('message', function(event) {
             if (event.origin == 'https://' + HOST_NAME + ':1337') {
                 if (event.data === 'auth-notify') {
-                    chat.ws.close();
-                    if (document.lastModal) {
-                        document.lastModal.close();
+                    if (chat.state == CHAT_STATE.AUTHENTICATED && chat.self.role >= globalLevels.USER_UNCONFIRMED) {
+                        $root.$broadcast("auth-updated");
+                    } else {
+                        chat.ws.close();
+                        if (document.lastModal) {
+                            document.lastModal.close();
+                        }
                     }
                 }
             }

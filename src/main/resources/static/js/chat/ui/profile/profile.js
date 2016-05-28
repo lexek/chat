@@ -1,70 +1,146 @@
-{
-    var module = angular.module("chat.ui.profile", ["chat.ui.profile.email", "chat.ui.profile.password", "chat.services.chat"]);
-    var ProfileController = function ($scope, $modalInstance, $modal, $http, chat) {
-        makeClosable($scope, $modalInstance);
-        makeProgressable($scope);
+angular.module("chat.ui.profile", ["chat.ui.profile.email", "chat.ui.profile.password", "chat.services.chat"])
+.controller(
+    "ProfileController",
+    [
+        "$scope", "$modalInstance", "$modal", "$http", "chatService",
+        function ($scope, $modalInstance, $modal, $http, chat) {
+            makeClosable($scope, $modalInstance);
 
-        $scope.self = chat.self;
-        $scope.profile = null;
+            $scope.self = chat.self;
+            $scope.profile = null;
 
-        $scope.showEmailSettings = function() {
-            var user = $scope.profile.user;
-            $modal.open({
-                templateUrl: 'chat/ui/profile/email.html',
-                controller: "EmailSettingsController",
-                size: "sm",
-                resolve: {
-                    hasPendingVerification: function() {
-                        return user["email"] && !user["emailVerified"];
+            $scope.showEmailSettings = function() {
+                var user = $scope.profile.user;
+                $modal.open({
+                    templateUrl: 'chat/ui/profile/email.html',
+                    controller: "EmailSettingsController",
+                    size: "sm",
+                    resolve: {
+                        hasPendingVerification: function() {
+                            return user["email"] && !user["emailVerified"];
+                        }
                     }
-                }
-            }).result.then(function(result) {
-                alert(result);
-                loadProfile();
-            });
-        };
-
-        $scope.showPasswordSettings = function() {
-            $modal.open({
-                templateUrl: 'chat/ui/profile/password.html',
-                controller: "PasswordSettingsController",
-                size: "sm",
-                resolve: {
-                    hasPassword: function() {
-                        return $scope.profile.authServices.split(",").indexOf("password") !== -1;
-                    }
-                }
-            }).result.then(function() {
-                loadProfile();
-            });
-        };
-
-        var loadProfile = function() {
-            if ($scope.self.role >= globalLevels.USER_UNCONFIRMED) {
-                $http({
-                    method: 'get',
-                    url: '/rest/profile'
-                }).success(function(data) {
-                    $scope.profile = data;
+                }).result.then(function(result) {
+                    alert(result);
+                    loadProfile();
                 });
-            }
-        };
+            };
 
-        $scope.newToken = function () {
-            $scope.startProgress();
-            $http.post("/token").success(function(data) {
-                var token = data["token"];
-                if (token) {
-                    $scope.apiToken = token;
+            var loadProfile = function() {
+                if ($scope.self.role >= globalLevels.USER_UNCONFIRMED) {
+                    $http({
+                        method: 'get',
+                        url: '/rest/profile'
+                    }).success(function(data) {
+                        $scope.profile = data;
+                    });
                 }
-                $scope.stopProgress();
-            }).error(function(data) {
-                $scope.stopProgressWithError(data);
+            };
+
+            $scope.update = loadProfile;
+
+            loadProfile();
+        }
+    ]
+).directive("socialConnect", ["$modal", "$http", function($modal, $http) {
+    return {
+        restrict: "E",
+        scope: {
+            "connected": "=",
+            "change": "&"
+        },
+        controller: function($scope) {
+            makeProgressable($scope);
+
+            $scope.services = [
+                "twitch",
+                "twitter",
+                "vk",
+                "google",
+                "goodgame"
+            ];
+
+            var iconMap = {
+                "twitch": "fa fa-fw fa-twitch",
+                "google": "fa fa-fw fa-google",
+                "twitter": "fa fa-fw fa-twitter",
+                "vk": "fa fa-fw fa-vk",
+                "token": "fa fa-fw fa-globe",
+                "password": "fa fa-fw fa-key",
+                "goodgame": "gg-icon"
+            };
+
+            $scope.getIcon = function(service) {
+                var value = iconMap[service];
+                if (!value) {
+                    value = "fa fa-fw fa-question";
+                }
+                return value;
+            };
+
+            $scope.isConnected = function(service) {
+                return $scope.connected.hasOwnProperty(service);
+            };
+
+            $scope.addAuth = function(service) {
+                window.open("https://" + HOST_NAME + ":1337/rest/auth/social/" + service);
+            };
+
+            $scope.removeAuth = function(service) {
+                if (service === "token") {
+                    $scope.apiToken = "";
+                }
+                $http({
+                    "method": "DELETE",
+                    "url": "/rest/auth/" + service
+                }).success(function() {
+                    $scope.change();
+                }).error(function(data) {
+                    alert(data.message);
+                });
+            };
+
+            $scope.isSingleAuth = function() {
+                var count = Object.keys($scope.connected).length;
+                if ($scope.isConnected("token")) {
+                    count--;
+                }
+                return count === 1;
+            };
+
+            $scope.setPassword = function() {
+                $modal.open({
+                    templateUrl: 'chat/ui/profile/password.html',
+                    controller: "PasswordSettingsController",
+                    size: "sm",
+                    resolve: {
+                        hasPassword: function() {
+                            return $scope.isConnected("password");
+                        }
+                    }
+                }).result.then(function() {
+                    $scope.change();
+                });
+            };
+
+            $scope.newToken = function() {
+                $scope.startProgress();
+                $http.post("/token").success(function(data) {
+                    var token = data["token"];
+                    if (token) {
+                        $scope.apiToken = token;
+                        $scope.connected["token"] = "";
+                    }
+                    $scope.stopProgress();
+                }).error(function(data) {
+                    $scope.stopProgressWithError(data);
+                });
+            };
+
+            $scope.$on("auth-updated", function() {
+                $scope.change();
             });
-        };
-
-        loadProfile();
-    };
-
-    module.controller("ProfileController", ["$scope", "$modalInstance", "$modal", "$http", "chatService", ProfileController])
-}
+        },
+        templateUrl: "/templates/profile_auth.html"
+    }
+}]);

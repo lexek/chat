@@ -3,7 +3,7 @@
 <html ng-app="chatApplication">
 
 <head>
-    <title ng-controller="TitleController">{{count ? "[" + count + "]" : ""}} ${title} - {{getRoomName()}}</title>
+    <title ng-controller="TitleController" ng-bind="(count ? '[' + count + '] ' : '') + '${title} - ' + getRoomName()">${title}</title>
 
     <meta name="viewport" content="width=device-width, height = device-height, user-scalable=no"/>
 
@@ -305,16 +305,15 @@
         <h3>
             <i class='fa fa-user'></i>
             {{self.name}}
-            <span class='btn btn-link btn-xs pull-right' ng-if="profile" ng-click='showPasswordSettings()'><i class='fa fa-key'></i></span>
         </h3>
     </div>
     <div class='modal-body'>
         <form class='form-horizontal' ng-if='profile'>
-            <div class='form-group' ng-if='profile.user.email'>
+            <div class='form-group'>
                 <label class='col-sm-2 control-label'>Email</label>
                 <div class='col-sm-10'>
                     <div class='form-control-static'>
-                        {{profile.user.email}}
+                        {{profile.user.email ? profile.user.email : ("PROFILE_EMAIL_EMPTY" | translate)}}
                         <i class='fa fa-fw fa-check text-success' ng-if='profile.user.emailVerified'></i>
                         <i class='fa fa-fw fa-times text-danger' ng-if='!profile.user.emailVerified'></i>
                         <span class='btn btn-link btn-xs pull-right' ng-click='showEmailSettings()'><i class='fa fa-pencil'></i></span>
@@ -322,7 +321,7 @@
                 </div>
             </div>
             <div class='form-group'>
-                <label class='col-sm-2 control-label'>Name</label>
+                <label class='col-sm-2 control-label' translate="PROFILE_NAME"></label>
                 <div class='col-sm-10'>
                     <div class='form-control-static'>
                         {{profile.user.name}}
@@ -330,17 +329,15 @@
                 </div>
             </div>
             <div class='form-group'>
-                <label class='col-sm-2 control-label'>Role</label>
+                <label class='col-sm-2 control-label' translate="PROFILE_ROLE"></label>
                 <div class='col-sm-10'>
                     <div class='form-control-static'>
-                        {{profile.user.role}}
+                        {{('ROLE_' + profile.user.role) | translate}}
                     </div>
                 </div>
             </div>
             <div class='form-group'>
-                <label class='col-sm-2 control-label'>
-                    Color
-                    </label>
+                <label class='col-sm-2 control-label' translate="PROFILE_COLOR"></label>
                 <div class='col-sm-10'>
                     <div class='form-control-static'>
                         {{profile.user.color}} <span class='fa fa-circle fa-fw' ng-style='{"color": profile.user.color}'></span>
@@ -348,22 +345,14 @@
                     </div>
                 </div>
             </form>
-        <div class='panel panel-default' ng-if="profile">
-            <div class='panel-heading'>
-                <div class='panel-title'>API token</div>
-            </div>
-            <div class='panel-body'>
-                <div class='input-group'>
-                    <input type='text' class='form-control' ng-model='apiToken' readonly
-                        placeholder='press button to get token'>
-                    <span class='input-group-btn'>
-                        <button class='btn btn-default' type='button' ng-click='newToken()'>
-                            <i class='fa fa-fw fa-refresh'></i>
-                        </button>
-                    </span>
-                </div>
-            </div>
-        </div>
+    </div>
+    <div class="modal-header" ng-if="profile">
+        <h3>
+            <i class="fa fa-key"></i> {{"AUTH_METHODS" | translate}}
+        </h3>
+    </div>
+    <div class="modal-body" ng-if="profile">
+        <social-connect connected="profile.authServices" change="update()"></social-connect>
     </div>
     <div class='modal-footer'>
         <div class='btn btn-default pull-left' ng-click='close()' translate='CONTROLS_CLOSE'></div>
@@ -434,14 +423,33 @@
 
 <script type="text/ng-template" id="authentication.html">
     <div class="modal-header">
+        <h3>{{'AUTH_SOCIAL' | translate}}</h3>
+    </div>
+    <div class="modal-body" style="text-align: center;">
+        <div class="btn-group">
+            <div class="btn btn-default btn-modal" ng-click="socialAuth('twitch')" tooltip="twitch" tooltip-append-to-body="true">
+                <span class="fa fa-twitch"></span>
+            </div>
+            <div class="btn btn-default btn-modal" ng-click="socialAuth('twitter')" tooltip="twitter" tooltip-append-to-body="true">
+                <span class="fa fa-twitter"></span>
+            </div>
+            <div class="btn btn-default btn-modal" ng-click="socialAuth('vk')" tooltip="vk" tooltip-append-to-body="true">
+                <span class="fa fa-vk"></span>
+            </div>
+            <div class="btn btn-default btn-modal" ng-click="socialAuth('google')" tooltip="google" tooltip-append-to-body="true">
+                <span class="fa fa-google"></span>
+            </div>
+            <div class="btn btn-default btn-modal" ng-click="socialAuth('goodgame')" tooltip="goodgame" tooltip-append-to-body="true">
+                <img src="/img/goodgame.png" style="width: 1em; height: auto; padding-bottom: 3px;"/>
+            </div>
+        </div>
+    </div>
+    <div class="modal-header">
         <h3 ng-if="action === 'sign_in'">{{'AUTH_SIGN_IN' | translate}}</h3>
         <h3 ng-if="action === 'registration'">{{'AUTH_NEW_ACCOUNT' | translate}}</h3>
     </div>
     <div class="modal-body">
         <div ng-if="action === 'sign_in'">
-            <div class="form-group">
-                <div class="btn btn-default btn-modal" ng-click="twitchAuth()"><span class="fa fa-twitch"></span> {{'AUTH_WITH_TWITCH' | translate}}</div>
-            </div>
             <div ng-if="error" class="alert alert-danger" role="alert">{{error}}</div>
             <div ng-if="info" class="alert alert-info" role="alert">{{info}}</div>
 
@@ -486,9 +494,6 @@
         </div>
 
         <div ng-if="action === 'registration'">
-            <div class="form-group">
-                <div class="btn btn-default btn-modal" ng-click="twitchAuth()"><span class="fa fa-twitch"></span> {{'AUTH_WITH_TWITCH' | translate}}</div>
-            </div>
             <div ng-if="error" class="alert alert-danger" role="alert">{{error}}</div>
 
             <form name="form" class="form" id="regForm" ng-submit="submitRegistration()">
@@ -538,7 +543,12 @@
                 </div>
                 <div class="form-group">
                     <label class="control-label">{{'AUTH_CAPTCHA' | translate}}</label>
-                    <div vc-recaptcha="" key="'6Lepxv4SAAAAAMFC4jmtZvnzyekEQ3XuX0xQ-3TB'" on-create="recaptchaCreated(widgetId)"></div>
+                    <div
+                            vc-recaptcha=""
+                            key="'6Lepxv4SAAAAAMFC4jmtZvnzyekEQ3XuX0xQ-3TB'"
+                            on-create="recaptchaCreated(widgetId)"
+                            style="transform:scale(0.89);-webkit-transform:scale(0.89);transform-origin:0 0;-webkit-transform-origin:0 0;"
+                    ></div>
                 </div>
                 <div class="form-group">
                     <div ng-disabled="busy" class="btn btn-default" ng-click="switchTo('sign_in')">{{'AUTH_SIGN_IN' | translate}}</div>
@@ -650,9 +660,10 @@
                             </span><!--
                             --><span bo-if="isMod()" class="mod">M</span><!--
                             --><span bo-if="isAdmin()" class="admin">A</span><!--
-                            --><span bo-if="message.user.service!==null" class="ext" tooltip="{{message.user.serviceRes}}"
+                            --><span bo-if="message.user.service!==null" class="ext" tooltip="{{message.user.serviceResName}}"
                                      tooltip-trigger="mouseenter" tooltip-placement="right"><span bo-if="message.user.service==='twitch'" class="fa fa-twitch" style="color: #6441A5"></span><!--
                             --><span bo-if="message.user.service==='cybergame'" class="fa fa-gamepad" style="color: #21b384"></span><!--
+                            --><span bo-if="message.user.service==='youtube'" class="fa fa-youtube-play" style="color: #cd201f"></span><!--
                             --><strong bo-if="message.user.service==='goodgame'" style="color: #73ADFF">GG</strong><!--
                             --><span bo-if="message.user.service==='sc2tv'" class="sc2tvIcon"></span></span><!--
                             --><span class="username" bo-style="{'color': message.user.color}" ng-click="addToInput($event)" bo-bind="message.user.name | inflector:'capital'"></span>:
@@ -713,8 +724,9 @@
                             <div class="messageHeading">
                                 <span class="username" bo-style="{'color': message.user.color}" ng-click="addToInput($event)" bo-bind="message.user.name | inflector:'capital'"></span>
                                 <small class="role" bo-if="message.user.service===null" bo-bind="'ROLE_' + getHighestRole().role.title | translate"></small>
-                                <small class="role" bo-if="message.user.service!==null"><span bo-bind="message.user.serviceRes"></span> <!--
+                                <small class="role" bo-if="message.user.service!==null"><span bo-bind="message.user.serviceResName"></span> <!--
                                 --><a bo-if="message.user.service==='twitch'" bo-href="extUrl()" target="_blank"><span class="fa fa-twitch" style="color: #999999"></span></a><!--
+                                --><span bo-if="message.user.service==='youtube'" class="fa fa-youtube-play" style="color: #cd201f"></span><!--
                                 --><span bo-if="message.user.service==='cybergame'" class="fa fa-gamepad" style="color: #999999"></span><!--
                                 --><strong bo-if="message.user.service==='goodgame'" style="color: #73ADFF">GG</strong><!--
                                 --><span bo-if="message.user.service==='sc2tv'" class="sc2tvIcon"></span></small>
@@ -851,7 +863,15 @@
                             </div>
                         </div>
                         <ul class="settings-menu" ng-show="active === 'settings'" ng-controller="SettingsController">
-                            <li><a ng-click="showProfile()"><h4><span class="fa fa-user"></span> {{getSelf().name | inflector:'capital'}}</h4></a></li>
+                            <li>
+                                <a ng-click="showProfile()">
+                                    <h4>
+                                        <span class="fa fa-fw fa-cog pull-right"></span>
+                                        <span class="fa fa-user"></span>
+                                        {{getSelf().name | inflector:'capital'}}
+                                    </h4>
+                                </a>
+                            </li>
                             <li ng-if="isAdmin()"><a href="/admin/" target="_blank"><span class="fa fa-cogs"></span> {{'CONTROLS_MENU_ADMIN_PANEL' | translate}}</a></li>
                             <li>
                                 <a colorpicker="hex" ng-model="color" colorpicker-position="left"
@@ -859,8 +879,24 @@
                                     <span class="fa fa-circle" ng-style="{color: getSelf().color}" id="color"></span> {{'CONTROLS_MENU_COLOR' | translate}}</a>
                             </li>
                             <li ng-if="!canLogin()"><a ng-click="logOut()"><span class="fa fa-sign-out"></span> {{'CONTROLS_MENU_LOG_OUT' | translate}}</a></li>
-                            <li ng-if="canLogin()"><a ng-click="twitchAuth()"><span class="fa fa-twitch"></span> {{'CONTROLS_MENU_TWITCH_AUTH' | translate}}</a></li>
                             <li ng-if="canLogin()"><a ng-click="showSignIn()"><span class="fa fa-sign-in"></span> {{'CONTROLS_MENU_SIGN_IN' | translate}}</a></li>
+                            <li ng-if="canLogin()" style="padding-left: 20px; padding-right: 20px">
+                                <span class="fa fa-sign-in"></span> {{'CONTROLS_MENU_SIGN_IN_WITH' | translate}}
+                                <div class="btn-group btn-group-xs pull-right">
+                                    <div class="btn btn-link" ng-click="socialAuth('twitch')">
+                                        <span class="fa fa-twitch" style="color: black"></span>
+                                    </div>
+                                    <div class="btn btn-link" ng-click="socialAuth('twitter')">
+                                        <span class="fa fa-twitter" style="color: black"></span>
+                                    </div>
+                                    <div class="btn btn-link" ng-click="socialAuth('vk')">
+                                        <span class="fa fa-vk" style="color: black"></span>
+                                    </div>
+                                    <div class="btn btn-link" ng-click="socialAuth('google')">
+                                        <span class="fa fa-google" style="color: black"></span>
+                                    </div>
+                                </div>
+                            </li>
                             <li ng-if="canLogin()"><a ng-click="showSignUp()"><span class="fa fa-sign-in"></span> {{'CONTROLS_MENU_SIGN_UP' | translate}}</a></li>
                             <li class="divider"></li>
                             <li ng-if="!canLogin()"><a ng-click="showTickets()"><span class="fa fa-ticket"></span> {{'CONTROLS_MENU_TICKETS' | translate}}</a></li>

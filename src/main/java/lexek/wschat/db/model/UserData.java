@@ -1,25 +1,21 @@
 package lexek.wschat.db.model;
 
+import java.util.Map;
+
 public class UserData {
     private final UserDto user;
-    private final String authServices;
-    private final String authNames;
+    private final Map<String, String> authServices;
 
-    public UserData(UserDto user, String authServices, String authNames) {
+    public UserData(UserDto user, Map<String, String> authServices) {
         this.user = user;
         this.authServices = authServices;
-        this.authNames = authNames;
     }
 
     public UserDto getUser() {
         return user;
     }
 
-    public String getAuthServices() {
+    public Map<String, String> getAuthServices() {
         return authServices;
-    }
-
-    public String getAuthNames() {
-        return authNames;
     }
 }

@@ -2,37 +2,30 @@ package lexek.wschat.proxy.twitch;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
-import io.netty.channel.*;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelOption;
+import io.netty.channel.EventLoopGroup;
 import io.netty.channel.epoll.Epoll;
 import io.netty.channel.epoll.EpollSocketChannel;
-import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.handler.codec.DelimiterBasedFrameDecoder;
-import io.netty.handler.codec.Delimiters;
-import io.netty.handler.codec.string.StringDecoder;
-import io.netty.handler.codec.string.StringEncoder;
-import io.netty.handler.timeout.IdleStateHandler;
-import io.netty.util.CharsetUtil;
 import io.netty.util.internal.chmv8.ConcurrentHashMapV8;
 import lexek.wschat.chat.MessageBroadcaster;
 import lexek.wschat.chat.Room;
 import lexek.wschat.chat.model.GlobalRole;
 import lexek.wschat.chat.model.LocalRole;
 import lexek.wschat.chat.model.Message;
-import lexek.wschat.proxy.AbstractProxy;
-import lexek.wschat.proxy.ModerationOperation;
-import lexek.wschat.proxy.ProxyProvider;
-import lexek.wschat.proxy.ProxyState;
+import lexek.wschat.db.model.ProxyAuth;
+import lexek.wschat.proxy.*;
 import lexek.wschat.security.AuthenticationManager;
 import lexek.wschat.services.NotificationService;
 import lexek.wschat.util.Colors;
 
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class TwitchTvChatProxy extends AbstractProxy {
-    private final String username;
+    private final Long proxyAuthId;
     private final AtomicLong messageId;
     private final MessageBroadcaster messageBroadcaster;
     private final Room room;
@@ -42,12 +35,21 @@ public class TwitchTvChatProxy extends AbstractProxy {
     private volatile Channel channel;
 
     public TwitchTvChatProxy(
-        NotificationService notificationService, long id, ProxyProvider provider, Room room, String remoteRoom,
-        String username, String token, boolean outbound, AtomicLong messageId, MessageBroadcaster messageBroadcaster,
-        AuthenticationManager authenticationManager, EventLoopGroup eventLoopGroup
+        NotificationService notificationService,
+        long id,
+        ProxyProvider provider,
+        Room room,
+        String remoteRoom,
+        Long proxyAuthId,
+        boolean outbound,
+        AtomicLong messageId,
+        MessageBroadcaster messageBroadcaster,
+        AuthenticationManager authenticationManager,
+        EventLoopGroup eventLoopGroup,
+        ProxyAuthService proxyAuthService
     ) {
         super(eventLoopGroup, notificationService, provider, id, remoteRoom);
-        this.username = username;
+        this.proxyAuthId = proxyAuthId;
         this.messageId = messageId;
         this.messageBroadcaster = messageBroadcaster;
         this.room = room;
@@ -67,21 +69,14 @@ public class TwitchTvChatProxy extends AbstractProxy {
         }
         this.inboundBootstrap.option(ChannelOption.SO_KEEPALIVE, true);
         this.inboundBootstrap.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
-        final ChannelHandler stringEncoder = new StringEncoder(CharsetUtil.UTF_8);
-        final ChannelHandler stringDecoder = new StringDecoder(CharsetUtil.UTF_8);
-        final JTVEventListener eventListener = new JtvEventListenerImpl();
-        this.inboundBootstrap.handler(new ChannelInitializer<SocketChannel>() {
-            @Override
-            public void initChannel(SocketChannel ch) throws Exception {
-                ChannelPipeline pipeline = ch.pipeline();
-                pipeline.addLast(new DelimiterBasedFrameDecoder(8192, Delimiters.lineDelimiter()));
-                pipeline.addLast(stringEncoder);
-                pipeline.addLast(stringDecoder);
-                pipeline.addLast(new IdleStateHandler(120, 0, 140, TimeUnit.SECONDS));
-                pipeline.addLast(new TwitchTvMessageDecoder());
-                pipeline.addLast(new TwitchMessageHandler(eventListener, remoteRoom, username, token));
-            }
-        });
+        String username = null;
+        String token = null;
+        if (proxyAuthId != null) {
+            ProxyAuth auth = proxyAuthService.getAuth(proxyAuthId);
+            username = auth.getExternalName();
+            token = auth.getKey();
+        }
+        this.inboundBootstrap.handler(new InboundChannelInitializer(new JtvEventListenerImpl(), remoteRoom, username, token));
     }
 
     @Override
@@ -115,7 +110,7 @@ public class TwitchTvChatProxy extends AbstractProxy {
 
     @Override
     public boolean moderationEnabled() {
-        return username != null;
+        return proxyAuthId != null;
     }
 
     @Override
@@ -163,6 +158,7 @@ public class TwitchTvChatProxy extends AbstractProxy {
                     System.currentTimeMillis(),
                     message,
                     "twitch",
+                    remoteRoom(),
                     remoteRoom()
                 );
                 messageBroadcaster.submitMessage(msg, room.FILTER);

@@ -7,7 +7,7 @@
  * @param {String=} serviceRes
  * @constructor
  */
-var User = function(name, color, role, globalRole, service, serviceRes) {
+var User = function(name, color, role, globalRole, service, serviceRes, serviceResName) {
     this.name = name;
     if (color) {
         this.color = color;
@@ -25,6 +25,7 @@ var User = function(name, color, role, globalRole, service, serviceRes) {
     this.timedOut = false;
     this.service = service;
     this.serviceRes = serviceRes;
+    this.serviceResName = serviceResName;
 };
 
 /**

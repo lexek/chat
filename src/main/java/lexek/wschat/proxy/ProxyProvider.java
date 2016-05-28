@@ -3,22 +3,30 @@ package lexek.wschat.proxy;
 import lexek.wschat.chat.Room;
 
 import java.util.EnumSet;
+import java.util.Set;
 
 public abstract class ProxyProvider {
     private final String name;
-    private final boolean supportsAuthentication;
+    private final boolean supportsAuth;
     private final boolean supportsOutbound;
+    private final boolean requiresAuth;
+
+    private final Set<String> supportedAuthServices;
     private final EnumSet<ModerationOperation> supportedOperations;
 
     public ProxyProvider(
         String name,
-        boolean supportsAuthentication,
+        boolean supportsAuth,
         boolean supportsOutbound,
+        boolean requiresAuth,
+        Set<String> supportedAuthServices,
         EnumSet<ModerationOperation> supportedOperations
     ) {
         this.name = name;
-        this.supportsAuthentication = supportsAuthentication;
+        this.supportsAuth = supportsAuth;
         this.supportsOutbound = supportsOutbound;
+        this.requiresAuth = requiresAuth;
+        this.supportedAuthServices = supportedAuthServices;
         this.supportedOperations = supportedOperations;
     }
 
@@ -26,21 +34,31 @@ public abstract class ProxyProvider {
         return name;
     }
 
-    public boolean isSupportsAuthentication() {
-        return supportsAuthentication;
+    public boolean isSupportsAuth() {
+        return supportsAuth;
     }
 
     public boolean isSupportsOutbound() {
         return supportsOutbound;
     }
 
-    public boolean supports(ModerationOperation operation) {
+    public boolean supportsModerationOperation(ModerationOperation operation) {
         return supportedOperations.contains(operation);
     }
 
-    public abstract Proxy newProxy(long id, Room room, String remoteRoom, String name, String key, boolean outbound);
+    public boolean supportsAuthService(String service) {
+        return supportedAuthServices.contains(service);
+    }
 
-    public abstract boolean validateCredentials(String name, String token);
+    public Set<String> getSupportedAuthServices() {
+        return supportedAuthServices;
+    }
+
+    public boolean requiresAuth() {
+        return requiresAuth;
+    }
+
+    public abstract Proxy newProxy(long id, Room room, String remoteRoom, Long proxyAuthId, boolean outbound);
 
     public abstract boolean validateRemoteRoom(String remoteRoom);
 }

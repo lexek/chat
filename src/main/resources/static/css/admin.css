@@ -195,6 +195,10 @@ fieldset[disabled] .btn-link-danger.active {
     padding-bottom: 0;
 }
 
+.mainContent {
+    min-height: 200px;
+}
+
 .mainContent.ng-enter {
     -webkit-animation-name: fadeIn;
     -webkit-animation-duration: .50s;
@@ -271,4 +275,14 @@ table.ng-enter.ng-enter-active {
 
 .panel-footer {
     background-color: #fbfbfb;
+}
+
+.gg-icon {
+    display: inline-block;
+    width: 18px;
+    height: 14px;
+    background-image: url("/img/goodgame.png");
+    background-size: 12px 12px;
+    background-position: center;
+    background-repeat: no-repeat;
 }

@@ -149,6 +149,8 @@ controlsModule.controller("MenuController", ["$scope", function($scope) {
 
 controlsModule.controller("SettingsController", ["$scope", "chatService", "$modal", "chatSettings", "$cookieStore",
 "$translate", "notificationService", function($scope, chat, $modal, settings, $cookieStore, $translate, notificationService) {
+    chat.stateUpdatedCallbacks.push(function() {$scope.$digest()});
+
     $scope.langs = {
         "ru": {"short": "ru", "title": "russian"},
         "en": {"short": "en", "title": "english"},
@@ -259,14 +261,15 @@ controlsModule.controller("SettingsController", ["$scope", "chatService", "$moda
         }
     };
 
-    $scope.twitchAuth = function() {
-        window.open("https://" + HOST_NAME + ":1337/twitch_auth");
+    $scope.socialAuth = function(service) {
+        window.open("https://" + HOST_NAME + ":1337/rest/auth/social/" + service);
     };
 
     $scope.showSignIn = function () {
         $modal.open({
             templateUrl: 'authentication.html',
             controller: AuthenticationController,
+            size: "sm",
             resolve: {
                 "action": function () { return "sign_in"; },
                 "chat": function () { return chat; }
@@ -278,6 +281,7 @@ controlsModule.controller("SettingsController", ["$scope", "chatService", "$moda
         $modal.open({
             templateUrl: 'authentication.html',
             controller: AuthenticationController,
+            size: "sm",
             resolve: {
                 "action": function () { return "registration"; },
                 "chat": function () { return chat; }
@@ -327,8 +331,8 @@ var AnonCaptchaController = function($scope, $modalInstance, id, isUser) {
         });
     };
 
-    $scope.twitchAuth = function() {
-        window.open("https://" + HOST_NAME + ":1337/twitch_auth");
+    $scope.socialAuth = function(service) {
+        window.open("https://" + HOST_NAME + ":1337/rest/auth/social/" + service);
     };
 
     $scope.showSignIn = function() {
@@ -356,8 +360,8 @@ var AuthenticationController = function($scope, $modalInstance, chat, action) {
         $scope.recaptchaWidgetId = widgetId;
     };
 
-    $scope.twitchAuth = function() {
-        window.open("https://" + HOST_NAME + ":1337/twitch_auth");
+    $scope.socialAuth = function(service) {
+        window.open("https://" + HOST_NAME + ":1337/rest/auth/social/" + service);
     };
 
     $scope.submitSignIn = function() {
@@ -516,9 +520,9 @@ controlsModule.directive('textcomplete', ['Textcomplete', "chatService", functio
 
             $(textcomplete).on({
                 'textComplete:select': function (e, value) {
-                    scope.$digest(function() {
-                        scope.message = value
-                    })
+                    scope.$apply(function() {
+                        scope.message = value;
+                    });
                 },
                 'textComplete:show': function (e) {
                     $(this).data('autocompleting', true);
@@ -532,7 +536,7 @@ controlsModule.directive('textcomplete', ['Textcomplete', "chatService", functio
 }]);
 
 messagesModule.controller("UserInputController", ["$scope", "$modal", "chatService", "chatSettings", "$cookieStore", function($scope, $modal, chat, settings, $cookieStore) {
-    chat.stateUpdatedCallback = function() {$scope.$digest()};
+    chat.stateUpdatedCallbacks.push(function() {$scope.$digest()});
     $scope.message = "";
 
     chat.addToInputCallback = function(string) {
@@ -572,6 +576,7 @@ messagesModule.controller("UserInputController", ["$scope", "$modal", "chatServi
         $modal.open({
             templateUrl: 'authentication.html',
             controller: AuthenticationController,
+            size: "sm",
             resolve: {
                 "action": function () { return "sign_in"; },
                 "chat": function () { return chat; }
@@ -698,5 +703,4 @@ controlsModule.controller("TitleController", ["$scope", "chatService", "windowSt
         }
         $scope.$digest();
     };
-}])
-
+}]);

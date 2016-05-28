@@ -19,8 +19,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -61,7 +59,7 @@ public class TwitterApiClient {
                 id,
                 root.get("protected").asBoolean()
             );
-        } catch (NoSuchAlgorithmException | InvalidKeyException | IOException e) {
+        } catch (IOException e) {
             throw new InternalErrorException(e);
         }
     }

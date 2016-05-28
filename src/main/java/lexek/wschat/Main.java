@@ -42,25 +42,25 @@ import lexek.wschat.frontend.ws.WebSocketChatHandler;
 import lexek.wschat.frontend.ws.WebSocketChatServer;
 import lexek.wschat.frontend.ws.WebSocketConnectionGroup;
 import lexek.wschat.frontend.ws.WebSocketProtocol;
+import lexek.wschat.proxy.ProxyAuthService;
 import lexek.wschat.proxy.ProxyManager;
 import lexek.wschat.proxy.SendProxyListOnEventListener;
-import lexek.wschat.proxy.cybergame.CybergameTvProxyProvider;
 import lexek.wschat.proxy.goodgame.GoodGameProxyProvider;
 import lexek.wschat.proxy.sc2tv.Sc2tvProxyProvider;
 import lexek.wschat.proxy.twitch.TwitchTvProxyProvider;
 import lexek.wschat.proxy.twitter.TwitterApiClient;
 import lexek.wschat.proxy.twitter.TwitterProxyProvider;
-import lexek.wschat.security.AuthenticationManager;
-import lexek.wschat.security.AuthenticationService;
-import lexek.wschat.security.CaptchaService;
-import lexek.wschat.security.ReCaptcha;
+import lexek.wschat.proxy.youtube.YouTubeProxyProvider;
+import lexek.wschat.security.*;
 import lexek.wschat.security.jersey.Auth;
 import lexek.wschat.security.jersey.SecurityFeature;
 import lexek.wschat.security.jersey.UserParamValueFactoryProvider;
-import lexek.wschat.security.social.TwitchTvSocialAuthService;
+import lexek.wschat.security.social.SocialAuthProviderFactory;
+import lexek.wschat.security.social.SocialAuthService;
 import lexek.wschat.services.*;
 import lexek.wschat.services.poll.PollService;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.config.SocketConfig;
 import org.apache.http.impl.client.HttpClients;
@@ -72,6 +72,7 @@ import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.ServerProperties;
+import org.glassfish.jersey.server.mvc.freemarker.FreemarkerMvcFeature;
 import org.glassfish.jersey.server.spi.internal.ValueFactoryProvider;
 import org.slf4j.LoggerFactory;
 
@@ -103,6 +104,8 @@ public class Main {
             ex.printStackTrace();
         }
 
+        SecureTokenGenerator secureTokenGenerator = new SecureTokenGenerator();
+
         int httpClientTimeout = 3000;
         PoolingHttpClientConnectionManager httpConnectionManager = new PoolingHttpClientConnectionManager();
         httpConnectionManager.setMaxTotal(50);
@@ -116,6 +119,7 @@ public class Main {
                     .setConnectionRequestTimeout(httpClientTimeout)
                     .setConnectTimeout(httpClientTimeout)
                     .setSocketTimeout(httpClientTimeout)
+                    .setCookieSpec(CookieSpecs.STANDARD)
                     .build()
             )
             .setConnectionManager(httpConnectionManager)
@@ -130,7 +134,8 @@ public class Main {
         CoreConfiguration coreSettings = settings.getCore();
 
         int wsPort = settings.getCore().getWsPort();
-        String ircHost = settings.getCore().getHost();
+        String hostName = settings.getCore().getHost();
+        String baseUrl = "https://" + hostName + ":1337";
         File dataDir = new File(settings.getCore().getDataDir());
 
         MetricRegistry metricRegistry = new MetricRegistry();
@@ -180,7 +185,7 @@ public class Main {
         IgnoreDao ignoreDao = new IgnoreDao(dataSource);
 
         ConnectionManager connectionManager = new ConnectionManager(metricRegistry);
-        AuthenticationManager authenticationManager = new AuthenticationManager(ircHost, emailService, connectionManager, userAuthDao);
+        AuthenticationManager authenticationManager = new AuthenticationManager(hostName, secureTokenGenerator, emailService, connectionManager, userAuthDao);
         UserService userService = new UserService(connectionManager, authenticationManager, userDao, journalService);
         EventDispatcher eventDispatcher = new EventDispatcher();
 
@@ -210,12 +215,19 @@ public class Main {
         );
         SteamGameDao steamGameDao = new SteamGameDao(dataSource);
         SteamGameResolver steamGameResolver = new SteamGameResolver(steamGameDao, httpClient);
-        TwitchTvSocialAuthService twitchAuthService = new TwitchTvSocialAuthService(settings.getHttp().getTwitchClientId(),
-            settings.getHttp().getTwitchSecret(),
-            settings.getHttp().getTwitchUrl(), httpClient);
+
         IgnoreService ignoreService = new IgnoreService(ignoreDao);
 
         Set<String> bannedIps = new CopyOnWriteArraySet<>();
+        SocialAuthProviderFactory socialAuthProviderFactory = new SocialAuthProviderFactory(baseUrl, httpClient, secureTokenGenerator);
+
+        ProxyAuthDao proxyAuthDao = new ProxyAuthDao(dataSource);
+
+        ProxyAuthService proxyAuthService = new ProxyAuthService(proxyAuthDao);
+        settings.getProxy().forEach((name, credentials) ->
+            proxyAuthService.registerProvider(socialAuthProviderFactory.newProvider(name, credentials, false))
+        );
+        proxyAuthService.loadTokens();
 
         EventLoopGroup proxyEventLoopGroup;
         if (Epoll.isAvailable()) {
@@ -224,10 +236,10 @@ public class Main {
             proxyEventLoopGroup = new NioEventLoopGroup(1);
         }
         ProxyManager proxyManager = new ProxyManager(proxyDao, roomManager, journalService);
-        proxyManager.registerProvider(new GoodGameProxyProvider(notificationService, proxyEventLoopGroup, messageBroadcaster, messageId));
-        proxyManager.registerProvider(new TwitchTvProxyProvider(messageId, messageBroadcaster, authenticationManager, proxyEventLoopGroup, twitchAuthService, notificationService));
+        proxyManager.registerProvider(new GoodGameProxyProvider(notificationService, proxyAuthService, proxyEventLoopGroup, messageBroadcaster, messageId, httpClient));
+        proxyManager.registerProvider(new TwitchTvProxyProvider(messageId, messageBroadcaster, authenticationManager, proxyEventLoopGroup, proxyAuthService, notificationService));
         proxyManager.registerProvider(new Sc2tvProxyProvider(notificationService, proxyEventLoopGroup, messageBroadcaster, messageId));
-        proxyManager.registerProvider(new CybergameTvProxyProvider(notificationService, messageBroadcaster, proxyEventLoopGroup, messageId));
+        proxyManager.registerProvider(new YouTubeProxyProvider(messageId, messageBroadcaster, notificationService, scheduledExecutorService, proxyAuthService, httpClient));
         if (settings.getTwitter() != null) {
             TwitterApiClient twitterApiClient = new TwitterApiClient(httpClient, settings.getTwitter());
             twitterApiClient.loadNames(
@@ -305,10 +317,10 @@ public class Main {
         WebSocketChatServer webSocketChatServer = new WebSocketChatServer(wsPort, webSocketChatHandler, bossGroup,
             childGroup, sslContext);
 
-        IrcProtocol ircProtocol = new IrcProtocol(new IrcCodec(ircHost));
+        IrcProtocol ircProtocol = new IrcProtocol(new IrcCodec(hostName));
         IrcConnectionGroup ircConnectionGroup = new IrcConnectionGroup(ircProtocol.getCodec());
         connectionManager.registerGroup(ircConnectionGroup);
-        IrcServerHandler ircServerHandler = new IrcServerHandler(messageReactor, ircHost,
+        IrcServerHandler ircServerHandler = new IrcServerHandler(messageReactor, hostName,
             authenticationService, ircConnectionGroup, roomManager, ircProtocol);
         IrcServer ircServer = new IrcServer(ircServerHandler, bossGroup, childGroup, sslContext);
 
@@ -321,16 +333,25 @@ public class Main {
         ViewResolvers viewResolvers = new ViewResolvers(freemarker);
         ServerMessageHandler serverMessageHandler = new ServerMessageHandler();
 
+        SocialAuthService socialAuthService = new SocialAuthService(authenticationManager, secureTokenGenerator);
+        settings.getSocialAuth().forEach((name, credentials) ->
+            socialAuthService.registerProvider(socialAuthProviderFactory.newProvider(name, credentials, true))
+        );
+
         ResourceConfig resourceConfig = new ResourceConfig() {
             {
                 property(ServerProperties.WADL_FEATURE_DISABLE, Boolean.TRUE);
                 //property(ServerProperties.TRACING, "ALL");
+                register(ErrorBodyWriter.class);
                 register(ObjectMapperProvider.class);
                 register(new Slf4jLoggingFilter());
                 register(JerseyExceptionMapper.class);
                 register(JacksonFeature.class);
                 register(MultiPartFeature.class);
                 register(SecurityFeature.class);
+                register(FreemarkerMvcFeature.class);
+                property(FreemarkerMvcFeature.TEMPLATE_BASE_PATH, "/templates/");
+                property(FreemarkerMvcFeature.ENCODING, "UTF-8");
                 register(new AbstractBinder() {
                     @Override
                     protected void configure() {
@@ -347,7 +368,7 @@ public class Main {
                     new EmoticonsResource(emoticonService),
                     new HistoryResource(historyService),
                     new IpBlockResource(bannedIps),
-                    new JournalResource(journalDao),
+                    new JournalResource(journalDao, journalService),
                     new UsersResource(connectionManager, userService),
                     new PollResource(roomService, pollService),
                     new RoomResource(roomService),
@@ -355,27 +376,24 @@ public class Main {
                     new EmailResource(authenticationManager),
                     new ProfileResource(userService),
                     new SteamGameResource(steamGameResolver),
-                    new ProxyResource(roomService, proxyManager),
+                    new ProxyResource(roomService, proxyManager, proxyAuthService),
                     new PasswordResource(authenticationManager),
-                    new CheckUsernameResource(userService)
+                    new CheckUsernameResource(userService),
+                    new ProxyAuthResource(proxyAuthService),
+                    new AuthResource(socialAuthService, authenticationManager, reCaptcha)
                 );
             }
         };
 
-        final RequestDispatcher httpRequestDispatcher = new RequestDispatcher(serverMessageHandler, viewResolvers, authenticationManager, resourceConfig, runtimeMetricRegistry, ircHost);
+        final RequestDispatcher httpRequestDispatcher = new RequestDispatcher(serverMessageHandler, viewResolvers, authenticationManager, resourceConfig, runtimeMetricRegistry, hostName);
         httpRequestDispatcher.add("/", new RedirectToAppHandler());
         httpRequestDispatcher.add("/.*", new FileSystemStaticHandler(dataDir));
         httpRequestDispatcher.add("/.*", new ClassPathStaticHandler(ClassPathStaticHandler.class, "/static/"));
         httpRequestDispatcher.add("/chat.html", new ChatHomeHandler(coreSettings.getTitle(), settings.getHttp().isAllowLikes(), settings.getHttp().isSingleRoom()));
-        httpRequestDispatcher.add("/confirm_email", new ConfirmEmailHandler());
         httpRequestDispatcher.add("/recaptcha/[0-9]+", new RecaptchaHandler(captchaService, reCaptcha));
         httpRequestDispatcher.add("/api/tickets", new UserTicketsHandler(authenticationManager, ticketService));
         httpRequestDispatcher.add("/admin/.*", new AdminPageHandler(authenticationManager));
         httpRequestDispatcher.add("/login", new LoginHandler(authenticationManager, reCaptcha));
-        httpRequestDispatcher.add("/twitch_auth", new TwitchAuthHandler(
-            authenticationManager,
-            twitchAuthService));
-        httpRequestDispatcher.add("/setup_profile", new SetupProfileHandler(authenticationManager, reCaptcha));
         httpRequestDispatcher.add("/register", new RegistrationHandler(authenticationManager, reCaptcha, bannedIps));
         httpRequestDispatcher.add("/token", new TokenHandler(authenticationManager));
 

@@ -5,7 +5,6 @@ import io.netty.handler.codec.http.HttpMethod;
 import lexek.httpserver.Request;
 import lexek.httpserver.Response;
 import lexek.httpserver.SimpleHttpHandler;
-import lexek.wschat.db.model.UserAuthDto;
 import lexek.wschat.db.model.UserDto;
 import lexek.wschat.security.AuthenticationManager;
 import lexek.wschat.services.TicketService;
@@ -22,9 +21,8 @@ public class UserTicketsHandler extends SimpleHttpHandler {
 
     @Override
     protected void handle(Request request, Response response) throws Exception {
-        UserAuthDto auth = authenticationManager.checkFullAuthentication(request);
-        if (auth != null && auth.getUser() != null) {
-            UserDto user = auth.getUser();
+        UserDto user = authenticationManager.checkFullAuthentication(request);
+        if (user != null) {
             if (request.method() == HttpMethod.GET) {
                 handleGet(response, user);
                 return;

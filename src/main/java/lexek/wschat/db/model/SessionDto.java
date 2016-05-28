@@ -6,7 +6,7 @@ import static lexek.wschat.db.jooq.tables.Session.SESSION;
 
 public class SessionDto {
     private long id;
-    private UserAuthDto userAuth;
+    private UserDto userAuth;
     private String sessionId;
     private String ip;
     private long expires;
@@ -14,7 +14,7 @@ public class SessionDto {
     public SessionDto() {
     }
 
-    public SessionDto(long id, UserAuthDto userAuth, String sessionId, String ip, long expires) {
+    public SessionDto(long id, UserDto userAuth, String sessionId, String ip, long expires) {
         this.id = id;
         this.userAuth = userAuth;
         this.sessionId = sessionId;
@@ -23,10 +23,10 @@ public class SessionDto {
     }
 
     public static SessionDto fromRecord(Record record) {
-        return fromRecord(record, UserAuthDto.fromRecord(record));
+        return fromRecord(record, UserDto.fromRecord(record));
     }
 
-    public static SessionDto fromRecord(Record record, UserAuthDto userAuth) {
+    public static SessionDto fromRecord(Record record, UserDto userAuth) {
         if (record != null && record.getValue(SESSION.ID) != null) {
             return new SessionDto(
                 record.getValue(SESSION.ID),
@@ -48,11 +48,11 @@ public class SessionDto {
         this.id = id;
     }
 
-    public UserAuthDto getUserAuth() {
+    public UserDto getUserAuth() {
         return userAuth;
     }
 
-    public void setUserAuth(UserAuthDto userAuth) {
+    public void setUserAuth(UserDto userAuth) {
         this.userAuth = userAuth;
     }
 

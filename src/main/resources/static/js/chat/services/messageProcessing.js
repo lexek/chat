@@ -73,8 +73,8 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
             );
             chat.incMessageCount();
         }
-        chat.messagesUpdated();
         chat.hideMessagesFromUser(ctx.room, msg.name);
+        chat.messagesUpdated();
     };
 
     var processProxyClearMessage = function (chat, ctx, msg) {
@@ -85,8 +85,8 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
             );
             chat.incMessageCount();
         }
-        chat.messagesUpdated();
         chat.hideMessagesFromUser(ctx.room, msg.name, ctx.msg.service, ctx.msg.serviceResource);
+        chat.messagesUpdated();
     };
 
     var processClearRoomMessage = function(chat, ctx) {
@@ -105,7 +105,8 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
         };
         var service = msg.type === "MSG_EXT" ? ctx.msg["service"] : null;
         var serviceRes = service ? ctx.msg["serviceResource"] : null;
-        var user = new User(msg.name, msg.color, levels[msg.role], globalLevels[msg.globalRole], service, serviceRes);
+        var serviceResName = service ? ctx.msg["serviceResourceName"] : null;
+        var user = new User(msg.name, msg.color, levels[msg.role], globalLevels[msg.globalRole], service, serviceRes, serviceResName);
         ctx.proc.user = user;
 
         var showModButtons = (user.role !== levels.ADMIN) &&
@@ -364,6 +365,7 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
                 $modal.open({
                     templateUrl: 'authentication.html',
                     controller: AuthenticationController,
+                    size: "sm",
                     resolve: {
                         "action": function() { return "sign_in"; },
                         "chat": function () { return chat; }
@@ -389,7 +391,7 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
                 chat.self = message.user;
                 chat.self.role = globalLevels[chat.self.role];
                 chat.state = CHAT_STATE.AUTHENTICATED;
-                chat.stateUpdatedCallback();
+                chat.stateUpdated();
                 if (chat.rooms.length > 0) {
                     angular.forEach(chat.rooms, function (e) {
                         chat.sendMessage({"type": "JOIN", "room": e});

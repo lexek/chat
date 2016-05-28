@@ -4,52 +4,5 @@
     </h3>
 </div>
 <div class="modal-body">
-    <div class="list-group">
-        <div class="list-group-item" ng-repeat="entry in journal" ng-class="getClassForJournalAction(entry.action)">
-            <h4 class="list-group-item-heading">
-                {{translateAction(entry.action)}}
-                <small ng-if="entry.admin">
-                    <i class="fa fa-fw fa-wrench" tooltip="admin"></i><!--
-                        --><a href="" ng-click="showUser(entry.admin.id)">{{entry.admin.name}}</a>
-                </small>
-                <small ng-if="entry.user">
-                    <i class="fa fa-fw fa-user" tooltip="user"></i><!--
-                        --><a href="" ng-click="showUser(entry.user.id)">{{entry.user.name}}</a>
-                </small>
-                <small class="pull-right">
-                    <a href="" ng-click="showBanContext(entry.time)" ng-if="entry.action==='ROOM_BAN'"><!--
-                                    --><span class="fa fa-fw fa-comments"></span><!--
-                                --></a>
-                    <abbr title="{{entry.time | date:'dd.MM.yyyy HH:mm'}}">{{entry.time | relativeDate}}</abbr>
-                </small>
-            </h4>
-            <p class="list-group-item-text">
-                    <span class="" ng-if="entry.actionDescription">
-                        <span ng-switch="entry.action">
-                            <span ng-switch-when="NEW_POLL"><strong>Question:</strong> {{entry.actionDescription}}</span>
-                            <span ng-switch-when="CLOSE_POLL"><strong>Question:</strong> {{entry.actionDescription}}</span>
-                            <span ng-switch-when="ROOM_ROLE"><strong>New role:</strong> {{entry.actionDescription}}</span>
-                            <span ng-switch-when="NEW_PROXY">
-                                {{entry.actionDescription.providerName}}/{{entry.actionDescription.remoteRoom}}
-                            </span>
-                            <span ng-switch-when="DELETED_PROXY">
-                                {{entry.actionDescription.providerName}}/{{entry.actionDescription.remoteRoom}}
-                            </span>
-                            <span ng-switch-when="TOPIC_CHANGED">
-                                <code>{{entry.actionDescription.oldTopic}}</code>
-                                <span class="fa fa-long-arrow-right"></span>
-                                <code>{{entry.actionDescription.newTopic}}</code>
-                            </span>
-                            <span ng-switch-default ng-bind="entry.actionDescription"></span>
-                        </span>
-                    </span>
-            </p>
-        </div>
-    </div>
-</div>
-<div class="modal-footer" ng-if="(page !== 0) || hasNextPage()">
-    <ul class="pager">
-        <li class="previous" ng-if="page !== 0" ng-click="previousPage()"><a href="">&larr; Previous page</a></li>
-        <li class="next" ng-if="hasNextPage()" ng-click="nextPage()"><a href="">Next page &rarr;</a></li>
-    </ul>
+    <journal global="false" room="room" on-page-change="onPageChange"></journal>
 </div>

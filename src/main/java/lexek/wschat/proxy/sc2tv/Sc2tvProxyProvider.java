@@ -1,5 +1,6 @@
 package lexek.wschat.proxy.sc2tv;
 
+import com.google.common.collect.ImmutableSet;
 import io.netty.channel.EventLoopGroup;
 import lexek.wschat.chat.MessageBroadcaster;
 import lexek.wschat.chat.Room;
@@ -21,7 +22,7 @@ public class Sc2tvProxyProvider extends ProxyProvider {
         NotificationService notificationService, EventLoopGroup eventLoopGroup, MessageBroadcaster messageBroadcaster,
         AtomicLong messageId
     ) {
-        super("sc2tv", false, false, EnumSet.noneOf(ModerationOperation.class));
+        super("sc2tv", false, false, false, ImmutableSet.of(), EnumSet.noneOf(ModerationOperation.class));
         this.notificationService = notificationService;
         this.eventLoopGroup = eventLoopGroup;
         this.messageBroadcaster = messageBroadcaster;
@@ -29,16 +30,12 @@ public class Sc2tvProxyProvider extends ProxyProvider {
     }
 
     @Override
-    public Proxy newProxy(long id, Room room, String remoteRoom, String name, String key, boolean outbound) {
+    public Proxy newProxy(long id, Room room, String remoteRoom, Long proxyAuthId, boolean outbound) {
         return new Sc2tvChatProxy(
             notificationService, remoteRoom, messageBroadcaster, eventLoopGroup, messageId, room, id, this
         );
     }
 
-    @Override
-    public boolean validateCredentials(String name, String token) {
-        throw new UnsupportedOperationException();
-    }
 
     @Override
     public boolean validateRemoteRoom(String remoteRoom) {

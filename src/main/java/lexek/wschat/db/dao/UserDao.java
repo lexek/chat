@@ -135,8 +135,10 @@ public class UserDao {
                 .stream()
                 .map(record -> new UserData(
                     UserDto.fromRecord(record),
-                    record.getValue("authServices", String.class),
-                    record.getValue("authNames", String.class)
+                    collectAuthServices(
+                        record.getValue("authServices", String.class),
+                        record.getValue("authNames", String.class)
+                    )
                 ))
                 .collect(Collectors.toList());
             return new DataPage<>(data, page, Pages.pageCount(pageLength, DSL.using(connection).fetchCount(USER)));
@@ -161,8 +163,10 @@ public class UserDao {
                 .stream()
                 .map(record -> new UserData(
                     UserDto.fromRecord(record),
-                    record.getValue("authServices", String.class),
-                    record.getValue("authNames", String.class)
+                    collectAuthServices(
+                        record.getValue("authServices", String.class),
+                        record.getValue("authNames", String.class)
+                    )
                 ))
                 .collect(Collectors.toList());
 
@@ -210,8 +214,10 @@ public class UserDao {
             if (record != null) {
                 result = new UserData(
                     UserDto.fromRecord(record),
-                    record.getValue("authServices", String.class),
-                    record.getValue("authNames", String.class)
+                    collectAuthServices(
+                        record.getValue("authServices", String.class),
+                        record.getValue("authNames", String.class)
+                    )
                 );
             }
         } catch (DataAccessException | SQLException e) {
@@ -233,5 +239,15 @@ public class UserDao {
         } catch (DataAccessException | SQLException e) {
             throw new InternalErrorException(e);
         }
+    }
+
+    private Map<String, String> collectAuthServices(String servicesString, String namesString) {
+        String[] authServices = servicesString.split(",", -1);
+        String[] authNames = namesString.split(",", -1);
+        Map<String, String> result = new HashMap<>();
+        for (int i = 0; i < authServices.length; ++i) {
+            result.put(authServices[i], authNames[i]);
+        }
+        return result;
     }
 }

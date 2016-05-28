@@ -11,7 +11,7 @@ import lexek.wschat.db.model.Email;
 import lexek.wschat.db.model.SessionDto;
 import lexek.wschat.db.model.UserAuthDto;
 import lexek.wschat.db.model.UserDto;
-import lexek.wschat.security.social.SocialAuthProfile;
+import lexek.wschat.security.social.SocialProfile;
 import lexek.wschat.services.EmailService;
 import lexek.wschat.util.Colors;
 import org.apache.http.HttpHeaders;
@@ -21,7 +21,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.security.SecureRandom;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Map;
@@ -31,25 +30,31 @@ public class AuthenticationManager {
     private final Logger logger = LoggerFactory.getLogger(AuthenticationManager.class);
     private final Map<String, AtomicInteger> failedLogin = new ConcurrentHashMapV8<>();
     private final Map<Long, Instant> latestEmailChanges = new ConcurrentHashMapV8<>();
-    private final SecureRandom secureRandom = new SecureRandom();
+    private final SecureTokenGenerator secureTokenGenerator;
     private final String host;
     private final EmailService emailService;
     private final ConnectionManager connectionManager;
     private final UserAuthDao userAuthDao;
 
-    public AuthenticationManager(String host, EmailService emailService, ConnectionManager connectionManager,
-                                 UserAuthDao userAuthDao) {
+    public AuthenticationManager(
+        String host,
+        SecureTokenGenerator secureTokenGenerator,
+        EmailService emailService,
+        ConnectionManager connectionManager,
+        UserAuthDao userAuthDao
+    ) {
         this.host = host;
+        this.secureTokenGenerator = secureTokenGenerator;
         this.emailService = emailService;
         this.connectionManager = connectionManager;
         this.userAuthDao = userAuthDao;
     }
 
-    public UserAuthDto fastAuth(String name, String password, String ip) {
+    public UserDto fastAuth(String name, String password, String ip) {
         AtomicInteger tries = failedLogin.get(ip);
         UserAuthDto auth = userAuthDao.getPasswordAuth(name);
         if (auth != null && auth.getAuthenticationKey() != null && validatePassword(password, auth.getAuthenticationKey())) {
-            return auth;
+            return auth.getUser();
         } else {
             if (tries == null) {
                 tries = new AtomicInteger(1);
@@ -66,8 +71,8 @@ public class AuthenticationManager {
         return BCrypt.checkpw(password, hash);
     }
 
-    public UserAuthDto fastAuthToken(String token) {
-        return userAuthDao.getTokenAuth(token);
+    public UserDto fastAuthToken(String token) {
+        return userAuthDao.getUserForToken(token);
     }
 
     public int failedLoginTries(String ip) {
@@ -75,46 +80,43 @@ public class AuthenticationManager {
         return i != null ? i.get() : 0;
     }
 
-    public SessionDto authenticate(String username, String password, String ip, long timestamp) {
-        UserAuthDto user = fastAuth(username, password, ip);
+    public SessionDto authenticate(String username, String password, String ip) {
+        UserDto user = fastAuth(username, password, ip);
         if (user != null) {
-            return createSession(user, ip, timestamp);
+            return createSession(user, ip);
         }
         return null;
     }
 
-    public SessionDto createSession(UserAuthDto userAuth, String ip, long timestamp) {
+    public SessionDto createSession(UserDto userAuth, String ip) {
         if (userAuth == null || ip == null) {
             throw new NullPointerException();
         }
-        String sid = userAuth.getId() + "_" + generateSessionId();
+        String sid = userAuth.getId() + "_" + secureTokenGenerator.generateSessionId();
         return userAuthDao.newSession(
             sid,
             ip,
             userAuth,
-            timestamp
+            System.currentTimeMillis()
         );
     }
 
-    public UserAuthDto getOrCreateUserAuth(SocialAuthProfile profile) {
-        return userAuthDao.getOrCreateUserAuth(profile);
+    public UserAuthDto getOrCreateUserAuth(SocialProfile profile, UserDto user) {
+        return userAuthDao.getOrCreateUserAuth(profile, user);
     }
 
-    public boolean tieUserWithExistingAuth(UserDto userDto, UserAuthDto userAuthDto) {
-        return userAuthDao.tieUserWithExistingAuth(userDto, userAuthDto);
-    }
-
-    public UserAuthDto checkFullAuthentication(String sid, String ip) {
-        UserAuthDto auth = null;
+    public UserDto checkFullAuthentication(String sid, String ip) {
+        UserDto user = null;
         SessionDto session = userAuthDao.getSession(sid, ip);
         if (session != null) {
-            auth = session.getUserAuth();
+            user = session.getUserAuth();
         }
-        return auth;
+        return user;
     }
 
-    public UserAuthDto checkFullAuthentication(Request request) {
-        UserAuthDto user = null;
+    //todo:rename
+    public UserDto checkFullAuthentication(Request request) {
+        UserDto user = null;
         if (request.hasHeader(HttpHeaders.AUTHORIZATION)) {
             String[] tmp = request.header(HttpHeaders.AUTHORIZATION).split(" ", 2);
             if (tmp.length == 2) {
@@ -149,36 +151,14 @@ public class AuthenticationManager {
         return user;
     }
 
+    @Deprecated
     public UserDto checkAuthentication(Request request) {
-        UserAuthDto auth = checkFullAuthentication(request);
-        if (auth != null && auth.getUser() != null) {
-            return auth.getUser();
-        } else {
-            return null;
-        }
-    }
-
-    private String generateVerificationCode() {
-        byte[] bytes = new byte[64];
-        secureRandom.nextBytes(bytes);
-        return BaseEncoding.base32Hex().encode(bytes);
-    }
-
-    private String generateSessionId() {
-        byte[] bytes = new byte[32];
-        secureRandom.nextBytes(bytes);
-        return BaseEncoding.base16().encode(bytes);
-    }
-
-    public String generateRandomToken(int length) {
-        byte[] bytes = new byte[length];
-        secureRandom.nextBytes(bytes);
-        return BaseEncoding.base64Url().encode(bytes);
+        return checkFullAuthentication(request);
     }
 
     public synchronized boolean registerWithPassword(final String name, final String password, final String email) {
         final String color = Colors.generateColor(name);
-        String verificationCode = generateVerificationCode();
+        String verificationCode = secureTokenGenerator.generateVerificationCode();
         Long userId = userAuthDao.registerWithPassword(name, password, email, color, verificationCode);
         if (userId != null) {
             sendVerificationEmail(email, verificationCode, userId);
@@ -209,7 +189,7 @@ public class AuthenticationManager {
     }
 
     private void doChangeEmail(UserDto user, String email) {
-        String verificationCode = generateVerificationCode();
+        String verificationCode = secureTokenGenerator.generateVerificationCode();
         if (userAuthDao.setEmail(user.getId(), email, verificationCode)) {
             user.setEmail(email);
             user.setEmailVerified(false);
@@ -263,9 +243,9 @@ public class AuthenticationManager {
         userAuthDao.setPassword(user.getId(), BCrypt.hashpw(password, BCrypt.gensalt()));
     }
 
-    public String createTokenForUser(UserDto user) {
+    public synchronized String createTokenForUser(UserDto user) {
         byte[] bytes = new byte[128];
-        secureRandom.nextBytes(bytes);
+        secureTokenGenerator.nextBytes(bytes);
         String token = user.getId() + "_" + BaseEncoding.base64().encode(bytes);
         if (userAuthDao.setToken(user.getId(), token)) {
             return token;
@@ -274,24 +254,32 @@ public class AuthenticationManager {
         }
     }
 
-    public boolean addUserAndTieToAuth(String name, UserAuthDto auth) {
-        return userAuthDao.addUserAndTieToAuth(name, auth);
+    public synchronized UserAuthDto createUserWithProfile(String name, SocialProfile socialProfile) {
+        return userAuthDao.createUserWithProfile(name, socialProfile);
     }
 
-    public UserAuthDto getAuthDataForUser(UserDto user, String service) {
+    public synchronized UserAuthDto createUserAuthFromProfile(UserDto user, SocialProfile profile) {
+        return userAuthDao.createAuthFromProfile(user, profile);
+    }
+
+    public synchronized UserAuthDto getAuthDataForUser(UserDto user, String service) {
         return userAuthDao.getAuthDataForUser(user.getId(), service);
     }
 
-    public UserAuthDto getAuthDataForUser(long userId, String service) {
+    public synchronized UserAuthDto getAuthDataForUser(long userId, String service) {
         return userAuthDao.getAuthDataForUser(userId, service);
     }
 
     public boolean hasRole(Request request, GlobalRole role) {
-        UserAuthDto auth = checkFullAuthentication(request);
-        return auth != null && auth.getUser() != null && auth.getUser().getRole().compareTo(role) >= 0;
+        UserDto user = checkFullAuthentication(request);
+        return user != null && user.hasRole(role);
     }
 
     public void invalidateSession(String sid) {
         userAuthDao.invalidateSession(sid);
+    }
+
+    public synchronized void deleteAuth(UserDto user, String serviceName) {
+        userAuthDao.deleteAuth(user, serviceName);
     }
 }

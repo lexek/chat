@@ -121,8 +121,24 @@ AdminServices.factory("alert", AlertServiceFactory);
 AdminServices.factory("title", TitleServiceFactory);
 AdminServices.factory("tickets", TicketCountServiceFactory);
 
-var AdminApplication = angular.module("AdminApplication", ["ngRoute", "ngAnimate", "AdminServices", "relativeDate",
-    "ui.inflector", "ui.bootstrap", "ui.bootstrap.datetimepicker", "highcharts-ng", "ngSanitize", "rgkevin.datetimeRangePicker"]);
+var AdminApplication = angular.module(
+    "AdminApplication",
+    [
+        "ngRoute",
+        "ngAnimate",
+        "AdminServices",
+        "relativeDate",
+        "ui.inflector",
+        "ui.bootstrap",
+        "ui.bootstrap.datetimepicker",
+        "highcharts-ng",
+        "ngSanitize",
+        "rgkevin.datetimeRangePicker",
+        "chat.admin.auth",
+        "chat.admin.journal",
+        "chat.admin.utils"
+    ]
+);
 
 Role = function(title, value) {
     this.title = title;
@@ -564,12 +580,10 @@ var UsersController = function($scope, $location, $http, alert, title) {
                 page: $scope.page
             }
         }).success(function (d) {
-            $scope.users = [];
-            angular.forEach(d["data"], function(e) {
-                var u = e.user;
-                u.authServices = e.authServices;
-                u.authNames = e.authNames;
-                $scope.users.push(u);
+            $scope.users = d["data"].map(function(userData) {
+                var u = userData.user;
+                u.auth = userData.authServices;
+                return u;
             });
             $scope.totalPages = d["pageCount"];
             title.secondary = "page " + ($scope.page+1) + "/" + ($scope.totalPages);
@@ -938,13 +952,6 @@ var UserController = function($scope, $route, $http, $modal, alert, id) {
     };
 
     var init = function() {
-        $scope.auth = {};
-        if ($scope.user && $scope.user.authServices) {
-            var namesArray = $scope.user.authNames.split(",");
-            angular.forEach($scope.user.authServices.split(","), function(e, i) {
-                $scope.auth[e] = namesArray[i];
-            });
-        }
         $scope.input.name = $scope.user.name;
         $scope.input.role = $scope.user.role;
         $scope.input.banned = $scope.user.banned;
@@ -1018,12 +1025,7 @@ var UserModalController = function($scope, $http, $modal, $modalInstance, id) {
             $scope.input.role = $scope.user.role;
             $scope.input.banned = $scope.user.banned;
             $scope.input.renameAvailable = $scope.user.renameAvailable;
-            if (d.authServices) {
-                var namesArray = d.authNames.split(",");
-                angular.forEach(d.authServices.split(","), function(e, i) {
-                    $scope.auth[e] = namesArray[i];
-                });
-            }
+            $scope.auth = d.authServices;
         });
     };
 
@@ -1166,182 +1168,24 @@ var UserModalController = function($scope, $http, $modal, $modalInstance, id) {
     loadPage();
 };
 
-var JournalController = function($scope, $location, $http, $modal, alert, title) {
-    $scope.entries = [];
-    $scope.totalPages = 0;
-    $scope.secondaryTitle = $scope.page;
-
-    var loadPage = function() {
-        $http({method: "GET", url: "/rest/journal/global", params: {page: $scope.page}})
-            .success(function (d, status, headers, config) {
-                $scope.entries = d["data"];
-                $scope.totalPages = d["pageCount"];
-                title.secondary = "page " + ($scope.page+1) + "/" + ($scope.totalPages);
-            })
-            .error(function (data, status, headers, config) {
-                alert.alert("danger", data);
-            });
-    };
-
-    $scope.previousPage = function() {
-        if ($scope.page !== 0) {
-            $location.search("page", ($scope.page-1).toString());
-        }
-    };
-
-    $scope.nextPage = function() {
-        if ((page+1) < $scope.totalPages) {
-            $location.search("page", ($scope.page+1).toString());
-        }
-    };
-
-    $scope.hasNextPage = function() {
-        return (page+1) < $scope.totalPages
-    };
-
-    $scope.showUser = function(id) {
-        $modal.open({
-            templateUrl: "/templates/user.html",
-            controller: UserModalController,
-            size: "sm",
-            resolve: {
-                id: function () {
-                    return id;
-                }
-            }
-        });
-    };
-
-    var classMap = {
-        "DELETED_EMOTICON": "warning"
-    };
-
-    var actionMap = {
-        "USER_UPDATE": "User changed",
-        "NAME_CHANGE": "User name changed",
-        "NEW_EMOTICON": "New emoticon",
-        "IMAGE_EMOTICON": "Updated emoticon image",
-        "DELETED_EMOTICON": "Deleted emoticon",
-        "NEW_ROOM": "Created room",
-        "DELETED_ROOM": "Deleted room",
-        "PASSWORD": "Changed password"
-    };
-
-    $scope.getClassForJournalAction = function(action) {
-        return 'list-group-item-' + classMap[action];
-    };
-
-    $scope.translateAction = function(action) {
-        return actionMap[action];
-    };
-
-    {
-        var locationSearch = $location.search();
-        var page = parseInt(locationSearch["page"]);
-        if (isNaN(page) || page < 0) {
-            $location.search("page", "0");
-        } else {
-            $scope.page = page;
-            loadPage();
-        }
+var JournalController = function($scope, title) {
+    $scope.onPageChange = function(current, total) {
+        title.secondary = "page " + (current + 1) + "/" + (total);
     }
 };
 
-var RoomJournalModalController = function($scope, $http, $modal, room) {
-    $scope.journal = [];
+var RoomJournalModalController = function($scope, room) {
     $scope.totalPages = 0;
     $scope.page = 0;
+    $scope.room = room;
 
-    var loadPage = function() {
-        $http({
-            method: "GET",
-            url: StringFormatter.format("/rest/journal/room/{number}", room.id),
-            params: {page: $scope.page}
-        }).success(function (d, status, headers, config) {
-            $scope.journal = d["data"];
-            $scope.totalPages = d["pageCount"];
-        });
-    };
-
-    $scope.previousPage = function() {
-        if ($scope.page !== 0) {
-            $scope.page--;
-            loadPage();
-        }
-    };
-
-    $scope.nextPage = function() {
-        if (($scope.page+1) < $scope.totalPages) {
-            $scope.page++;
-            loadPage();
-        }
-    };
-
-    $scope.hasNextPage = function() {
-        return ($scope.page+1) < $scope.totalPages
-    };
-
-    $scope.showUser = function(id) {
-        $modal.open({
-            templateUrl: "/templates/user.html",
-            controller: UserModalController,
-            size: "sm",
-            resolve: {
-                id: function () {
-                    return id;
-                }
-            }
-        });
-    };
-
-    var classMap = {
-        "ROOM_BAN": "warning",
-        "DELETED_PROXY": "warning",
-        "ROOM_UNBAN": "success",
-        "ROOM_ROLE": "success"
-    };
-
-    var actionMap = {
-        "NEW_PROXY": "Proxy added",
-        "DELETED_PROXY": "Proxy removed",
-        "NEW_ROOM": "Room created",
-        "NEW_POLL": "Poll created",
-        "CLOSE_POLL": "Poll closed",
-        "ROOM_BAN": "User banned",
-        "ROOM_UNBAN": "User unbanned",
-        "ROOM_ROLE": "Role changed",
-        "NEW_ANNOUNCEMENT": "Announcement created",
-        "INACTIVE_ANNOUNCEMENT": "Announcement archived"
-    };
-
-    $scope.getClassForJournalAction = function(action) {
-        return 'list-group-item-' + classMap[action];
-    };
-
-    $scope.translateAction = function(action) {
-        return actionMap[action];
-    };
-
-    $scope.showBanContext = function(time) {
-        $modal.open({
-            templateUrl: 'history.html',
-            controller: HistoryController,
-            resolve: {
-                options: function () {
-                    return {
-                        "room": room,
-                        "since": time - 600000,
-                        "until": time + 600000
-                    }
-                }
-            }
-        });
-    };
-
-    loadPage();
+    $scope.onPageChange = function(current, total) {
+        $scope.page = current;
+        $scope.totalPages = total;
+    }
 };
 
-var TicketController = function($scope, $http) {
+var TicketController = function($scope) {
     $scope.showReply = false;
     $scope.text = "";
 
@@ -1350,7 +1194,7 @@ var TicketController = function($scope, $http) {
     };
 };
 
-AdminApplication.controller("TicketController", ["$scope", "$http", TicketController]);
+AdminApplication.controller("TicketController", ["$scope", TicketController]);
 
 var TicketsController = function($scope, $location, $http, $modal, alert, title) {
     $scope.entries = [];
@@ -1873,8 +1717,7 @@ var NewProxyController = function($scope, $http, $modalInstance, room) {
             $scope.error = null;
             var data = {
                 providerName: $scope.input.provider.name,
-                authName: $scope.input.authentication ? $scope.input.name : null,
-                authKey: $scope.input.authentication ? $scope.input.key : null,
+                authId: $scope.input.auth ? $scope.input.auth.id : null,
                 remoteRoom: $scope.input.room,
                 enableOutbound: $scope.input.outbound
             };
@@ -2113,7 +1956,7 @@ var RoomController = function($scope, $location, $http, $sce, $modal, alert, tit
 
     $scope.newProxy = function() {
         $modal.open({
-            templateUrl: 'new_proxy.html',
+            templateUrl: '/templates/new_proxy.html',
             controller: NewProxyController,
             size: "sm",
             resolve: {
@@ -2383,6 +2226,48 @@ var ComposeAnnouncementController = function($scope, $http, $modalInstance, room
     };
 };
 
+var ProxyAuthController = function($scope, $http) {
+    $scope.credentials = null;
+    $scope.services = null;
+
+    var loadPage = function() {
+        $http({
+            method: "GET",
+            url: "/rest/proxy/auth/all"
+        }).success(function (credentials) {
+            $scope.credentials = credentials;
+        });
+        $http({
+            method: "GET",
+            url: "/rest/proxy/auth/services"
+        }).success(function (services) {
+            $scope.services = services;
+        });
+    };
+
+    $scope.getIconClass = function(serviceName) {
+        switch (serviceName) {
+            case "twitch":
+                return "fa-twitch";
+            case "google":
+                return "fa-google";
+            case "twitter":
+                return "fa-twitter";
+            default:
+                return "fa-key";
+        }
+    };
+
+    $scope.deleteAuth = function(id) {
+        $http({
+            method: "DELETE",
+            url: "/rest/proxy/auth/" + id
+        }).success(loadPage);
+    };
+
+    loadPage();
+};
+
 AdminApplication.config(["$routeProvider", "$locationProvider", function($routeProvider, $locationProvider) {
     $locationProvider.html5Mode(true);
     $routeProvider.when("/", {
@@ -2417,7 +2302,7 @@ AdminApplication.config(["$routeProvider", "$locationProvider", function($routeP
     });
     $routeProvider.when("/users", {
         "title": "users",
-        "templateUrl": "users.html",
+        "templateUrl": "/templates/users.html",
         "controller": UsersController,
         "menuId": "users"
     });
@@ -2432,6 +2317,12 @@ AdminApplication.config(["$routeProvider", "$locationProvider", function($routeP
         "templateUrl": "services.html",
         "controller": ServicesController,
         "menuId": "services"
+    });
+    $routeProvider.when("/proxyAuth", {
+        "title": "Proxy credentials",
+        "templateUrl": "/templates/proxy_auth.html",
+        "controller": ProxyAuthController,
+        "menuId": "proxyAuth"
     });
 }]);
 

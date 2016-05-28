@@ -36,6 +36,9 @@
     <script src="/vendor/js/range-picker.js"></script>
     <script src="/vendor/js/highcharts.js"></script>
     <script src="/vendor/js/highcharts-ng.js"></script>
+    <script src="/js/admin/auth.js"></script>
+    <script src="/js/admin/journal.js"></script>
+    <script src="/js/admin/utils.js"></script>
     <script src="/js/admin/main.js"></script>
 </head>
 <body>
@@ -69,89 +72,8 @@
                 journal
             </h4>
         </div>
-        <div class="list-group">
-            <div class="list-group-item" ng-repeat="entry in entries" ng-class="getClassForJournalAction(entry.action)">
-                <h4 class="list-group-item-heading">
-                    {{translateAction(entry.action)}}
-                    <small class="" ng-if="entry.admin">
-                        <i class="fa fa-fw fa-wrench" tooltip="admin"></i><!--
-                        --><a href="" ng-click="showUser(entry.admin.id)">{{entry.admin.name}}</a>
-                    </small>
-                    <small class="" ng-if="entry.user">
-                        <i class="fa fa-fw fa-user" tooltip="user"></i><!--
-                        --><a href="" ng-click="showUser(entry.user.id)">{{entry.user.name}}</a>
-                    </small>
-                    <small class="pull-right">
-                        <a href="" ng-click="showBanContext(entry.time)" ng-if="entry.action==='ROOM_BAN'"><!--
-                                    --><span class="fa fa-fw fa-comments"></span><!--
-                                --></a>
-                        <abbr title="{{entry.time | date:'dd.MM.yyyy HH:mm'}}">{{entry.time | relativeDate}}</abbr>
-                    </small>
-                </h4>
-                <p class="list-group-item-text">
-                    <div class="" ng-if="entry.actionDescription">
-                        <div ng-switch="entry.action">
-                            <div ng-switch-when="NEW_EMOTICON">
-                                <img ng-src="/emoticons/{{entry.actionDescription.fileName}}">
-                                <code ng-bind="entry.actionDescription.code"></code>
-                            </div>
-                            <div ng-switch-when="IMAGE_EMOTICON">
-                                <img ng-src="/emoticons/{{entry.actionDescription.oldImage}}">
-                                <span class="fa fa-long-arrow-right"></span>
-                                <img ng-src="/emoticons/{{entry.actionDescription.newImage}}">
-                                <code ng-bind="entry.actionDescription.code"></code>
-                            </div>
-                            <div ng-switch-when="DELETED_EMOTICON">
-                                <img ng-src="/emoticons/{{entry.actionDescription.fileName}}">
-                                <code ng-bind="entry.actionDescription.code"></code>
-                            </div>
-                            <div ng-switch-when="DELETED_ROOM">
-                                <code ng-bind="entry.actionDescription.name"></code>
-                            </div>
-                            <div ng-switch-when="NEW_ROOM">
-                                <code ng-bind="entry.actionDescription.name"></code>
-                            </div>
-                            <div ng-switch-when="NAME_CHANGE">
-                                <code ng-bind="entry.actionDescription.oldName"></code>
-                                <span class="fa fa-long-arrow-right"></span>
-                                <code ng-bind="entry.actionDescription.newName"></code>
-                            </div>
-                            <div ng-switch-when="USER_UPDATE">
-                                <table class="table">
-                                    <thead>
-                                    <tr>
-                                        <th class="col-xs-6">
-                                            attribute
-                                        </th>
-                                        <th class="col-xs-6">
-                                            value
-                                        </th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    <tr ng-repeat="(k,v) in entry.actionDescription.oldState"
-                                        ng-if="entry.actionDescription.newState.hasOwnProperty(k)">
-                                        <td ng-bind="k"></td>
-                                        <td>
-                                            {{v}}
-                                            <span class="fa fa-long-arrow-right"></span>
-                                            {{entry.actionDescription.newState[k]}}
-                                        </td>
-                                    </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                            <span ng-switch-default ng-bind="entry.actionDescription | json"></span>
-                        </div>
-                    </div>
-                </p>
-            </div>
-        </div>
-        <div class="panel-footer" ng-if="(page !== 0) || hasNextPage()">
-            <ul class="pager">
-                <li class="previous" ng-if="page !== 0" ng-click="previousPage()"><a href="">&larr; Previous page</a></li>
-                <li class="next" ng-if="hasNextPage()" ng-click="nextPage()"><a href="">Next page &rarr;</a></li>
-            </ul>
+        <div class="panel-body">
+            <journal global="true" use-location="true" on-page-change="onPageChange"/>
         </div>
     </div>
 </script>
@@ -594,191 +516,15 @@
                         </td>
                         <td class="col-xs-10">
                             <progressbar class="progress"
-                                         max="getQueueSize('notificationService')"
-                                         value="getQueueLoad('notificationService')">
-                                {{getQueueLoad('notificationService')}}/{{getQueueSize('notificationService')}}
+                                         max="getQueueSize('eventDispatcher')"
+                                         value="getQueueLoad('eventDispatcher')">
+                                {{getQueueLoad('eventDispatcher')}}/{{getQueueSize('eventDispatcher')}}
                             </progressbar>
                         </td>
                     </tr>
                 </table>
             </li>
         </ul>
-    </div>
-</script>
-
-<script type="text/ng-template" id="users.html">
-    <div class="col-xs-12 usersPanel" ng-class="{'col-sm-6 col-md-7 col-lg-8 open': user, 'col-xs-12': !user}">
-        <div class="panel panel-primary">
-            <div class="panel-heading">
-                <h4 class="panel-title">
-                    users
-                </h4>
-            </div>
-            <div class="panel-body">
-                <form ng-submit="doSearch()">
-                    <div class="input-group">
-                        <input type="text" class="form-control" placeholder="Search" ng-model="searchInput">
-                    <span class="input-group-btn">
-                        <button type="button" class="btn btn-danger" ng-if="search" ng-click="resetSearch()">
-                            <span class="fa fa-times fa-fw"></span>
-                        </button>
-                        <button type="submit" class="btn btn-default">
-                            <i class="fa fa-fw fa-search"></i>
-                        </button>
-                    </span>
-                    </div>
-                </form>
-            </div>
-            <div class="list-group">
-                <a
-                        href="#"
-                        class="list-group-item"
-                        ng-repeat="u in users"
-                        ng-class="{'active': user.id === u.id}"
-                        ng-click="selectUser(u)">
-                    <h4 class="list-group-item-heading"><small>${r"#"}{{u.id}}</small> {{u.name}} <small>{{u.role}}</small></h4>
-                </a>
-            </div>
-            <div class="panel-body" ng-if="users.length === 0">
-                <div class="alert alert-warning" role="alert">Nothing to show.</div>
-            </div>
-            <div class="panel-footer" ng-if="(page !== 0) || hasNextPage()">
-                <ul class="pager">
-                    <li class="previous" ng-if="page !== 0" ng-click="previousPage()"><a href="">&larr; Previous page</a></li>
-                    <li class="next" ng-if="hasNextPage()" ng-click="nextPage()"><a href="">Next page &rarr;</a></li>
-                </ul>
-            </div>
-        </div>
-    </div>
-    <div class="col-sm-6 col-md-5 col-lg-4 userPanel" ng-if="user" ng-controller="UserController">
-        <div class="panel panel-success">
-            <div class="panel-heading">
-                <h4 class="panel-title">
-                    User profile: {{user.name}}
-                </h4>
-            </div>
-            <div class="panel-body">
-                <form class="form-horizontal" ng-if="user">
-                    <div class="form-group">
-                        <label class="col-sm-2 control-label">Id</label>
-                        <div class="col-sm-10">
-                            <div class="form-control-static" ng-bind="user.id"></div>
-                        </div>
-                    </div>
-                    <div class="form-group" ng-if="user.email">
-                        <label class="col-sm-2 control-label">Email</label>
-                        <div class="col-sm-10">
-                            <div class="form-control-static" ng-bind="user.email"></div>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label class="col-sm-2 control-label">Auth</label>
-                        <div class="col-sm-10">
-                            <div class="form-control-static">
-                                <span class="auth default fa fa-fw fa-key" ng-class="{'active': hasAuth('password')}" tooltip="Password"></span>
-                                <span class="auth fa fa-fw fa-twitch" ng-class="{'active': hasAuth('twitch.tv')}" tooltip="{{auth['twitch.tv']}}"></span>
-                                <span class="auth default fa fa-fw fa-globe" ng-class="{'active': hasAuth('token')}" tooltip="API access token"></span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="inputName" class="col-sm-2 control-label">
-                            Name
-                        </label>
-                        <div class="col-sm-10">
-                            <div class="input-group input-group-sm" ng-if="canEdit('name')">
-                                <input
-                                        ng-readonly="!editing('name')"
-                                        type="text"
-                                        class="form-control"
-                                        id="inputName"
-                                        placeholder="user name"
-                                        ng-model="input.name">
-                        <span class="input-group-btn">
-                            <button ng-show="editing('name')" class="btn btn-warning" type="button" ng-click="reset('name')"><span class="fa fa-times fa-fw"></span></button>
-                            <button ng-show="editing('name')" class="btn btn-success" type="button" ng-click="saveName()"><span class="fa fa-check fa-fw"></span></button>
-                            <button ng-show="!editing('name')" class="btn btn-default" type="button" ng-click="edit('name')"><span class="fa fa-pencil fa-fw"></span></button>
-                        </span>
-                            </div>
-                            <div class="form-control-static" ng-if="!canEdit('name')">
-                                {{user.name}}
-                            </div>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="inputRole" class="col-sm-2 control-label">
-                            Role
-                        </label>
-                        <div class="col-sm-10">
-                            <div class="input-group input-group-sm" ng-if="canEdit('role')">
-                                <select ng-disabled="!editing('role')" class="form-control" id="inputRole" ng-options="role for role in availableRoles" ng-model="input.role"></select>
-                        <span class="input-group-btn">
-                            <button ng-show="editing('role')" class="btn btn-warning" type="button" ng-click="reset('role')"><span class="fa fa-times fa-fw"></span></button>
-                            <button ng-show="editing('role')" class="btn btn-success" type="button" ng-click="saveRole()"><span class="fa fa-check fa-fw"></span></button>
-                            <button ng-show="!editing('role')" class="btn btn-default" type="button" ng-click="edit('role')"><span class="fa fa-pencil fa-fw"></span></button>
-                        </span>
-                            </div>
-                            <div class="form-control-static" ng-if="!canEdit('role')">
-                                {{user.role}}
-                            </div>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="inputRole" class="col-sm-2 control-label">
-                            Color
-                        </label>
-                        <div class="col-sm-10">
-                            <div class="form-control-static">
-                                {{user.color}} <span class="fa fa-circle fa-fw" ng-style="{'color': user.color}"></span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <div class="col-sm-offset-2 col-sm-10">
-                            <div class="checkbox">
-                                <label>
-                                    <input
-                                            type="checkbox"
-                                            ng-disabled="!isUser()"
-                                            id="inputBanned"
-                                            ng-model="input.banned"
-                                            ng-change="saveBanned()"/> Banned
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <div class="col-sm-offset-2 col-sm-10">
-                            <div class="checkbox">
-                                <label>
-                                    <input
-                                            type="checkbox"
-                                            id="inputRenameAvailable"
-                                            ng-model="input.renameAvailable"
-                                            ng-change="saveRenameAvailable()"/> Can change name
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-                </form>
-                <div class="btn btn-link" ng-click="changePassword()" ng-if="user.role !== 'SUPERADMIN'">
-                    <i class="fa fa-fw fa-key"></i> change password
-                </div>
-                <hr/>
-                <div class="btn btn-link" ng-click="showActivity()">
-                    <i class="fa fa-fw fa-bar-chart"></i> Show user activity
-                </div>
-                <div class="btn btn-link" ng-click="showEmoticons()">
-                    <i class="fa fa-fw fa-bar-chart"></i> Show emoticon usage
-                </div>
-            </div>
-            <div class="panel-footer">
-                <#if user.role == "SUPERADMIN">
-                    <div ng-disabled="user && !canEdit('name')" ng-click="requestDelete()" class="btn btn-danger">Delete user</div>
-                </#if>
-                <div class="btn btn-warning pull-right" ng-click="selectUser(null)">Close</div>
-            </div>
-        </div>
     </div>
 </script>
 
@@ -971,78 +717,6 @@
     </form>
 </script>
 
-<script type="text/ng-template" id="new_proxy.html">
-    <div class="modal-header">
-        <h3 class="modal-title">New proxy</h3>
-    </div>
-    <form ng-submit="submitForm()">
-        <div class="modal-body">
-            <div class="alert alert-danger" ng-if="error" ng-bind="error"></div>
-            <div class="form-group">
-                <label class="control-label" for="provider">Provider</label>
-                <select
-                        class="form-control"
-                        id="provider"
-                        ng-options="item as item.name for item in providers track by item.name"
-                        ng-model="input.provider"
-                        ng-change="reset()"
-                        required
-                        >
-                    <option style="display: none" value="">Select proxy provider</option>
-                </select>
-            </div>
-            <div class="form-group" ng-if="input.provider">
-                <label class="control-label" for="roomName">Room name</label>
-                <input
-                        type="text"
-                        class="form-control"
-                        id="roomName"
-                        ng-model="input.room"
-                        required
-                        ></input>
-            </div>
-            <div class="form-group" ng-if="input.provider && input.provider.supportsAuthentication">
-                <div class="checkbox">
-                    <label>
-                        <input type="checkbox" ng-model="input.authentication"> authenticate (needed for moderation)
-                    </label>
-                </div>
-            </div>
-            <div class="form-group" ng-if="input.authentication">
-                <label class="control-label" for="username">Username</label>
-                <input
-                        type="text"
-                        class="form-control"
-                        id="username"
-                        ng-model="input.name"
-                        required
-                        ></input>
-            </div>
-            <div class="form-group" ng-if="input.authentication">
-                <label class="control-label" for="key">Password/token</label>
-                <input
-                        type="password"
-                        class="form-control"
-                        id="key"
-                        ng-model="input.key"
-                        required
-                        ></input>
-            </div>
-            <div class="form-group" ng-if="input.provider && input.provider.supportsOutbound">
-                <div class="checkbox">
-                    <label>
-                        <input type="checkbox" ng-model="input.outbound"> enable outbound passing
-                    </label>
-                </div>
-            </div>
-        </div>
-        <div class="modal-footer">
-            <input type="button" class="btn btn-warning pull-left" value="cancel" ng-click="cancel()"/>
-            <input type="submit" class="btn btn-primary" value="submit"/>
-        </div>
-    </form>
-</script>
-
 <script type="text/ng-template" id="compose_announcement.html">
     <div class="modal-header">
         <h3 class="modal-title">Compose announcement</h3>
@@ -1101,11 +775,6 @@
                     <li ng-class="{'active': menuId === 'users'}">
                         <a href="/admin/users?page=0"><i class="fa fa-fw fa-users"></i> users</a>
                     </li>
-                    <li ng-class="{'active': menuId === 'tickets'}">
-                        <a href="/admin/tickets?page=0">
-                            <i class="fa fa-fw fa-ticket"></i> tickets<span class="badge pull-right">{{getOpenTicketCount()}}</span>
-                        </a>
-                    </li>
                 <#if user.role == "SUPERADMIN">
                     <li ng-class="{'active': menuId === 'services'}">
                         <a href="/admin/services">
@@ -1113,6 +782,18 @@
                         </a>
                     </li>
                 </#if>
+                </ul>
+                <ul class="nav nav-sidebar">
+                    <li ng-class="{'active': menuId === 'tickets'}">
+                        <a href="/admin/tickets?page=0">
+                            <i class="fa fa-fw fa-ticket"></i> tickets<span class="badge pull-right">{{getOpenTicketCount()}}</span>
+                        </a>
+                    </li>
+                    <li ng-class="{'active': menuId === 'proxyAuth'}">
+                        <a href="/admin/proxyAuth">
+                            <i class="fa fa-fw fa-key"></i> proxy auth
+                        </a>
+                    </li>
                 </ul>
             </div>
             <div class="main">

@@ -12,13 +12,12 @@ public class GoodGameProtocolHandler extends SimpleChannelInboundHandler<GoodGam
 
     private final Logger logger = LoggerFactory.getLogger(GoodGameProtocolHandler.class);
     private final String channelId;
-    private final String name;
-    private final String password;
+    private final CredentialsProvider credentialsProvider;
+    private String lastUser = null;
 
-    public GoodGameProtocolHandler(String channelId, String name, String password) {
+    public GoodGameProtocolHandler(String channelId, CredentialsProvider credentialsProvider) {
         this.channelId = channelId;
-        this.name = name;
-        this.password = password;
+        this.credentialsProvider = credentialsProvider;
     }
 
     @Override
@@ -30,13 +29,21 @@ public class GoodGameProtocolHandler extends SimpleChannelInboundHandler<GoodGam
                 } else {
                     logger.warn("different protocol version");
                 }
-                ctx.writeAndFlush(new GoodGameEvent(GoodGameEventType.AUTH, null, password, name, null));
+                String password = null;
+                String name = null;
+                if (credentialsProvider != null) {
+                    Credentials credentials = credentialsProvider.getCredentials();
+                    name = credentials.getUserId();
+                    password = credentials.getToken();
+                }
+                lastUser = name;
+                ctx.writeAndFlush(new GoodGameEvent(GoodGameEventType.AUTH, null, null, password, name, null));
                 break;
             case SUCCESS_AUTH:
-                if (name == null || msg.getUser().equals(name)) {
-                    ctx.writeAndFlush(new GoodGameEvent(GoodGameEventType.JOIN, channelId, null, null, null));
+                if (lastUser == null || msg.getUser().equals(lastUser)) {
+                    ctx.writeAndFlush(new GoodGameEvent(GoodGameEventType.JOIN, channelId, null, null, null, null));
                 } else {
-                    ctx.fireChannelRead(new GoodGameEvent(GoodGameEventType.FAILED_AUTH, null, null, null, null));
+                    ctx.fireChannelRead(new GoodGameEvent(GoodGameEventType.FAILED_AUTH, null, null, null, null, null));
                 }
                 break;
             case SUCCESS_JOIN:

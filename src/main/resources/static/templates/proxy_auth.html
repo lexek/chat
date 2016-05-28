@@ -1,0 +1,57 @@
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <h4 class="panel-title pull-left">
+            Proxy credentials
+        </h4>
+        <div class="btn-group pull-right" dropdown>
+            <div class="btn btn btn-success btn-sm" dropdown-toggle>
+                <span class="fa fa-fw fa-plus"></span> add auth
+            </div>
+            <ul class="dropdown-menu" dropdown-menu role="menu" aria-labelledby="split-button">
+                <li role="menuitem" ng-repeat="service in services">
+                    <a href="{{service.url}}" target="_blank">
+                        <span class="fa fa-fw" ng-class="getIconClass(service.name)"></span>
+                        {{service.name}}
+                    </a>
+                </li>
+            </ul>
+        </div>
+        <div class="clearfix"></div>
+    </div>
+    <table class="table table-hover">
+        <thead>
+        <tr>
+            <th class="col-xs-3">Service</th>
+            <th class="col-xs-3">
+                Ext ID
+            </th>
+            <th class="col-xs-3">
+                Ext Name
+            </th>
+            <th class="col-xs-3">
+                Owner
+            </th>
+            <th style="width: 24px;"></th>
+        </tr>
+        </thead>
+        <tr ng-repeat="credential in credentials | orderBy:['service', 'name']">
+            <td>
+                {{credential.service}}
+            </td>
+            <td>
+                {{credential.externalId}}
+            </td>
+            <td>
+                {{credential.externalName}}
+            </td>
+            <td>
+                {{credential.owner.name}}
+            </td>
+            <td style="text-align: center;">
+                <div class="btn btn-link btn-link-danger btn-xs" ng-click="deleteAuth(credential.id)">
+                    <span class="fa fa-trash fa-fw"></span>
+                </div>
+            </td>
+        </tr>
+    </table>
+</div>

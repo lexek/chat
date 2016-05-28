@@ -154,7 +154,8 @@ public class Message {
         long time,
         String text,
         String service,
-        String serviceResource
+        String serviceResource,
+        String serviceResourceName
     ) {
         return new Message(ImmutableMap.<MessageProperty, Object>builder()
             .put(MessageProperty.TYPE, MessageType.MSG_EXT)
@@ -168,6 +169,7 @@ public class Message {
             .put(MessageProperty.TEXT, text)
             .put(MessageProperty.SERVICE, service)
             .put(MessageProperty.SERVICE_RESOURCE, serviceResource)
+            .put(MessageProperty.SERVICE_RESOURCE_NAME, serviceResourceName)
             .build());
     }
 

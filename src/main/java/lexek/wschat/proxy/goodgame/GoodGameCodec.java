@@ -22,12 +22,13 @@ public class GoodGameCodec extends MessageToMessageCodec<JsonNode, GoodGameEvent
         switch (type) {
             case "welcome": {
                 String protocolVersion = data.get("protocolVersion").asText();
-                out.add(new GoodGameEvent(GoodGameEventType.WELCOME, null, protocolVersion, null, null));
+                out.add(new GoodGameEvent(GoodGameEventType.WELCOME, null, null, protocolVersion, null, null));
                 break;
             }
             case "success_auth": {
                 out.add(new GoodGameEvent(
                     GoodGameEventType.SUCCESS_AUTH,
+                    null,
                     null,
                     null,
                     data.get("user_id").asText(),
@@ -37,10 +38,12 @@ public class GoodGameCodec extends MessageToMessageCodec<JsonNode, GoodGameEvent
             }
             case "success_join": {
                 if (data.get("access_rights").asLong() >= 10 || data.get("user_id").asLong() == 0) {
-                    String channel = data.get("channel_name").asText();
-                    out.add(new GoodGameEvent(GoodGameEventType.SUCCESS_JOIN, channel, null, null, null));
+                    JsonNode channelStreamer = data.get("channel_streamer");
+                    String channelName = channelStreamer.get("name").asText();
+                    String channelId = data.get("channel_id").asText();
+                    out.add(new GoodGameEvent(GoodGameEventType.SUCCESS_JOIN, channelId, channelName, null, null, null));
                 } else {
-                    out.add(new GoodGameEvent(GoodGameEventType.BAD_RIGHTS, null, null, null, null));
+                    out.add(new GoodGameEvent(GoodGameEventType.BAD_RIGHTS, null, null, null, null, null));
                 }
                 break;
             }
@@ -48,21 +51,21 @@ public class GoodGameCodec extends MessageToMessageCodec<JsonNode, GoodGameEvent
                 String id = data.get("user_id").asText();
                 String user = data.get("user_name").asText();
                 String text = data.get("text").asText();
-                String channel = data.get("channel_id").asText();
-                out.add(new GoodGameEvent(GoodGameEventType.MESSAGE, channel, text, user, id));
+                String channelId = data.get("channel_id").asText();
+                out.add(new GoodGameEvent(GoodGameEventType.MESSAGE, channelId, null, text, user, id));
                 break;
             }
             case "user_ban": {
                 String user = data.get("user_name").asText();
-                out.add(new GoodGameEvent(GoodGameEventType.USER_BAN, null, null, user, null));
+                out.add(new GoodGameEvent(GoodGameEventType.USER_BAN, null, null, null, user, null));
                 break;
             }
             case "error": {
                 String text = data.get("errorMsg").asText();
                 if (data.get("error_num").asLong() == 0) {
-                    out.add(new GoodGameEvent(GoodGameEventType.FAILED_JOIN, null, null, null, null));
+                    out.add(new GoodGameEvent(GoodGameEventType.FAILED_JOIN, null, null, null, null, null));
                 } else {
-                    out.add(new GoodGameEvent(GoodGameEventType.ERROR, null, text, null, null));
+                    out.add(new GoodGameEvent(GoodGameEventType.ERROR, null, null, text, null, null));
                 }
                 break;
             }

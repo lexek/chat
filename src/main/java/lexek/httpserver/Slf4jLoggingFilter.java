@@ -61,7 +61,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Universal logging filter.
- * <p>
+ * <p/>
  * Can be used on client or server side. Has the highest priority.
  *
  * @author Pavel Bucek (pavel.bucek at oracle.com)
