@@ -46,4 +46,32 @@ angular.module("chat.admin.utils", ["ui.bootstrap.modal"])
                 });
             }
         }
+    })
+    .directive("userInput", function($http) {
+        return {
+            restrict: "E",
+            scope: {
+                ngModel: "=",
+                class: "=?"
+            },
+            controller: function($scope) {
+                $scope.findUsers = function(partialName) {
+                    return $http.get("/rest/users/search", {
+                        params: {
+                            search: partialName
+                        }
+                    }).then(function(response) {
+                        return response.data;
+                    });
+                };
+            },
+            template: '<input ' +
+                'title="{{ngModel}}" ' +
+                'type="text" ' +
+                'ng-model="ngModel" ' +
+                'placeholder="User name" ' +
+                'typeahead="user as user.name for user in findUsers($viewValue)" ' +
+                'typeahead-editable="false" ' +
+                'class="form-control {class}">'
+        }
     });
