@@ -8,6 +8,7 @@ import lexek.wschat.chat.Room;
 import lexek.wschat.chat.model.LocalRole;
 import lexek.wschat.db.dao.JournalDao;
 import lexek.wschat.db.jooq.tables.pojos.Announcement;
+import lexek.wschat.db.model.DataPage;
 import lexek.wschat.db.model.Emoticon;
 import lexek.wschat.db.model.JournalEntry;
 import lexek.wschat.db.model.UserDto;
@@ -16,8 +17,11 @@ import lexek.wschat.services.poll.Poll;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class JournalService {
     private static final Map<String, Set<String>> GLOBAL_CATEGORIES = ImmutableMap.of(
@@ -222,6 +226,49 @@ public class JournalService {
         } catch (JsonProcessingException e) {
             logger.warn("", e);
         }
+    }
+
+    public DataPage<JournalEntry> getRoomJournal(
+        int page,
+        int pageSize,
+        long roomId,
+        Optional<Set<String>> categories,
+        Optional<Long> userId,
+        Optional<Long> adminId
+    ) {
+        return journalDao.fetchAllForRoom(
+            page,
+            pageSize,
+            roomId,
+            getTypes(categories, ROOM_CATEGORIES),
+            userId,
+            adminId
+        );
+    }
+
+    public DataPage<JournalEntry> getGlobalJournal(
+        int page,
+        int pageSize,
+        Optional<Set<String>> categories,
+        Optional<Long> userId,
+        Optional<Long> adminId
+    ) {
+        return journalDao.fetchAllGlobal(
+            page,
+            pageSize,
+            getTypes(categories, GLOBAL_CATEGORIES),
+            userId,
+            adminId
+        );
+    }
+
+    private Optional<Set<String>> getTypes(Optional<Set<String>> selectedCategories, Map<String, Set<String>> categories) {
+        return selectedCategories
+            .map(cats -> cats.stream()
+                .filter(categories::containsKey)
+                .flatMap(e -> categories.get(e).stream())
+                .collect(Collectors.toSet())
+            );
     }
 
     private long now() {

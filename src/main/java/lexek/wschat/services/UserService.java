@@ -99,6 +99,10 @@ public class UserService {
         return userDao.searchPaged(page, pageLength, search);
     }
 
+    public List<UserDto> searchSimple(int pageLength, String search) {
+        return userDao.searchSimple(pageLength, search);
+    }
+
     public DataPage<UserData> getAllPaged(Integer page, int pageLength) {
         return userDao.getAllPaged(page, pageLength);
     }

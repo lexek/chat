@@ -177,6 +177,23 @@ public class UserDao {
         }
     }
 
+    public List<UserDto> searchSimple(int pageLength, String nameParam) {
+        try (Connection connection = dataSource.getConnection()) {
+            return DSL.using(connection)
+                .selectFrom(USER)
+                .where(USER.NAME.like(nameParam, '!'))
+                .groupBy(USER.ID)
+                .orderBy(USER.ID)
+                .limit(pageLength)
+                .fetch()
+                .stream()
+                .map(UserDto::fromRecord)
+                .collect(Collectors.toList());
+        } catch (DataAccessException | SQLException e) {
+            throw new InternalErrorException(e);
+        }
+    }
+
     public boolean delete(UserDto user) {
         try (Connection connection = dataSource.getConnection()) {
             return DSL.using(connection)

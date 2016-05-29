@@ -1,5 +1,6 @@
 package lexek.wschat.frontend.http.rest.admin;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import lexek.wschat.chat.ConnectionManager;
 import lexek.wschat.chat.e.EntityNotFoundException;
 import lexek.wschat.chat.e.InvalidInputException;
@@ -11,6 +12,7 @@ import lexek.wschat.db.model.UserDto;
 import lexek.wschat.db.model.form.PasswordForm;
 import lexek.wschat.db.model.form.UserChangeSet;
 import lexek.wschat.db.model.rest.ErrorModel;
+import lexek.wschat.frontend.http.rest.view.SimpleView;
 import lexek.wschat.security.jersey.Auth;
 import lexek.wschat.security.jersey.RequiredRole;
 import lexek.wschat.services.UserService;
@@ -61,6 +63,16 @@ public class UsersResource {
         } else {
             return userService.getAllPaged(page, PAGE_LENGTH);
         }
+    }
+
+    @Path("/search")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @JsonView(SimpleView.class)
+    public List<UserDto> searchUsers(
+        @QueryParam("search") String search
+    ) {
+        return userService.searchSimple(PAGE_LENGTH, Pages.escapeSearch(search));
     }
 
     @Path("/{userId}")

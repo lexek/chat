@@ -6,6 +6,8 @@ import lexek.wschat.db.model.DataPage;
 import lexek.wschat.db.model.JournalEntry;
 import lexek.wschat.db.model.UserDto;
 import lexek.wschat.util.Pages;
+import org.jooq.Condition;
+import org.jooq.Operator;
 import org.jooq.exception.DataAccessException;
 import org.jooq.impl.DSL;
 
@@ -13,7 +15,9 @@ import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -57,13 +61,25 @@ public class JournalDao {
         }
     }
 
-    public DataPage<JournalEntry> fetchAllGlobal(int page, int pageSize) {
+    public DataPage<JournalEntry> fetchAllGlobal(
+        int page,
+        int pageSize,
+        Optional<Set<String>> types,
+        Optional<Long> userId,
+        Optional<Long> adminId
+    ) {
         try (Connection connection = dataSource.getConnection()) {
+            List<Condition> conditions = new ArrayList<>();
+            conditions.add(JOURNAL.ACTION.in(types.isPresent() ? types.get() : GLOBAL_ACTIONS));
+            types.ifPresent(value -> conditions.add(JOURNAL.ACTION.in(value)));
+            userId.ifPresent(value -> conditions.add(JOURNAL.USER_ID.equal(value)));
+            adminId.ifPresent(value -> conditions.add(JOURNAL.ADMIN_ID.equal(value)));
+
             List<JournalEntry> data = DSL.using(connection)
                 .selectFrom(JOURNAL
                     .leftOuterJoin(USER).on(JOURNAL.USER_ID.equal(USER.ID))
                     .leftOuterJoin(USER.as("admin")).on(JOURNAL.ADMIN_ID.equal(USER.as("admin").ID)))
-                .where(JOURNAL.ACTION.in(GLOBAL_ACTIONS))
+                .where(conditions)
                 .orderBy(JOURNAL.ID.desc())
                 .limit(page * pageSize, pageSize)
                 .fetch()
@@ -76,20 +92,36 @@ public class JournalDao {
                     record.getValue(JOURNAL.TIME).getTime(),
                     record.getValue(JOURNAL.ROOM_ID)))
                 .collect(Collectors.toList());
-            int count = DSL.using(connection).fetchCount(JOURNAL, JOURNAL.ACTION.in(GLOBAL_ACTIONS));
+            int count = DSL.using(connection).fetchCount(
+                JOURNAL,
+                DSL.condition(Operator.AND, conditions)
+            );
             return new DataPage<>(data, page, Pages.pageCount(pageSize, count));
         } catch (DataAccessException | SQLException e) {
             throw new InternalErrorException(e);
         }
     }
 
-    public DataPage<JournalEntry> fetchAllForRoom(int page, int pageSize, long roomId) {
+    public DataPage<JournalEntry> fetchAllForRoom(
+        int page,
+        int pageSize,
+        long roomId,
+        Optional<Set<String>> types,
+        Optional<Long> userId,
+        Optional<Long> adminId
+    ) {
         try (Connection connection = dataSource.getConnection()) {
+            List<Condition> conditions = new ArrayList<>();
+            conditions.add(JOURNAL.ROOM_ID.equal(roomId));
+            types.ifPresent(value -> conditions.add(JOURNAL.ACTION.in(value)));
+            userId.ifPresent(value -> conditions.add(JOURNAL.USER_ID.equal(value)));
+            adminId.ifPresent(value -> conditions.add(JOURNAL.ADMIN_ID.equal(value)));
+
             List<JournalEntry> data = DSL.using(connection)
                 .selectFrom(JOURNAL
                     .leftOuterJoin(USER).on(JOURNAL.USER_ID.equal(USER.ID))
                     .leftOuterJoin(USER.as("admin")).on(JOURNAL.ADMIN_ID.equal(USER.as("admin").ID)))
-                .where(JOURNAL.ROOM_ID.equal(roomId))
+                .where(conditions)
                 .orderBy(JOURNAL.ID.desc())
                 .limit(page * pageSize, pageSize)
                 .fetch()
@@ -102,7 +134,10 @@ public class JournalDao {
                     record.getValue(JOURNAL.TIME).getTime(),
                     record.getValue(JOURNAL.ROOM_ID)))
                 .collect(Collectors.toList());
-            int count = DSL.using(connection).fetchCount(JOURNAL, JOURNAL.ROOM_ID.equal(roomId));
+            int count = DSL.using(connection).fetchCount(
+                JOURNAL,
+                DSL.condition(Operator.AND, conditions)
+            );
             return new DataPage<>(data, page, Pages.pageCount(pageSize, count));
         } catch (DataAccessException | SQLException e) {
             throw new InternalErrorException(e);

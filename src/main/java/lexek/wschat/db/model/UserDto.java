@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonView;
 import lexek.wschat.chat.model.GlobalRole;
 import lexek.wschat.frontend.http.rest.view.DetailView;
 import lexek.wschat.frontend.http.rest.view.MessageView;
+import lexek.wschat.frontend.http.rest.view.SimpleView;
 import org.jooq.Record;
 
 import java.io.Serializable;
@@ -12,9 +13,9 @@ import java.security.Principal;
 import static lexek.wschat.db.jooq.tables.User.USER;
 
 public class UserDto implements Serializable, Principal {
-    @JsonView(DetailView.class)
+    @JsonView({DetailView.class, SimpleView.class})
     private Long id;
-    @JsonView({MessageView.class, DetailView.class})
+    @JsonView({MessageView.class, DetailView.class, SimpleView.class})
     private String name;
     @JsonView({MessageView.class, DetailView.class})
     private GlobalRole role;

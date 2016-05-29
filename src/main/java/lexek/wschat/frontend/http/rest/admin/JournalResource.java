@@ -10,6 +10,7 @@ import lexek.wschat.services.JournalService;
 import javax.validation.constraints.Min;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import java.util.Optional;
 import java.util.Set;
 
 @Path("/journal")
@@ -17,11 +18,9 @@ import java.util.Set;
 public class JournalResource {
     private static final int PAGE_LENGTH = 15;
 
-    private final JournalDao journalDao;
     private final JournalService journalService;
 
-    public JournalResource(JournalDao journalDao, JournalService journalService) {
-        this.journalDao = journalDao;
+    public JournalResource(JournalService journalService) {
         this.journalService = journalService;
     }
 
@@ -29,9 +28,10 @@ public class JournalResource {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public DataPage<JournalEntry> peekRoomJournal(
-        @PathParam("roomId") @Min(0) long roomId
+        @PathParam("roomId") @Min(0) long roomId,
+        @QueryParam("category") Set<String> categories
     ) {
-        return journalDao.fetchAllForRoom(0, 3, roomId);
+        return journalService.getRoomJournal(0, 3, roomId, Optional.empty(), Optional.empty(), Optional.empty());
     }
 
     @Path("/room/{roomId}")
@@ -39,17 +39,38 @@ public class JournalResource {
     @Produces(MediaType.APPLICATION_JSON)
     public DataPage<JournalEntry> getRoomJournal(
         @PathParam("roomId") @Min(0) long roomId,
-        @QueryParam("page") @Min(0) int page
+        @QueryParam("page") @Min(0) int page,
+        @QueryParam("category") Set<String> categories,
+        @QueryParam("admin") @Min(0) Long adminId,
+        @QueryParam("user") @Min(0) Long userId
     ) {
-        return journalDao.fetchAllForRoom(page, PAGE_LENGTH, roomId);
+        return journalService.getRoomJournal(
+            page,
+            PAGE_LENGTH,
+            roomId,
+            categories.isEmpty() ? Optional.empty() : Optional.of(categories),
+            Optional.ofNullable(userId),
+            Optional.ofNullable(adminId)
+        );
     }
 
     @Path("/global")
     @RequiredRole(GlobalRole.SUPERADMIN)
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public DataPage<JournalEntry> getGlobalJournal(@QueryParam("page") @Min(0) int page) {
-        return journalDao.fetchAllGlobal(page, PAGE_LENGTH);
+    public DataPage<JournalEntry> getGlobalJournal(
+        @QueryParam("page") @Min(0) int page,
+        @QueryParam("category") Set<String> categories,
+        @QueryParam("admin") @Min(0) Long adminId,
+        @QueryParam("user") @Min(0) Long userId
+    ) {
+        return journalService.getGlobalJournal(
+            page,
+            PAGE_LENGTH,
+            categories.isEmpty() ? Optional.empty() : Optional.of(categories),
+            Optional.ofNullable(userId),
+            Optional.ofNullable(adminId)
+        );
     }
 
     @Path("/categories/global")
