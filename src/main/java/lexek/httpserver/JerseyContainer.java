@@ -33,16 +33,16 @@ public class JerseyContainer extends SimpleHttpHandler implements Container {
     private final AuthenticationManager authenticationManager;
     private final ApplicationHandler applicationHandler;
 
-    private static class GrizzlyRequestReferencingFactory extends ReferencingFactory<Request> {
+    private static class JerseyRequestReferencingFactory extends ReferencingFactory<Request> {
         @Inject
-        public GrizzlyRequestReferencingFactory(final Provider<Ref<Request>> referenceFactory) {
+        public JerseyRequestReferencingFactory(final Provider<Ref<Request>> referenceFactory) {
             super(referenceFactory);
         }
     }
 
-    private static class GrizzlyResponseReferencingFactory extends ReferencingFactory<Response> {
+    private static class JerseyResponseReferencingFactory extends ReferencingFactory<Response> {
         @Inject
-        public GrizzlyResponseReferencingFactory(final Provider<Ref<Response>> referenceFactory) {
+        public JerseyResponseReferencingFactory(final Provider<Ref<Response>> referenceFactory) {
             super(referenceFactory);
         }
     }
@@ -50,12 +50,12 @@ public class JerseyContainer extends SimpleHttpHandler implements Container {
     private static class RequestResponseBinder extends AbstractBinder {
         @Override
         protected void configure() {
-            bindFactory(GrizzlyRequestReferencingFactory.class).to(Request.class)
+            bindFactory(JerseyRequestReferencingFactory.class).to(Request.class)
                 .proxy(false).in(RequestScoped.class);
             bindFactory(ReferencingFactory.<Request>referenceFactory()).to(new TypeLiteral<Ref<Request>>() {})
                 .in(RequestScoped.class);
 
-            bindFactory(GrizzlyResponseReferencingFactory.class).to(Response.class)
+            bindFactory(JerseyResponseReferencingFactory.class).to(Response.class)
                 .proxy(true).proxyForSameScope(false).in(RequestScoped.class);
             bindFactory(ReferencingFactory.<Response>referenceFactory()).to(new TypeLiteral<Ref<Response>>() {})
                 .in(RequestScoped.class);
