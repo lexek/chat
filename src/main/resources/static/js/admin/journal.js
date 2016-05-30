@@ -14,8 +14,6 @@ angular.module("chat.admin.journal", ["chat.admin.utils"])
                 $scope.totalPages = 0;
                 $scope.filter = {};
 
-                //todo: load only once
-
                 var load = function() {
                     var resource = $scope.global ? "global" : "room";
 
