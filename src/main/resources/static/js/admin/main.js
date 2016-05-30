@@ -1318,6 +1318,7 @@ var HistoryController = function($scope, $http, $modal, title, options) {
 
     $scope.addUserFilter = function(user) {
         if (user && (user.length > 0) && ($scope.users.indexOf(user) === -1)) {
+            $scope.input.user = null;
             $scope.users.push(user);
             $scope.page = 0;
             loadPage();
@@ -1863,7 +1864,7 @@ var RoomController = function($scope, $location, $http, $sce, $modal, alert, tit
 
     $scope.showHistory = function() {
         $modal.open({
-            templateUrl: 'history.html',
+            templateUrl: '/templates/history.html',
             controller: HistoryController,
             resolve: {
                 options: function () {
@@ -2130,7 +2131,7 @@ var RoomController = function($scope, $location, $http, $sce, $modal, alert, tit
 
     $scope.showBanContext = function(time) {
         $modal.open({
-            templateUrl: 'history.html',
+            templateUrl: '/templates/history.html',
             controller: HistoryController,
             resolve: {
                 options: function () {

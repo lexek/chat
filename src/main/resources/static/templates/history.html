@@ -1,0 +1,66 @@
+<div class="modal-header">
+    <h3 class="modal-title">
+        History for room {{room.name}} <small>page <a href="" ng-click="goToPage()">{{page+1}}</a>/{{totalPages}}</small>
+        <form ng-submit="input.user ? addUserFilter(input.user.name) : angular.noop()" class="pull-right">
+            <div class="input-group" style="max-width:200px;">
+                <user-input ng-model="input.user"></user-input>
+                <span class="input-group-btn">
+                    <button class="btn btn-default" type="submit">
+                        <i class="fa fa-fw fa-search"></i>
+                    </button>
+                    <div class="btn btn-default" type="button" ng-click="pickRange()">
+                        <i class="fa fa-fw fa-calendar"></i>
+                    </div>
+                </span>
+            </div>
+        </form>
+        <small ng-if="since || until">
+            <br/>
+            <span ng-if="since">since {{since|date:'dd.MM.yyyy HH:mm'}} </span>
+            <span ng-if="until">until {{until|date:'dd.MM.yyyy HH:mm'}} </span>
+        </small>
+    </h3>
+</div>
+<div class="modal-body">
+    <div class="well well-sm" ng-if="users.length > 0">
+        <div ng-if="users">
+            <div ng-repeat="user in users" class="btn-group btn-group-xs" style="margin-right: 5px; margin-bottom: 5px">
+                <div class="btn btn-default disabled">{{user}}</div>
+                <div class="btn btn-default" ng-click="removeUserFilter(user)"><span class="fa fa-times"></span></div>
+            </div>
+        </div>
+    </div>
+    <div ng-if="(page !== 0) || hasNextPage()">
+        <ul class="pager">
+            <li class="previous" ng-if="page !== 0" ng-click="previousPage()"><a href="">&larr; Previous page</a></li>
+            <li class="next" ng-if="hasNextPage()" ng-click="nextPage()"><a href="">Next page &rarr;</a></li>
+        </ul>
+        <br/>
+    </div>
+    <div class="list-group">
+        <div class="list-group-item"
+             style="word-break: break-all"
+             ng-repeat="message in entries"
+             ng-class="{'list-group-item-warning': message.hidden, 'list-group-item-info': ((message.type==='CLEAR') || (message.type==='BAN') || (message.type==='TIMEOUT'))}">
+            <small>
+                <abbr title="{{message.timestamp | date:'dd.MM.yyyy HH:mm'}}">{{message.timestamp | relativeDate}}</abbr>
+            </small>
+            <strong class="list-group-item-heading">
+                &lt;{{message.userName}}&gt;
+            </strong>
+                <span
+                        class="list-group-item-text"
+                        ng-bind-html="message.message | message"
+                        ng-if="(message.type==='MSG') || (message.type==='ME') || (message.type==='MSG_EXT')"></span>
+                <span class="list-group-item-text" ng-if="(message.type==='CLEAR') || (message.type==='BAN') || (message.type==='TIMEOUT')">
+                    cleared messages of {{message.message}}
+                </span>
+        </div>
+    </div>
+    <div class="" ng-if="(page !== 0) || hasNextPage()">
+        <ul class="pager">
+            <li class="previous" ng-if="page !== 0" ng-click="previousPage()"><a href="">&larr; Previous page</a></li>
+            <li class="next" ng-if="hasNextPage()" ng-click="nextPage()"><a href="">Next page &rarr;</a></li>
+        </ul>
+    </div>
+</div>

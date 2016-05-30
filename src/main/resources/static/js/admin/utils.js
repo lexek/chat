@@ -31,7 +31,7 @@ angular.module("chat.admin.utils", ["ui.bootstrap.modal"])
             link: function(scope, element) {
                 element.on("click", function() {
                     $modal.open({
-                        templateUrl: 'history.html',
+                        templateUrl: '/templates/history.html',
                         controller: HistoryController,
                         resolve: {
                             options: function () {
