@@ -66,16 +66,7 @@
 </script>
 
 <script type="text/ng-template" id="journal.html">
-    <div class="panel panel-primary">
-        <div class="panel-heading">
-            <h4 class="panel-title">
-                journal
-            </h4>
-        </div>
-        <div class="panel-body">
-            <journal global="true" use-location="true" on-page-change="onPageChange"/>
-        </div>
-    </div>
+    <journal global="true" use-location="true" on-page-change="onPageChange"/>
 </script>
 
 <script type="text/ng-template" id="tickets.html">

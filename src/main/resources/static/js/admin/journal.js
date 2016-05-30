@@ -9,23 +9,15 @@ angular.module("chat.admin.journal", ["chat.admin.utils"])
                 "onPageChange": "=?"
             },
             controller: function($scope, $http, $location) {
-                $scope.categories = [];
                 $scope.items = [];
                 $scope.page = 0;
                 $scope.totalPages = 0;
+                $scope.filter = {};
+
+                //todo: load only once
 
                 var load = function() {
                     var resource = $scope.global ? "global" : "room";
-
-                    $http({
-                        method: "GET",
-                        url: "/rest/journal/categories/" + resource,
-                        params: {page: $scope.page}
-                    }).success(function (data) {
-                        $scope.categories = data;
-                    }).error(function (data) {
-                        alert(data);
-                    });
 
                     if ($scope.room) {
                         resource += "/" + $scope.room.id;
@@ -34,7 +26,12 @@ angular.module("chat.admin.journal", ["chat.admin.utils"])
                     $http({
                         method: "GET",
                         url: "/rest/journal/" + resource,
-                        params: {page: $scope.page}
+                        params: {
+                            page: $scope.page,
+                            user: $scope.filter.user ? $scope.filter.user.id : null,
+                            admin: $scope.filter.admin ? $scope.filter.admin.id : null,
+                            category: $scope.filter.categories
+                        }
                     }).success(function (data) {
                         $scope.items = data["data"];
                         $scope.totalPages = data["pageCount"];
@@ -45,6 +42,13 @@ angular.module("chat.admin.journal", ["chat.admin.utils"])
                         alert(data);
                     });
                 };
+
+                $scope.$watch("filter", function(newFilter) {
+                    if (newFilter.ready) {
+                        console.log(newFilter);
+                        load();
+                    }
+                }, true);
 
                 $scope.previousPage = function() {
                     if ($scope.page !== 0) {
@@ -116,14 +120,59 @@ angular.module("chat.admin.journal", ["chat.admin.utils"])
                             $location.search("page", "0");
                         } else {
                             $scope.page = 0;
-                            load();
                         }
                     } else {
                         $scope.page = page;
-                        load();
                     }
                 }
             },
             templateUrl: "/templates/journal.html"
+        }
+    })
+    .directive("journalFilters", function($http) {
+        return {
+            restrict: "E",
+            scope: {
+                filter: "=",
+                global: "="
+            },
+            controller: function($scope) {
+                $scope.filter = jQuery.extend({
+                    admin: undefined,
+                    user: undefined,
+                    categories: [],
+                    ready: true
+                }, $scope.filter);
+                $scope.inputCategories = {};
+
+                $scope.$watchCollection("inputCategories", function() {
+                    $scope.filter.categories = [];
+                    angular.forEach($scope.inputCategories, function(value, key) {
+                        if (value) {
+                            $scope.filter.categories.push(key);
+                        }
+                    });
+                });
+
+                var load = function() {
+                    var resource = $scope.global ? "global" : "room";
+
+                    $http({
+                        method: "GET",
+                        url: "/rest/journal/categories/" + resource,
+                        params: {page: $scope.page}
+                    }).success(function (data) {
+                        $scope.categories = data;
+                        jQuery.each(data, function(i, e) {
+                            $scope.inputCategories[e] = false;
+                        });
+                    }).error(function (data) {
+                        alert(data);
+                    });
+                };
+
+                load();
+            },
+            templateUrl: "/templates/journal_filters.html"
         }
     });

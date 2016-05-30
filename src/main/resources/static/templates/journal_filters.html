@@ -1,0 +1,43 @@
+<div class="panel panel-default">
+    <div class="panel-heading" >
+        <h4 class="panel-title">
+            <span class="fa fa-fw fa-filter"></span>
+            Filters
+        </h4>
+    </div>
+    <div class="panel-body flex-row" style="flex-wrap: wrap;">
+        <div class="flex-fixed flex-row" style="padding: 3px">
+            <label class="control-label flex-title">
+                User:
+            </label>
+            <div class="flex-fill">
+                <div class="input-group" style="width: 150px">
+                    <user-input ng-model="filter.user"></user-input>
+                </div>
+            </div>
+        </div>
+        <div class="flex-fixed flex-row" style="padding: 3px">
+            <label class="control-label flex-title">
+                Admin:
+            </label>
+            <div class="flex-fill input-group" style="width: 150px">
+                <user-input ng-model="filter.admin"></user-input>
+            </div>
+        </div>
+        <div class="flex-fill flex-row" style="padding: 3px">
+            <label class="control-label flex-title">
+                Types:
+            </label>
+            <div class="input-group flex-fill">
+                <div
+                        ng-repeat="category in categories"
+                        class="btn btn-primary"
+                        ng-model="inputCategories[category]"
+                        btn-checkbox
+                        ng-bind="category"
+                        style="margin-right: 3px;"
+                ></div>
+            </div>
+        </div>
+    </div>
+</div>
