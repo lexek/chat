@@ -2287,7 +2287,8 @@ AdminApplication.config(["$routeProvider", "$locationProvider", function($routeP
         "title": "journal",
         "templateUrl": "journal.html",
         "controller": JournalController,
-        "menuId": "journal"
+        "menuId": "journal",
+        "reloadOnSearch": false
     });
     $routeProvider.when("/tickets", {
         "title": "tickets",

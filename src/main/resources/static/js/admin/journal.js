@@ -12,7 +12,11 @@ angular.module("chat.admin.journal", ["chat.admin.utils"])
                 $scope.items = [];
                 $scope.page = 0;
                 $scope.totalPages = 0;
-                $scope.filter = {};
+                $scope.filter = {
+                    admin: undefined,
+                    user: undefined,
+                    categories: []
+                };
 
                 var load = function() {
                     var resource = $scope.global ? "global" : "room";
@@ -41,12 +45,26 @@ angular.module("chat.admin.journal", ["chat.admin.utils"])
                     });
                 };
 
-                $scope.$watch("filter", function(newFilter) {
-                    if (newFilter.ready) {
-                        console.log(newFilter);
+                $scope.$watch("filter", function(newFilter, oldFilter) {
+                    var newSimple = simplifyFilter(newFilter);
+                    var oldSimple = simplifyFilter(oldFilter);
+                    if (!angular.equals(newSimple, oldSimple)) {
+                        if ($scope.useLocation) {
+                            $location.search("userId", newSimple.userId);
+                            $location.search("adminId", newSimple.adminId);
+                            $location.search("category", newSimple.categories);
+                        }
                         load();
                     }
                 }, true);
+
+                var simplifyFilter = function(filter) {
+                    return {
+                        userId: filter.user ? filter.user.id : null,
+                        adminId: filter.admin ? filter.admin.id : null,
+                        categories: filter.categories && filter.categories.length ? filter.categories : null
+                    }
+                };
 
                 $scope.previousPage = function() {
                     if ($scope.page !== 0) {
@@ -112,15 +130,38 @@ angular.module("chat.admin.journal", ["chat.admin.utils"])
 
                 {
                     var locationSearch = $location.search();
-                    var page = parseInt(locationSearch["page"]);
+                    var page = parseInt(locationSearch.page);
+                    var userId = locationSearch.userId;
+                    var adminId = locationSearch.adminId;
+                    var categories = locationSearch.category;
+                    if (userId) {
+                        $scope.filter.user = {
+                            id: parseInt(userId)
+                        };
+                    }
+                    if (adminId) {
+                        $scope.filter.admin = {
+                            id: parseInt(adminId)
+                        };
+                    }
+                    if (categories) {
+                        if (!Array.isArray(categories)) {
+                            categories = [categories];
+                        }
+                        if (categories.length > 0) {
+                            $scope.filter.categories = categories;
+                        }
+                    }
                     if (isNaN(page) || page < 0) {
                         if ($scope.useLocation) {
                             $location.search("page", "0");
                         } else {
                             $scope.page = 0;
+                            load()
                         }
                     } else {
                         $scope.page = page;
+                        load();
                     }
                 }
             },
@@ -135,13 +176,11 @@ angular.module("chat.admin.journal", ["chat.admin.utils"])
                 global: "="
             },
             controller: function($scope) {
-                $scope.filter = jQuery.extend({
-                    admin: undefined,
-                    user: undefined,
-                    categories: [],
-                    ready: true
-                }, $scope.filter);
                 $scope.inputCategories = {};
+
+                angular.forEach($scope.filter.categories, function(e) {
+                    $scope.inputCategories[e] = true;
+                });
 
                 $scope.$watchCollection("inputCategories", function() {
                     $scope.filter.categories = [];
@@ -162,11 +201,44 @@ angular.module("chat.admin.journal", ["chat.admin.utils"])
                     }).success(function (data) {
                         $scope.categories = data;
                         jQuery.each(data, function(i, e) {
-                            $scope.inputCategories[e] = false;
+                            $scope.inputCategories[e] = $scope.inputCategories[e] || false;
                         });
                     }).error(function (data) {
                         alert(data);
                     });
+
+                    var user = $scope.filter.user;
+                    if (user && !user.name) {
+                        $http({
+                            method: "GET",
+                            url: "/rest/users/" + user.id
+                        }).success(function (data) {
+                            if ($scope.filter.user.id === data.user.id) {
+                                $scope.filter.user = {
+                                    id: data.user.id,
+                                    name: data.user.name
+                                };
+                            }
+                        }).error(function (data) {
+                            alert(data);
+                        });
+                    }
+                    var admin = $scope.filter.admin;
+                    if (admin && !admin.name) {
+                        $http({
+                            method: "GET",
+                            url: "/rest/users/" + admin.id
+                        }).success(function (data) {
+                            if ($scope.filter.admin.id === data.user.id) {
+                                $scope.filter.admin = {
+                                    id: data.user.id,
+                                    name: data.user.name
+                                };
+                            }
+                        }).error(function (data) {
+                            alert(data);
+                        });
+                    }
                 };
 
                 load();
