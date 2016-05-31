@@ -7,7 +7,6 @@ import lexek.wschat.chat.Room;
 import lexek.wschat.chat.RoomManager;
 import lexek.wschat.chat.e.BadRequestException;
 import lexek.wschat.chat.e.EntityNotFoundException;
-import lexek.wschat.chat.e.InvalidInputException;
 import lexek.wschat.chat.filters.BroadcastFilter;
 import lexek.wschat.chat.model.Message;
 import lexek.wschat.chat.model.MessageType;
@@ -54,13 +53,16 @@ public class ProxyManager extends AbstractService implements MessageConsumerServ
     ) {
         ProxyProvider provider = providers.get(providerName);
         if (provider == null) {
-            throw new InvalidInputException("name", "Unknown proxy name");
+            throw new BadRequestException("Unknown proxy name");
         }
         if (proxyAuth != null && !provider.supportsAuthService(proxyAuth.getService())) {
-            throw new InvalidInputException("token", "Invalid credentials.");
+            throw new BadRequestException("Invalid credentials");
         }
         if (!provider.validateRemoteRoom(remoteRoom)) {
-            throw new InvalidInputException("remoteRoom", "Invalid remote room");
+            throw new BadRequestException("Invalid remote room");
+        }
+        if (exists(room, providerName, remoteRoom)) {
+            throw new BadRequestException("Proxy with same provider and remote room already exists");
         }
         Long proxyAuthId = proxyAuth != null ? proxyAuth.getId() : null;
         ChatProxy chatProxy = new ChatProxy(null, room.getId(), providerName, remoteRoom, proxyAuthId, outbound);
@@ -70,6 +72,13 @@ public class ProxyManager extends AbstractService implements MessageConsumerServ
         proxies.put(room.getId(), proxy);
         proxy.start();
         return proxy;
+    }
+
+    private boolean exists(Room room, String providerName, String remoteRoom) {
+        return proxies
+            .get(room.getId())
+            .stream()
+            .anyMatch(e -> e.provider().getName().equals(providerName) && e.remoteRoom().equals(remoteRoom));
     }
 
     public void remove(UserDto admin, Room room, String provider, String remoteRoom) {

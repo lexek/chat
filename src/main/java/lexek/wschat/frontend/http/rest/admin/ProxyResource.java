@@ -87,8 +87,8 @@ public class ProxyResource {
         Proxy result = proxyManager.newProxy(
             admin,
             roomService.getRoomInstance(roomId),
-            chatProxy.getProviderName(),
-            chatProxy.getRemoteRoom().toLowerCase(),
+            chatProxy.getProviderName().trim(),
+            chatProxy.getRemoteRoom().toLowerCase().trim(),
             proxyAuth,
             chatProxy.getEnableOutbound()
         );
