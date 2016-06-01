@@ -804,7 +804,7 @@
             </div>
         </form>
         <div ng-if="isConnected() && !isAuthenticated()">
-            <span class="btn btn-link-default btn-link-xs pull-left" ng-click="showSignIn()">
+            <span class="btn btn-link-default btn-link-xs pull-left" ng-click="showSignIn()" style="width: 100%;">
                 <i class="fa fa-fw fa-sign-in"></i> {{"CONTROLS_MENU_SIGN_IN" | translate}}
             </span>
         </div>
