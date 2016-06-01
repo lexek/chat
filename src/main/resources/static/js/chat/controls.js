@@ -253,6 +253,10 @@ controlsModule.controller("SettingsController", ["$scope", "chatService", "$moda
         return !chat.self || (chat.self.role < globalLevels.USER);
     };
 
+    $scope.isMobile = function() {
+        return document.IS_MOBILE;
+    };
+
     $scope.setColor = function(ok) {
         if (ok) {
             chat.sendMessage({"type": "COLOR", "color": $scope.color});

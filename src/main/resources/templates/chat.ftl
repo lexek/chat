@@ -880,7 +880,7 @@
                             </li>
                             <li ng-if="!canLogin()"><a ng-click="logOut()"><span class="fa fa-sign-out"></span> {{'CONTROLS_MENU_LOG_OUT' | translate}}</a></li>
                             <li ng-if="canLogin()"><a ng-click="showSignIn()"><span class="fa fa-sign-in"></span> {{'CONTROLS_MENU_SIGN_IN' | translate}}</a></li>
-                            <li ng-if="canLogin()" style="padding-left: 20px; padding-right: 20px">
+                            <li ng-if="canLogin() && !isMobile()" style="padding-left: 20px; padding-right: 20px">
                                 <span class="fa fa-sign-in"></span> {{'CONTROLS_MENU_SIGN_IN_WITH' | translate}}
                                 <div class="btn-group btn-group-xs pull-right">
                                     <div class="btn btn-link" ng-click="socialAuth('twitch')">
