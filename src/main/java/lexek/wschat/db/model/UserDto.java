@@ -29,15 +29,20 @@ public class UserDto implements Serializable, Principal {
     private String email;
     @JsonView(DetailView.class)
     private boolean emailVerified;
+    @JsonView(DetailView.class)
+    private boolean checkIp;
 
-    public UserDto(Long id,
-                   String name,
-                   GlobalRole role,
-                   String color,
-                   boolean banned,
-                   boolean renameAvailable,
-                   String email,
-                   boolean emailVerified) {
+    public UserDto(
+        Long id,
+        String name,
+        GlobalRole role,
+        String color,
+        boolean banned,
+        boolean renameAvailable,
+        String email,
+        boolean emailVerified,
+        boolean checkIp
+    ) {
         this.id = id;
         this.name = name;
         this.role = role;
@@ -46,6 +51,7 @@ public class UserDto implements Serializable, Principal {
         this.renameAvailable = renameAvailable;
         this.email = email;
         this.emailVerified = emailVerified;
+        this.checkIp = checkIp;
     }
 
     public static UserDto fromRecord(Record record) {
@@ -58,7 +64,8 @@ public class UserDto implements Serializable, Principal {
                 record.getValue(USER.BANNED),
                 record.getValue(USER.RENAME_AVAILABLE),
                 record.getValue(USER.EMAIL),
-                record.getValue(USER.EMAIL_VERIFIED));
+                record.getValue(USER.EMAIL_VERIFIED),
+                record.getValue(USER.CHECK_IP));
         } else {
             return null;
         }
@@ -126,6 +133,14 @@ public class UserDto implements Serializable, Principal {
 
     public void setEmailVerified(boolean emailVerified) {
         this.emailVerified = emailVerified;
+    }
+
+    public boolean isCheckIp() {
+        return checkIp;
+    }
+
+    public void setCheckIp(boolean checkIp) {
+        this.checkIp = checkIp;
     }
 
     @Override

@@ -47,7 +47,7 @@ public class UnignoreHandlerTest {
 
     @Test
     public void shouldWork() {
-        UserDto userDto = new UserDto(0L, "user", GlobalRole.USER, "#1337ff", false, false, null, true);
+        UserDto userDto = new UserDto(0L, "user", GlobalRole.USER, "#1337ff", false, false, null, true, false);
         User user = new User(userDto);
         Connection connection = spy(new TestConnection(user));
         IgnoreService ignoreService = mock(IgnoreService.class);
@@ -66,7 +66,7 @@ public class UnignoreHandlerTest {
 
     @Test
     public void shouldSendErrorOnValidationFailure() {
-        UserDto userDto = new UserDto(0L, "user", GlobalRole.USER, "#1337ff", false, false, null, true);
+        UserDto userDto = new UserDto(0L, "user", GlobalRole.USER, "#1337ff", false, false, null, true, false);
         User user = new User(userDto);
         Connection connection = spy(new TestConnection(user));
         IgnoreService ignoreService = mock(IgnoreService.class);
@@ -86,7 +86,7 @@ public class UnignoreHandlerTest {
 
     @Test
     public void shouldSendErrorOnUnknownUser() {
-        UserDto userDto = new UserDto(0L, "user", GlobalRole.USER, "#1337ff", false, false, null, true);
+        UserDto userDto = new UserDto(0L, "user", GlobalRole.USER, "#1337ff", false, false, null, true, false);
         User user = new User(userDto);
         Connection connection = spy(new TestConnection(user));
         IgnoreService ignoreService = mock(IgnoreService.class);

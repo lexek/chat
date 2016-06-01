@@ -15,7 +15,7 @@ import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 public class SetRoleHandlerTest {
-    private UserDto userDto = new UserDto(0L, "user", GlobalRole.USER, "#000000", false, false, null, false);
+    private UserDto userDto = new UserDto(0L, "user", GlobalRole.USER, "#000000", false, false, null, false, false);
     private User user = new User(userDto);
     private Chatter chatter = new Chatter(0L, LocalRole.ADMIN, false, null, user);
     private Connection connection = spy(new TestConnection(user));
@@ -58,11 +58,11 @@ public class SetRoleHandlerTest {
 
     @Test
     public void shouldSuccessWithHigherLocalRole() {
-        UserDto userDto = new UserDto(0L, "user", GlobalRole.USER, "#000000", false, false, null, false);
+        UserDto userDto = new UserDto(0L, "user", GlobalRole.USER, "#000000", false, false, null, false, false);
         User user = new User(userDto);
         Chatter chatter = new Chatter(0L, LocalRole.ADMIN, false, null, user);
         Connection connection = spy(new TestConnection(user));
-        UserDto otherUserDto = new UserDto(1L, "user", GlobalRole.USER, "#000000", false, false, null, false);
+        UserDto otherUserDto = new UserDto(1L, "user", GlobalRole.USER, "#000000", false, false, null, false, false);
         User otherUser = new User(otherUserDto);
         Chatter otherChatter = new Chatter(1L, LocalRole.USER, false, null, otherUser);
         when(room.inRoom(connection)).thenReturn(true);
@@ -82,11 +82,11 @@ public class SetRoleHandlerTest {
 
     @Test
     public void shouldSuccessWithHigherGlobalRole() {
-        UserDto userDto = new UserDto(0L, "user", GlobalRole.ADMIN, "#000000", false, false, null, false);
+        UserDto userDto = new UserDto(0L, "user", GlobalRole.ADMIN, "#000000", false, false, null, false, false);
         User user = new User(userDto);
         Chatter chatter = new Chatter(0L, LocalRole.USER, false, null, user);
         Connection connection = spy(new TestConnection(user));
-        UserDto otherUserDto = new UserDto(1L, "user", GlobalRole.USER, "#000000", false, false, null, false);
+        UserDto otherUserDto = new UserDto(1L, "user", GlobalRole.USER, "#000000", false, false, null, false, false);
         User otherUser = new User(otherUserDto);
         Chatter otherChatter = new Chatter(1L, LocalRole.USER, false, null, otherUser);
         when(room.inRoom(connection)).thenReturn(true);
@@ -106,11 +106,11 @@ public class SetRoleHandlerTest {
 
     @Test
     public void shouldFailIfOtherUserHasHigherGlobalRole() {
-        UserDto userDto = new UserDto(0L, "user", GlobalRole.ADMIN, "#000000", false, false, null, false);
+        UserDto userDto = new UserDto(0L, "user", GlobalRole.ADMIN, "#000000", false, false, null, false, false);
         User user = new User(userDto);
         Chatter chatter = new Chatter(0L, LocalRole.USER, false, null, user);
         Connection connection = spy(new TestConnection(user));
-        UserDto otherUserDto = new UserDto(1L, "user", GlobalRole.SUPERADMIN, "#000000", false, false, null, false);
+        UserDto otherUserDto = new UserDto(1L, "user", GlobalRole.SUPERADMIN, "#000000", false, false, null, false, false);
         User otherUser = new User(otherUserDto);
         Chatter otherChatter = new Chatter(1L, LocalRole.USER, false, null, otherUser);
         when(room.inRoom(connection)).thenReturn(true);
@@ -132,11 +132,11 @@ public class SetRoleHandlerTest {
 
     @Test
     public void shouldFailIfOtherUserHasAdminLocalRole() {
-        UserDto userDto = new UserDto(0L, "user", GlobalRole.USER, "#000000", false, false, null, false);
+        UserDto userDto = new UserDto(0L, "user", GlobalRole.USER, "#000000", false, false, null, false, false);
         User user = new User(userDto);
         Chatter chatter = new Chatter(0L, LocalRole.ADMIN, false, null, user);
         Connection connection = spy(new TestConnection(user));
-        UserDto otherUserDto = new UserDto(1L, "user", GlobalRole.SUPERADMIN, "#000000", false, false, null, false);
+        UserDto otherUserDto = new UserDto(1L, "user", GlobalRole.SUPERADMIN, "#000000", false, false, null, false, false);
         User otherUser = new User(otherUserDto);
         Chatter otherChatter = new Chatter(1L, LocalRole.ADMIN, false, null, otherUser);
         when(room.inRoom(connection)).thenReturn(true);
@@ -158,7 +158,7 @@ public class SetRoleHandlerTest {
 
     @Test
     public void testExistingUserWithGoodRoleButInternalError() {
-        UserDto otherUserDto = new UserDto(1L, "user", GlobalRole.USER, "#000000", false, false, null, false);
+        UserDto otherUserDto = new UserDto(1L, "user", GlobalRole.USER, "#000000", false, false, null, false, false);
         User otherUser = new User(otherUserDto);
         Chatter otherChatter = new Chatter(1L, LocalRole.USER, false, null, otherUser);
         when(room.inRoom(connection)).thenReturn(true);
@@ -180,11 +180,11 @@ public class SetRoleHandlerTest {
 
     @Test
     public void testExistingUserWithBadLocalRole() {
-        UserDto userDto = new UserDto(0L, "user", GlobalRole.USER, "#000000", false, false, null, false);
+        UserDto userDto = new UserDto(0L, "user", GlobalRole.USER, "#000000", false, false, null, false, false);
         User user = new User(userDto);
         Chatter chatter = new Chatter(0L, LocalRole.ADMIN, false, null, user);
         Connection connection = spy(new TestConnection(user));
-        UserDto otherUserDto = new UserDto(1L, "user", GlobalRole.USER, "#000000", false, false, null, false);
+        UserDto otherUserDto = new UserDto(1L, "user", GlobalRole.USER, "#000000", false, false, null, false, false);
         User otherUser = new User(otherUserDto);
         Chatter otherChatter = new Chatter(1L, LocalRole.ADMIN, false, null, otherUser);
         when(room.inRoom(connection)).thenReturn(true);

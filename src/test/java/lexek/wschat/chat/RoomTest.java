@@ -16,7 +16,7 @@ public class RoomTest {
         UserService userService = mock(UserService.class);
         ChatterService chatterService = mock(ChatterService.class);
         Room room = new Room(userService, chatterService, 0L, "#main", "top kek");
-        UserDto userDto = new UserDto(null, "hellomate", GlobalRole.UNAUTHENTICATED, "#133711", false, false, null, false);
+        UserDto userDto = new UserDto(null, "hellomate", GlobalRole.UNAUTHENTICATED, "#133711", false, false, null, false, false);
         Chatter chatter = room.getOnlineChatter(userDto);
         assertEquals(chatter, Chatter.GUEST_CHATTER);
     }
@@ -26,7 +26,7 @@ public class RoomTest {
         UserService userService = mock(UserService.class);
         ChatterService chatterService = mock(ChatterService.class);
         Room room = new Room(userService, chatterService, 0L, "#main", "top kek");
-        UserDto userDto = new UserDto(null, "hellomate", GlobalRole.UNAUTHENTICATED, "#133711", false, false, null, false);
+        UserDto userDto = new UserDto(null, "hellomate", GlobalRole.UNAUTHENTICATED, "#133711", false, false, null, false, false);
         Chatter chatter = room.getOnlineChatter(userDto);
         assertEquals(chatter, Chatter.GUEST_CHATTER);
     }

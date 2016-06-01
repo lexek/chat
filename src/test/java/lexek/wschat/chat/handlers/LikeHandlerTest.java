@@ -55,7 +55,7 @@ public class LikeHandlerTest {
         MessageBroadcaster messageBroadcaster = mock(MessageBroadcaster.class);
         LikeHandler handler = new LikeHandler(messageBroadcaster);
 
-        UserDto userDto = new UserDto(0L, "user", GlobalRole.USER, "#ffffff", false, false, null, false);
+        UserDto userDto = new UserDto(0L, "user", GlobalRole.USER, "#ffffff", false, false, null, false, false);
         User user = new User(userDto);
         Connection connection = spy(new TestConnection(user));
         Chatter chatter = new Chatter(0L, LocalRole.USER, false, null, user);

@@ -60,7 +60,7 @@ public class MeHandlerTest {
         MessageBroadcaster messageBroadcaster = mock(MessageBroadcaster.class);
         MeHandler handler = new MeHandler(messageBroadcaster, new AtomicLong());
 
-        UserDto userDto = new UserDto(0L, "user", GlobalRole.USER, "#ffffff", false, false, null, false);
+        UserDto userDto = new UserDto(0L, "user", GlobalRole.USER, "#ffffff", false, false, null, false, false);
         User user = new User(userDto);
         Connection connection = spy(new TestConnection(user));
         Chatter chatter = new Chatter(0L, LocalRole.USER, false, null, user);
@@ -98,7 +98,7 @@ public class MeHandlerTest {
         MessageBroadcaster messageBroadcaster = mock(MessageBroadcaster.class);
         MeHandler handler = new MeHandler(messageBroadcaster, new AtomicLong());
 
-        UserDto userDto = new UserDto(0L, "user", GlobalRole.USER, "#ffffff", false, false, null, false);
+        UserDto userDto = new UserDto(0L, "user", GlobalRole.USER, "#ffffff", false, false, null, false, false);
         User user = new User(userDto);
         Connection connection = spy(new TestConnection(user));
         Chatter chatter = new Chatter(0L, LocalRole.USER, false, null, user);
@@ -131,7 +131,7 @@ public class MeHandlerTest {
         MessageBroadcaster messageBroadcaster = mock(MessageBroadcaster.class);
         MeHandler handler = new MeHandler(messageBroadcaster, new AtomicLong());
 
-        UserDto userDto = new UserDto(0L, "user", GlobalRole.MOD, "#ffffff", false, false, null, false);
+        UserDto userDto = new UserDto(0L, "user", GlobalRole.MOD, "#ffffff", false, false, null, false, false);
         User user = new User(userDto);
         Connection connection = spy(new TestConnection(user));
         Chatter chatter = new Chatter(0L, LocalRole.USER, false, null, user);
@@ -172,7 +172,7 @@ public class MeHandlerTest {
         MessageBroadcaster messageBroadcaster = mock(MessageBroadcaster.class);
         MeHandler handler = new MeHandler(messageBroadcaster, new AtomicLong());
 
-        UserDto userDto = new UserDto(0L, "user", GlobalRole.USER, "#ffffff", false, false, null, false);
+        UserDto userDto = new UserDto(0L, "user", GlobalRole.USER, "#ffffff", false, false, null, false, false);
         User user = new User(userDto);
         Connection connection = spy(new TestConnection(user));
         Chatter chatter = new Chatter(0L, LocalRole.USER, false, null, user);
@@ -202,7 +202,7 @@ public class MeHandlerTest {
         MessageBroadcaster messageBroadcaster = mock(MessageBroadcaster.class);
         MeHandler handler = new MeHandler(messageBroadcaster, new AtomicLong());
 
-        UserDto userDto = new UserDto(0L, "user", GlobalRole.USER, "#ffffff", false, false, null, false);
+        UserDto userDto = new UserDto(0L, "user", GlobalRole.USER, "#ffffff", false, false, null, false, false);
         User user = new User(userDto);
         Connection connection = spy(new TestConnection(user));
         Chatter chatter = new Chatter(0L, LocalRole.USER, false, null, user);
