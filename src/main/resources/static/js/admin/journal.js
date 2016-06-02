@@ -53,8 +53,9 @@ angular.module("chat.admin.journal", ["chat.admin.utils"])
                             $location.search("userId", newSimple.userId);
                             $location.search("adminId", newSimple.adminId);
                             $location.search("category", newSimple.categories);
+                        } else {
+                            load();
                         }
-                        load();
                     }
                 }, true);
 
