@@ -223,7 +223,7 @@ public class UserAuthDao {
                 .from(SESSION)
                 .leftOuterJoin(USER).on(SESSION.USER_ID.equal(USER.ID))
                 .where(SESSION.SID.equal(sid)
-                    .and(SESSION.IP.equal(ip))
+                    .and(SESSION.IP.equal(ip).or(USER.CHECK_IP.isFalse()))
                     .and(SESSION.EXPIRES.greaterOrEqual(System.currentTimeMillis())))
                 .fetchOne();
             session = SessionDto.fromRecord(record);
