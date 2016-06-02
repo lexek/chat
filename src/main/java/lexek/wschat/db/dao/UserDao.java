@@ -1,5 +1,6 @@
 package lexek.wschat.db.dao;
 
+import lexek.wschat.chat.e.EntityNotFoundException;
 import lexek.wschat.chat.e.InternalErrorException;
 import lexek.wschat.chat.e.InvalidInputException;
 import lexek.wschat.db.model.DataPage;
@@ -124,7 +125,7 @@ public class UserDao {
     public DataPage<UserData> getAllPaged(int page, int pageLength) {
         try (Connection connection = dataSource.getConnection()) {
             List<UserData> data = DSL.using(connection)
-                .select(USER.ID, USER.NAME, USER.ROLE, USER.COLOR, USER.BANNED, USER.RENAME_AVAILABLE, USER.EMAIL, USER.EMAIL_VERIFIED,
+                .select(USER.ID, USER.NAME, USER.ROLE, USER.COLOR, USER.BANNED, USER.RENAME_AVAILABLE, USER.EMAIL, USER.EMAIL_VERIFIED, USER.CHECK_IP,
                     DSL.groupConcat(USERAUTH.SERVICE).as("authServices"),
                     DSL.groupConcat(DSL.coalesce(USERAUTH.AUTH_NAME, "")).as("authNames"))
                 .from(USER.join(USERAUTH).on(USER.ID.equal(USERAUTH.USER_ID)))
@@ -150,7 +151,7 @@ public class UserDao {
     public DataPage<UserData> searchPaged(Integer page, int pageLength, String nameParam) {
         try (Connection connection = dataSource.getConnection()) {
             List<UserData> data = DSL.using(connection)
-                .select(USER.ID, USER.NAME, USER.ROLE, USER.COLOR, USER.BANNED,
+                .select(USER.ID, USER.NAME, USER.ROLE, USER.COLOR, USER.BANNED, USER.CHECK_IP,
                     USER.RENAME_AVAILABLE, USER.EMAIL, USER.EMAIL_VERIFIED,
                     DSL.groupConcat(USERAUTH.SERVICE).as("authServices"),
                     DSL.groupConcat(DSL.coalesce(USERAUTH.AUTH_NAME, "")).as("authNames"))
@@ -221,7 +222,8 @@ public class UserDao {
         UserData result = null;
         try (Connection connection = dataSource.getConnection()) {
             Record record = DSL.using(connection)
-                .select(USER.ID, USER.NAME, USER.ROLE, USER.COLOR, USER.BANNED, USER.RENAME_AVAILABLE, USER.EMAIL, USER.EMAIL_VERIFIED,
+                .select(USER.ID, USER.NAME, USER.ROLE, USER.COLOR, USER.BANNED, USER.RENAME_AVAILABLE, USER.EMAIL,
+                    USER.EMAIL_VERIFIED, USER.CHECK_IP,
                     DSL.groupConcat(USERAUTH.SERVICE).as("authServices"),
                     DSL.groupConcat(DSL.coalesce(USERAUTH.AUTH_NAME, "")).as("authNames"))
                 .from(USER.join(USERAUTH).on(USER.ID.equal(USERAUTH.USER_ID)))
@@ -257,6 +259,22 @@ public class UserDao {
             throw new InternalErrorException(e);
         }
     }
+
+    public void setCheckIp(UserDto user, boolean value) {
+        try (Connection connection = dataSource.getConnection()) {
+            int rows = DSL.using(connection)
+                .update(USER)
+                .set(USER.CHECK_IP, value)
+                .where(USER.ID.equal(user.getId()))
+                .execute();
+            if (rows == 0) {
+                throw new EntityNotFoundException("user");
+            }
+        } catch (SQLException e) {
+            throw new InternalErrorException(e);
+        }
+    }
+
 
     private Map<String, String> collectAuthServices(String servicesString, String namesString) {
         String[] authServices = servicesString.split(",", -1);

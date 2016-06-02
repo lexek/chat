@@ -8,15 +8,18 @@ import lexek.wschat.chat.model.GlobalRole;
 import lexek.wschat.db.model.SessionDto;
 import lexek.wschat.db.model.UserAuthDto;
 import lexek.wschat.db.model.UserDto;
+import lexek.wschat.db.model.rest.BooleanValueContainer;
 import lexek.wschat.security.AuthenticationManager;
 import lexek.wschat.security.ReCaptcha;
 import lexek.wschat.security.jersey.Auth;
 import lexek.wschat.security.jersey.RequiredRole;
 import lexek.wschat.security.social.*;
 import lexek.wschat.security.social.provider.SocialAuthProvider;
+import lexek.wschat.services.UserService;
 import org.glassfish.jersey.server.mvc.Viewable;
 import org.hibernate.validator.constraints.NotEmpty;
 
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.*;
 import java.io.IOException;
@@ -30,11 +33,17 @@ public class AuthResource {
 
     private final SocialAuthService socialAuthService;
     private final AuthenticationManager authenticationManager;
+    private final UserService userService;
     private final ReCaptcha reCaptcha;
 
-    public AuthResource(SocialAuthService socialAuthService, AuthenticationManager authenticationManager, ReCaptcha reCaptcha) {
+    public AuthResource(
+        SocialAuthService socialAuthService,
+        AuthenticationManager authenticationManager,
+        UserService userService, ReCaptcha reCaptcha
+    ) {
         this.socialAuthService = socialAuthService;
         this.authenticationManager = authenticationManager;
+        this.userService = userService;
         this.reCaptcha = reCaptcha;
     }
 
@@ -245,6 +254,18 @@ public class AuthResource {
         } else {
             socialAuthService.deleteAuth(user, serviceName);
         }
+        return Response.ok().build();
+    }
+
+    @PUT
+    @Path("/self/checkIp")
+    @Produces(MediaType.APPLICATION_JSON)
+    @RequiredRole(GlobalRole.USER_UNCONFIRMED)
+    public Response deleteAuth(
+        @Auth UserDto user,
+        @NotNull BooleanValueContainer valueContainer
+    ) {
+        userService.setCheckIp(user, valueContainer.getValue());
         return Response.ok().build();
     }
 

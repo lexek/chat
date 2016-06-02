@@ -380,7 +380,7 @@ public class Main {
                     new PasswordResource(authenticationManager),
                     new CheckUsernameResource(userService),
                     new ProxyAuthResource(proxyAuthService),
-                    new AuthResource(socialAuthService, authenticationManager, reCaptcha)
+                    new AuthResource(socialAuthService, authenticationManager, userService, reCaptcha)
                 );
             }
         };

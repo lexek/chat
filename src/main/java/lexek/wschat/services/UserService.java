@@ -118,4 +118,8 @@ public class UserService {
     public UserData fetchData(long id) {
         return userDao.fetchData(id);
     }
+
+    public void setCheckIp(UserDto user, boolean value) {
+        userDao.setCheckIp(user, value);
+    }
 }

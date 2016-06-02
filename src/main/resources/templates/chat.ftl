@@ -339,12 +339,21 @@
             <div class='form-group'>
                 <label class='col-sm-2 control-label' translate="PROFILE_COLOR"></label>
                 <div class='col-sm-10'>
-                    <div class='form-control-static'>
-                        {{profile.user.color}} <span class='fa fa-circle fa-fw' ng-style='{"color": profile.user.color}'></span>
-                        </div>
+                <div class='form-control-static'>
+                    {{profile.user.color}} <span class='fa fa-circle fa-fw' ng-style='{"color": profile.user.color}'></span>
                     </div>
                 </div>
-            </form>
+            </div>
+        </form>
+        <div class='form-group'>
+            <span class="checkboxWrapper" style="cursor: pointer" ng-click="toggleCheckIp()">
+                <span
+                        class="btn-link btn-checkbox fa pull-left"
+                        ng-class="{'fa-square-o': !profile.user.checkIp, 'fa-check-square-o': profile.user.checkIp}"
+                ></span>
+                <strong>{{"PROFILE_CHECK_IP" | translate}}</strong>
+            </span>
+        </div>
     </div>
     <div class="modal-header" ng-if="profile">
         <h3>

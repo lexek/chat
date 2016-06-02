@@ -62,6 +62,7 @@ langModule.config(['$translateProvider', function ($translateProvider) {
         "PROFILE_NAME": "Name",
         "PROFILE_ROLE": "Role",
         "PROFILE_COLOR": "Color",
+        "PROFILE_CHECK_IP": "Only allow sessions from a single IP address",
 
         "CHAT_HELLO_UNCONFIRMED": "You must verify your email before you can post messages often",
         "CHAT_HELLO_UNAUTHENTICATED": "Hello, you joined {{room}} and you are unauthenticated.",
@@ -253,6 +254,7 @@ langModule.config(['$translateProvider', function ($translateProvider) {
         "PROFILE_NAME": "Имя",
         "PROFILE_ROLE": "Роль",
         "PROFILE_COLOR": "Цвет",
+        "PROFILE_CHECK_IP": "Сессия только с одного IP-адреса",
 
         "USERS_MODS": "модераторы",
         "USERS_USERS": "пользователи",

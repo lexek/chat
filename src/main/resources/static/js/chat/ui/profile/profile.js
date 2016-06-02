@@ -37,6 +37,21 @@ angular.module("chat.ui.profile", ["chat.ui.profile.email", "chat.ui.profile.pas
                 }
             };
 
+            $scope.toggleCheckIp = function() {
+                var newValue = !$scope.profile.user.checkIp;
+                $http({
+                    "method": "PUT",
+                    "url": "/rest/auth/self/checkIp",
+                    "data": {
+                        "value": newValue
+                    }
+                }).success(function() {
+                    $scope.profile.user.checkIp = newValue;
+                }).error(function(data) {
+                    alert(data.message);
+                });
+            };
+
             $scope.update = loadProfile;
 
             loadProfile();
