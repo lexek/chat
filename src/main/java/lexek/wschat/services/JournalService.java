@@ -27,7 +27,7 @@ public class JournalService {
     private static final Map<String, Set<String>> GLOBAL_CATEGORIES = ImmutableMap.of(
         "user_self", ImmutableSet.of("NAME_CHANGE"),
         "user_admin", ImmutableSet.of("USER_UPDATE", "PASSWORD"),
-        "emoticon", ImmutableSet.of("NEW_EMOTICON", "IMAGE_EMOTICON", "DELETE_EMOTICON"),
+        "emoticon", ImmutableSet.of("NEW_EMOTICON", "IMAGE_EMOTICON", "DELETED_EMOTICON"),
         "room_admin", ImmutableSet.of("NEW_ROOM", "DELETE_ROOM")
     );
     private static final Map<String, Set<String>> ROOM_CATEGORIES = ImmutableMap.<String, Set<String>>builder()
