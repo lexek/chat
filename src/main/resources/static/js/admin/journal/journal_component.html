@@ -1,14 +1,14 @@
 <div>
-    <journal-filters filter="filter" global="global"></journal-filters>
+    <journal-filters filter-state="$ctrl.filter" filter-change="$ctrl.onFilterUpdated" global="$ctrl.global"></journal-filters>
     <ul class="pager">
-        <li class="previous" ng-if="page !== 0" ng-click="previousPage()"><a href="">&larr; Previous page</a></li>
-        <li class="next" ng-if="hasNextPage()" ng-click="nextPage()"><a href="">Next page &rarr;</a></li>
+        <li class="previous" ng-if="$ctrl.page !== 0" ng-click="$ctrl.previousPage()"><a href="">&larr; Previous page</a></li>
+        <li class="next" ng-if="$ctrl.hasNextPage()" ng-click="$ctrl.nextPage()"><a href="">Next page &rarr;</a></li>
     </ul>
     <br/>
     <div class="list-group">
-        <div class="list-group-item" ng-repeat="entry in items" ng-class="getClassForJournalAction(entry.action)">
+        <div class="list-group-item" ng-repeat="entry in $ctrl.items" ng-class="$ctrl.getClassForJournalAction(entry.action)">
             <h4 class="list-group-item-heading">
-                {{translateAction(entry.action)}}
+                {{$ctrl.translateAction(entry.action)}}
                 <small class="" ng-if="entry.admin">
                     <i class="fa fa-fw fa-wrench" tooltip="admin"></i><!--
                             --><a href="" user-link="entry.admin.id">{{entry.admin.name}}</a>
@@ -98,7 +98,7 @@
         </div>
     </div>
     <ul class="pager">
-        <li class="previous" ng-if="page !== 0" ng-click="previousPage()"><a href="">&larr; Previous page</a></li>
-        <li class="next" ng-if="hasNextPage()" ng-click="nextPage()"><a href="">Next page &rarr;</a></li>
+        <li class="previous" ng-if="$ctrl.page !== 0" ng-click="$ctrl.previousPage()"><a href="">&larr; Previous page</a></li>
+        <li class="next" ng-if="$ctrl.hasNextPage()" ng-click="$ctrl.nextPage()"><a href="">Next page &rarr;</a></li>
     </ul>
 </div>

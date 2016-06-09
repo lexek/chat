@@ -23,7 +23,7 @@
     <script src="/vendor/js/stringformatter.js"></script>
     <script src="/vendor/js/cal-heatmap.js"></script>
     <script src="/vendor/js/twemoji.js"></script>
-    <script src="/vendor/js/angular.js"></script>
+    <script src="/vendor/js/angular-new.js"></script>
     <script src="/vendor/js/angular-touch.js"></script>
     <script src="/vendor/js/angular-sanitize.js"></script>
     <script src="/vendor/js/angular-animate.2.js"></script>
@@ -37,7 +37,10 @@
     <script src="/vendor/js/highcharts.js"></script>
     <script src="/vendor/js/highcharts-ng.js"></script>
     <script src="/js/admin/auth.js"></script>
-    <script src="/js/admin/journal.js"></script>
+    <script src="/js/admin/journal/journal.js"></script>
+    <script src="/js/admin/journal/journal_service.js"></script>
+    <script src="/js/admin/journal/journal_filters.js"></script>
+    <script src="/js/admin/journal/journal_component.js"></script>
     <script src="/js/admin/utils.js"></script>
     <script src="/js/admin/main.js"></script>
 </head>

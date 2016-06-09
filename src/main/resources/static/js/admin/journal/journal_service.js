@@ -1,0 +1,42 @@
+angular
+    .module("chat.admin.journal")
+    .factory("JournalService", JournalService);
+
+JournalService.$inject = ['$http'];
+
+function JournalService($http) {
+    'use strict';
+
+    return {
+        getJournalPage: getJournalPage
+    };
+
+    function getJournalPage(filter, global, page, room) {
+        var resource = global ? "global" : "room";
+
+        if (room) {
+            resource += "/" + room.id;
+        }
+
+        return $http({
+            method: "GET",
+            url: "/rest/journal/" + resource,
+            params: {
+                page: page,
+                user: filter.user ? filter.user.id : null,
+                admin: filter.admin ? filter.admin.id : null,
+                category: filter.categories
+            }
+        })
+            .then(requestComplete)
+            .catch(requestFailed);
+
+        function requestComplete(response) {
+            return response.data;
+        }
+
+        function requestFailed(error) {
+            console.error('XHR Failed for getJournalPage.' + error.data);
+        }
+    }
+}
