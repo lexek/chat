@@ -1,7 +1,6 @@
 angular
     .module("chat.admin.journal")
     .component("journalFilters", {
-        restrict: "E",
         bindings: {
             filterState: "<",
             filterChange: "&",
