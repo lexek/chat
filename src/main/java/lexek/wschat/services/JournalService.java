@@ -32,7 +32,7 @@ public class JournalService {
     );
     private static final Map<String, Set<String>> ROOM_CATEGORIES = ImmutableMap.<String, Set<String>>builder()
         .put("poll", ImmutableSet.of("NEW_POLL", "CLOSE_POLL"))
-        .put("ban", ImmutableSet.of("USER_BAN", "USER_UNBAN"))
+        .put("ban", ImmutableSet.of("ROOM_BAN", "ROOM_UNBAN"))
         .put("role", ImmutableSet.of("ROOM_ROLE"))
         .put("announcement", ImmutableSet.of("NEW_ANNOUNCEMENT", "INACTIVE_ANNOUNCEMENT"))
         .put("proxy", ImmutableSet.of("NEW_PROXY", "DELETED_PROXY"))
