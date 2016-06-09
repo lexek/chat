@@ -50,7 +50,6 @@ angular
                 var newSimple = simplifyFilter(newFilter);
                 var oldSimple = simplifyFilter(vm.filter);
                 if (!angular.equals(newSimple, oldSimple)) {
-                    console.log(newFilter);
                     if (vm.useLocation) {
                         $location.search(jQuery.extend(newSimple, {
                             page: 0
