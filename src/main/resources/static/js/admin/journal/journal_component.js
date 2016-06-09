@@ -2,9 +2,9 @@ angular
     .module("chat.admin.journal")
     .component("journal", {
         bindings: {
-            "global": "@",
-            "room": "@",
-            "useLocation": "@",
+            "global": "<",
+            "room": "<",
+            "useLocation": "<",
             "onPageChange": "&"
         },
         controller: function (JournalService, $location, title) {
@@ -50,12 +50,13 @@ angular
                 var newSimple = simplifyFilter(newFilter);
                 var oldSimple = simplifyFilter(vm.filter);
                 if (!angular.equals(newSimple, oldSimple)) {
+                    console.log(newFilter);
                     if (vm.useLocation) {
                         $location.search(jQuery.extend(newSimple, {
                             page: 0
                         }));
                     } else {
-                        vm.filter = newFilter;
+                        vm.filter = angular.copy(newFilter);
                         load();
                     }
                 }

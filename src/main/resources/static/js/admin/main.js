@@ -1945,7 +1945,7 @@ var RoomController = function($scope, $location, $http, $sce, $modal, alert, tit
 
     $scope.showJournal = function() {
         $modal.open({
-            templateUrl: '/templates/journal_modal.html',
+            templateUrl: '/js/admin/journal/journal_modal.html',
             controller: RoomJournalModalController,
             resolve: {
                 room: function () {

@@ -5,13 +5,13 @@ angular
         bindings: {
             filterState: "<",
             filterChange: "&",
-            global: "@"
+            global: "<"
         },
         controller: function (JournalService, UserService) {
             'use strict';
 
             var vm = this;
-            vm.filter = jQuery.extend({}, vm.filterState);
+            vm.filter = angular.copy(vm.filterState);
             vm.inputCategories = {};
             vm.filterChanged = filterChanged;
             vm.updateCategories = updateCategories;
