@@ -52,7 +52,8 @@ angular.module("chat.admin.utils", ["ui.bootstrap.modal"])
             restrict: "E",
             scope: {
                 ngModel: "=",
-                class: "=?"
+                ngChange: "=",
+                class: "@?"
             },
             controller: function($scope) {
                 $scope.findUsers = function(partialName) {
@@ -69,6 +70,7 @@ angular.module("chat.admin.utils", ["ui.bootstrap.modal"])
                 'title="{{ngModel}}" ' +
                 'type="text" ' +
                 'ng-model="ngModel" ' +
+                'ng-change="ngChange" ' +
                 'placeholder="User name" ' +
                 'typeahead="user as user.name for user in findUsers($viewValue)" ' +
                 'typeahead-editable="false" ' +

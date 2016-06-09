@@ -8,7 +8,8 @@ function JournalService($http) {
     'use strict';
 
     return {
-        getJournalPage: getJournalPage
+        getJournalPage: getJournalPage,
+        getCategories: getCategories
     };
 
     function getJournalPage(filter, global, page, room) {
@@ -37,6 +38,23 @@ function JournalService($http) {
 
         function requestFailed(error) {
             console.error('XHR Failed for getJournalPage.' + error.data);
+        }
+    }
+
+    function getCategories(global) {
+        return $http({
+            method: "GET",
+            url: "/rest/journal/categories/" + (global ? "global" : "room")
+        })
+            .then(requestComplete)
+            .catch(requestFailed);
+
+        function requestComplete(response) {
+            return response.data;
+        }
+
+        function requestFailed(error) {
+            console.error('XHR Failed for getCategories.' + error.data);
         }
     }
 }

@@ -37,6 +37,8 @@
     <script src="/vendor/js/highcharts.js"></script>
     <script src="/vendor/js/highcharts-ng.js"></script>
     <script src="/js/admin/auth.js"></script>
+    <script src="/js/admin/user/user.js"></script>
+    <script src="/js/admin/user/user_service.js"></script>
     <script src="/js/admin/journal/journal.js"></script>
     <script src="/js/admin/journal/journal_service.js"></script>
     <script src="/js/admin/journal/journal_filters.js"></script>

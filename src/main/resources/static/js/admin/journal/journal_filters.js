@@ -1,86 +1,80 @@
 angular
     .module("chat.admin.journal")
-    .directive("journalFilters", function($http) {
-        return {
-            restrict: "E",
-            scope: {
-                filterState: "<",
-                filterChange: "=",
-                global: "="
-            },
-            controller: function($scope) {
-                $scope.filter = jQuery.extend({}, $scope.filterState);
-                $scope.inputCategories = {};
+    .component("journalFilters", {
+        restrict: "E",
+        bindings: {
+            filterState: "<",
+            filterChange: "&",
+            global: "@"
+        },
+        controller: function (JournalService, UserService) {
+            'use strict';
 
-                angular.forEach($scope.filter.categories, function(e) {
-                    $scope.inputCategories[e] = true;
+            var vm = this;
+            vm.filter = jQuery.extend({}, vm.filterState);
+            vm.inputCategories = {};
+            vm.filterChanged = filterChanged;
+            vm.updateCategories = updateCategories;
+
+            angular.forEach(vm.filter.categories, function(e) {
+                vm.inputCategories[e] = true;
+            });
+
+            function filterChanged() {
+                vm.filterChange({
+                    filter: vm.filter
                 });
+            }
 
-                $scope.$watchCollection("inputCategories", function() {
-                    $scope.filter.categories = [];
-                    angular.forEach($scope.inputCategories, function(value, key) {
-                        if (value) {
-                            $scope.filter.categories.push(key);
-                        }
-                    });
+            function updateCategories() {
+                vm.filter.categories = [];
+                angular.forEach(vm.inputCategories, function(value, key) {
+                    if (value) {
+                        vm.filter.categories.push(key);
+                    }
                 });
+                filterChanged();
+            }
 
-                $scope.$watch("filter", function () {
-                    $scope.filterChange($scope.filter);
-                }, true);
-
-                var load = function() {
-                    var resource = $scope.global ? "global" : "room";
-
-                    $http({
-                        method: "GET",
-                        url: "/rest/journal/categories/" + resource,
-                        params: {page: $scope.page}
-                    }).success(function (data) {
-                        $scope.categories = data;
+            function load() {
+                JournalService
+                    .getCategories(vm.global)
+                    .then(function (data) {
+                        vm.categories = data;
                         jQuery.each(data, function(i, e) {
-                            $scope.inputCategories[e] = $scope.inputCategories[e] || false;
+                            vm.inputCategories[e] = vm.inputCategories[e] || false;
                         });
-                    }).error(function (data) {
-                        alert(data);
                     });
 
-                    var user = $scope.filter.user;
-                    if (user && !user.name) {
-                        $http({
-                            method: "GET",
-                            url: "/rest/users/" + user.id
-                        }).success(function (data) {
-                            if ($scope.filter.user.id === data.user.id) {
-                                $scope.filter.user = {
+                var user = vm.filter.user;
+                if (user && !user.name) {
+                    UserService
+                        .getUser(user.id)
+                        .then(function (data) {
+                            if (vm.filter.user.id === data.user.id) {
+                                vm.filter.user = {
                                     id: data.user.id,
                                     name: data.user.name
                                 };
                             }
-                        }).error(function (data) {
-                            alert(data);
                         });
-                    }
-                    var admin = $scope.filter.admin;
-                    if (admin && !admin.name) {
-                        $http({
-                            method: "GET",
-                            url: "/rest/users/" + admin.id
-                        }).success(function (data) {
-                            if ($scope.filter.admin.id === data.user.id) {
-                                $scope.filter.admin = {
+                }
+                var admin = vm.filter.admin;
+                if (admin && !admin.name) {
+                    UserService
+                        .getUser(user.id)
+                        .then(function (data) {
+                            if (vm.filter.admin.id === data.user.id) {
+                                vm.filter.admin = {
                                     id: data.user.id,
                                     name: data.user.name
                                 };
                             }
-                        }).error(function (data) {
-                            alert(data);
                         });
-                    }
-                };
+                }
+            }
 
-                load();
-            },
-            templateUrl: "/js/admin/journal/journal_filters.html"
-        }
+            load();
+        },
+        templateUrl: "/js/admin/journal/journal_filters.html"
     });

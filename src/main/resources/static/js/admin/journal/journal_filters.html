@@ -12,7 +12,7 @@
             </label>
             <div class="flex-fill">
                 <div class="input-group" style="width: 150px">
-                    <user-input ng-model="filter.user"></user-input>
+                    <user-input ng-model="$ctrl.filter.user" ng-change="$ctrl.filterChanged()"></user-input>
                 </div>
             </div>
         </div>
@@ -21,7 +21,7 @@
                 Admin:
             </label>
             <div class="flex-fill input-group" style="width: 150px">
-                <user-input ng-model="filter.admin"></user-input>
+                <user-input ng-model="$ctrl.filter.admin" ng-change="$ctrl.filterChanged()"></user-input>
             </div>
         </div>
         <div class="flex-fill flex-row" style="padding: 3px">
@@ -30,9 +30,10 @@
             </label>
             <div class="input-group flex-fill">
                 <div
-                        ng-repeat="category in categories"
+                        ng-repeat="category in $ctrl.categories"
                         class="btn btn-primary"
-                        ng-model="inputCategories[category]"
+                        ng-model="$ctrl.inputCategories[category]"
+                        ng-change="$ctrl.updateCategories()"
                         btn-checkbox
                         ng-bind="category"
                         style="margin-right: 3px;"

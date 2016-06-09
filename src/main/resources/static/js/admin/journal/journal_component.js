@@ -8,6 +8,8 @@ angular
             "onPageChange": "&"
         },
         controller: function (JournalService, $location, title) {
+            'use strict';
+
             var vm = this;
 
             vm.items = [];
@@ -23,10 +25,9 @@ angular
             vm.hasNextPage = hasNextPage;
             vm.getClassForJournalAction = getClassForJournalAction;
             vm.translateAction = translateAction;
-            vm.onFilterUpdated = onFilterUpdated;
+            vm.onFilterChange = onFilterChange;
 
             function load() {
-                console.log(vm);
                 JournalService.getJournalPage(vm.filter, vm.global, vm.page, vm.room)
                     .then(function (data) {
                         vm.items = data.data;
@@ -45,15 +46,16 @@ angular
                 };
             }
 
-            function onFilterUpdated(newFilter) {
+            function onFilterChange(newFilter) {
                 var newSimple = simplifyFilter(newFilter);
                 var oldSimple = simplifyFilter(vm.filter);
                 if (!angular.equals(newSimple, oldSimple)) {
                     if (vm.useLocation) {
                         $location.search(jQuery.extend(newSimple, {
-                            page: vm.page
+                            page: 0
                         }));
                     } else {
+                        vm.filter = newFilter;
                         load();
                     }
                 }
