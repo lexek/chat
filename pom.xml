@@ -263,12 +263,23 @@
                     </execution>
 
                     <execution>
-                        <id>gulp build</id>
+                        <id>gulp admin</id>
                         <goals>
                             <goal>gulp</goal>
                         </goals>
                         <configuration>
                             <arguments>admin</arguments>
+                        </configuration>
+                        <phase>generate-resources</phase>
+                    </execution>
+
+                    <execution>
+                        <id>gulp client</id>
+                        <goals>
+                            <goal>gulp</goal>
+                        </goals>
+                        <configuration>
+                            <arguments>client</arguments>
                         </configuration>
                         <phase>generate-resources</phase>
                     </execution>

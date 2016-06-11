@@ -8,10 +8,11 @@
     var concat = require('gulp-concat');
     var uglify = require('gulp-uglify');
 
-    var adminPath = './src/main/resources/static/chat/admin/';
+    var basePath = './src/main/resources/static';
+    var adminPath = basePath + '/chat/admin/';
+    var clientPath = basePath + '/chat/client/';
 
     gulp.task('admin', function () {
-
         var files = [
             adminPath + '**/*.module.js',
             adminPath + '**/*.js'
@@ -32,7 +33,74 @@
             .pipe(gulp.dest('./target/classes/static/js/'));
     });
 
+    gulp.task('client', function() {
+        //todo: use wildcards after client update
+        var files = [
+            basePath + '/vendor/js/modernizr.js',
+            basePath + '/vendor/js/jquery-1.11.1.js',
+            basePath + '/vendor/js/twemoji.js',
+            basePath + '/vendor/js/url.js',
+            basePath + '/vendor/js/jquery.cookie.js',
+            basePath + '/vendor/js/tse.js',
+            basePath + '/vendor/js/swfobject.js',
+            basePath + '/vendor/js/web_socket.js',
+            basePath + '/vendor/js/angular.js',
+            basePath + '/vendor/js/angular-sanitize.js',
+            basePath + '/vendor/js/bindonce.js',
+            basePath + '/vendor/js/angular-ui-utils.js',
+            basePath + '/vendor/js/angular-animate.2.js',
+            basePath + '/vendor/js/angular-touch.js',
+            basePath + '/vendor/js/angular-ui-bootstrap.js',
+            basePath + '/vendor/js/angular-cookies.js',
+            basePath + '/vendor/js/angular-translate.js',
+            basePath + '/vendor/js/angular-translate-storage-cookie.js',
+            basePath + '/vendor/js/angular-textcomplete.js',
+            basePath + '/vendor/js/angular-relative-date.js',
+            basePath + '/vendor/js/angular-recaptcha.js',
+            basePath + '/vendor/js/bootstrap-colorpicker.js',
+            clientPath + '/mixins/**',
+            clientPath + '/types/chatState.js',
+            clientPath + '/types/role.js',
+            clientPath + '/types/user.js',
+            clientPath + '/libs.js',
+            clientPath + '/sc2emotes.js',
+            clientPath + '/lang.js',
+            clientPath + '/services/linkResolver.js',
+            clientPath + '/services/settings.js',
+            clientPath + '/services/windowState.js',
+            clientPath + '/services/notifications.js',
+            clientPath + '/services/messageProcessing.js',
+            clientPath + '/services/chat.js',
+            clientPath + '/services.js',
+            clientPath + '/twitter.js',
+            clientPath + '/messages.js',
+            clientPath + '/users.js',
+            clientPath + '/controls.js',
+            clientPath + '/ui/profile/email.js',
+            clientPath + '/ui/profile/password.js',
+            clientPath + '/ui/profile/profile.js',
+            clientPath + '/ui/tickets/list.js',
+            clientPath + '/ui/tickets/compose.js',
+            clientPath + '/chat.js'
+        ];
+
+        return gulp.src(files)
+            .pipe(sourcemaps.init())
+            .pipe(concat('client.min.js', {newLine: ';'}))
+            .pipe(ngAnnotate({
+                // true helps add where @ngInject is not used. It infers.
+                // Doesn't work with resolve, so we must be explicit there
+                add: true
+            }))
+            .pipe(bytediff.start())
+            .pipe(uglify({mangle: false}))
+            .pipe(bytediff.stop())
+            .pipe(sourcemaps.write('./'))
+            .pipe(gulp.dest('./target/classes/static/js'));
+    });
+
     gulp.task('default', function () {
         gulp.watch([adminPath + '**/*.js'], ['admin']);
+        gulp.watch([clientPath + '**/*.js'], ['client']);
     });
 })();
