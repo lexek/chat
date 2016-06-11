@@ -1,6 +1,6 @@
 angular
-    .module("chat.admin.journal")
-    .factory("JournalService", JournalService);
+    .module('chat.admin.journal')
+    .factory('JournalService', JournalService);
 
 JournalService.$inject = ['$http'];
 
@@ -13,15 +13,15 @@ function JournalService($http) {
     };
 
     function getJournalPage(filter, global, page, room) {
-        var resource = global ? "global" : "room";
+        var resource = global ? 'global' : 'room';
 
         if (room) {
-            resource += "/" + room.id;
+            resource += '/' + room.id;
         }
 
         return $http({
-            method: "GET",
-            url: "/rest/journal/" + resource,
+            method: 'GET',
+            url: '/rest/journal/' + resource,
             params: {
                 page: page,
                 user: filter.user ? filter.user.id : null,
@@ -43,8 +43,8 @@ function JournalService($http) {
 
     function getCategories(global) {
         return $http({
-            method: "GET",
-            url: "/rest/journal/categories/" + (global ? "global" : "room")
+            method: 'GET',
+            url: '/rest/journal/categories/' + (global ? 'global' : 'room')
         })
             .then(requestComplete)
             .catch(requestFailed);
