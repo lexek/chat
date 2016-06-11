@@ -32,7 +32,7 @@
             .pipe(gulp.dest('./target/classes/static/js/'));
     });
 
-    gulp.task('admin-watch', function () {
-        gulp.watch(adminPath + '**/.js', null, ['admin']);
+    gulp.task('default', function () {
+        gulp.watch([adminPath + '**/*.js'], ['admin']);
     });
 })();
