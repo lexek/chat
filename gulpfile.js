@@ -7,10 +7,24 @@
     var ngAnnotate = require('gulp-ng-annotate');
     var concat = require('gulp-concat');
     var uglify = require('gulp-uglify');
+    var angularTemplateCache = require('gulp-angular-templatecache');
+    var addStream = require('add-stream');
 
     var basePath = './src/main/resources/static';
     var adminPath = basePath + '/chat/admin/';
     var clientPath = basePath + '/chat/client/';
+
+    function prepareTemplates(appPath) {
+        return gulp.src(basePath + appPath + '**/*.html')
+            .pipe(angularTemplateCache(
+                'templates.js',
+                {
+                    module: 'templates',
+                    root: appPath,
+                    standAlone: false
+                }
+            ));
+    }
 
     gulp.task('admin', function () {
         var files = [
@@ -19,6 +33,7 @@
         ];
 
         return gulp.src(files)
+            .pipe(addStream.obj(prepareTemplates('/chat/admin/')))
             .pipe(sourcemaps.init())
             .pipe(concat('admin.min.js', {newLine: ';'}))
             .pipe(ngAnnotate({

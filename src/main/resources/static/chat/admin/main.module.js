@@ -138,7 +138,8 @@ var AdminApplication = angular.module(
         "rgkevin.datetimeRangePicker",
         "chat.admin.auth",
         "chat.admin.journal",
-        "chat.admin.utils"
+        "chat.admin.utils",
+        "templates"
     ]
 );
 
@@ -1974,7 +1975,7 @@ var RoomController = function($scope, $location, $http, $sce, $modal, alert, tit
 
     $scope.showJournal = function() {
         $modal.open({
-            templateUrl: '/js/admin/journal/journal_modal.html',
+            templateUrl: '/chat/admin/journal/journal_modal.html',
             controller: RoomJournalModalController,
             resolve: {
                 room: function () {

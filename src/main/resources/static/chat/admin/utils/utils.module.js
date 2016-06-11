@@ -12,6 +12,7 @@
                     element.on('click', function() {
                         $modal.open({
                             templateUrl: '/templates/user.html',
+                            //todo: define controller
                             controller: UserModalController,
                             size: 'sm',
                             resolve: {
@@ -35,6 +36,7 @@
                     element.on('click', function() {
                         $modal.open({
                             templateUrl: '/templates/history.html',
+                            //todo: define controller
                             controller: HistoryController,
                             resolve: {
                                 options: function () {
@@ -48,36 +50,6 @@
                         });
                     });
                 }
-            };
-        })
-        .directive('userInput', function($http) {
-            return {
-                restrict: 'E',
-                scope: {
-                    ngModel: '=',
-                    ngChange: '=',
-                    class: '@?'
-                },
-                controller: function($scope) {
-                    $scope.findUsers = function(partialName) {
-                        return $http.get('/rest/users/search', {
-                            params: {
-                                search: partialName
-                            }
-                        }).then(function(response) {
-                            return response.data;
-                        });
-                    };
-                },
-                template: '<input ' +
-                    'title="{{ngModel}}" ' +
-                    'type="text" ' +
-                    'ng-model="ngModel" ' +
-                    'ng-change="ngChange" ' +
-                    'placeholder="User name" ' +
-                    'typeahead="user as user.name for user in findUsers($viewValue)" ' +
-                    'typeahead-editable="false" ' +
-                    'class="form-control {class}">'
             };
         });
 })();
