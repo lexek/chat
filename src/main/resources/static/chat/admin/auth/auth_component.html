@@ -1,0 +1,6 @@
+<div>
+    <div ng-repeat="(service, name) in $ctrl.auth track by service">
+        <span class="auth default active" ng-class="$ctrl.getIcon(service)" tooltip="{{service}}"></span>
+        {{name ? name : service}}
+    </div>
+</div>

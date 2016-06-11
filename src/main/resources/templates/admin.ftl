@@ -36,15 +36,16 @@
     <script src="/vendor/js/range-picker.js"></script>
     <script src="/vendor/js/highcharts.js"></script>
     <script src="/vendor/js/highcharts-ng.js"></script>
-    <script src="/js/admin/auth.js"></script>
-    <script src="/js/admin/user/user.js"></script>
-    <script src="/js/admin/user/user_service.js"></script>
-    <script src="/js/admin/journal/journal.js"></script>
-    <script src="/js/admin/journal/journal_service.js"></script>
-    <script src="/js/admin/journal/journal_filters.js"></script>
-    <script src="/js/admin/journal/journal_component.js"></script>
-    <script src="/js/admin/utils.js"></script>
-    <script src="/js/admin/main.js"></script>
+    <script src="/chat/admin/auth/auth.module.js"></script>
+    <script src="/chat/admin/auth/auth_component.js"></script>
+    <script src="/chat/admin/user/user.module.js"></script>
+    <script src="/chat/admin/user/user_service.js"></script>
+    <script src="/chat/admin/journal/journal.module.js"></script>
+    <script src="/chat/admin/journal/journal_service.js"></script>
+    <script src="/chat/admin/journal/journal_filters.js"></script>
+    <script src="/chat/admin/journal/journal_component.js"></script>
+    <script src="/chat/admin/utils.module.js"></script>
+    <script src="/chat/admin/main.module.js"></script>
 </head>
 <body>
 

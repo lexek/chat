@@ -10,7 +10,7 @@
                 global: '<'
             },
             controller: JournalFiltersController,
-            templateUrl: '/js/admin/journal/journal_filters.html'
+            templateUrl: '/chat/admin/journal/journal_filters.html'
         });
 
     function JournalFiltersController(JournalService, UserService) {

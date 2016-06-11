@@ -11,7 +11,7 @@
                 'onPageChange': '&'
             },
             controller: JournalController,
-            templateUrl: '/js/admin/journal/journal_component.html'
+            templateUrl: '/chat/admin/journal/journal_component.html'
         });
 
     function JournalController(JournalService, $location, title) {

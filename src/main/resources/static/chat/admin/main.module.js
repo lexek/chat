@@ -1770,7 +1770,7 @@ var TopicController = function($scope, $http) {
         }
         $scope.editing = !$scope.editing;
     }
-}
+};
 
 AdminApplication.controller("TopicController", ["$scope", "$http", TopicController]);
 
