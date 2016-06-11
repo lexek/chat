@@ -13,9 +13,10 @@
             templateUrl: '/chat/admin/journal/journal_filters.html'
         });
 
+    /* @ngInject */
     function JournalFiltersController(JournalService, UserService) {
-
         var vm = this;
+
         vm.filter = angular.copy(vm.filterState);
         vm.inputCategories = {};
         vm.filterChanged = filterChanged;

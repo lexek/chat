@@ -1,5 +1,6 @@
 .idea/
 target/
+node_modules/
 *.pem
 *.pk8
 *.iml

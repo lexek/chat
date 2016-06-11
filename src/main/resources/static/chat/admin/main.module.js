@@ -37,6 +37,7 @@ var TitleServiceFactory = function() {
     return new TitleService();
 };
 
+/* @ngInject */
 var TicketCountServiceFactory = function($http) {
     var TicketCountService = function() {
         this.count = "0";
@@ -57,6 +58,7 @@ var TicketCountServiceFactory = function($http) {
     return new TicketCountService();
 };
 
+/* @ngInject */
 var MessageFilter = function($http, $sce) {
     var emoticons = {};
     var emoticonRegExp = null;
@@ -160,6 +162,7 @@ var ROLES = {
     'SUPERADMIN': new Role("administrator", 6)
 };
 
+/* @ngInject */
 var AlertController = function($scope, $timeout, alert) {
     alert.newAlertCallback = function(a) {
         $timeout(function(){alert.alerts.remove(a)}, 1000);
@@ -172,6 +175,7 @@ var AlertController = function($scope, $timeout, alert) {
 
 AdminApplication.controller("AlertController", AlertController);
 
+/* @ngInject */
 var TimeRangePickerController = function($scope, $modalInstance, date) {
     $scope.hours = {
         from: date.from.getHours(),
@@ -210,6 +214,7 @@ var TimeRangePickerController = function($scope, $modalInstance, date) {
 
 AdminApplication.controller("TimeRangePickerController", TimeRangePickerController);
 
+/* @ngInject */
 var SteamController = function($scope, $http) {
     $scope.inProgress = false;
 
@@ -228,6 +233,7 @@ var SteamController = function($scope, $http) {
 
 AdminApplication.controller("SteamController", ["$scope", "$http", SteamController]);
 
+/* @ngInject */
 var TitleController = function($scope, title) {
     $scope.title = function() {
         return title.title;
@@ -240,6 +246,7 @@ var TitleController = function($scope, title) {
 
 AdminApplication.controller("TitleController", TitleController);
 
+/* @ngInject */
 var DashboardController = function($scope, $http, alert) {
     var loadMetrics = function () {
         $http({method: "GET", url: "/rest/stats/global/metrics"})
@@ -368,6 +375,7 @@ var DashboardController = function($scope, $http, alert) {
     loadMetrics();
 };
 
+/* @ngInject */
 var RoomsController = function($scope, $http) {
     $scope.showForm = false;
     $scope.entries = [];
@@ -416,6 +424,7 @@ var RoomsController = function($scope, $http) {
 
 AdminApplication.controller("RoomsController", RoomsController);
 
+/* @ngInject */
 var UserEmoticonsController = function($scope, $http, $modal, user) {
     $scope.user = user;
     $scope.users = [];
@@ -438,6 +447,7 @@ var UserEmoticonsController = function($scope, $http, $modal, user) {
     load();
 };
 
+/* @ngInject */
 var EmoticonUsersController = function($scope, $http, $modal, emoticon) {
     $scope.emoticon = emoticon;
     $scope.users = [];
@@ -472,6 +482,7 @@ var EmoticonUsersController = function($scope, $http, $modal, emoticon) {
     load();
 };
 
+/* @ngInject */
 var EmoticonsController = function($scope, $http, $modal, alert) {
     $scope.emoticons = [];
     $scope.formData = {};
@@ -565,6 +576,7 @@ var EmoticonsController = function($scope, $http, $modal, alert) {
     loadEmoticons();
 };
 
+/* @ngInject */
 var UsersController = function($scope, $location, $http, alert, title) {
     $scope.users = [];
     $scope.search = null;
@@ -675,6 +687,7 @@ var UsersController = function($scope, $location, $http, alert, title) {
     }
 };
 
+/* @ngInject */
 var OnlineController = function($scope, $http, $modal, alert, title) {
     $scope.connections = [];
     $scope.orderVar = "user.name";
@@ -770,7 +783,7 @@ var OnlineController = function($scope, $http, $modal, alert, title) {
 
 };
 
-
+/* @ngInject */
 var UserActivityController = function($scope, $http, $modal, user) {
     $scope.user = user;
     $http({method: "GET", url: "/rest/stats/user/" + user.id + "/activity"})
@@ -804,6 +817,7 @@ var UserActivityController = function($scope, $http, $modal, user) {
         })
 };
 
+/* @ngInject */
 var UserController = function($scope, $route, $http, $modal, alert, id) {
     var editing = '';
     $scope.auth = {};
@@ -967,13 +981,14 @@ var UserController = function($scope, $route, $http, $modal, alert, id) {
 
 AdminApplication.controller("UserController", ["$scope", "$route", "$http", "$modal", "alert", UserController]);
 
+/* @ngInject */
 var UserPasswordController = function($scope, $http, $modalInstance, user) {
     $scope.user = user;
     $scope.password = "";
 
     $scope.close = function() {
         $modalInstance.dismiss('cancel');
-    }
+    };
 
     $scope.submit = function() {
         $scope.inProgress = true;
@@ -995,11 +1010,11 @@ var UserPasswordController = function($scope, $http, $modalInstance, user) {
             $scope.inProgress = false;
         })
     }
-}
+};
 
 AdminApplication.controller("UserPasswordController", ["$scope", "$http", "$modalInstance", "userId", UserPasswordController]);
 
-
+/* @ngInject */
 var UserModalController = function($scope, $http, $modal, $modalInstance, id) {
     var editing = '';
     $scope.input = {};
@@ -1168,12 +1183,14 @@ var UserModalController = function($scope, $http, $modal, $modalInstance, id) {
     loadPage();
 };
 
+/* @ngInject */
 var JournalController = function($scope, title) {
     $scope.onPageChange = function(current, total) {
         title.secondary = "page " + (current + 1) + "/" + (total);
     }
 };
 
+/* @ngInject */
 var RoomJournalModalController = function($scope, room) {
     $scope.totalPages = 0;
     $scope.page = 0;
@@ -1185,6 +1202,7 @@ var RoomJournalModalController = function($scope, room) {
     }
 };
 
+/* @ngInject */
 var TicketController = function($scope) {
     $scope.showReply = false;
     $scope.text = "";
@@ -1196,6 +1214,7 @@ var TicketController = function($scope) {
 
 AdminApplication.controller("TicketController", ["$scope", TicketController]);
 
+/* @ngInject */
 var TicketsController = function($scope, $location, $http, $modal, alert, title) {
     $scope.entries = [];
     $scope.totalPages = 0;
@@ -1280,6 +1299,7 @@ var TicketsController = function($scope, $location, $http, $modal, alert, title)
     }
 };
 
+/* @ngInject */
 var HistoryController = function($scope, $http, $modal, title, options) {
     $scope.entries = [];
     $scope.page = 0;
@@ -1377,6 +1397,7 @@ var HistoryController = function($scope, $http, $modal, title, options) {
     loadPage();
 };
 
+/* @ngInject */
 var PollsController = function($scope, $http, room) {
     $scope.polls = [];
     $scope.page = 0;
@@ -1419,6 +1440,7 @@ var PollsController = function($scope, $http, room) {
     loadPage();
 };
 
+/* @ngInject */
 AdminApplication.controller("PollController", ["$scope", function($scope) {
     var series = [];
     {
@@ -1471,6 +1493,7 @@ AdminApplication.controller("PollController", ["$scope", function($scope) {
     }
 }]);
 
+/* @ngInject */
 var ComposePollController = function($scope, $modalInstance, $http, roomId) {
     $scope.input = {
         question: "",
@@ -1512,6 +1535,7 @@ var ComposePollController = function($scope, $modalInstance, $http, roomId) {
     };
 };
 
+/* @ngInject */
 var ChattersController = function($scope, $location, $http, $modal, room, onlyBanned) {
     onlyBanned = onlyBanned ? true : false;
     $scope.users = [];
@@ -1609,6 +1633,7 @@ var ChattersController = function($scope, $location, $http, $modal, room, onlyBa
     loadPage();
 };
 
+/* @ngInject */
 var OnlineChattersController = function($scope, $location, $http, $modal, room) {
     $scope.users = [];
     $scope.search = null;
@@ -1665,6 +1690,7 @@ var OnlineChattersController = function($scope, $location, $http, $modal, room) 
     loadPage();
 };
 
+/* @ngInject */
 var TopChattersController = function($scope, $http, $modal, room) {
     $scope.room = room;
     $scope.entries = [];
@@ -1690,6 +1716,7 @@ var TopChattersController = function($scope, $http, $modal, room) {
     };
 };
 
+/* @ngInject */
 var NewProxyController = function($scope, $http, $modalInstance, room) {
     $scope.error = null;
     $scope.providers = [];
@@ -1739,6 +1766,7 @@ var NewProxyController = function($scope, $http, $modalInstance, room) {
     };
 };
 
+/* @ngInject */
 var TopicController = function($scope, $http) {
     $scope.inProgress = false;
     $scope.editing = false;
@@ -1774,6 +1802,7 @@ var TopicController = function($scope, $http) {
 
 AdminApplication.controller("TopicController", ["$scope", "$http", TopicController]);
 
+/* @ngInject */
 var RoomController = function($scope, $location, $http, $sce, $modal, alert, title) {
     $scope.messages = [];
     $scope.journal = [];
@@ -2162,6 +2191,7 @@ var RoomController = function($scope, $location, $http, $sce, $modal, alert, tit
     }
 };
 
+/* @ngInject */
 var ServicesController = function($scope, $location, $http) {
     $scope.data = null;
 
@@ -2202,6 +2232,7 @@ var ServicesController = function($scope, $location, $http) {
     loadPage();
 };
 
+/* @ngInject */
 var ComposeAnnouncementController = function($scope, $http, $modalInstance, room) {
     $scope.today = new Date();
     $scope.room = room;
@@ -2227,6 +2258,7 @@ var ComposeAnnouncementController = function($scope, $http, $modalInstance, room
     };
 };
 
+/* @ngInject */
 var ProxyAuthController = function($scope, $http) {
     $scope.credentials = null;
     $scope.services = null;
@@ -2269,6 +2301,7 @@ var ProxyAuthController = function($scope, $http) {
     loadPage();
 };
 
+/* @ngInject */
 AdminApplication.config(["$routeProvider", "$locationProvider", function($routeProvider, $locationProvider) {
     $locationProvider.html5Mode(true);
     $routeProvider.when("/", {
@@ -2327,6 +2360,7 @@ AdminApplication.config(["$routeProvider", "$locationProvider", function($routeP
     });
 }]);
 
+/* @ngInject */
 AdminApplication.run(['$location', '$rootScope', "$route", "title", "tickets", function($location, $rootScope, $route, title, tickets) {
     $rootScope.SELF_ROLE = document.SELF_ROLE;
     $rootScope.reloadCurrentRoute = function() {

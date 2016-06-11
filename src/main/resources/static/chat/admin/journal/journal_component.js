@@ -14,6 +14,7 @@
             templateUrl: '/chat/admin/journal/journal_component.html'
         });
 
+    /* @ngInject */
     function JournalController(JournalService, $location, title) {
         var vm = this;
 

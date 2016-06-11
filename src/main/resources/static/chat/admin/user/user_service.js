@@ -5,8 +5,7 @@
         .module('chat.admin.user')
         .factory('UserService', UserService);
 
-    UserService.$inject = ['$http'];
-
+    /* @ngInject */
     function UserService($http) {
         return {
             getUser: getUser
