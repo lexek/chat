@@ -11,10 +11,8 @@ cache:
   directories:
     - $HOME/.m2/repository
     - node_modules
-install:
-  - mvn -B package -DskipTests -P netty-native-linux
 script:
-  - mvn -B surefire:test jacoco:report coveralls:report
+  - mvn -B package jacoco:report coveralls:report -P netty-native-linux
 notifications:
   email:
     recipients:
