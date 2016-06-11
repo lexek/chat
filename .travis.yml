@@ -10,6 +10,7 @@ before_install:
 cache:
   directories:
     - $HOME/.m2/repository
+    - node_modules
 install:
   - mvn -B package -DskipTests -P netty-native-linux
 script:
