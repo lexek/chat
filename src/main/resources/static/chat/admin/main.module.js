@@ -38,27 +38,6 @@ var TitleServiceFactory = function() {
 };
 
 /* @ngInject */
-var TicketCountServiceFactory = function($http) {
-    var TicketCountService = function() {
-        this.count = "0";
-
-        var self = this;
-        $http({
-            method: "GET",
-            url: "/rest/tickets/open/count"
-        }).success(function (d) {
-            self.count = d["count"];
-        });
-    };
-
-    TicketCountService.prototype.setCount = function(newCount) {
-        this.count = newCount;
-    };
-
-    return new TicketCountService();
-};
-
-/* @ngInject */
 var MessageFilter = function($http, $sce) {
     var emoticons = {};
     var emoticonRegExp = null;
@@ -121,7 +100,6 @@ AdminServices.filter('slice', function() {
 AdminServices.filter("message", ["$http", "$sce", MessageFilter]);
 AdminServices.factory("alert", AlertServiceFactory);
 AdminServices.factory("title", TitleServiceFactory);
-AdminServices.factory("tickets", TicketCountServiceFactory);
 
 var AdminApplication = angular.module(
     "AdminApplication",
@@ -139,6 +117,7 @@ var AdminApplication = angular.module(
         "chat.admin.auth",
         "chat.admin.journal",
         "chat.admin.utils",
+        "chat.admin.ticket",
         "templates"
     ]
 );
@@ -2362,13 +2341,10 @@ AdminApplication.config(["$routeProvider", "$locationProvider", function($routeP
 }]);
 
 /* @ngInject */
-AdminApplication.run(['$location', '$rootScope', "$route", "title", "tickets", function($location, $rootScope, $route, title, tickets) {
+AdminApplication.run(['$location', '$rootScope', "$route", "title", function($location, $rootScope, $route, title) {
     $rootScope.SELF_ROLE = document.SELF_ROLE;
     $rootScope.reloadCurrentRoute = function() {
         $route.reload();
-    };
-    $rootScope.getOpenTicketCount = function() {
-        return tickets.count;
     };
     $rootScope.$on('$routeChangeSuccess', function (event, current, previous) {
         $rootScope.menuId = current.$$route.menuId;

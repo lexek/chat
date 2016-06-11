@@ -706,7 +706,7 @@
                 <ul class="nav nav-sidebar">
                     <li ng-class="{'active': menuId === 'tickets'}">
                         <a href="/admin/tickets?page=0">
-                            <i class="fa fa-fw fa-ticket"></i> tickets<span class="badge pull-right">{{getOpenTicketCount()}}</span>
+                            <i class="fa fa-fw fa-ticket"></i> tickets<span class="badge pull-right"><ticket-count/></span>
                         </a>
                     </li>
                     <li ng-class="{'active': menuId === 'proxyAuth'}">
