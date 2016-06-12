@@ -1631,20 +1631,6 @@ var RoomController = function($scope, $location, $http, $sce, $modal, alert, tit
         loadProxies();
     };
 
-    $scope.showHistory = function() {
-        $modal.open({
-            templateUrl: '/templates/history.html',
-            controller: HistoryController,
-            resolve: {
-                options: function () {
-                    return {
-                        "room": $scope.roomData
-                    }
-                }
-            }
-        });
-    };
-
     $scope.showChatters = function() {
         $modal.open({
             templateUrl: '/templates/chatters.html',
