@@ -1069,8 +1069,10 @@ var TicketsController = function($scope, $location, $http, $modal, alert, title)
     }
 };
 
+AdminApplication.controller('HistoryController', HistoryController);
+
 /* @ngInject */
-var HistoryController = function($scope, $http, $modal, title, options) {
+function HistoryController($scope, $http, $modal, title, options) {
     $scope.entries = [];
     $scope.page = 0;
     $scope.totalPages = 0;
@@ -1165,7 +1167,7 @@ var HistoryController = function($scope, $http, $modal, title, options) {
     };
 
     loadPage();
-};
+}
 
 /* @ngInject */
 var PollsController = function($scope, $http, room) {
@@ -1849,50 +1851,6 @@ var RoomController = function($scope, $location, $http, $sce, $modal, alert, tit
             $scope.announcements = $scope.announcements.filter(function(e) {
                 return e.id !== id;
             });
-        });
-    };
-
-    var classMap = {
-        "ROOM_BAN": "warning",
-        "DELETED_PROXY": "warning",
-        "ROOM_UNBAN": "success",
-        "ROOM_ROLE": "success"
-    };
-
-    var actionMap = {
-        "NEW_PROXY": "Proxy added",
-        "DELETED_PROXY": "Proxy removed",
-        "NEW_POLL": "Poll created",
-        "CLOSE_POLL": "Poll closed",
-        "ROOM_BAN": "User banned",
-        "ROOM_UNBAN": "User unbanned",
-        "ROOM_ROLE": "Role changed",
-        "NEW_ANNOUNCEMENT": "Announcement created",
-        "INACTIVE_ANNOUNCEMENT": "Announcement archived",
-        "TOPIC_CHANGED": "Changed topic"
-    };
-
-    $scope.getClassForJournalAction = function(action) {
-        return 'list-group-item-' + classMap[action];
-    };
-
-    $scope.translateAction = function(action) {
-        return actionMap[action];
-    };
-
-    $scope.showBanContext = function(time) {
-        $modal.open({
-            templateUrl: '/templates/history.html',
-            controller: HistoryController,
-            resolve: {
-                options: function () {
-                    return {
-                        "room": $scope.roomData,
-                        "since": time - 600000,
-                        "until": time + 600000
-                    }
-                }
-            }
         });
     };
 

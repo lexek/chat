@@ -57,5 +57,22 @@
                 console.error('XHR Failed for getCategories.' + error.data);
             }
         }
+
+        function peek(roomId) {
+            $http({
+                method: 'GET',
+                url: '/rest/journal/room/' + roomId + '/peek'
+            })
+                .then(requestComplete)
+                .catch(requestFailed);
+
+            function requestComplete(response) {
+                return response.data;
+            }
+
+            function requestFailed(error) {
+                console.error('XHR Failed for getCategories.' + error.data);
+            }
+        }
     }
 })();

@@ -13,8 +13,7 @@
                     element.on('click', function() {
                         $modal.open({
                             templateUrl: '/templates/history.html',
-                            //todo: define controller
-                            controller: HistoryController,
+                            controller: 'HistoryController',
                             resolve: {
                                 options: function () {
                                     return {
