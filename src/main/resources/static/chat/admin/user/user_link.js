@@ -32,6 +32,7 @@
         };
     }
 
+    //todo: update
     /* @ngInject */
     function UserModalController($scope, $route, $http, $modal, $modalInstance, roles, id) {
         var editing = '';

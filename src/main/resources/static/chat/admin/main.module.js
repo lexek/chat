@@ -405,8 +405,10 @@ var RoomsController = function($scope, $http) {
 
 AdminApplication.controller("RoomsController", RoomsController);
 
+AdminApplication.controller('UserEmoticonsController', UserEmoticonsController);
+
 /* @ngInject */
-var UserEmoticonsController = function($scope, $http, $modal, user) {
+function UserEmoticonsController($scope, $http, $modal, user) {
     $scope.user = user;
     $scope.users = [];
     $scope.total = 0;
@@ -426,7 +428,7 @@ var UserEmoticonsController = function($scope, $http, $modal, user) {
     };
 
     load();
-};
+}
 
 /* @ngInject */
 var EmoticonUsersController = function($scope, $http, emoticon) {
@@ -734,8 +736,10 @@ var OnlineController = function($scope, $http, $modal, alert, title) {
     }
 };
 
+AdminApplication.controller("UserActivityController", UserActivityController);
+
 /* @ngInject */
-var UserActivityController = function($scope, $http, $modal, user) {
+function UserActivityController($scope, $http, $modal, user) {
     $scope.user = user;
     $http({method: "GET", url: "/rest/stats/user/" + user.id + "/activity"})
         .success(function(data, status, headers, config) {
@@ -766,7 +770,7 @@ var UserActivityController = function($scope, $http, $modal, user) {
             var cal = new CalHeatMap();
             cal.init(cfg);
         })
-};
+}
 
 /* @ngInject */
 var UserController = function($scope, $route, $http, $modal, alert, id) {
