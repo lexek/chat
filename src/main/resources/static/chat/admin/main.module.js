@@ -37,67 +37,12 @@ var TitleServiceFactory = function() {
     return new TitleService();
 };
 
-/* @ngInject */
-var MessageFilter = function($http, $sce) {
-    var emoticons = {};
-    var emoticonRegExp = null;
-    $http({
-        method: 'GET',
-        url: '/rest/emoticons/all'
-    }).success(function(data) {
-        emoticons = {};
-        var emoticonCodeList = [];
-        angular.forEach(data, function (e) {
-            emoticons[e.code] = e;
-            emoticonCodeList.push(
-                e.code
-                    .replace("\\", "\\\\")
-                    .replace(")", "\\)")
-                    .replace("(", "\\(")
-                    .replace(".", "\\.")
-                    .replace("*", "\\*")
-            );
-        });
-        emoticonRegExp = new RegExp(emoticonCodeList.join("|"), "g");
-    });
-
-    return function(input) {
-        var text = input.replace(/</gi, '&lt;');
-        text = twemoji.parse(text, {
-            base: "/img/",
-            folder: "twemoji",
-            ext: ".png",
-            callback: function(icon, options, variant) {
-                switch ( icon ) {
-                    case 'a9':      // � copyright
-                    case 'ae':      // � registered trademark
-                    case '2122':    // � trademark
-                        return false;
-                }
-                return ''.concat(options.base, options.size, '/', icon, options.ext);
-            }
-        });
-        if (emoticonRegExp) {
-            text = text.replace(emoticonRegExp, function (match) {
-                var emoticon = emoticons[match];
-                if (emoticon) {
-                    return "<img class='faceCode' src='/emoticons/" + emoticon.fileName + "' title='" + emoticon.code + "'></img>"
-                } else {
-                    return null;
-                }
-            });
-        }
-        return $sce.trustAsHtml(text);
-    };
-};
-
 AdminServices.filter('slice', function() {
   return function(arr, start, end) {
     return (arr || []).slice(start, end);
   };
 });
 
-AdminServices.filter("message", ["$http", "$sce", MessageFilter]);
 AdminServices.factory("alert", AlertServiceFactory);
 AdminServices.factory("title", TitleServiceFactory);
 
@@ -118,6 +63,7 @@ var AdminApplication = angular.module(
         "chat.admin.journal",
         "chat.admin.utils",
         "chat.admin.ticket",
+        'chat.admin.history',
         "templates"
     ]
 );

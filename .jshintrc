@@ -57,6 +57,7 @@
         "StringFormatter": false,
         "$": false,
         "jQuery": false,
-        "confirm": false
+        "confirm": false,
+        "twemoji": false
     }
 }
