@@ -54,7 +54,9 @@
 
     "globals": {
         "angular": false,
+        "StringFormatter": false,
         "$": false,
-        "jQuery": false
+        "jQuery": false,
+        "confirm": false
     }
 }

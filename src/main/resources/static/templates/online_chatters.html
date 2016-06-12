@@ -20,7 +20,7 @@
             <div class="list-group-item" ng-repeat="user in users | filter:{'userName': filter}">
                 <h4 class="list-group-item-heading">
                     <i class="fa fa-fw fa-user"></i>
-                    <a href="/admin/users?page=0&search={{user.userName}}" ng-click="showUser(user.userId, $event)">
+                    <a href="/admin/users?page=0&search={{user.userName}}" user-link="user.userId">
                         {{user.userName}}
                     </a>
                     <small>

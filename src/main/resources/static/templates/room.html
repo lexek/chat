@@ -29,11 +29,11 @@
                         {{translateAction(entry.action)}}
                         <small ng-if="entry.admin">
                             <i class="fa fa-fw fa-wrench" tooltip="admin"></i><!--
-                                --><a href="" ng-click="showUser(entry.admin.id)">{{entry.admin.name}}</a>
+                                --><a href="" user-link="entry.admin.id">{{entry.admin.name}}</a>
                         </small>
                         <small ng-if="entry.user">
                             <i class="fa fa-fw fa-user" tooltip="user"></i><!--
-                                --><a href="" ng-click="showUser(entry.user.id)">{{entry.user.name}}</a>
+                                --><a href="" user-link="entry.user.id">{{entry.user.name}}</a>
                         </small>
                         <small class="pull-right">
                             <a href="" ng-click="showBanContext(entry.time)" ng-if="entry.action==='ROOM_BAN'"><!--

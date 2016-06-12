@@ -97,7 +97,7 @@
                         <h4 class="list-group-item-heading">
                             {{entry.ticket.category}}
                             <small>
-                                from <a ng-href="/admin/users?search={{entry.user.name}}" ng-click="showUser(entry.user.id, $event)">{{entry.user.name}}</a>
+                                from <a ng-href="/admin/users?search={{entry.user.name}}" user-link="entry.user.id">{{entry.user.name}}</a>
                             </small>
                             <small class="pull-right">
                                 <abbr title="{{entry.ticket.timestamp | date:'dd.MM.yyyy HH:mm'}}">{{entry.ticket.timestamp | relativeDate}}</abbr>
@@ -508,7 +508,7 @@
                 </thead>
                 <tr ng-repeat="c in connections | orderBy:orderVar:orderDesc">
                     <td>
-                        <a href="/admin/users?search={{c.user.name}}&page=0" ng-click="userModal(c.user.id, $event)">{{c.user.name}}</a>
+                        <a href="/admin/users?search={{c.user.name}}&page=0" user-link="c.user.id">{{c.user.name}}</a>
                     </td>
                     <td>{{c.user.role}}</td>
                     <td>

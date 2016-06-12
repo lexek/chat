@@ -122,6 +122,7 @@ var AdminApplication = angular.module(
     ]
 );
 
+//todo: remove later
 Role = function(title, value) {
     this.title = title;
     this.value = value;
@@ -428,7 +429,7 @@ var UserEmoticonsController = function($scope, $http, $modal, user) {
 };
 
 /* @ngInject */
-var EmoticonUsersController = function($scope, $http, $modal, emoticon) {
+var EmoticonUsersController = function($scope, $http, emoticon) {
     $scope.emoticon = emoticon;
     $scope.users = [];
 
@@ -443,19 +444,6 @@ var EmoticonUsersController = function($scope, $http, $modal, emoticon) {
             }, 0);
         }).error(function(data) {
             alert.alert("danger", data);
-        });
-    };
-
-    $scope.showUser = function(id) {
-        $modal.open({
-            templateUrl: "/templates/user.html",
-            controller: UserModalController,
-            size: "sm",
-            resolve: {
-                id: function () {
-                    return id;
-                }
-            }
         });
     };
 
@@ -740,27 +728,10 @@ var OnlineController = function($scope, $http, $modal, alert, title) {
         return $scope.blockedIps.indexOf(ip) !== -1;
     };
 
-    $scope.userModal = function(id, evt) {
-        if (evt) {
-            evt.preventDefault();
-        }
-        $modal.open({
-            templateUrl: "/templates/user.html",
-            controller: UserModalController,
-            size: "sm",
-            resolve: {
-                id: function () {
-                    return id;
-                }
-            }
-        });
-    };
-
     {
         loadOnline();
         loadBlockedIps();
     }
-
 };
 
 /* @ngInject */
@@ -995,175 +966,6 @@ var UserPasswordController = function($scope, $http, $modalInstance, user) {
 AdminApplication.controller("UserPasswordController", ["$scope", "$http", "$modalInstance", "userId", UserPasswordController]);
 
 /* @ngInject */
-var UserModalController = function($scope, $http, $modal, $modalInstance, id) {
-    var editing = '';
-    $scope.input = {};
-    $scope.auth = [];
-
-    $scope.availableRoles = [
-        "USER_UNCONFIRMED",
-        "USER",
-        "MOD"
-    ];
-
-    if (document.SELF_ROLE == "SUPERADMIN") {
-        $scope.availableRoles.push("ADMIN");
-    }
-
-    var loadPage = function() {
-        $http({
-            method: "GET",
-            url: StringFormatter.format("/rest/users/{number}", id)
-        }).success(function (d) {
-            $scope.user = d.user;
-            $scope.input.name = $scope.user.name;
-            $scope.input.role = $scope.user.role;
-            $scope.input.banned = $scope.user.banned;
-            $scope.input.renameAvailable = $scope.user.renameAvailable;
-            $scope.auth = d.authServices;
-        });
-    };
-
-    $scope.isUser = function() {
-        return ($scope.user.role === "USER") || ($scope.user.role === "USER_UNCONFIRMED");
-    };
-
-    $scope.saveRenameAvailable = function() {
-        $http({
-            method: "PUT",
-            data: {
-                rename: $scope.input.renameAvailable
-            },
-            url: "/rest/users/" + $scope.user.id
-        }).success(function() {
-            $scope.user.renameAvailable = $scope.input.renameAvailable;
-        });
-    };
-
-    $scope.saveBanned = function() {
-        $http({
-            method: "PUT",
-            data: {
-                banned: $scope.input.banned
-            },
-            url: "/rest/users/" + $scope.user.id
-        }).success(function() {
-            $scope.user.banned = $scope.input.banned;
-        });
-    };
-
-    $scope.saveRole = function() {
-        if ($scope.input.role === "USER" || $scope.input.role === "USER_UNCONFIRMED" || $scope.input.role === "MOD" || $scope.input.role === "ADMIN") {
-            $http({
-                method: "PUT",
-                data: {
-                    role: $scope.input.role
-                },
-                url: "/rest/users/" + $scope.user.id
-            }).success(function () {
-                $scope.user.role = $scope.input.role;
-                $scope.edit("");
-            });
-        }
-    };
-
-    $scope.saveName = function() {
-        $http({
-            method: "PUT",
-            data: {
-                name: $scope.input.name
-            },
-            url: "/rest/users/" + $scope.user.id
-        }).success(function () {
-            $scope.user.name = $scope.input.name;
-            $scope.edit("");
-        });
-    };
-
-    $scope.editing = function(variable) {
-        return variable === editing;
-    };
-
-    $scope.edit = function(variable) {
-        editing = variable;
-        $scope.input[variable] = $scope.user[variable];
-    };
-
-    $scope.canEdit = function(variable) {
-        if (variable === "name") {
-            return (($scope.user.role === "USER") || ($scope.user.role === "USER_UNCONFIRMED"))
-                && (document.SELF_ROLE === "SUPERADMIN");
-        }
-        if (variable === "role") {
-            return ROLES[$scope.user.role] < ROLES[document.SELF_ROLE];
-        }
-    };
-
-    $scope.reset = function(variable) {
-        $scope.edit("");
-        $scope.input[variable] = $scope.user[variable];
-    };
-
-    $scope.requestDelete = function() {
-        if (confirm("You sure that you want to delete user \"" + $scope.user.name + "\"?")) {
-            $http({
-                method: "DELETE",
-                url: "/rest/users/" + $scope.user.id
-            }).success(function() {
-                $route.reload();
-            });
-        }
-    };
-
-    $scope.hasAuth = function(auth) {
-        return auth in $scope.auth;
-    };
-
-    $scope.showActivity = function() {
-        $modal.open({
-            templateUrl: "user_activity.html",
-            controller: UserActivityController,
-            resolve: {
-                user: function () {
-                    return $scope.user;
-                }
-            }
-        });
-    };
-
-    $scope.showEmoticons = function() {
-        $modal.open({
-            templateUrl: "/templates/user_emoticons.html",
-            controller: UserEmoticonsController,
-            resolve: {
-                user: function () {
-                    return $scope.user;
-                }
-            }
-        });
-    };
-
-    $scope.changePassword = function() {
-        $modal.open({
-            templateUrl: "/templates/password_modal.html",
-            controller: UserPasswordController,
-            size: "sm",
-            resolve: {
-                user: function () {
-                    return $scope.user;
-                }
-            }
-        });
-    };
-
-    $scope.closeModal = function() {
-        $modalInstance.dismiss('cancel');
-    };
-
-    loadPage();
-};
-
-/* @ngInject */
 var JournalController = function($scope, title) {
     $scope.onPageChange = function(current, total) {
         title.secondary = "page " + (current + 1) + "/" + (total);
@@ -1247,22 +1049,6 @@ var TicketsController = function($scope, $location, $http, $modal, alert, title)
             data: data
         }).success(function() {
             loadPage();
-        });
-    };
-
-    $scope.showUser = function(id, evt) {
-        if (evt) {
-            evt.preventDefault();
-        }
-        $modal.open({
-            templateUrl: "/templates/user.html",
-            controller: UserModalController,
-            size: "sm",
-            resolve: {
-                id: function () {
-                    return id;
-                }
-            }
         });
     };
 
@@ -1578,22 +1364,6 @@ var ChattersController = function($scope, $location, $http, $modal, room, onlyBa
         loadPage();
     };
 
-    $scope.showUser = function(id, evt) {
-        if (evt) {
-            evt.preventDefault();
-        }
-        $modal.open({
-            templateUrl: "/templates/user.html",
-            controller: UserModalController,
-            size: "sm",
-            resolve: {
-                id: function () {
-                    return id;
-                }
-            }
-        });
-    };
-
     $scope.toggleBan = function(chatter) {
         $http({
             method: "PUT",
@@ -1632,22 +1402,6 @@ var OnlineChattersController = function($scope, $location, $http, $modal, room) 
             params: params
         }).success(function (d) {
             $scope.users = d;
-        });
-    };
-
-    $scope.showUser = function(id, evt) {
-        if (evt) {
-            evt.preventDefault();
-        }
-        $modal.open({
-            templateUrl: "/templates/user.html",
-            controller: UserModalController,
-            size: "sm",
-            resolve: {
-                id: function () {
-                    return id;
-                }
-            }
         });
     };
 
@@ -2058,22 +1812,6 @@ var RoomController = function($scope, $location, $http, $sce, $modal, alert, tit
         modalInstance.result.then(function (data) {
             if (data) {
                 $scope.poll = data;
-            }
-        });
-    };
-
-    $scope.showUser = function(id, evt) {
-        if (evt) {
-            evt.preventDefault();
-        }
-        $modal.open({
-            templateUrl: "/templates/user.html",
-            controller: UserModalController,
-            size: "sm",
-            resolve: {
-                id: function () {
-                    return id;
-                }
             }
         });
     };

@@ -1,5 +1,5 @@
 {
-    "excludeFiles": ["node_modules/**", "bower_components/**", "vendor/**"],
+    "excludeFiles": ["node_modules/**", "bower_components/**", "vendor/**", "**/main.module.js"],
 
     "requireCurlyBraces": [
         "if",
