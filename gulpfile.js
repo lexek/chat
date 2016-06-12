@@ -115,7 +115,7 @@
     });
 
     gulp.task('default', function () {
-        gulp.watch([adminPath + '**/*.js'], ['admin']);
-        gulp.watch([clientPath + '**/*.js'], ['client']);
+        gulp.watch([adminPath + '**/*.js', adminPath + '**/*.html'], ['admin']);
+        gulp.watch([clientPath + '**/*.js', clientPath + '**/*.html'], ['client']);
     });
 })();
