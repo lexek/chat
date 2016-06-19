@@ -71,7 +71,6 @@ public class JournalDao {
         try (Connection connection = dataSource.getConnection()) {
             List<Condition> conditions = new ArrayList<>();
             conditions.add(JOURNAL.ACTION.in(types.isPresent() ? types.get() : GLOBAL_ACTIONS));
-            types.ifPresent(value -> conditions.add(JOURNAL.ACTION.in(value)));
             userId.ifPresent(value -> conditions.add(JOURNAL.USER_ID.equal(value)));
             adminId.ifPresent(value -> conditions.add(JOURNAL.ADMIN_ID.equal(value)));
 
