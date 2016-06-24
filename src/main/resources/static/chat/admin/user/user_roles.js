@@ -21,5 +21,5 @@
         'SUPERADMIN': new Role('administrator', 6)
     };
 
-    angular.module('chat.admin.user').constant('roles', roles);
+    angular.module('chat.admin.user').constant('ROLES', roles);
 })();

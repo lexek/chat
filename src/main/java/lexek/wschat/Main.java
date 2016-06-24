@@ -369,7 +369,7 @@ public class Main {
                     new HistoryResource(historyService),
                     new IpBlockResource(bannedIps),
                     new JournalResource(journalService),
-                    new UsersResource(connectionManager, userService),
+                    new UserResource(connectionManager, userService),
                     new PollResource(roomService, pollService),
                     new RoomResource(roomService),
                     new TicketResource(ticketService),

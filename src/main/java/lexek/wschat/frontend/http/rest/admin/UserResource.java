@@ -30,12 +30,12 @@ import java.util.stream.Collectors;
 
 @Path("/users")
 @RequiredRole(GlobalRole.ADMIN)
-public class UsersResource {
+public class UserResource {
     private static final int PAGE_LENGTH = 15;
     private final ConnectionManager connectionManager;
     private final UserService userService;
 
-    public UsersResource(ConnectionManager connectionManager, UserService userService) {
+    public UserResource(ConnectionManager connectionManager, UserService userService) {
         this.connectionManager = connectionManager;
         this.userService = userService;
     }
@@ -95,7 +95,7 @@ public class UsersResource {
         UserDto user = userService.fetchById(userId);
         boolean anyChanges = false;
         if (changeSet.getName() != null) {
-            if (user.getRole() != GlobalRole.USER || !admin.hasRole(GlobalRole.SUPERADMIN)) {
+            if (user.hasRole(GlobalRole.MOD) || !admin.hasRole(GlobalRole.SUPERADMIN)) {
                 return Response.status(403).entity(new ErrorModel("Forbidden.")).build();
             }
             anyChanges = true;
@@ -117,7 +117,7 @@ public class UsersResource {
         }
         if (anyChanges) {
             userService.update(user, admin, changeSet);
-            return Response.ok().build();
+            return Response.ok(getUserData(userId)).build();
         } else {
             return Response.status(400).entity(new ErrorModel("No changes found.")).build();
         }
@@ -156,12 +156,6 @@ public class UsersResource {
         @PathParam("userId") @Min(0) long userId,
         @Auth UserDto admin
     ) {
-        UserDto user = userService.fetchById(userId);
-        if (user != null && user.getRole() == GlobalRole.USER) {
-            userService.delete(user, admin);
-            return user;
-        } else {
-            throw new WebApplicationException(Response.status(400).entity(new ErrorModel("Forbidden.")).build());
-        }
+        throw new UnsupportedOperationException("Method unavailable until user deactivation is implemented");
     }
 }

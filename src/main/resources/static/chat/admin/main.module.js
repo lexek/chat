@@ -508,19 +508,15 @@ var UsersController = function($scope, $location, $http, alert, title) {
                 page: $scope.page
             }
         }).success(function (d) {
-            $scope.users = d["data"].map(function(userData) {
-                var u = userData.user;
-                u.auth = userData.authServices;
-                return u;
-            });
-            $scope.totalPages = d["pageCount"];
+            $scope.users = d.data;
+            $scope.totalPages = d.pageCount;
             title.secondary = "page " + ($scope.page+1) + "/" + ($scope.totalPages);
             $scope.user = null;
         });
     };
 
     $scope.selectUser = function(u) {
-        if ($scope.user && u && ($scope.user.id === u.id)) {
+        if ($scope.user && u && ($scope.user.user.id === u.user.id)) {
             $scope.user = null;
         } else {
             $scope.user = u;
@@ -579,6 +575,17 @@ var UsersController = function($scope, $location, $http, alert, title) {
     $scope.resetSearch = function() {
         $location.search("page", "0");
         $location.search("search", null);
+    };
+
+    $scope.userUpdated = function(updatedUser) {
+        $scope.user = updatedUser;
+        $scope.users = $scope.users.map(function(user) {
+            if (user.user.id === updatedUser.user.id) {
+                return updatedUser;
+            } else {
+                return user;
+            }
+        });
     };
 
     {
@@ -717,170 +724,6 @@ function UserActivityController($scope, $http, $modal, user) {
             cal.init(cfg);
         })
 }
-
-/* @ngInject */
-var UserController = function($scope, $route, $http, $modal, alert, id) {
-    var editing = '';
-    $scope.auth = {};
-    $scope.input = {};
-
-    $scope.availableRoles = [
-        "USER_UNCONFIRMED",
-        "USER",
-        "MOD"
-    ];
-
-    if (document.SELF_ROLE == "SUPERADMIN") {
-        $scope.availableRoles.push("ADMIN");
-    }
-
-    $scope.isUser = function() {
-        return ($scope.user.role === "USER") || ($scope.user.role === "USER_UNCONFIRMED");
-    };
-
-    $scope.saveRenameAvailable = function() {
-        $http({
-            method: "PUT",
-            data: {
-                rename: $scope.input.renameAvailable
-            },
-            url: "/rest/users/" + $scope.user.id
-        }).success(function() {
-            $scope.user.renameAvailable = $scope.input.renameAvailable;
-        });
-    };
-
-    $scope.saveBanned = function() {
-        $http({
-            method: "PUT",
-            data: {
-                banned: $scope.input.banned
-            },
-            url: "/rest/users/" + $scope.user.id
-        }).success(function() {
-            $scope.user.banned = $scope.input.banned;
-        });
-    };
-
-    $scope.saveRole = function() {
-        if ($scope.input.role === "USER" || $scope.input.role === "USER_UNCONFIRMED" || $scope.input.role === "MOD" || $scope.input.role === "ADMIN") {
-            $http({
-                method: "PUT",
-                data: {
-                    role: $scope.input.role
-                },
-                url: "/rest/users/" + $scope.user.id
-            }).success(function () {
-                $scope.user.role = $scope.input.role;
-                $scope.edit("");
-            });
-        }
-    };
-
-    $scope.saveName = function() {
-        $http({
-            method: "PUT",
-            data: {
-                name: $scope.input.name
-            },
-            url: "/rest/users/" + $scope.user.id
-        }).success(function () {
-            $scope.user.name = $scope.input.name;
-            $scope.edit("");
-        });
-    };
-
-    $scope.editing = function(variable) {
-        return variable === editing;
-    };
-
-    $scope.edit = function(variable) {
-        editing = variable;
-        $scope.input[variable] = $scope.user[variable];
-    };
-
-    $scope.canEdit = function(variable) {
-        if (variable === "name") {
-            return (($scope.user.role === "USER") || ($scope.user.role === "USER_UNCONFIRMED"))
-                && (document.SELF_ROLE === "SUPERADMIN");
-        }
-        if (variable === "role") {
-            return ROLES[$scope.user.role] < ROLES[document.SELF_ROLE];
-        }
-    };
-
-    $scope.reset = function(variable) {
-        $scope.edit("");
-        $scope.input[variable] = $scope.user[variable];
-    };
-
-    $scope.requestDelete = function() {
-        if (confirm("You sure that you want to delete user \"" + $scope.user.name + "\"?")) {
-            $http({
-                method: "POST",
-                url: "/rest/users/" + $scope.user.id
-            }).success(function() {
-                $route.reload();
-            });
-        }
-    };
-
-    $scope.hasAuth = function(auth) {
-        return auth in $scope.auth;
-    };
-
-    $scope.showActivity = function() {
-        $modal.open({
-            templateUrl: "user_activity.html",
-            controller: UserActivityController,
-            resolve: {
-                user: function () {
-                    return $scope.user;
-                }
-            }
-        });
-    };
-
-    $scope.showEmoticons = function() {
-        $modal.open({
-            templateUrl: "/templates/user_emoticons.html",
-            controller: UserEmoticonsController,
-            resolve: {
-                user: function () {
-                    return $scope.user;
-                }
-            }
-        });
-    };
-
-    $scope.changePassword = function() {
-        $modal.open({
-            templateUrl: "/templates/password_modal.html",
-            controller: UserPasswordController,
-            size: "sm",
-            resolve: {
-                user: function () {
-                    return $scope.user;
-                }
-            }
-        });
-    };
-
-    var init = function() {
-        $scope.input.name = $scope.user.name;
-        $scope.input.role = $scope.user.role;
-        $scope.input.banned = $scope.user.banned;
-        $scope.input.renameAvailable = $scope.user.renameAvailable;
-    };
-
-    init();
-
-    $scope.$watch("user", function() {
-        init();
-    });
-};
-
-AdminApplication.controller("UserController", ["$scope", "$route", "$http", "$modal", "alert", UserController]);
 
 /* @ngInject */
 var UserPasswordController = function($scope, $http, $modalInstance, user) {
@@ -1948,7 +1791,7 @@ AdminApplication.config(["$routeProvider", "$locationProvider", function($routeP
     });
     $routeProvider.when("/users", {
         "title": "users",
-        "templateUrl": "/templates/users.html",
+        "templateUrl": "/chat/admin/user/user_list.html",
         "controller": UsersController,
         "menuId": "users"
     });

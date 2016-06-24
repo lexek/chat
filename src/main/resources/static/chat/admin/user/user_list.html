@@ -1,0 +1,62 @@
+<div class="col-xs-12 usersPanel" ng-class="{'col-sm-6 col-md-7 col-lg-8 open': user, 'col-xs-12': !user}">
+    <div class="panel panel-primary">
+        <div class="panel-heading">
+            <h4 class="panel-title">
+                users
+            </h4>
+        </div>
+        <div class="panel-body">
+            <form ng-submit="doSearch()">
+                <div class="input-group">
+                    <input type="text" class="form-control" placeholder="Search" ng-model="searchInput">
+                    <span class="input-group-btn">
+                        <button type="button" class="btn btn-danger" ng-if="search" ng-click="resetSearch()">
+                            <span class="fa fa-times fa-fw"></span>
+                        </button>
+                        <button type="submit" class="btn btn-default">
+                            <i class="fa fa-fw fa-search"></i>
+                        </button>
+                    </span>
+                </div>
+            </form>
+        </div>
+        <div class="list-group">
+            <a
+                    href="#"
+                    class="list-group-item"
+                    ng-repeat="u in users"
+                    ng-class="{'active': user.user.id === u.user.id}"
+                    ng-click="selectUser(u)">
+                <h4 class="list-group-item-heading">
+                    <small>#{{u.user.id}}</small>
+                    {{u.user.name}}
+                    <small>{{u.user.role}}</small>
+                </h4>
+            </a>
+        </div>
+        <div class="panel-body" ng-if="users.length === 0">
+            <div class="alert alert-warning" role="alert">Nothing to show.</div>
+        </div>
+        <div class="panel-footer" ng-if="(page !== 0) || hasNextPage()">
+            <ul class="pager">
+                <li class="previous" ng-if="page !== 0" ng-click="previousPage()"><a href="">&larr; Previous page</a></li>
+                <li class="next" ng-if="hasNextPage()" ng-click="nextPage()"><a href="">Next page &rarr;</a></li>
+            </ul>
+        </div>
+    </div>
+</div>
+<div class="col-sm-6 col-md-5 col-lg-4 userPanel" ng-if="user">
+    <div class="panel panel-success">
+        <div class="panel-heading">
+            <h4 class="panel-title">
+                User profile: {{user.user.name}}
+            </h4>
+        </div>
+        <div class="panel-body">
+            <user user="user" on-change="userUpdated(user)"></user>
+        </div>
+        <div class="panel-footer clearfix">
+            <div class="btn btn-warning pull-right" ng-click="selectUser(null)">Close</div>
+        </div>
+    </div>
+</div>
