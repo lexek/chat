@@ -421,7 +421,6 @@ var EmoticonsController = function($scope, $http, $modal, alert) {
             url: "/rest/stats/global/emoticons"
         }).success(function(data) {
             angular.forEach(data, function(e) {
-                console.log(e)
                 $scope.popularity[e.emoticon.id] = e.count
             });
         }).error(function(data) {
