@@ -3,15 +3,9 @@
 
     angular
         .module('chat.admin.journal')
-        .component('journal', {
-            bindings: {
-                'global': '<',
-                'room': '<',
-                'useLocation': '<',
-                'onPageChange': '&'
-            },
+        .component('globalJournal', {
             controller: JournalController,
-            templateUrl: '/chat/admin/journal/journal_component.html'
+            templateUrl: '/chat/admin/journal/global_journal.html'
         });
 
     /* @ngInject */
@@ -19,17 +13,16 @@
         var vm = this;
 
         vm.items = [];
-        vm.page = 0;
-        vm.totalPages = 0;
+        vm.page = 1;
+        vm.totalPages = 1;
         vm.filter = {
             admin: undefined,
             user: undefined,
             categories: []
         };
-        vm.previousPage = previousPage;
-        vm.nextPage = nextPage;
-        vm.hasNextPage = hasNextPage;
+        vm.waitingFor = null;
         vm.onFilterChange = onFilterChange;
+        vm.onPageChange = onPageChange;
         activate();
 
         function simplifyFilter(filter) {
@@ -44,54 +37,30 @@
             var newSimple = simplifyFilter(newFilter);
             var oldSimple = simplifyFilter(vm.filter);
             if (!angular.equals(newSimple, oldSimple)) {
-                if (vm.useLocation) {
-                    $location.search(angular.extend(newSimple, {
-                        page: 0
-                    }));
-                } else {
-                    vm.filter = angular.copy(newFilter);
-                    fetchData();
-                }
-            }
-        }
-
-        function goToPage(page) {
-            if (vm.useLocation) {
-                $location.search('page', page.toString());
-            } else {
-                vm.page = page;
+                $location.search(angular.extend(newSimple, {
+                    page: 1
+                }));
+                vm.filter = angular.copy(newFilter);
+                vm.page = 1;
                 fetchData();
             }
         }
 
-        function previousPage() {
-            if (vm.page !== 0) {
-                goToPage(vm.page - 1);
-            }
-        }
-
-        function nextPage() {
-            if ((vm.page + 1) < vm.totalPages) {
-                goToPage(vm.page + 1);
-            }
-        }
-
-        function hasNextPage() {
-            return (vm.page + 1) < vm.totalPages;
+        function onPageChange() {
+            $location.search('page', vm.page.toString());
+            fetchData();
         }
 
         function fetchData() {
-            JournalService.getJournalPage(vm.filter, vm.global, vm.page, vm.room)
+            vm.waitingFor = JournalService
+                .getJournalPage(vm.filter, vm.page - 1)
                 .then(function (data) {
                     vm.items = data.data;
                     vm.totalPages = data.pageCount;
-                    if (vm.useLocation) {
-                        title.secondary = 'page ' + (vm.page + 1) + '/' + (vm.totalPages);
-                    }
+                    title.secondary = 'page ' + (vm.page) + '/' + (vm.totalPages);
                 });
         }
 
-        //todo: simplify?
         function activate() {
             var locationSearch = $location.search(),
                 page = parseInt(locationSearch.page, 10),
@@ -116,13 +85,8 @@
                     vm.filter.categories = categories;
                 }
             }
-            if (isNaN(page) || page < 0) {
-                if (vm.useLocation) {
-                    $location.search('page', '0');
-                } else {
-                    vm.page = 0;
-                    fetchData();
-                }
+            if (isNaN(page) || page < 1) {
+                $location.search('page', '1');
             } else {
                 vm.page = page;
                 fetchData();

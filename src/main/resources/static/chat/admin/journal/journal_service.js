@@ -12,8 +12,8 @@
             getCategories: getCategories
         };
 
-        function getJournalPage(filter, global, page, room) {
-            var resource = global ? 'global' : 'room';
+        function getJournalPage(filter, page, room) {
+            var resource = room ? 'room' : 'global';
 
             if (room) {
                 resource += '/' + room.id;
@@ -28,16 +28,14 @@
                     admin: filter.admin ? filter.admin.id : null,
                     category: filter.categories
                 }
-            })
-                .then(requestComplete)
-                .catch(requestFailed);
+            }).then(requestComplete, requestFailed);
 
             function requestComplete(response) {
                 return response.data;
             }
 
             function requestFailed(error) {
-                console.error('XHR Failed for getJournalPage.' + error.data);
+                console.error('XHR Failed for getJournalPage.' + error);
             }
         }
 
@@ -45,16 +43,14 @@
             return $http({
                 method: 'GET',
                 url: '/rest/journal/categories/' + (global ? 'global' : 'room')
-            })
-                .then(requestComplete)
-                .catch(requestFailed);
+            }).then(requestComplete, requestFailed);
 
             function requestComplete(response) {
                 return response.data;
             }
 
             function requestFailed(error) {
-                console.error('XHR Failed for getCategories.' + error.data);
+                console.error('XHR Failed for getCategories.' + error);
             }
         }
 
@@ -62,16 +58,14 @@
             $http({
                 method: 'GET',
                 url: '/rest/journal/room/' + roomId + '/peek'
-            })
-                .then(requestComplete)
-                .catch(requestFailed);
+            }).then(requestComplete, requestFailed);
 
             function requestComplete(response) {
                 return response.data;
             }
 
             function requestFailed(error) {
-                console.error('XHR Failed for getCategories.' + error.data);
+                console.error('XHR Failed for getCategories.' + error);
             }
         }
     }

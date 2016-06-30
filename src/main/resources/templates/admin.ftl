@@ -9,6 +9,7 @@
     <link rel="stylesheet" type="text/css" href="/vendor/css/bootstrap.css"/>
     <link rel="stylesheet" type="text/css" href="/vendor/css/cal-heatmap.css" />
     <link rel="stylesheet" type="text/css" href="/vendor/css/range-picker.css" />
+    <link rel="stylesheet" type="text/css" href="/vendor/css/angular-busy.css" />
     <link rel="stylesheet" type="text/css" href="/css/font-awesome.css">
     <link rel="stylesheet" type="text/css" href="/css/admin.css">
 
@@ -26,13 +27,14 @@
     <script src="/vendor/js/angular-new.js"></script>
     <script src="/vendor/js/angular-touch.js"></script>
     <script src="/vendor/js/angular-sanitize.js"></script>
-    <script src="/vendor/js/angular-animate.2.js"></script>
+    <script src="/vendor/js/angular-animate-new.js"></script>
     <script src="/vendor/js/angular-route.js"></script>
     <script src="/vendor/js/angular-ui-utils.js"></script>
     <script src="/vendor/js/angular-ui-bootstrap.2.js"></script>
     <script src="/vendor/js/angular-relative-date.js"></script>
     <script src="/vendor/js/angular-datetimepicker.js"></script>
     <script src="/vendor/js/angular-slider.js"></script>
+    <script src="/vendor/js/angular-busy.js"></script>
     <script src="/vendor/js/range-picker.js"></script>
     <script src="/vendor/js/highcharts.js"></script>
     <script src="/vendor/js/highcharts-ng.js"></script>
@@ -63,7 +65,7 @@
 </script>
 
 <script type="text/ng-template" id="journal.html">
-    <journal global="true" use-location="true" on-page-change="onPageChange"/>
+    <global-journal/>
 </script>
 
 <script type="text/ng-template" id="tickets.html">

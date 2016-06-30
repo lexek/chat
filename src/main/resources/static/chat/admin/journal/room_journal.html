@@ -1,0 +1,43 @@
+<div class="modal-header">
+    <h4 class="modal-title">
+        <i class="fa fa-fw fa-book"></i> Journal for room {{$ctrl.room.name}}
+        <small>page {{$ctrl.page}}/{{$ctrl.totalPages}}</small>
+    </h4>
+</div>
+<div cg-busy="$ctrl.waitingFor">
+    <div class="modal-body text-center">
+        <journal-filters
+                filter-state="$ctrl.filter"
+                filter-change="$ctrl.onFilterChange(filter)"
+                global="false"
+        ></journal-filters>
+
+        <pagination
+                total-items="$ctrl.totalPages"
+                rotate="false"
+                items-per-page="1"
+                max-size="5"
+                ng-model="$ctrl.page"
+                ng-change="$ctrl.onPageChange()"
+                boundary-links="true"
+        ></pagination>
+    </div>
+    <div class="modal-body">
+        <journal-list
+                class="list-group"
+                items="$ctrl.items"
+                room="$ctrl.room"
+        ></journal-list>
+    </div>
+    <div class="modal-footer" style="text-align: center">
+        <pagination
+                total-items="$ctrl.totalPages"
+                rotate="false"
+                items-per-page="1"
+                max-size="5"
+                ng-model="$ctrl.page"
+                ng-change="$ctrl.onPageChange()"
+                boundary-links="true"
+        ></pagination>
+    </div>
+</div>

@@ -59,6 +59,7 @@ var AdminApplication = angular.module(
         "highcharts-ng",
         "ngSanitize",
         "rgkevin.datetimeRangePicker",
+        "cgBusy",
         "chat.admin.auth",
         "chat.admin.journal",
         "chat.admin.utils",
@@ -67,6 +68,11 @@ var AdminApplication = angular.module(
         "templates"
     ]
 );
+
+AdminApplication.value('cgBusyDefaults',{
+    message: 'LOADING',
+    templateUrl: '/chat/admin/utils/busy.html'
+});
 
 //todo: remove later
 Role = function(title, value) {
@@ -761,18 +767,6 @@ AdminApplication.controller("UserPasswordController", ["$scope", "$http", "$moda
 var JournalController = function($scope, title) {
     $scope.onPageChange = function(current, total) {
         title.secondary = "page " + (current + 1) + "/" + (total);
-    }
-};
-
-/* @ngInject */
-var RoomJournalModalController = function($scope, room) {
-    $scope.totalPages = 0;
-    $scope.page = 0;
-    $scope.room = room;
-
-    $scope.onPageChange = function(current, total) {
-        $scope.page = current;
-        $scope.totalPages = total;
     }
 };
 
@@ -1488,14 +1482,20 @@ var RoomController = function($scope, $location, $http, $sce, $modal, alert, tit
 
     $scope.showJournal = function() {
         $modal.open({
-            templateUrl: '/chat/admin/journal/journal_modal.html',
-            controller: RoomJournalModalController,
+            template: '<journal-modal room="$ctrl.room"></journal-modal>',
+            controller: Controller,
+            controllerAs: '$ctrl',
             resolve: {
                 room: function () {
                     return $scope.roomData;
                 }
             }
         });
+
+        /* ngInject */
+        function Controller(room) {
+            this.room = room;
+        }
     };
 
     $scope.newProxy = function() {
@@ -1774,7 +1774,8 @@ AdminApplication.config(["$routeProvider", "$locationProvider", function($routeP
         "title": "journal",
         "templateUrl": "journal.html",
         "controller": JournalController,
-        "menuId": "journal"
+        "menuId": "journal",
+        reloadOnSearch: false
     });
     $routeProvider.when("/tickets", {
         "title": "tickets",

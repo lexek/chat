@@ -1,1 +1,1 @@
-angular.module('chat.admin.user', ['ui.bootstrap.modal']);
+angular.module('chat.admin.user', ['ui.bootstrap.modal', 'chat.admin.utils']);

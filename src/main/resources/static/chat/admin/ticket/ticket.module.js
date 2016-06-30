@@ -1,1 +1,1 @@
-angular.module('chat.admin.ticket', []);
+angular.module('chat.admin.ticket', ['chat.admin.utils']);
