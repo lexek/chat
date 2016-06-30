@@ -114,8 +114,10 @@
             .pipe(gulp.dest('./target/classes/static/js'));
     });
 
-    gulp.task('default', function () {
+    gulp.task('watch', function () {
         gulp.watch([adminPath + '**/*.js', adminPath + '**/*.html'], ['admin']);
         gulp.watch([clientPath + '**/*.js', clientPath + '**/*.html'], ['client']);
     });
+
+    gulp.task('default', ['admin', 'client', 'watch']);
 })();
