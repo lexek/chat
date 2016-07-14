@@ -117,7 +117,7 @@ public class OutboundMessageHandler {
         UserCredentials userCredentials = null;
         logger.debug("fetching connection data for user {}", userName);
         boolean r = false;
-        UserAuthDto auth = authenticationManager.getAuthDataForUser(userId, "twitch.tv");
+        UserAuthDto auth = authenticationManager.getAuthDataForUser(userId, "twitch");
         if (auth != null) {
             String token = auth.getAuthenticationKey();
             String extName = auth.getAuthenticationName();
