@@ -7,12 +7,11 @@ import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.util.CharsetUtil;
+import lexek.wschat.util.Tuple2;
 
 import java.text.ParseException;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.regex.Pattern;
 
 import static io.netty.handler.codec.http.HttpHeaders.Names.*;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_MODIFIED;
@@ -48,6 +47,12 @@ public abstract class AbstractStaticHandler implements HttpHandler {
         DEFAULT_MIME_TYPES = Collections.unmodifiableMap(mimeTypes);
     }
 
+    private final List<Tuple2<Pattern, Integer>> maxAgeOverrides = new ArrayList<>();
+
+    public void addMaxAgeOverride(String path, int maxAge) {
+        maxAgeOverrides.add(new Tuple2<>(Pattern.compile(path), maxAge));
+    }
+
     @Override
     public FullHttpResponse handle(ViewResolvers viewResolvers, FullHttpRequest request, Channel channel) throws Exception {
         StaticHandlerContext context = getContext(withoutQuery(request.getUri()));
@@ -66,7 +71,16 @@ public abstract class AbstractStaticHandler implements HttpHandler {
                 response.headers().add(CONTENT_TYPE, contentType);
             }
             response.headers().add(ETAG, lastModified.toString());
-            response.headers().add(CACHE_CONTROL, HttpHeaders.Values.MAX_AGE + "=120");
+
+            int maxAge = 3600;
+            for (Tuple2<Pattern, Integer> override : maxAgeOverrides) {
+                if (override.getL().matcher(request.getUri()).matches()) {
+                    maxAge = override.getR();
+                    break;
+                }
+            }
+            response.headers().add(CACHE_CONTROL, HttpHeaders.Values.MAX_AGE + "=" + maxAge);
+
             HttpHeaders.setDateHeader(response, LAST_MODIFIED, lastModified);
             return response;
         } else {

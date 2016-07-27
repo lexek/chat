@@ -385,9 +385,12 @@ public class Main {
             }
         };
 
+        FileSystemStaticHandler fileSystemStaticHandler = new FileSystemStaticHandler(dataDir);
+        fileSystemStaticHandler.addMaxAgeOverride("/emoticons/.*", (int) TimeUnit.DAYS.toSeconds(365));
+
         final RequestDispatcher httpRequestDispatcher = new RequestDispatcher(serverMessageHandler, viewResolvers, authenticationManager, resourceConfig, runtimeMetricRegistry, hostName);
         httpRequestDispatcher.add("/", new RedirectToAppHandler());
-        httpRequestDispatcher.add("/.*", new FileSystemStaticHandler(dataDir));
+        httpRequestDispatcher.add("/.*", fileSystemStaticHandler);
         httpRequestDispatcher.add("/.*", new ClassPathStaticHandler(ClassPathStaticHandler.class, "/static/"));
         httpRequestDispatcher.add("/chat.html", new ChatHomeHandler(coreSettings.getTitle(), settings.getHttp().isAllowLikes(), settings.getHttp().isSingleRoom()));
         httpRequestDispatcher.add("/recaptcha/[0-9]+", new RecaptchaHandler(captchaService, reCaptcha));
