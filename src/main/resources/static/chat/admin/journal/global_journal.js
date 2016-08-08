@@ -87,6 +87,7 @@
             }
             if (isNaN(page) || page < 1) {
                 $location.search('page', '1');
+                fetchData();
             } else {
                 vm.page = page;
                 fetchData();
