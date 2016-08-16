@@ -6,10 +6,15 @@ import lexek.wschat.chat.model.*;
 import lexek.wschat.chat.processing.AbstractGlobalMessageHandler;
 import lexek.wschat.services.UserService;
 import lexek.wschat.util.Names;
+import org.jvnet.hk2.annotations.Service;
 
+import javax.inject.Inject;
+
+@Service
 public class NameHandler extends AbstractGlobalMessageHandler {
     private final UserService userService;
 
+    @Inject
     public NameHandler(UserService userService) {
         super(
             ImmutableSet.of(

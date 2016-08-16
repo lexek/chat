@@ -16,20 +16,31 @@ import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.timeout.IdleStateHandler;
-import lexek.wschat.services.AbstractService;
+import lexek.wschat.services.managed.AbstractManagedService;
+import lexek.wschat.services.managed.InitStage;
 import lexek.wschat.util.ExceptionLogger;
+import org.jvnet.hk2.annotations.Service;
 
+import javax.inject.Inject;
+import javax.inject.Named;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 
-public class IrcServer extends AbstractService {
+@Service
+public class IrcServer extends AbstractManagedService {
     private static final int PORT = 6667;
     private final ServerBootstrap bootstrap;
     private Channel channel;
 
-    public IrcServer(final IrcServerHandler handler, EventLoopGroup bossGroup, EventLoopGroup childGroup, final SslContext sslContext) {
-        super("ircServer");
+    @Inject
+    public IrcServer(
+        IrcServerHandler handler,
+        @Named("frontend.bossLoopGroup") EventLoopGroup bossGroup,
+        @Named("frontend.childLoopGroup") EventLoopGroup childGroup,
+        SslContext sslContext
+    ) {
+        super("ircServer", InitStage.FRONTEND);
 
         bootstrap = new ServerBootstrap();
         bootstrap.group(bossGroup, childGroup);
@@ -87,7 +98,7 @@ public class IrcServer extends AbstractService {
     }
 
     @Override
-    protected void start0() {
+    public void start() {
         this.channel = bootstrap.bind(new InetSocketAddress(PORT)).awaitUninterruptibly().channel();
     }
 }

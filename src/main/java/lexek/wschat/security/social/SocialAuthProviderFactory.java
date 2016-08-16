@@ -4,15 +4,24 @@ import com.google.common.collect.ImmutableSet;
 import lexek.wschat.security.SecureTokenGenerator;
 import lexek.wschat.security.social.provider.*;
 import org.apache.http.client.HttpClient;
+import org.jvnet.hk2.annotations.Service;
 
+import javax.inject.Inject;
+import javax.inject.Named;
 import java.util.Set;
 
+@Service
 public class SocialAuthProviderFactory {
     private final String baseUrl;
     private final HttpClient httpClient;
     private final SecureTokenGenerator secureTokenGenerator;
 
-    public SocialAuthProviderFactory(String baseUrl, HttpClient httpClient, SecureTokenGenerator secureTokenGenerator) {
+    @Inject
+    public SocialAuthProviderFactory(
+        @Named("http.baseUrl") String baseUrl,
+        HttpClient httpClient,
+        SecureTokenGenerator secureTokenGenerator
+    ) {
         this.baseUrl = baseUrl;
         this.httpClient = httpClient;
         this.secureTokenGenerator = secureTokenGenerator;

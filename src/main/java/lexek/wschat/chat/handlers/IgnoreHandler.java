@@ -8,10 +8,15 @@ import lexek.wschat.chat.e.LimitExceededException;
 import lexek.wschat.chat.model.*;
 import lexek.wschat.chat.processing.AbstractGlobalMessageHandler;
 import lexek.wschat.services.IgnoreService;
+import org.jvnet.hk2.annotations.Service;
 
+import javax.inject.Inject;
+
+@Service
 public class IgnoreHandler extends AbstractGlobalMessageHandler {
     private final IgnoreService ignoreService;
 
+    @Inject
     public IgnoreHandler(IgnoreService ignoreService) {
         super(ImmutableSet.of(MessageProperty.NAME), MessageType.IGNORE, GlobalRole.USER, true);
         this.ignoreService = ignoreService;

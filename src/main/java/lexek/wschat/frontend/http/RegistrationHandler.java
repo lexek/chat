@@ -11,20 +11,16 @@ import org.mindrot.jbcrypt.BCrypt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Set;
-
 import static lexek.wschat.util.Names.*;
 
 public class RegistrationHandler extends SimpleHttpHandler {
     private final Logger logger = LoggerFactory.getLogger(RegistrationHandler.class);
     private final ReCaptcha reCaptcha;
     private final AuthenticationManager authenticationManager;
-    private final Set<String> bannedIps;
 
-    public RegistrationHandler(AuthenticationManager authenticationManager, ReCaptcha reCaptcha, Set<String> bannedIps) {
+    public RegistrationHandler(AuthenticationManager authenticationManager, ReCaptcha reCaptcha) {
         this.authenticationManager = authenticationManager;
         this.reCaptcha = reCaptcha;
-        this.bannedIps = bannedIps;
     }
 
     @Override
@@ -34,7 +30,7 @@ public class RegistrationHandler extends SimpleHttpHandler {
             String password = request.postParam("password");
             String email = request.postParam("email");
             String captchaResponse = request.postParam("g-recaptcha-response");
-            if (bannedIps.contains(request.ip())) {
+            if (authenticationManager.getBannedIps().contains(request.ip())) {
                 response.jsonContent(ImmutableMap.of("success", false, "error", "You can't register new accounts."));
                 return;
             } else if ((captchaResponse != null) && (username != null) && (password != null) && email != null) {

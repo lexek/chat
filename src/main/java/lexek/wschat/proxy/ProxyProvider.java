@@ -1,10 +1,12 @@
 package lexek.wschat.proxy;
 
 import lexek.wschat.chat.Room;
+import org.jvnet.hk2.annotations.Contract;
 
 import java.util.EnumSet;
 import java.util.Set;
 
+@Contract
 public abstract class ProxyProvider {
     private final String name;
     private final boolean supportsAuth;

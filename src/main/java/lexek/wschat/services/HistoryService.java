@@ -1,8 +1,8 @@
 package lexek.wschat.services;
 
 import com.google.common.collect.ImmutableSet;
-import com.lmax.disruptor.EventHandler;
 import lexek.wschat.chat.MessageEvent;
+import lexek.wschat.chat.MessageEventHandler;
 import lexek.wschat.chat.Room;
 import lexek.wschat.chat.filters.BroadcastFilter;
 import lexek.wschat.chat.model.Message;
@@ -13,13 +13,17 @@ import lexek.wschat.db.jooq.tables.pojos.History;
 import lexek.wschat.db.model.DataPage;
 import lexek.wschat.db.model.HistoryData;
 import lexek.wschat.db.model.UserDto;
+import org.jvnet.hk2.annotations.Service;
 
+import javax.inject.Inject;
+import javax.inject.Named;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-public class HistoryService implements EventHandler<MessageEvent> {
+@Service
+public class HistoryService implements MessageEventHandler {
     private static final Set<MessageType> STORE_TYPES = ImmutableSet.of(
         MessageType.MSG,
         MessageType.ME,
@@ -36,7 +40,12 @@ public class HistoryService implements EventHandler<MessageEvent> {
     private final HistoryDao historyDao;
     private final UserService userService;
 
-    public HistoryService(int maxHistory, HistoryDao historyDao, UserService userService) {
+    @Inject
+    public HistoryService(
+        @Named("history.pageLength") int maxHistory,
+        HistoryDao historyDao,
+        UserService userService
+    ) {
         this.maxHistory = maxHistory;
         this.historyDao = historyDao;
         this.userService = userService;

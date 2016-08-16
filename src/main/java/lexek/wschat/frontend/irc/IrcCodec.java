@@ -4,14 +4,21 @@ import com.google.common.collect.ImmutableMap;
 import lexek.wschat.chat.model.*;
 import lexek.wschat.db.model.UserDto;
 import lexek.wschat.frontend.Codec;
+import org.jvnet.hk2.annotations.Service;
 
+import javax.inject.Inject;
+import javax.inject.Named;
 import java.util.Arrays;
 import java.util.List;
 
+@Service
 public class IrcCodec implements Codec {
     private final String serverName;
 
-    public IrcCodec(String serverName) {
+    @Inject
+    public IrcCodec(
+        @Named("core.hostname") String serverName
+    ) {
         this.serverName = serverName;
     }
 

@@ -12,6 +12,7 @@ import lexek.wschat.security.jersey.Auth;
 import lexek.wschat.security.jersey.RequiredRole;
 import lexek.wschat.services.TicketService;
 
+import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
@@ -25,6 +26,7 @@ import java.util.Map;
 public class TicketResource {
     private final TicketService ticketService;
 
+    @Inject
     public TicketResource(TicketService ticketService) {
         this.ticketService = ticketService;
     }

@@ -11,10 +11,14 @@ import lexek.wschat.proxy.ProxyProvider;
 import lexek.wschat.security.social.SocialProfile;
 import lexek.wschat.services.NotificationService;
 import org.apache.http.client.HttpClient;
+import org.jvnet.hk2.annotations.Service;
 
+import javax.inject.Inject;
+import javax.inject.Named;
 import java.util.EnumSet;
 import java.util.concurrent.atomic.AtomicLong;
 
+@Service
 public class GoodGameProxyProvider extends ProxyProvider {
     private final NotificationService notificationService;
     private final ProxyAuthService proxyAuthService;
@@ -23,11 +27,13 @@ public class GoodGameProxyProvider extends ProxyProvider {
     private final AtomicLong messsageId;
     private final HttpClient httpClient;
 
+    @Inject
     public GoodGameProxyProvider(
         NotificationService notificationService,
-        ProxyAuthService proxyAuthService, EventLoopGroup eventLoopGroup,
+        ProxyAuthService proxyAuthService,
+        @Named("proxyEventLoopGroup") EventLoopGroup eventLoopGroup,
         MessageBroadcaster messageBroadcaster,
-        AtomicLong messsageId,
+        @Named("messageId") AtomicLong messsageId,
         HttpClient httpClient
     ) {
         super("goodgame", true, false, false, ImmutableSet.of("goodgame"), EnumSet.noneOf(ModerationOperation.class));

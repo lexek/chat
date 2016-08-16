@@ -15,22 +15,28 @@ import com.lmax.disruptor.dsl.ProducerType;
 import lexek.wschat.chat.Connection;
 import lexek.wschat.chat.Room;
 import lexek.wschat.chat.model.Chatter;
-import lexek.wschat.services.AbstractService;
+import lexek.wschat.services.managed.AbstractManagedService;
+import lexek.wschat.services.managed.InitStage;
 import lexek.wschat.util.LoggingExceptionHandler;
+import org.glassfish.hk2.api.IterableProvider;
+import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.inject.Inject;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
+import java.util.stream.StreamSupport;
 
-public class EventDispatcher extends AbstractService {
+@Service
+public class EventDispatcher extends AbstractManagedService {
     private final Logger logger = LoggerFactory.getLogger(EventDispatcher.class);
     private final Disruptor<Event> disruptor;
     private final RingBuffer<Event> ringBuffer;
     private final Multimap<ChatEventType, EventListener> listeners = LinkedHashMultimap.create();
 
     public EventDispatcher() {
-        super("eventDispatcher");
+        super("eventDispatcher", InitStage.CORE);
         EventFactory<Event> eventFactory = Event::new;
         ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("NOTIFICATIONS_%d").build();
         this.disruptor = new Disruptor<>(
@@ -45,8 +51,15 @@ public class EventDispatcher extends AbstractService {
         this.disruptor.handleEventsWith(new NotificationServiceWorker());
     }
 
+    @Inject
+    public void init(IterableProvider<EventListener> eventListeners) {
+        StreamSupport.stream(eventListeners.spliterator(), false)
+            .sorted((o1, o2) -> o1.getOrder() - o2.getOrder())
+            .forEach(e -> registerListener(e.getEventType(), e));
+    }
+
     @Override
-    protected void start0() {
+    public void start() {
         this.disruptor.start();
     }
 

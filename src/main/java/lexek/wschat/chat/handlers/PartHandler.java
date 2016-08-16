@@ -6,10 +6,15 @@ import lexek.wschat.chat.MessageBroadcaster;
 import lexek.wschat.chat.Room;
 import lexek.wschat.chat.model.*;
 import lexek.wschat.chat.processing.AbstractRoomMessageHandler;
+import org.jvnet.hk2.annotations.Service;
 
+import javax.inject.Inject;
+
+@Service
 public class PartHandler extends AbstractRoomMessageHandler {
     private final MessageBroadcaster messageBroadcaster;
 
+    @Inject
     public PartHandler(MessageBroadcaster messageBroadcaster) {
         super(
             ImmutableSet.of(

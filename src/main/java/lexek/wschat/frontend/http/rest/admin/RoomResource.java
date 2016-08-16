@@ -12,6 +12,7 @@ import lexek.wschat.security.jersey.Auth;
 import lexek.wschat.security.jersey.RequiredRole;
 import lexek.wschat.services.RoomService;
 
+import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
@@ -26,6 +27,7 @@ import java.util.stream.Collectors;
 public class RoomResource {
     private final RoomService roomService;
 
+    @Inject
     public RoomResource(RoomService roomService) {
         this.roomService = roomService;
     }

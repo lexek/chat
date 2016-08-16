@@ -14,15 +14,17 @@ import lexek.wschat.db.model.JournalEntry;
 import lexek.wschat.db.model.UserDto;
 import lexek.wschat.db.model.form.UserChangeSet;
 import lexek.wschat.services.poll.Poll;
+import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
+import javax.inject.Inject;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+@Service
 public class JournalService {
     private static final Map<String, Set<String>> GLOBAL_CATEGORIES = ImmutableMap.of(
         "user_self", ImmutableSet.of("NAME_CHANGE"),
@@ -43,6 +45,7 @@ public class JournalService {
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final JournalDao journalDao;
 
+    @Inject
     public JournalService(JournalDao journalDao) {
         this.journalDao = journalDao;
     }

@@ -6,6 +6,7 @@ import lexek.wschat.db.model.HistoryData;
 import lexek.wschat.security.jersey.RequiredRole;
 import lexek.wschat.services.HistoryService;
 
+import javax.inject.Inject;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.Size;
 import javax.ws.rs.*;
@@ -20,6 +21,7 @@ public class HistoryResource {
 
     private final HistoryService historyService;
 
+    @Inject
     public HistoryResource(HistoryService historyService) {
         this.historyService = historyService;
     }

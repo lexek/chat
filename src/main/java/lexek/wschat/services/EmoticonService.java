@@ -7,8 +7,12 @@ import lexek.wschat.chat.model.Message;
 import lexek.wschat.db.dao.EmoticonDao;
 import lexek.wschat.db.model.Emoticon;
 import lexek.wschat.db.model.UserDto;
+import lexek.wschat.db.tx.Transactional;
+import org.jvnet.hk2.annotations.Service;
 
 import javax.imageio.ImageIO;
+import javax.inject.Inject;
+import javax.inject.Named;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -18,6 +22,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
+@Service
 public class EmoticonService {
     private final Path emoticonsDir;
     private final Dimension maxSize;
@@ -26,9 +31,10 @@ public class EmoticonService {
     private final MessageBroadcaster messageBroadcaster;
     private volatile List<Emoticon> cachedEmoticons = null;
 
+    @Inject
     public EmoticonService(
-        Dimension maxSize,
-        File dataDir,
+        @Named("emoticon.maxDimensions") Dimension maxSize,
+        @Named("core.dataDirectory") File dataDir,
         EmoticonDao emoticonDao,
         JournalService journalService,
         MessageBroadcaster messageBroadcaster
@@ -40,6 +46,7 @@ public class EmoticonService {
         this.journalService = journalService;
     }
 
+    @Transactional
     public boolean add(String code, File sourceFile, String originalName, UserDto admin) throws IOException {
         Path emoticonFile = createEmoticonFile(originalName);
         Files.move(sourceFile.toPath(), emoticonFile);
@@ -87,6 +94,7 @@ public class EmoticonService {
         }
     }
 
+    @Transactional
     public void delete(long emoticonId, UserDto admin) {
         Emoticon emoticon = emoticonDao.delete(emoticonId);
         journalService.deletedEmoticon(admin, emoticon);

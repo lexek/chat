@@ -7,10 +7,15 @@ import lexek.wschat.chat.e.InvalidInputException;
 import lexek.wschat.chat.model.*;
 import lexek.wschat.chat.processing.AbstractGlobalMessageHandler;
 import lexek.wschat.services.IgnoreService;
+import org.jvnet.hk2.annotations.Service;
 
+import javax.inject.Inject;
+
+@Service
 public class UnignoreHandler extends AbstractGlobalMessageHandler {
     private final IgnoreService ignoreService;
 
+    @Inject
     public UnignoreHandler(IgnoreService ignoreService) {
         super(ImmutableSet.of(MessageProperty.NAME), MessageType.UNIGNORE, GlobalRole.USER, true);
         this.ignoreService = ignoreService;

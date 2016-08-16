@@ -5,7 +5,9 @@ import lexek.wschat.chat.e.InternalErrorException;
 import lexek.wschat.db.jooq.tables.pojos.ChatProxy;
 import org.jooq.exception.DataAccessException;
 import org.jooq.impl.DSL;
+import org.jvnet.hk2.annotations.Service;
 
+import javax.inject.Inject;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -13,9 +15,11 @@ import java.util.List;
 
 import static lexek.wschat.db.jooq.tables.ChatProxy.CHAT_PROXY;
 
+@Service
 public class ProxyDao {
     private final DataSource dataSource;
 
+    @Inject
     public ProxyDao(DataSource dataSource) {
         this.dataSource = dataSource;
     }

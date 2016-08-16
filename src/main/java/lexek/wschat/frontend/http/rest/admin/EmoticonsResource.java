@@ -10,6 +10,7 @@ import lexek.wschat.services.EmoticonService;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 
+import javax.inject.Inject;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import javax.ws.rs.*;
@@ -26,6 +27,7 @@ import java.util.List;
 public class EmoticonsResource {
     private final EmoticonService emoticonService;
 
+    @Inject
     public EmoticonsResource(EmoticonService emoticonService) {
         this.emoticonService = emoticonService;
     }

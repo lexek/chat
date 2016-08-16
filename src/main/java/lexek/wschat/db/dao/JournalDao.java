@@ -10,7 +10,9 @@ import org.jooq.Condition;
 import org.jooq.Operator;
 import org.jooq.exception.DataAccessException;
 import org.jooq.impl.DSL;
+import org.jvnet.hk2.annotations.Service;
 
+import javax.inject.Inject;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -24,6 +26,7 @@ import java.util.stream.Collectors;
 import static lexek.wschat.db.jooq.Tables.USER;
 import static lexek.wschat.db.jooq.tables.Journal.JOURNAL;
 
+@Service
 public class JournalDao {
     private static final Set<String> GLOBAL_ACTIONS = ImmutableSet.of(
         "USER_UPDATE",
@@ -37,6 +40,7 @@ public class JournalDao {
     );
     private final DataSource dataSource;
 
+    @Inject
     public JournalDao(DataSource dataSource) {
         this.dataSource = dataSource;
     }

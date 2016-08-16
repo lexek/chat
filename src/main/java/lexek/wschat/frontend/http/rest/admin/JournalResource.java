@@ -1,12 +1,12 @@
 package lexek.wschat.frontend.http.rest.admin;
 
 import lexek.wschat.chat.model.GlobalRole;
-import lexek.wschat.db.dao.JournalDao;
 import lexek.wschat.db.model.DataPage;
 import lexek.wschat.db.model.JournalEntry;
 import lexek.wschat.security.jersey.RequiredRole;
 import lexek.wschat.services.JournalService;
 
+import javax.inject.Inject;
 import javax.validation.constraints.Min;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -20,6 +20,7 @@ public class JournalResource {
 
     private final JournalService journalService;
 
+    @Inject
     public JournalResource(JournalService journalService) {
         this.journalService = journalService;
     }

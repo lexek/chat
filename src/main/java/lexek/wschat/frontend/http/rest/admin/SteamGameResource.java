@@ -6,6 +6,7 @@ import lexek.wschat.chat.model.GlobalRole;
 import lexek.wschat.security.jersey.RequiredRole;
 import lexek.wschat.services.SteamGameResolver;
 
+import javax.inject.Inject;
 import javax.validation.constraints.Min;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -15,6 +16,7 @@ import java.util.Map;
 public class SteamGameResource {
     private final SteamGameResolver steamGameResolver;
 
+    @Inject
     public SteamGameResource(SteamGameResolver steamGameResolver) {
         this.steamGameResolver = steamGameResolver;
     }

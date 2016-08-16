@@ -14,7 +14,9 @@ import org.jooq.Record;
 import org.jooq.Result;
 import org.jooq.exception.DataAccessException;
 import org.jooq.impl.DSL;
+import org.jvnet.hk2.annotations.Service;
 
+import javax.inject.Inject;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -28,9 +30,11 @@ import static lexek.wschat.db.jooq.tables.Poll.POLL;
 import static lexek.wschat.db.jooq.tables.PollAnswer.POLL_ANSWER;
 import static lexek.wschat.db.jooq.tables.PollOption.POLL_OPTION;
 
+@Service
 public class PollDao {
     private final DataSource dataSource;
 
+    @Inject
     public PollDao(DataSource dataSource) {
         this.dataSource = dataSource;
     }

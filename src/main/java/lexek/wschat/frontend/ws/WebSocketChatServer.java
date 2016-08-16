@@ -15,19 +15,30 @@ import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.timeout.IdleStateHandler;
-import lexek.wschat.services.AbstractService;
+import lexek.wschat.services.managed.AbstractManagedService;
+import lexek.wschat.services.managed.InitStage;
 import lexek.wschat.util.ExceptionLogger;
+import org.jvnet.hk2.annotations.Service;
 
+import javax.inject.Inject;
+import javax.inject.Named;
 import java.util.concurrent.TimeUnit;
 
-public class WebSocketChatServer extends AbstractService {
+@Service
+public class WebSocketChatServer extends AbstractManagedService {
     private final ServerBootstrap bootstrap;
     private final int port;
     private Channel channel;
 
-    public WebSocketChatServer(final int port, final WebSocketChatHandler handler, EventLoopGroup bossGroup,
-                               EventLoopGroup childGroup, final SslContext sslContext) {
-        super("websocketServer");
+    @Inject
+    public WebSocketChatServer(
+        @Named("websocket.port") int port,
+        WebSocketChatHandler handler,
+        @Named("frontend.bossLoopGroup") EventLoopGroup bossGroup,
+        @Named("frontend.childLoopGroup") EventLoopGroup childGroup,
+        SslContext sslContext
+    ) {
+        super("websocketServer", InitStage.FRONTEND);
         this.port = port;
         final ChannelHandler flashPolicyHandler = new FlashPolicyFileHandler(port);
         final ExceptionLogger exceptionLogger = new ExceptionLogger();
@@ -86,7 +97,7 @@ public class WebSocketChatServer extends AbstractService {
     }
 
     @Override
-    protected void start0() {
+    public void start() {
         this.channel = bootstrap.bind(port).awaitUninterruptibly().channel();
     }
 }

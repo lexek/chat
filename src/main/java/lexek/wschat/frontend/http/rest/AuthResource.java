@@ -19,6 +19,7 @@ import lexek.wschat.services.UserService;
 import org.glassfish.jersey.server.mvc.Viewable;
 import org.hibernate.validator.constraints.NotEmpty;
 
+import javax.inject.Inject;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.*;
@@ -36,10 +37,12 @@ public class AuthResource {
     private final UserService userService;
     private final ReCaptcha reCaptcha;
 
+    @Inject
     public AuthResource(
         SocialAuthService socialAuthService,
         AuthenticationManager authenticationManager,
-        UserService userService, ReCaptcha reCaptcha
+        UserService userService,
+        ReCaptcha reCaptcha
     ) {
         this.socialAuthService = socialAuthService;
         this.authenticationManager = authenticationManager;

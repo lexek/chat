@@ -7,10 +7,15 @@ import lexek.wschat.chat.model.*;
 import lexek.wschat.chat.processing.AbstractRoomMessageHandler;
 import lexek.wschat.proxy.ModerationOperation;
 import lexek.wschat.proxy.ProxyManager;
+import org.jvnet.hk2.annotations.Service;
 
+import javax.inject.Inject;
+
+@Service
 public class ProxyModerationHandler extends AbstractRoomMessageHandler {
     private final ProxyManager proxyManager;
 
+    @Inject
     public ProxyModerationHandler(ProxyManager proxyManager) {
         super(
             ImmutableSet.of(

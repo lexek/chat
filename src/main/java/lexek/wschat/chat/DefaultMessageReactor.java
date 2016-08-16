@@ -15,14 +15,18 @@ import lexek.wschat.chat.model.Message;
 import lexek.wschat.chat.model.MessageType;
 import lexek.wschat.chat.model.User;
 import lexek.wschat.chat.processing.HandlerInvoker;
-import lexek.wschat.services.AbstractService;
+import lexek.wschat.services.managed.AbstractManagedService;
+import lexek.wschat.services.managed.InitStage;
 import lexek.wschat.util.LoggingExceptionHandler;
+import org.jvnet.hk2.annotations.Service;
 
+import javax.inject.Inject;
 import java.util.EnumSet;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 
-public class DefaultMessageReactor extends AbstractService implements MessageReactor, EventHandler<DefaultMessageReactor.InboundMessageEvent> {
+@Service
+public class DefaultMessageReactor extends AbstractManagedService implements MessageReactor, EventHandler<DefaultMessageReactor.InboundMessageEvent> {
     private final EnumSet<MessageType> availableForBanned = EnumSet.of(
         MessageType.PART,
         MessageType.PING,
@@ -32,8 +36,9 @@ public class DefaultMessageReactor extends AbstractService implements MessageRea
     private final RingBuffer<InboundMessageEvent> ringBuffer;
     private final Timer timer = new Timer();
 
+    @Inject
     public DefaultMessageReactor(HandlerInvoker handlerInvoker) {
-        super("messageReactor");
+        super("messageReactor", InitStage.CORE);
         this.handlerInvoker = handlerInvoker;
         EventFactory<InboundMessageEvent> eventFactory = InboundMessageEvent::new;
         ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("MESSAGE_REACTOR_%d").build();
@@ -74,7 +79,7 @@ public class DefaultMessageReactor extends AbstractService implements MessageRea
     }
 
     @Override
-    protected void start0() {
+    public void start() {
         this.disruptor.start();
     }
 

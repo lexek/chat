@@ -15,6 +15,7 @@ import lexek.wschat.security.jersey.RequiredRole;
 import lexek.wschat.services.RoomService;
 import org.hibernate.validator.constraints.NotEmpty;
 
+import javax.inject.Inject;
 import javax.validation.constraints.Min;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -28,6 +29,7 @@ public class ProxyResource {
     private final ProxyManager proxyManager;
     private final ProxyAuthService proxyAuthService;
 
+    @Inject
     public ProxyResource(RoomService roomService, ProxyManager proxyManager, ProxyAuthService proxyAuthService) {
         this.roomService = roomService;
         this.proxyManager = proxyManager;

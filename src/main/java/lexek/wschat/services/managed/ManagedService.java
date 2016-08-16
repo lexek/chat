@@ -1,9 +1,11 @@
-package lexek.wschat.services;
+package lexek.wschat.services.managed;
 
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.health.HealthCheck;
+import org.jvnet.hk2.annotations.Contract;
 
-public interface Service {
+@Contract
+public interface ManagedService {
     String getName();
 
     void start() throws Exception;
@@ -13,4 +15,6 @@ public interface Service {
     void registerMetrics(MetricRegistry metricRegistry);
 
     HealthCheck getHealthCheck();
+
+    InitStage getStage();
 }

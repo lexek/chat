@@ -6,23 +6,41 @@ import lexek.wschat.chat.model.GlobalRole;
 import lexek.wschat.db.dao.ProxyAuthDao;
 import lexek.wschat.db.model.ProxyAuth;
 import lexek.wschat.db.model.UserDto;
+import lexek.wschat.security.social.CredentialsHolder;
+import lexek.wschat.security.social.SocialAuthProviderFactory;
 import lexek.wschat.security.social.SocialProfile;
 import lexek.wschat.security.social.SocialToken;
 import lexek.wschat.security.social.provider.SocialAuthProvider;
+import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.inject.Inject;
+import javax.inject.Named;
 import java.io.IOException;
 import java.util.*;
 
+@Service
 public class ProxyAuthService {
     private final Logger logger = LoggerFactory.getLogger(ProxyAuthService.class);
     private final Map<String, SocialAuthProvider> socialAuthServices = new ConcurrentHashMapV8<>();
     private final ProxyAuthDao proxyAuthDao;
     private final HashMap<Long, SocialProfile> tokenCache = new HashMap<>();
 
+    @Inject
     public ProxyAuthService(ProxyAuthDao proxyAuthDao) {
         this.proxyAuthDao = proxyAuthDao;
+    }
+
+    @Inject
+    public void init(
+        @Named("proxy.credentials") CredentialsHolder credentialsHolder,
+        SocialAuthProviderFactory socialAuthProviderFactory
+    ) {
+        credentialsHolder.get().forEach((name, credentials) ->
+            registerProvider(socialAuthProviderFactory.newProvider(name, credentials, false))
+        );
+        loadTokens();
     }
 
     public void registerProvider(SocialAuthProvider provider) {

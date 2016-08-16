@@ -8,10 +8,13 @@ import lexek.wschat.db.model.UserDto;
 import lexek.wschat.services.ChatterService;
 import lexek.wschat.services.JournalService;
 import lexek.wschat.services.UserService;
+import org.jvnet.hk2.annotations.Service;
 
+import javax.inject.Inject;
 import java.util.Collection;
 import java.util.Map;
 
+@Service
 public class RoomManager {
     private final Map<String, Room> rooms = new ConcurrentHashMapV8<>();
     private final Map<Long, Room> roomIds = new ConcurrentHashMapV8<>();
@@ -21,6 +24,7 @@ public class RoomManager {
     private final UserService userService;
     private final JournalService journalService;
 
+    @Inject
     public RoomManager(UserService userService, MessageBroadcaster messageBroadcaster, RoomDao roomDao,
                        ChatterService chatterService, JournalService journalService) {
         this.messageBroadcaster = messageBroadcaster;

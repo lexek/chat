@@ -6,10 +6,15 @@ import lexek.wschat.chat.Room;
 import lexek.wschat.chat.model.*;
 import lexek.wschat.chat.processing.AbstractRoomMessageHandler;
 import lexek.wschat.services.ChatterService;
+import org.jvnet.hk2.annotations.Service;
 
+import javax.inject.Inject;
+
+@Service
 public class SetRoleHandler extends AbstractRoomMessageHandler {
     private final ChatterService chatterService;
 
+    @Inject
     public SetRoleHandler(ChatterService chatterService) {
         super(
             ImmutableSet.of(

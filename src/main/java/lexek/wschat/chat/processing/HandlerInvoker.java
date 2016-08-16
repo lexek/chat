@@ -7,13 +7,18 @@ import lexek.wschat.chat.Room;
 import lexek.wschat.chat.RoomManager;
 import lexek.wschat.chat.e.InvalidInputException;
 import lexek.wschat.chat.model.*;
+import lexek.wschat.security.AuthenticationManager;
 import lexek.wschat.security.CaptchaService;
 import lexek.wschat.services.ChatterService;
+import org.glassfish.hk2.api.IterableProvider;
+import org.jvnet.hk2.annotations.Service;
 
+import javax.inject.Inject;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+@Service
 public class HandlerInvoker {
     private static final Set<MessageType> MODERATED_TYPES =
         ImmutableSet.of(MessageType.MSG, MessageType.ME, MessageType.LIKE);
@@ -22,16 +27,27 @@ public class HandlerInvoker {
     private final Map<MessageType, RoomMessageHandler> roomMessageHandlers;
     private final RoomManager roomManager;
     private final ChatterService chatterService;
-    private final Set<String> bannedIps;
+    private final AuthenticationManager authenticationManager;
     private final CaptchaService captchaService;
 
-    public HandlerInvoker(RoomManager roomManager, ChatterService chatterService, Set<String> bannedIps, CaptchaService captchaService) {
+    @Inject
+    public HandlerInvoker(
+        RoomManager roomManager,
+        ChatterService chatterService,
+        AuthenticationManager authenticationManager,
+        CaptchaService captchaService
+    ) {
         this.roomManager = roomManager;
         this.chatterService = chatterService;
-        this.bannedIps = bannedIps;
+        this.authenticationManager = authenticationManager;
         this.captchaService = captchaService;
         this.globalMessageHandlers = new HashMap<>();
         this.roomMessageHandlers = new HashMap<>();
+    }
+
+    @Inject
+    public void init(IterableProvider<MessageHandler> handlers) {
+        handlers.forEach(this::register);
     }
 
     public void register(MessageHandler handler) {
@@ -137,7 +153,7 @@ public class HandlerInvoker {
                         }
                     }
                 }
-                if (bannedIps.contains(connection.getIp()) && !user.hasRole(GlobalRole.MOD)) {
+                if (authenticationManager.getBannedIps().contains(connection.getIp()) && !user.hasRole(GlobalRole.MOD)) {
                     captchaService.tryAuthorize(
                         connection,
                         () -> handler.handle(connection, connection.getUser(), room, chatter, message)

@@ -9,25 +9,30 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.netty.handler.codec.http.HttpMethod;
 import lexek.wschat.chat.e.InternalErrorException;
+import lexek.wschat.db.dao.ProxyDao;
 import lexek.wschat.util.JsonResponseHandler;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.message.BasicNameValuePair;
+import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.inject.Inject;
 import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Service
 public class TwitterApiClient {
     private final Logger logger = LoggerFactory.getLogger(TwitterApiClient.class);
     private final LoadingCache<String, Long> idCache;
     private final HttpClient httpClient;
     private final TwitterCredentials twitterCredentials;
 
+    @Inject
     public TwitterApiClient(HttpClient httpClient, TwitterCredentials twitterCredentials) {
         this.httpClient = httpClient;
         this.twitterCredentials = twitterCredentials;
@@ -37,6 +42,19 @@ public class TwitterApiClient {
                 return getProfileSummary(key).getId();
             }
         });
+    }
+
+    @Inject
+    public void init(ProxyDao proxyDao) {
+        this.loadNames(
+            proxyDao
+                .getAll()
+                .stream()
+                .filter(chatProxy -> chatProxy.getProviderName().equals("twitter"))
+                .filter(chatProxy -> chatProxy.getRemoteRoom().startsWith("@"))
+                .map(chatProxy -> chatProxy.getRemoteRoom().substring(1))
+                .collect(Collectors.toList())
+        );
     }
 
     public ProfileSummary getProfileSummary(String name) {

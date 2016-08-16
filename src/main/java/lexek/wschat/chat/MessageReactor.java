@@ -1,8 +1,10 @@
 package lexek.wschat.chat;
 
 import lexek.wschat.chat.model.Message;
-import lexek.wschat.services.Service;
+import lexek.wschat.services.managed.ManagedService;
+import org.jvnet.hk2.annotations.Contract;
 
-public interface MessageReactor extends Service {
+@Contract
+public interface MessageReactor extends ManagedService {
     void processMessage(Connection connection, Message message);
 }

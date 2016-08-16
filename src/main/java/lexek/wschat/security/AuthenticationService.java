@@ -16,14 +16,18 @@ import lexek.wschat.chat.model.ConnectionState;
 import lexek.wschat.chat.model.Message;
 import lexek.wschat.chat.model.User;
 import lexek.wschat.db.model.UserDto;
-import lexek.wschat.services.AbstractService;
 import lexek.wschat.services.UserService;
+import lexek.wschat.services.managed.AbstractManagedService;
+import lexek.wschat.services.managed.InitStage;
 import lexek.wschat.util.LoggingExceptionHandler;
+import org.jvnet.hk2.annotations.Service;
 
+import javax.inject.Inject;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 
-public class AuthenticationService extends AbstractService {
+@Service
+public class AuthenticationService extends AbstractManagedService {
     private final Disruptor<AuthenticationEvent> disruptor;
     private final RingBuffer<AuthenticationEvent> ringBuffer;
     private final AuthenticationManager authenticationManager;
@@ -31,13 +35,14 @@ public class AuthenticationService extends AbstractService {
     private final CaptchaService captchaService;
     private final EventDispatcher eventDispatcher;
 
+    @Inject
     public AuthenticationService(
         AuthenticationManager authenticationManager,
         UserService userService,
         CaptchaService captchaService,
         EventDispatcher eventDispatcher
     ) {
-        super("authenticationService");
+        super("authenticationService", InitStage.SERVICES);
         this.authenticationManager = authenticationManager;
         this.userService = userService;
         this.captchaService = captchaService;
@@ -57,7 +62,7 @@ public class AuthenticationService extends AbstractService {
     }
 
     @Override
-    protected void start0() {
+    public void start() {
         this.disruptor.start();
     }
 

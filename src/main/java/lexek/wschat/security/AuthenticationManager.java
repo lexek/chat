@@ -11,21 +11,28 @@ import lexek.wschat.db.model.Email;
 import lexek.wschat.db.model.SessionDto;
 import lexek.wschat.db.model.UserAuthDto;
 import lexek.wschat.db.model.UserDto;
+import lexek.wschat.db.tx.Transactional;
 import lexek.wschat.security.social.SocialProfile;
 import lexek.wschat.services.EmailService;
 import lexek.wschat.util.Colors;
 import org.apache.http.HttpHeaders;
+import org.jvnet.hk2.annotations.Service;
 import org.mindrot.jbcrypt.BCrypt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.inject.Inject;
+import javax.inject.Named;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.atomic.AtomicInteger;
 
+@Service
 public class AuthenticationManager {
     private final Logger logger = LoggerFactory.getLogger(AuthenticationManager.class);
     private final Map<String, AtomicInteger> failedLogin = new ConcurrentHashMapV8<>();
@@ -35,9 +42,11 @@ public class AuthenticationManager {
     private final EmailService emailService;
     private final ConnectionManager connectionManager;
     private final UserAuthDao userAuthDao;
+    private final Set<String> bannedIps = new CopyOnWriteArraySet<>();
 
+    @Inject
     public AuthenticationManager(
-        String host,
+        @Named("core.hostname") String host,
         SecureTokenGenerator secureTokenGenerator,
         EmailService emailService,
         ConnectionManager connectionManager,
@@ -80,6 +89,7 @@ public class AuthenticationManager {
         return i != null ? i.get() : 0;
     }
 
+    @Transactional
     public SessionDto authenticate(String username, String password, String ip) {
         UserDto user = fastAuth(username, password, ip);
         if (user != null) {
@@ -101,10 +111,12 @@ public class AuthenticationManager {
         );
     }
 
+    @Transactional
     public UserAuthDto getOrCreateUserAuth(SocialProfile profile, UserDto user) {
         return userAuthDao.getOrCreateUserAuth(profile, user);
     }
 
+    @Transactional
     public UserDto checkFullAuthentication(String sid, String ip) {
         UserDto user = null;
         SessionDto session = userAuthDao.getSession(sid, ip);
@@ -114,7 +126,6 @@ public class AuthenticationManager {
         return user;
     }
 
-    //todo:rename
     public UserDto checkFullAuthentication(Request request) {
         UserDto user = null;
         if (request.hasHeader(HttpHeaders.AUTHORIZATION)) {
@@ -188,6 +199,7 @@ public class AuthenticationManager {
         doChangeEmail(user, email);
     }
 
+    @Transactional
     private void doChangeEmail(UserDto user, String email) {
         String verificationCode = secureTokenGenerator.generateVerificationCode();
         if (userAuthDao.setEmail(user.getId(), email, verificationCode)) {
@@ -218,6 +230,7 @@ public class AuthenticationManager {
         }
     }
 
+    @Transactional
     public synchronized boolean verifyEmail(String code, long userId) {
         boolean success = userAuthDao.verifyEmail(code, userId);
         if (success) {
@@ -231,6 +244,7 @@ public class AuthenticationManager {
         return success;
     }
 
+    @Transactional
     public synchronized void setPassword(UserDto user, String password, String oldPassword) {
         UserAuthDto auth = getAuthDataForUser(user, "password");
         if (auth != null && !validatePassword(oldPassword, auth.getAuthenticationKey())) {
@@ -281,5 +295,9 @@ public class AuthenticationManager {
 
     public synchronized void deleteAuth(UserDto user, String serviceName) {
         userAuthDao.deleteAuth(user, serviceName);
+    }
+
+    public Set<String> getBannedIps() {
+        return this.bannedIps;
     }
 }

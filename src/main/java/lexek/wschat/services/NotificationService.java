@@ -8,9 +8,12 @@ import lexek.wschat.chat.model.User;
 import lexek.wschat.db.dao.PendingNotificationDao;
 import lexek.wschat.db.model.Email;
 import lexek.wschat.db.model.UserDto;
+import org.jvnet.hk2.annotations.Service;
 
+import javax.inject.Inject;
 import java.util.List;
 
+@Service
 public class NotificationService {
     private final ConnectionManager connectionManager;
     private final UserService userService;
@@ -18,11 +21,14 @@ public class NotificationService {
     private final EmailService emailService;
     private final PendingNotificationDao pendingNotificationDao;
 
-    public NotificationService(ConnectionManager connectionManager,
-                               UserService userService,
-                               MessageBroadcaster messageBroadcaster,
-                               EmailService emailService,
-                               PendingNotificationDao pendingNotificationDao) {
+    @Inject
+    public NotificationService(
+        ConnectionManager connectionManager,
+        UserService userService,
+        MessageBroadcaster messageBroadcaster,
+        EmailService emailService,
+        PendingNotificationDao pendingNotificationDao
+    ) {
         this.connectionManager = connectionManager;
         this.userService = userService;
         this.messageBroadcaster = messageBroadcaster;

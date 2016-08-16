@@ -6,7 +6,9 @@ import lexek.wschat.chat.model.Chatter;
 import lexek.wschat.chat.model.LocalRole;
 import lexek.wschat.chat.model.Message;
 import lexek.wschat.chat.model.User;
+import org.jvnet.hk2.annotations.Contract;
 
+@Contract
 public interface RoomMessageHandler extends MessageHandler {
     boolean joinRequired();
 

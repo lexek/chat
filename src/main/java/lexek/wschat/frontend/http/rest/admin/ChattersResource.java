@@ -19,6 +19,7 @@ import lexek.wschat.services.RoomService;
 import lexek.wschat.services.UserService;
 import lexek.wschat.util.Pages;
 
+import javax.inject.Inject;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.Size;
 import javax.ws.rs.*;
@@ -36,6 +37,7 @@ public class ChattersResource {
     private final ChatterService chatterService;
     private final UserService userService;
 
+    @Inject
     public ChattersResource(ChatterDao chatterDao, RoomService roomService, ChatterService chatterService, UserService userService) {
         this.chatterDao = chatterDao;
         this.roomService = roomService;

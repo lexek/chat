@@ -11,17 +11,22 @@ import lexek.wschat.chat.model.User;
 import lexek.wschat.db.dao.PollDao;
 import lexek.wschat.db.model.DataPage;
 import lexek.wschat.db.model.UserDto;
+import lexek.wschat.db.tx.Transactional;
 import lexek.wschat.services.JournalService;
+import org.jvnet.hk2.annotations.Service;
 
+import javax.inject.Inject;
 import java.util.List;
 import java.util.Map;
 
+@Service
 public class PollService {
     private final PollDao pollDao;
     private final JournalService journalService;
     private final MessageBroadcaster messageBroadcaster;
     private final Map<Room, PollState> activePolls = new ConcurrentHashMapV8<>();
 
+    @Inject
     public PollService(
         PollDao pollDao,
         MessageBroadcaster messageBroadcaster,
@@ -36,6 +41,7 @@ public class PollService {
         }
     }
 
+    @Transactional
     public PollState createPoll(Room room, UserDto admin, String question, List<String> options) {
         if (activePolls.containsKey(room)) {
             return null;
@@ -59,6 +65,7 @@ public class PollService {
         }
     }
 
+    @Transactional
     public void vote(Room room, User user, int option) {
         PollState pollState = activePolls.get(room);
         if (pollState != null && option < pollState.getPoll().getOptions().size()) {
@@ -72,6 +79,7 @@ public class PollService {
         }
     }
 
+    @Transactional
     public void closePoll(Room room, UserDto admin) {
         PollState pollState = activePolls.remove(room);
         if (pollState != null) {

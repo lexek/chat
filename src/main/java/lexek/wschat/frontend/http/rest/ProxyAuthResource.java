@@ -13,6 +13,7 @@ import lexek.wschat.security.social.SocialToken;
 import lexek.wschat.security.social.provider.SocialAuthProvider;
 import org.hibernate.validator.constraints.NotEmpty;
 
+import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.*;
 import java.io.IOException;
@@ -25,6 +26,7 @@ import java.util.stream.Collectors;
 public class ProxyAuthResource {
     private final ProxyAuthService proxyAuthService;
 
+    @Inject
     public ProxyAuthResource(ProxyAuthService proxyAuthService) {
         this.proxyAuthService = proxyAuthService;
     }

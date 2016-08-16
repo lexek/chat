@@ -8,7 +8,9 @@ import lexek.wschat.db.model.UserDto;
 import org.jooq.Record1;
 import org.jooq.exception.DataAccessException;
 import org.jooq.impl.DSL;
+import org.jvnet.hk2.annotations.Service;
 
+import javax.inject.Inject;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -18,9 +20,11 @@ import java.util.stream.Collectors;
 import static lexek.wschat.db.jooq.tables.IgnoreList.IGNORE_LIST;
 import static lexek.wschat.db.jooq.tables.User.USER;
 
+@Service
 public class IgnoreDao {
     private final DataSource dataSource;
 
+    @Inject
     public IgnoreDao(DataSource dataSource) {
         this.dataSource = dataSource;
     }

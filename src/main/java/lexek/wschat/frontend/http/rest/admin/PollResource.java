@@ -11,6 +11,7 @@ import lexek.wschat.services.RoomService;
 import lexek.wschat.services.poll.PollService;
 import lexek.wschat.services.poll.PollState;
 
+import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import javax.ws.rs.*;
@@ -22,6 +23,7 @@ public class PollResource {
     private final RoomService roomService;
     private final PollService pollService;
 
+    @Inject
     public PollResource(RoomService roomService, PollService pollService) {
         this.roomService = roomService;
         this.pollService = pollService;

@@ -7,6 +7,7 @@ import lexek.wschat.security.AuthenticationManager;
 import lexek.wschat.security.jersey.Auth;
 import lexek.wschat.security.jersey.RequiredRole;
 
+import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
@@ -18,6 +19,7 @@ import javax.ws.rs.core.Response;
 public class EmailResource {
     private final AuthenticationManager authenticationManager;
 
+    @Inject
     public EmailResource(AuthenticationManager authenticationManager) {
         this.authenticationManager = authenticationManager;
     }

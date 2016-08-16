@@ -13,9 +13,14 @@ import lexek.wschat.chat.RoomManager;
 import lexek.wschat.chat.model.*;
 import lexek.wschat.security.AuthenticationCallback;
 import lexek.wschat.security.AuthenticationService;
+import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.inject.Inject;
+import javax.inject.Named;
+
+@Service
 @ChannelHandler.Sharable
 public class IrcServerHandler extends ChannelInboundHandlerAdapter implements AuthenticationCallback<IrcConnection> {
     private static final AttributeKey<IrcConnection> WRAPPER_ATTR_KEY = AttributeKey.valueOf("IRC_CONNECTION_WRAPPER");
@@ -28,8 +33,15 @@ public class IrcServerHandler extends ChannelInboundHandlerAdapter implements Au
     private final RoomManager roomManager;
     private final IrcProtocol protocol;
 
-    public IrcServerHandler(MessageReactor messageReactor, String host, AuthenticationService authenticationService,
-                            IrcConnectionGroup connectionGroup, RoomManager roomManager, IrcProtocol protocol) {
+    @Inject
+    public IrcServerHandler(
+        MessageReactor messageReactor,
+        @Named("core.hostname") String host,
+        AuthenticationService authenticationService,
+        IrcConnectionGroup connectionGroup,
+        RoomManager roomManager,
+        IrcProtocol protocol
+    ) {
         this.messageReactor = messageReactor;
         this.host = host;
         this.authenticationService = authenticationService;

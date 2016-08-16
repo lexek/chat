@@ -6,10 +6,15 @@ import lexek.wschat.chat.model.Chatter;
 import lexek.wschat.chat.model.Message;
 import lexek.wschat.chat.model.MessageType;
 import lexek.wschat.services.ChatterService;
+import org.jvnet.hk2.annotations.Service;
 
+import javax.inject.Inject;
+
+@Service
 public class UnbanHandler extends AbstractModerationHandler {
     private final ChatterService chatterService;
 
+    @Inject
     public UnbanHandler(ChatterService chatterService) {
         super(MessageType.UNBAN, true, "UNBAN_DENIED");
         this.chatterService = chatterService;

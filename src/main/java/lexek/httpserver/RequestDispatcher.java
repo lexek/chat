@@ -6,12 +6,10 @@ import com.google.common.collect.ImmutableSet;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.channel.*;
 import io.netty.handler.codec.http.*;
-import lexek.wschat.security.AuthenticationManager;
 import org.apache.http.entity.ContentType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.core.Application;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.MalformedURLException;
@@ -44,8 +42,6 @@ public class RequestDispatcher extends SimpleChannelInboundHandler<FullHttpReque
     public RequestDispatcher(
         ServerMessageHandler serverMessageHandler,
         ViewResolvers viewResolvers,
-        AuthenticationManager authenticationManager,
-        Application resourceConfig,
         MetricRegistry metricRegistry,
         String hostname
     ) {
@@ -54,8 +50,6 @@ public class RequestDispatcher extends SimpleChannelInboundHandler<FullHttpReque
         this.host = hostname + ":1337";
         this.hostname = hostname;
         this.origin = "https://" + this.host;
-        JerseyContainer jerseyContainer = new JerseyContainer(authenticationManager, resourceConfig);
-        this.matcherEntries.add(new MatcherEntry(Pattern.compile("/rest/.*"), jerseyContainer));
         this.timer = metricRegistry.register("httpServer.requests", new Timer());
     }
 

@@ -8,20 +8,25 @@ import lexek.wschat.proxy.ModerationOperation;
 import lexek.wschat.proxy.Proxy;
 import lexek.wschat.proxy.ProxyProvider;
 import lexek.wschat.services.NotificationService;
+import org.jvnet.hk2.annotations.Service;
 
+import javax.inject.Inject;
+import javax.inject.Named;
 import java.util.EnumSet;
 import java.util.Set;
 
+@Service
 public class TwitterProxyProvider extends ProxyProvider {
     private static final Set<String> PREFIXES = ImmutableSet.of("@", "$", "#", "link:", "text:");
     private final MessageBroadcaster messageBroadcaster;
     private final TwitterStreamingClient twitterClient;
     private final TwitterApiClient profileSource;
 
+    @Inject
     public TwitterProxyProvider(
         NotificationService notificationService,
         MessageBroadcaster messageBroadcaster,
-        EventLoopGroup eventLoopGroup,
+        @Named("proxyEventLoopGroup") EventLoopGroup eventLoopGroup,
         TwitterCredentials credentials,
         TwitterApiClient profileSource
     ) {

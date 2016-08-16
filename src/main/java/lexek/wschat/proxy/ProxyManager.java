@@ -14,17 +14,22 @@ import lexek.wschat.db.dao.ProxyDao;
 import lexek.wschat.db.jooq.tables.pojos.ChatProxy;
 import lexek.wschat.db.model.ProxyAuth;
 import lexek.wschat.db.model.UserDto;
-import lexek.wschat.services.AbstractService;
 import lexek.wschat.services.JournalService;
 import lexek.wschat.services.MessageConsumerService;
+import lexek.wschat.services.managed.AbstractManagedService;
+import lexek.wschat.services.managed.InitStage;
+import org.glassfish.hk2.api.IterableProvider;
+import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.inject.Inject;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ProxyManager extends AbstractService implements MessageConsumerService {
+@Service
+public class ProxyManager extends AbstractManagedService implements MessageConsumerService {
     private final Logger logger = LoggerFactory.getLogger(ProxyManager.class);
     private final Map<String, ProxyProvider> providers = new HashMap<>();
     private final Multimap<Long, Proxy> proxies = HashMultimap.create();
@@ -32,11 +37,17 @@ public class ProxyManager extends AbstractService implements MessageConsumerServ
     private final RoomManager roomManager;
     private final JournalService journalService;
 
+    @Inject
     public ProxyManager(ProxyDao proxyDao, RoomManager roomManager, JournalService journalService) {
-        super("proxyManager");
+        super("proxyManager", InitStage.SERVICES);
         this.proxyDao = proxyDao;
         this.roomManager = roomManager;
         this.journalService = journalService;
+    }
+
+    @Inject
+    public void init(IterableProvider<ProxyProvider> proxyProviders) {
+        proxyProviders.forEach(this::registerProvider);
     }
 
     public void registerProvider(ProxyProvider proxyProvider) {
@@ -141,7 +152,7 @@ public class ProxyManager extends AbstractService implements MessageConsumerServ
     }
 
     @Override
-    protected void start0() {
+    public void start() {
         for (ChatProxy chatProxy : proxyDao.getAll()) {
             ProxyProvider provider = providers.get(chatProxy.getProviderName());
             Room room = roomManager.getRoomInstance(chatProxy.getRoomId());

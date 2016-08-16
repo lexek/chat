@@ -6,6 +6,7 @@ import lexek.wschat.chat.TestConnection;
 import lexek.wschat.chat.model.*;
 import lexek.wschat.db.dao.UserDao;
 import lexek.wschat.db.model.UserDto;
+import lexek.wschat.services.UserService;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -18,7 +19,7 @@ public class ColorHandlerTest {
     private UserDto userDto = new UserDto(0L, "user", GlobalRole.USER, "#1337ff", false, false, null, true, false);
     private User user = new User(userDto);
     private Connection connection = spy(new TestConnection(user));
-    private UserDao userDao = mock(UserDao.class);
+    private UserService userDao = mock(UserService.class);
     private final ColorHandler handler = new ColorHandler(userDao);
 
     @Before
@@ -54,7 +55,7 @@ public class ColorHandlerTest {
     @Test
     public void testSetColorWithGoodColor() {
         handler.handle(connection, user, Message.colorMessage("springgreen"));
-        verify(userDao, times(1)).setColor(eq(0L), eq("#00BA5D"));
+        verify(userDao, times(1)).setColor(eq(userDto), eq("#00BA5D"));
         verify(connection, times(1)).send(eq(Message.colorMessage("#00BA5D")));
         assertEquals(user.getColor(), "#00BA5D");
     }
@@ -70,7 +71,7 @@ public class ColorHandlerTest {
     public void testSuperadminSetColorWithBadColor() {
         user.setRole(GlobalRole.SUPERADMIN);
         handler.handle(connection, user, Message.colorMessage("#000000"));
-        verify(userDao, times(1)).setColor(eq(0L), eq("#000000"));
+        verify(userDao, times(1)).setColor(eq(userDto), eq("#000000"));
         verify(connection, times(1)).send(eq(Message.colorMessage("#000000")));
         assertEquals(user.getColor(), "#000000");
     }

@@ -6,7 +6,9 @@ import lexek.wschat.chat.ConnectionGroup;
 import lexek.wschat.chat.model.Message;
 import lexek.wschat.chat.model.MessageType;
 import lexek.wschat.frontend.Codec;
+import org.jvnet.hk2.annotations.Service;
 
+import javax.inject.Inject;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -16,6 +18,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
+@Service
 public class WebSocketConnectionGroup implements ConnectionGroup<WebSocketConnectionAdapter> {
     private static final ImmutableSet<MessageType> IGNORE_TYPES = ImmutableSet.of(MessageType.JOIN, MessageType.PART);
     private final Codec codec;
@@ -24,8 +27,9 @@ public class WebSocketConnectionGroup implements ConnectionGroup<WebSocketConnec
     private final Lock readLock = lock.readLock();
     private final Lock writeLock = lock.writeLock();
 
-    public WebSocketConnectionGroup(Codec codec) {
-        this.codec = codec;
+    @Inject
+    public WebSocketConnectionGroup(WebSocketProtocol protocol) {
+        this.codec = protocol.getCodec();
     }
 
     @Override

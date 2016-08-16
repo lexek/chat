@@ -7,6 +7,7 @@ import lexek.wschat.security.AuthenticationManager;
 import lexek.wschat.security.jersey.Auth;
 import lexek.wschat.security.jersey.RequiredRole;
 
+import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
@@ -21,6 +22,7 @@ import javax.ws.rs.core.Response;
 public class PasswordResource {
     private final AuthenticationManager authenticationManager;
 
+    @Inject
     public PasswordResource(AuthenticationManager authenticationManager) {
         this.authenticationManager = authenticationManager;
     }

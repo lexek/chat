@@ -5,7 +5,9 @@ import lexek.wschat.db.jooq.tables.pojos.Room;
 import org.jooq.DSLContext;
 import org.jooq.exception.DataAccessException;
 import org.jooq.impl.DSL;
+import org.jvnet.hk2.annotations.Service;
 
+import javax.inject.Inject;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -13,10 +15,11 @@ import java.util.List;
 
 import static lexek.wschat.db.jooq.tables.Room.ROOM;
 
-
+@Service
 public class RoomDao {
     private final DataSource dataSource;
 
+    @Inject
     public RoomDao(DataSource dataSource) {
         this.dataSource = dataSource;
     }

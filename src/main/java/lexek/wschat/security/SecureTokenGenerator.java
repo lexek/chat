@@ -1,9 +1,11 @@
 package lexek.wschat.security;
 
 import com.google.common.io.BaseEncoding;
+import org.jvnet.hk2.annotations.Service;
 
 import java.security.SecureRandom;
 
+@Service
 public class SecureTokenGenerator {
     private final SecureRandom secureRandom = new SecureRandom();
 

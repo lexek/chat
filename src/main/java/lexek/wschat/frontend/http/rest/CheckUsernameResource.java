@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import lexek.wschat.db.model.form.UsernameForm;
 import lexek.wschat.services.UserService;
 
+import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
@@ -16,6 +17,7 @@ import java.util.Map;
 public class CheckUsernameResource {
     private final UserService userService;
 
+    @Inject
     public CheckUsernameResource(UserService userService) {
         this.userService = userService;
     }

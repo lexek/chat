@@ -3,6 +3,7 @@ package lexek.wschat.security;
 import com.google.common.cache.CacheBuilder;
 import lexek.wschat.chat.Connection;
 import lexek.wschat.chat.model.Message;
+import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -10,6 +11,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
+@Service
 public class CaptchaService {
     private final Logger logger = LoggerFactory.getLogger(CaptchaService.class);
     private final ConcurrentMap<Long, Runnable> onSuccessActions = CacheBuilder.newBuilder()

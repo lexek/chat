@@ -6,13 +6,19 @@ import lexek.wschat.chat.filters.UserInRoomFilter;
 import lexek.wschat.chat.model.*;
 import lexek.wschat.db.dao.ChatterDao;
 import lexek.wschat.db.model.UserDto;
+import lexek.wschat.db.tx.Transactional;
+import org.jvnet.hk2.annotations.Service;
 
+import javax.inject.Inject;
+
+@Service
 public class ChatterService {
     private final ChatterDao chatterDao;
     private final JournalService journalService;
     private final UserService userService;
     private final MessageBroadcaster messageBroadcaster;
 
+    @Inject
     public ChatterService(ChatterDao chatterDao, JournalService journalService, UserService userService, MessageBroadcaster messageBroadcaster) {
         this.chatterDao = chatterDao;
         this.journalService = journalService;
@@ -32,6 +38,7 @@ public class ChatterService {
         return chatterDao.getChatter(user, room.getId());
     }
 
+    @Transactional
     public boolean banChatter(Room room, Chatter chatter, Chatter mod) {
         boolean result = false;
         if (chatter != null && chatter.getId() != null) {
@@ -50,6 +57,7 @@ public class ChatterService {
         return result;
     }
 
+    @Transactional
     public boolean unbanChatter(Room room, Chatter chatter, Chatter mod) {
         boolean result = false;
         if (chatter != null && chatter.getId() != null) {
@@ -83,6 +91,7 @@ public class ChatterService {
         return result;
     }
 
+    @Transactional
     public boolean setRole(Room room, Chatter chatter, Chatter admin, LocalRole newRole) {
         boolean result = false;
         if (chatter != null && chatter.getId() != null && newRole != LocalRole.GUEST) {

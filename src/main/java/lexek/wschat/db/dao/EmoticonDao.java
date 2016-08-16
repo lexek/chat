@@ -5,7 +5,9 @@ import lexek.wschat.db.model.Emoticon;
 import org.jooq.DSLContext;
 import org.jooq.exception.DataAccessException;
 import org.jooq.impl.DSL;
+import org.jvnet.hk2.annotations.Service;
 
+import javax.inject.Inject;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -13,9 +15,11 @@ import java.util.List;
 
 import static lexek.wschat.db.jooq.tables.Emoticon.EMOTICON;
 
+@Service
 public class EmoticonDao {
     private final DataSource dataSource;
 
+    @Inject
     public EmoticonDao(DataSource dataSource) {
         this.dataSource = dataSource;
     }

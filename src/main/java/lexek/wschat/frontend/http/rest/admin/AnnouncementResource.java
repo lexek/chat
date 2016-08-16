@@ -11,6 +11,7 @@ import lexek.wschat.security.jersey.RequiredRole;
 import lexek.wschat.services.AnnouncementService;
 import lexek.wschat.services.RoomService;
 
+import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import javax.ws.rs.*;
@@ -24,6 +25,7 @@ public class AnnouncementResource {
     private final AnnouncementService announcementService;
     private final RoomService roomService;
 
+    @Inject
     public AnnouncementResource(AnnouncementService announcementService, RoomService roomService) {
         this.announcementService = announcementService;
         this.roomService = roomService;

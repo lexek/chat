@@ -1,14 +1,16 @@
 package lexek.wschat.services;
 
-import com.lmax.disruptor.EventHandler;
 import lexek.wschat.chat.MessageEvent;
+import lexek.wschat.chat.MessageEventHandler;
+import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-public class MessageConsumerServiceHandler implements EventHandler<MessageEvent> {
+@Service
+public class MessageConsumerServiceHandler implements MessageEventHandler {
     private final Logger logger = LoggerFactory.getLogger(MessageConsumerServiceHandler.class);
     private final List<MessageConsumerService> consumers = new CopyOnWriteArrayList<>();
 

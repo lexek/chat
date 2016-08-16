@@ -8,7 +8,9 @@ import lexek.wschat.db.model.rest.TicketRestModel;
 import org.jooq.DSLContext;
 import org.jooq.exception.DataAccessException;
 import org.jooq.impl.DSL;
+import org.jvnet.hk2.annotations.Service;
 
+import javax.inject.Inject;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -18,9 +20,11 @@ import java.util.stream.Collectors;
 import static lexek.wschat.db.jooq.tables.Ticket.TICKET;
 import static lexek.wschat.db.jooq.tables.User.USER;
 
+@Service
 public class TicketDao {
     private final DataSource dataSource;
 
+    @Inject
     public TicketDao(DataSource dataSource) {
         this.dataSource = dataSource;
     }

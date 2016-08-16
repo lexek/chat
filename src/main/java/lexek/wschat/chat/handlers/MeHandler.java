@@ -7,14 +7,19 @@ import lexek.wschat.chat.Room;
 import lexek.wschat.chat.filters.RoomWithSendBackCheckFilter;
 import lexek.wschat.chat.model.*;
 import lexek.wschat.chat.processing.AbstractRoomMessageHandler;
+import org.jvnet.hk2.annotations.Service;
 
+import javax.inject.Inject;
+import javax.inject.Named;
 import java.util.concurrent.atomic.AtomicLong;
 
+@Service
 public class MeHandler extends AbstractRoomMessageHandler {
     private final MessageBroadcaster messageBroadcaster;
     private final AtomicLong messageId;
 
-    public MeHandler(MessageBroadcaster messageBroadcaster, AtomicLong messageId) {
+    @Inject
+    public MeHandler(MessageBroadcaster messageBroadcaster, @Named("messageId") AtomicLong messageId) {
         super(
             ImmutableSet.of(
                 MessageProperty.ROOM,

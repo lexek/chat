@@ -6,10 +6,15 @@ import lexek.wschat.chat.Room;
 import lexek.wschat.chat.model.Chatter;
 import lexek.wschat.chat.model.Message;
 import lexek.wschat.chat.model.MessageType;
+import org.jvnet.hk2.annotations.Service;
 
+import javax.inject.Inject;
+
+@Service
 public class ClearUserHandler extends AbstractModerationHandler {
     private final MessageBroadcaster messageBroadcaster;
 
+    @Inject
     public ClearUserHandler(MessageBroadcaster messageBroadcaster) {
         super(MessageType.CLEAR, false, "CLEAR_DENIED");
         this.messageBroadcaster = messageBroadcaster;

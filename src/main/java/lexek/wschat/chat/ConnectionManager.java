@@ -2,25 +2,36 @@ package lexek.wschat.chat;
 
 import com.codahale.metrics.Gauge;
 import com.codahale.metrics.MetricRegistry;
-import com.lmax.disruptor.EventHandler;
 import io.netty.util.internal.RecyclableArrayList;
 import lexek.wschat.chat.filters.BroadcastFilter;
 import lexek.wschat.chat.model.GlobalRole;
 import lexek.wschat.chat.model.Message;
 import lexek.wschat.chat.model.User;
+import org.glassfish.hk2.api.IterableProvider;
+import org.jvnet.hk2.annotations.Service;
 
+import javax.inject.Inject;
+import javax.inject.Named;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
-public class ConnectionManager implements EventHandler<MessageEvent> {
+@Service
+public class ConnectionManager implements MessageEventHandler {
     private static final long FIVE_MIN_MS = TimeUnit.MILLISECONDS.convert(5, TimeUnit.MINUTES);
 
     private final Set<ConnectionGroup> connectionGroups = new LinkedHashSet<>();
 
-    public ConnectionManager(MetricRegistry metricRegistry) {
+    @Inject
+    public ConnectionManager(@Named("chatRegistry") MetricRegistry metricRegistry) {
+        System.out.println("CONNECTION_MANAGER");
         metricRegistry.register("online", (Gauge<Map<String, Long>>) ConnectionManager.this::online);
+    }
+
+    @Inject
+    public void init(IterableProvider<ConnectionGroup> connectionGroups) {
+        connectionGroups.forEach(this::registerGroup);
     }
 
     @Override

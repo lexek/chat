@@ -12,18 +12,24 @@ import com.lmax.disruptor.dsl.Disruptor;
 import com.lmax.disruptor.dsl.ProducerType;
 import lexek.wschat.chat.filters.BroadcastFilter;
 import lexek.wschat.chat.model.Message;
-import lexek.wschat.services.AbstractService;
+import lexek.wschat.services.managed.AbstractManagedService;
+import lexek.wschat.services.managed.InitStage;
 import lexek.wschat.util.LoggingExceptionHandler;
+import org.glassfish.hk2.api.IterableProvider;
+import org.jvnet.hk2.annotations.Service;
 
+import javax.inject.Inject;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 
-public class MessageBroadcaster extends AbstractService {
+@Service
+public class MessageBroadcaster extends AbstractManagedService {
     private final Disruptor<MessageEvent> disruptor;
     private final RingBuffer<MessageEvent> ringBuffer;
 
+    @Inject
     public MessageBroadcaster() {
-        super("messageBroadcaster");
+        super("messageBroadcaster", InitStage.SERVICES);
         EventFactory<MessageEvent> eventFactory = MessageEvent::new;
         ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("MESSAGE_BROADCASTER_%d").build();
         this.disruptor = new Disruptor<>(
@@ -35,6 +41,11 @@ public class MessageBroadcaster extends AbstractService {
         );
         this.ringBuffer = this.disruptor.getRingBuffer();
         this.disruptor.handleExceptionsWith(new LoggingExceptionHandler());
+    }
+
+    @Inject
+    public void init(IterableProvider<MessageEventHandler> handlers) {
+        handlers.forEach(this::registerConsumer);
     }
 
     /**
@@ -66,12 +77,12 @@ public class MessageBroadcaster extends AbstractService {
         submitMessage(message, BroadcastFilter.NO_FILTER);
     }
 
-    public void registerConsumer(EventHandler<MessageEvent> consumer) {
+    public void registerConsumer(MessageEventHandler consumer) {
         this.disruptor.handleEventsWith((EventHandler) consumer);
     }
 
     @Override
-    protected void start0() {
+    public void start() {
         disruptor.start();
     }
 

@@ -11,10 +11,14 @@ import lexek.wschat.db.model.DataPage;
 import lexek.wschat.db.model.UserData;
 import lexek.wschat.db.model.UserDto;
 import lexek.wschat.db.model.form.UserChangeSet;
+import lexek.wschat.db.tx.Transactional;
 import lexek.wschat.security.AuthenticationManager;
+import org.jvnet.hk2.annotations.Service;
 
+import javax.inject.Inject;
 import java.util.List;
 
+@Service
 public class UserService {
     private final Cache<String, User> userCache = CacheBuilder.newBuilder().weakValues().build();
     private final ConnectionManager connectionManager;
@@ -22,6 +26,7 @@ public class UserService {
     private final UserDao userDao;
     private final JournalService journalService;
 
+    @Inject
     public UserService(
         ConnectionManager connectionManager,
         AuthenticationManager authenticationManager,
@@ -42,6 +47,7 @@ public class UserService {
         return userDao.getByName(name);
     }
 
+    @Transactional
     public void update(UserDto user, UserDto admin, UserChangeSet changeSet) {
         UserDto updatedUser = userDao.update(user.getId(), changeSet);
         if (updatedUser != null) {
@@ -52,6 +58,7 @@ public class UserService {
         }
     }
 
+    @Transactional
     public boolean changeName(UserDto user, String newName) {
         if (userDao.tryChangeName(user.getId(), newName, user.hasRole(GlobalRole.ADMIN))) {
             journalService.nameChanged(user, user.getName(), newName);
@@ -63,11 +70,13 @@ public class UserService {
         return false;
     }
 
+    @Transactional
     public void changePassword(UserDto admin, UserDto user, String password) {
         authenticationManager.setPasswordNoCheck(user, password);
         journalService.userPasswordChanged(admin, user);
     }
 
+    @Transactional
     public void delete(UserDto user, UserDto admin) {
         if (userDao.delete(user)) {
             userCache.invalidate(user.getName());
@@ -121,5 +130,9 @@ public class UserService {
 
     public void setCheckIp(UserDto user, boolean value) {
         userDao.setCheckIp(user, value);
+    }
+
+    public void setColor(UserDto user, String colorCode) {
+        userDao.setColor(user.getId(), colorCode);
     }
 }

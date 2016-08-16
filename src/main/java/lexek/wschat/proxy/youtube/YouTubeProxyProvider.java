@@ -10,11 +10,15 @@ import lexek.wschat.proxy.ProxyProvider;
 import lexek.wschat.security.social.SocialProfile;
 import lexek.wschat.services.NotificationService;
 import org.apache.http.client.HttpClient;
+import org.jvnet.hk2.annotations.Service;
 
+import javax.inject.Inject;
+import javax.inject.Named;
 import java.util.EnumSet;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicLong;
 
+@Service
 public class YouTubeProxyProvider extends ProxyProvider {
     private final AtomicLong messageId;
     private final MessageBroadcaster messageBroadcaster;
@@ -23,7 +27,15 @@ public class YouTubeProxyProvider extends ProxyProvider {
     private final ProxyAuthService proxyAuthService;
     private final HttpClient httpClient;
 
-    public YouTubeProxyProvider(AtomicLong messageId, MessageBroadcaster messageBroadcaster, NotificationService notificationService, ScheduledExecutorService executorService, ProxyAuthService proxyAuthService, HttpClient httpClient) {
+    @Inject
+    public YouTubeProxyProvider(
+        @Named("messageId") AtomicLong messageId,
+        MessageBroadcaster messageBroadcaster,
+        NotificationService notificationService,
+        ScheduledExecutorService executorService,
+        ProxyAuthService proxyAuthService,
+        HttpClient httpClient
+    ) {
         super("youtube", true, false, true, ImmutableSet.of("google"), EnumSet.of(ModerationOperation.BAN));
         this.messageId = messageId;
         this.messageBroadcaster = messageBroadcaster;

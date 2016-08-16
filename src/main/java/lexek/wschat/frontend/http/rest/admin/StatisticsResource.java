@@ -9,6 +9,8 @@ import lexek.wschat.db.model.EmoticonCount;
 import lexek.wschat.db.model.UserMessageCount;
 import lexek.wschat.security.jersey.RequiredRole;
 
+import javax.inject.Inject;
+import javax.inject.Named;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -25,7 +27,12 @@ public class StatisticsResource {
     private final MetricRegistry metricRegistry;
     private final HealthCheckRegistry healthCheckRegistry;
 
-    public StatisticsResource(StatisticsDao statisticsDao, MetricRegistry metricRegistry, HealthCheckRegistry healthCheckRegistry) {
+    @Inject
+    public StatisticsResource(
+        StatisticsDao statisticsDao,
+        @Named("runtimeRegistry") MetricRegistry metricRegistry,
+        HealthCheckRegistry healthCheckRegistry
+    ) {
         this.statisticsDao = statisticsDao;
         this.metricRegistry = metricRegistry;
         this.healthCheckRegistry = healthCheckRegistry;

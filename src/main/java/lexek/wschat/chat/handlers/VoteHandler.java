@@ -8,12 +8,16 @@ import lexek.wschat.chat.filters.UserInRoomFilter;
 import lexek.wschat.chat.model.*;
 import lexek.wschat.chat.processing.AbstractRoomMessageHandler;
 import lexek.wschat.services.poll.PollService;
+import org.jvnet.hk2.annotations.Service;
 
+import javax.inject.Inject;
 
+@Service
 public class VoteHandler extends AbstractRoomMessageHandler {
     private final PollService pollService;
     private final MessageBroadcaster messageBroadcaster;
 
+    @Inject
     public VoteHandler(PollService pollService, MessageBroadcaster messageBroadcaster) {
         super(
             ImmutableSet.of(

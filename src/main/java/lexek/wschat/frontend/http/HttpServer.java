@@ -19,18 +19,19 @@ import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.ssl.SslContext;
 import lexek.httpserver.RequestDispatcher;
-import lexek.wschat.services.AbstractService;
+import lexek.wschat.services.managed.AbstractManagedService;
+import lexek.wschat.services.managed.InitStage;
 import lexek.wschat.util.ExceptionLogger;
 
 import java.util.concurrent.ThreadFactory;
 
-public class HttpServer extends AbstractService {
+public class HttpServer extends AbstractManagedService {
     private static final int PORT = 1337;
     private final ServerBootstrap bootstrap;
     private Channel channel;
 
     public HttpServer(SslContext sslContext, RequestDispatcher requestDispatcher) {
-        super("httpServer");
+        super("httpServer", InitStage.FRONTEND);
 
         EventLoopGroup parentGroup;
         EventLoopGroup childGroup;
@@ -100,7 +101,7 @@ public class HttpServer extends AbstractService {
     }
 
     @Override
-    protected void start0() {
+    public void start() {
         this.channel = bootstrap.bind(PORT).awaitUninterruptibly().channel();
     }
 }

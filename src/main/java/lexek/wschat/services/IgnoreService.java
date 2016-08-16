@@ -4,13 +4,17 @@ import lexek.wschat.chat.e.InvalidInputException;
 import lexek.wschat.chat.e.LimitExceededException;
 import lexek.wschat.chat.model.User;
 import lexek.wschat.db.dao.IgnoreDao;
+import org.jvnet.hk2.annotations.Service;
 
+import javax.inject.Inject;
 import java.util.List;
 
+@Service
 public class IgnoreService {
     private static final int MAX_IGNORED = 20;
     private final IgnoreDao ignoreDao;
 
+    @Inject
     public IgnoreService(IgnoreDao ignoreDao) {
         this.ignoreDao = ignoreDao;
     }

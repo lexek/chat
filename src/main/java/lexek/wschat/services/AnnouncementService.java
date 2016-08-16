@@ -14,14 +14,20 @@ import lexek.wschat.chat.model.Message;
 import lexek.wschat.db.dao.AnnouncementDao;
 import lexek.wschat.db.jooq.tables.pojos.Announcement;
 import lexek.wschat.db.model.UserDto;
+import lexek.wschat.db.tx.Transactional;
+import lexek.wschat.services.managed.AbstractManagedService;
+import lexek.wschat.services.managed.InitStage;
+import org.jvnet.hk2.annotations.Service;
 
+import javax.inject.Inject;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-public class AnnouncementService extends AbstractService {
+@Service
+public class AnnouncementService extends AbstractManagedService {
     private final AnnouncementDao announcementDao;
     private final JournalService journalService;
     private final MessageBroadcaster messageBroadcaster;
@@ -30,11 +36,12 @@ public class AnnouncementService extends AbstractService {
     private final Runnable task;
     private long lastBroadcast;
 
+    @Inject
     public AnnouncementService(AnnouncementDao announcementDao,
                                JournalService journalService, RoomManager roomManager,
                                MessageBroadcaster messageBroadcaster,
                                ScheduledExecutorService scheduledExecutor) {
-        super("announcements");
+        super("announcements", InitStage.SERVICES);
         this.journalService = journalService;
         this.messageBroadcaster = messageBroadcaster;
         this.scheduledExecutor = scheduledExecutor;
@@ -65,6 +72,7 @@ public class AnnouncementService extends AbstractService {
         };
     }
 
+    @Transactional
     public Announcement announce(String text, Room room, UserDto admin) {
         Announcement announcement = new Announcement(null, room.getId(), true, text);
         announcementDao.add(announcement);
@@ -87,6 +95,7 @@ public class AnnouncementService extends AbstractService {
         }
     }
 
+    @Transactional
     public void setInactive(long id, UserDto admin) {
         Map.Entry<Room, Announcement> deleteEntry = null;
         for (Map.Entry<Room, Announcement> entry : roomAnnouncements.entries()) {
@@ -108,7 +117,7 @@ public class AnnouncementService extends AbstractService {
     }
 
     @Override
-    protected void start0() {
+    public void start() {
         scheduledExecutor.scheduleWithFixedDelay(task, 0, 30, TimeUnit.MINUTES);
     }
 

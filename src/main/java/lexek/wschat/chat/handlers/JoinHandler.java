@@ -7,11 +7,16 @@ import lexek.wschat.chat.Room;
 import lexek.wschat.chat.evt.EventDispatcher;
 import lexek.wschat.chat.model.*;
 import lexek.wschat.chat.processing.AbstractRoomMessageHandler;
+import org.jvnet.hk2.annotations.Service;
 
+import javax.inject.Inject;
+
+@Service
 public class JoinHandler extends AbstractRoomMessageHandler {
     private final EventDispatcher notificationService;
     private final MessageBroadcaster messageBroadcaster;
 
+    @Inject
     public JoinHandler(EventDispatcher notificationService, MessageBroadcaster messageBroadcaster) {
         super(
             ImmutableSet.of(

@@ -4,7 +4,9 @@ import lexek.wschat.chat.Connection;
 import lexek.wschat.chat.ConnectionGroup;
 import lexek.wschat.chat.model.Message;
 import lexek.wschat.frontend.Codec;
+import org.jvnet.hk2.annotations.Service;
 
+import javax.inject.Inject;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -14,6 +16,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
+@Service
 public class IrcConnectionGroup implements ConnectionGroup<IrcConnection> {
     private final Codec codec;
     private final Set<IrcConnection> connections = new LinkedHashSet<>();
@@ -21,7 +24,8 @@ public class IrcConnectionGroup implements ConnectionGroup<IrcConnection> {
     private final Lock readLock = lock.readLock();
     private final Lock writeLock = lock.writeLock();
 
-    public IrcConnectionGroup(Codec codec) {
+    @Inject
+    public IrcConnectionGroup(IrcCodec codec) {
         this.codec = codec;
     }
 

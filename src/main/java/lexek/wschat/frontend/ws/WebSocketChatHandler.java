@@ -11,9 +11,13 @@ import lexek.wschat.chat.model.*;
 import lexek.wschat.security.AuthenticationCallback;
 import lexek.wschat.security.AuthenticationService;
 import lexek.wschat.util.Constants;
+import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.inject.Inject;
+
+@Service
 @ChannelHandler.Sharable
 public class WebSocketChatHandler extends SimpleChannelInboundHandler<WebSocketFrame>
     implements AuthenticationCallback<WebSocketConnectionAdapter> {
@@ -28,9 +32,14 @@ public class WebSocketChatHandler extends SimpleChannelInboundHandler<WebSocketF
     private final WebSocketConnectionGroup connectionGroup;
     private final RoomManager roomManager;
 
-    public WebSocketChatHandler(AuthenticationService authenticationService, MessageReactor messageReactor,
-                                WebSocketProtocol protocol, WebSocketConnectionGroup connectionGroup,
-                                RoomManager roomManager) {
+    @Inject
+    public WebSocketChatHandler(
+        AuthenticationService authenticationService,
+        MessageReactor messageReactor,
+        WebSocketProtocol protocol,
+        WebSocketConnectionGroup connectionGroup,
+        RoomManager roomManager
+    ) {
         this.authenticationService = authenticationService;
         this.messageReactor = messageReactor;
         this.protocol = protocol;

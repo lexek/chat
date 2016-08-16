@@ -9,14 +9,17 @@ import lexek.wschat.db.jooq.tables.pojos.SteamGame;
 import lexek.wschat.util.JsonResponseHandler;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
+import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.inject.Inject;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+@Service
 public class SteamGameResolver {
     private final Logger logger = LoggerFactory.getLogger(SteamGameResolver.class);
     private final AtomicBoolean syncInProgress = new AtomicBoolean(false);
@@ -26,6 +29,7 @@ public class SteamGameResolver {
     private final SteamGameDao steamGameDao;
     private final HttpClient httpClient;
 
+    @Inject
     public SteamGameResolver(SteamGameDao steamGameDao, HttpClient httpClient) {
         this.steamGameDao = steamGameDao;
         this.httpClient = httpClient;

@@ -8,19 +8,26 @@ import lexek.wschat.proxy.ModerationOperation;
 import lexek.wschat.proxy.Proxy;
 import lexek.wschat.proxy.ProxyProvider;
 import lexek.wschat.services.NotificationService;
+import org.jvnet.hk2.annotations.Service;
 
+import javax.inject.Inject;
+import javax.inject.Named;
 import java.util.EnumSet;
 import java.util.concurrent.atomic.AtomicLong;
 
+@Service
 public class Sc2tvProxyProvider extends ProxyProvider {
     private final NotificationService notificationService;
     private final EventLoopGroup eventLoopGroup;
     private final MessageBroadcaster messageBroadcaster;
     private final AtomicLong messageId;
 
+    @Inject
     public Sc2tvProxyProvider(
-        NotificationService notificationService, EventLoopGroup eventLoopGroup, MessageBroadcaster messageBroadcaster,
-        AtomicLong messageId
+        NotificationService notificationService,
+        @Named("proxyEventLoopGroup") EventLoopGroup eventLoopGroup,
+        MessageBroadcaster messageBroadcaster,
+        @Named("messageId") AtomicLong messageId
     ) {
         super("sc2tv", false, false, false, ImmutableSet.of(), EnumSet.noneOf(ModerationOperation.class));
         this.notificationService = notificationService;

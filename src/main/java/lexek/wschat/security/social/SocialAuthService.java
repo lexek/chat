@@ -12,10 +12,14 @@ import lexek.wschat.db.model.UserDto;
 import lexek.wschat.security.AuthenticationManager;
 import lexek.wschat.security.SecureTokenGenerator;
 import lexek.wschat.security.social.provider.SocialAuthProvider;
+import org.jvnet.hk2.annotations.Service;
 
+import javax.inject.Inject;
+import javax.inject.Named;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+@Service
 public class SocialAuthService {
     private final Cache<String, TemporarySession> temporarySessions = CacheBuilder
         .newBuilder()
@@ -25,9 +29,20 @@ public class SocialAuthService {
     private final SecureTokenGenerator secureTokenGenerator;
     private final Map<String, SocialAuthProvider> providers = new ConcurrentHashMapV8<>();
 
+    @Inject
     public SocialAuthService(AuthenticationManager authenticationManager, SecureTokenGenerator secureTokenGenerator) {
         this.authenticationManager = authenticationManager;
         this.secureTokenGenerator = secureTokenGenerator;
+    }
+
+    @Inject
+    public void init(
+        @Named("social.credentials") CredentialsHolder credentialsHolder,
+        SocialAuthProviderFactory socialAuthProviderFactory
+    ) {
+        credentialsHolder.get().forEach((name, credentials) ->
+            registerProvider(socialAuthProviderFactory.newProvider(name, credentials, true))
+        );
     }
 
     public void registerProvider(SocialAuthProvider provider) {

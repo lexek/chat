@@ -4,12 +4,16 @@ import lexek.wschat.chat.Room;
 import lexek.wschat.chat.RoomManager;
 import lexek.wschat.chat.e.EntityNotFoundException;
 import lexek.wschat.db.model.UserDto;
+import org.jvnet.hk2.annotations.Service;
 
+import javax.inject.Inject;
 import java.util.Collection;
 
+@Service
 public class RoomService {
     private final RoomManager roomManager;
 
+    @Inject
     public RoomService(RoomManager roomManager) {
         this.roomManager = roomManager;
     }

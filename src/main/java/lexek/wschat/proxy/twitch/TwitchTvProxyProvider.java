@@ -10,10 +10,14 @@ import lexek.wschat.proxy.ProxyAuthService;
 import lexek.wschat.proxy.ProxyProvider;
 import lexek.wschat.security.AuthenticationManager;
 import lexek.wschat.services.NotificationService;
+import org.jvnet.hk2.annotations.Service;
 
+import javax.inject.Inject;
+import javax.inject.Named;
 import java.util.EnumSet;
 import java.util.concurrent.atomic.AtomicLong;
 
+@Service
 public class TwitchTvProxyProvider extends ProxyProvider {
     private final AtomicLong messageId;
     private final MessageBroadcaster messageBroadcaster;
@@ -22,11 +26,12 @@ public class TwitchTvProxyProvider extends ProxyProvider {
     private final ProxyAuthService authService;
     private final NotificationService notificationService;
 
+    @Inject
     public TwitchTvProxyProvider(
-        AtomicLong messageId,
+        @Named("messageId") AtomicLong messageId,
         MessageBroadcaster messageBroadcaster,
         AuthenticationManager authenticationManager,
-        EventLoopGroup eventLoopGroup,
+        @Named("proxyEventLoopGroup") EventLoopGroup eventLoopGroup,
         ProxyAuthService authService,
         NotificationService notificationService
     ) {

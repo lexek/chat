@@ -7,6 +7,7 @@ import lexek.wschat.security.jersey.Auth;
 import lexek.wschat.security.jersey.RequiredRole;
 import lexek.wschat.services.UserService;
 
+import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -17,6 +18,7 @@ import javax.ws.rs.core.MediaType;
 public class ProfileResource {
     private final UserService userService;
 
+    @Inject
     public ProfileResource(UserService userService) {
         this.userService = userService;
     }

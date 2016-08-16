@@ -12,7 +12,9 @@ import org.jooq.Condition;
 import org.jooq.Record;
 import org.jooq.exception.DataAccessException;
 import org.jooq.impl.DSL;
+import org.jvnet.hk2.annotations.Service;
 
+import javax.inject.Inject;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -24,9 +26,11 @@ import java.util.stream.Collectors;
 import static lexek.wschat.db.jooq.tables.User.USER;
 import static lexek.wschat.db.jooq.tables.Userauth.USERAUTH;
 
+@Service
 public class UserDao {
     private final DataSource dataSource;
 
+    @Inject
     public UserDao(DataSource dataSource) {
         this.dataSource = dataSource;
     }

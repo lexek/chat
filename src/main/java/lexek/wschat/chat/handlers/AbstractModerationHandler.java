@@ -29,8 +29,8 @@ public abstract class AbstractModerationHandler extends AbstractRoomMessageHandl
         return !userChatter.hasRole(LocalRole.MOD) &&
             (
                 modChatter.hasRole(LocalRole.MOD) &&
-                modChatter.hasGreaterRole(userChatter.getRole()) &&
-                !user.hasRole(GlobalRole.MOD)
+                    modChatter.hasGreaterRole(userChatter.getRole()) &&
+                    !user.hasRole(GlobalRole.MOD)
             );
     }
 

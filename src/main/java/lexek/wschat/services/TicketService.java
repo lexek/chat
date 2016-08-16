@@ -5,7 +5,12 @@ import lexek.wschat.db.jooq.tables.pojos.Ticket;
 import lexek.wschat.db.model.DataPage;
 import lexek.wschat.db.model.UserDto;
 import lexek.wschat.db.model.rest.TicketRestModel;
+import lexek.wschat.db.tx.Transactional;
+import org.jvnet.hk2.annotations.Service;
 
+import javax.inject.Inject;
+
+@Service
 public class TicketService {
     private static final int PAGE_LENGTH = 20;
 
@@ -13,6 +18,7 @@ public class TicketService {
     private final NotificationService notificationService;
     private final TicketDao dao;
 
+    @Inject
     public TicketService(UserService userService, NotificationService notificationService, TicketDao dao) {
         this.userService = userService;
         this.notificationService = notificationService;
@@ -23,6 +29,7 @@ public class TicketService {
         return dao.getById(id);
     }
 
+    @Transactional
     public boolean submit(String category, String text, UserDto user) {
         Ticket ticket = new Ticket(null, System.currentTimeMillis(), user.getId(), true, category, text, null, null, null);
         boolean result = dao.add(ticket);
@@ -44,6 +51,7 @@ public class TicketService {
         return result;
     }
 
+    @Transactional
     public void closeTicket(Ticket ticket, UserDto closedBy, String comment) {
         if (ticket.getIsOpen()) {
             ticket.setIsOpen(false);

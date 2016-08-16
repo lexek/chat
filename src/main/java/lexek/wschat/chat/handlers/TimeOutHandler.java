@@ -5,12 +5,16 @@ import lexek.wschat.chat.Room;
 import lexek.wschat.chat.model.Chatter;
 import lexek.wschat.chat.model.MessageType;
 import lexek.wschat.services.ChatterService;
+import org.jvnet.hk2.annotations.Service;
 
+import javax.inject.Inject;
 import java.util.concurrent.TimeUnit;
 
+@Service
 public class TimeOutHandler extends AbstractModerationHandler {
     private final ChatterService chatterService;
 
+    @Inject
     public TimeOutHandler(ChatterService chatterService) {
         super(MessageType.TIMEOUT, true, "TIMEOUT_DENIED");
         this.chatterService = chatterService;

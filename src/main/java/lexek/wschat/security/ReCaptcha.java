@@ -1,7 +1,10 @@
 package lexek.wschat.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.jvnet.hk2.annotations.Service;
 
+import javax.inject.Inject;
+import javax.inject.Named;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -9,12 +12,16 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.Map;
 
+@Service
 public class ReCaptcha {
     private static final int TIMEOUT = 3000;
     private final String secret;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public ReCaptcha(String secret) {
+    @Inject
+    public ReCaptcha(
+        @Named("recaptcha.secret") String secret
+    ) {
         this.secret = secret;
     }
 

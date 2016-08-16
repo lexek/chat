@@ -20,6 +20,7 @@ import lexek.wschat.util.Names;
 import lexek.wschat.util.Pages;
 import org.jetbrains.annotations.NotNull;
 
+import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import javax.ws.rs.*;
@@ -35,6 +36,7 @@ public class UserResource {
     private final ConnectionManager connectionManager;
     private final UserService userService;
 
+    @Inject
     public UserResource(ConnectionManager connectionManager, UserService userService) {
         this.connectionManager = connectionManager;
         this.userService = userService;
