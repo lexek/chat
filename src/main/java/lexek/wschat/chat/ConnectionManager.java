@@ -25,7 +25,6 @@ public class ConnectionManager implements MessageEventHandler {
 
     @Inject
     public ConnectionManager(@Named("chatRegistry") MetricRegistry metricRegistry) {
-        System.out.println("CONNECTION_MANAGER");
         metricRegistry.register("online", (Gauge<Map<String, Long>>) ConnectionManager.this::online);
     }
 
