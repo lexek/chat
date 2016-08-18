@@ -27,6 +27,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
@@ -37,6 +38,7 @@ public class AuthenticationManager {
     private final Logger logger = LoggerFactory.getLogger(AuthenticationManager.class);
     private final Map<String, AtomicInteger> failedLogin = new ConcurrentHashMapV8<>();
     private final Map<Long, Instant> latestEmailChanges = new ConcurrentHashMapV8<>();
+    private final Set<UserAuthEventListener> userAuthEventListeners = new HashSet<>();
     private final SecureTokenGenerator secureTokenGenerator;
     private final String host;
     private final EmailService emailService;
@@ -273,7 +275,9 @@ public class AuthenticationManager {
     }
 
     public synchronized UserAuthDto createUserAuthFromProfile(UserDto user, SocialProfile profile) {
-        return userAuthDao.createAuthFromProfile(user, profile);
+        UserAuthDto userAuth = userAuthDao.createAuthFromProfile(user, profile);
+        triggerAuthEvent(UserAuthEventType.CREATED, user, profile.getService());
+        return userAuth;
     }
 
     public synchronized UserAuthDto getAuthDataForUser(UserDto user, String service) {
@@ -295,9 +299,18 @@ public class AuthenticationManager {
 
     public synchronized void deleteAuth(UserDto user, String serviceName) {
         userAuthDao.deleteAuth(user, serviceName);
+        triggerAuthEvent(UserAuthEventType.DELETED, user, serviceName);
     }
 
     public Set<String> getBannedIps() {
         return this.bannedIps;
+    }
+
+    private void triggerAuthEvent(UserAuthEventType type, UserDto user, String service) {
+        userAuthEventListeners.forEach(listener -> listener.onEvent(type, user, service));
+    }
+
+    public void registerAuthEventListener(UserAuthEventListener listener) {
+        userAuthEventListeners.add(listener);
     }
 }
