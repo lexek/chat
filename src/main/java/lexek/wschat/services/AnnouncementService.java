@@ -54,20 +54,17 @@ public class AnnouncementService extends AbstractManagedService {
                 roomAnnouncements.put(room, announcement);
             }
         }
-        task = new Runnable() {
-            @Override
-            public void run() {
-                lastBroadcast = System.currentTimeMillis();
-                try {
-                    for (Map.Entry<Room, Announcement> entry : roomAnnouncements.entries()) {
-                        messageBroadcaster.submitMessage(
-                            Message.infoMessage(entry.getValue().getText()),
-                            entry.getKey().FILTER
-                        );
-                    }
-                } catch (Exception e) {
-                    logger.warn("", e);
+        task = () -> {
+            lastBroadcast = System.currentTimeMillis();
+            try {
+                for (Map.Entry<Room, Announcement> entry : roomAnnouncements.entries()) {
+                    messageBroadcaster.submitMessage(
+                        Message.infoMessage(entry.getValue().getText()),
+                        entry.getKey().FILTER
+                    );
                 }
+            } catch (Exception e) {
+                logger.warn("", e);
             }
         };
     }

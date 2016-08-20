@@ -11,7 +11,7 @@ import java.util.List;
 
 @Service
 public class IgnoreService {
-    private static final int MAX_IGNORED = 20;
+    private static final int MAX_IGNORED = 100;
     private final IgnoreDao ignoreDao;
 
     @Inject

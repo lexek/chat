@@ -7,40 +7,6 @@ import lexek.wschat.frontend.Codec;
 import lexek.wschat.frontend.Protocol;
 
 public abstract class Connection {
-    public static final Protocol STUB_PROTOCOL = new Protocol() {
-        @Override
-        public Codec getCodec() {
-            return null;
-        }
-
-        @Override
-        public boolean isNeedSendingBack() {
-            return false;
-        }
-
-        @Override
-        public boolean isNeedNames() {
-            return false;
-        }
-    };
-
-    public static final Connection STUB_CONNECTION = new Connection(STUB_PROTOCOL, User.UNAUTHENTICATED_USER) {
-        @Override
-        public String getIp() {
-            return "";
-        }
-
-        @Override
-        public void send(Message message) {
-            //do nothing
-        }
-
-        @Override
-        public void close() {
-            //do nothing
-        }
-    };
-
     private final Protocol protocol;
     private ConnectionState state;
     private User user;
