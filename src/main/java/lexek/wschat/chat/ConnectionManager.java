@@ -7,7 +7,6 @@ import lexek.wschat.chat.filters.BroadcastFilter;
 import lexek.wschat.chat.model.GlobalRole;
 import lexek.wschat.chat.model.Message;
 import lexek.wschat.chat.model.User;
-import org.glassfish.hk2.api.IterableProvider;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
@@ -29,7 +28,7 @@ public class ConnectionManager implements MessageEventHandler {
     }
 
     @Inject
-    public void init(IterableProvider<ConnectionGroup> connectionGroups) {
+    public void init(Iterable<ConnectionGroup> connectionGroups) {
         connectionGroups.forEach(this::registerGroup);
     }
 

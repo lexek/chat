@@ -17,42 +17,35 @@ import io.netty.util.CharsetUtil;
 import lexek.wschat.chat.model.Message;
 import lexek.wschat.chat.model.MessageProperty;
 import lexek.wschat.chat.model.MessageType;
-import lexek.wschat.db.model.UserAuthDto;
-import lexek.wschat.db.model.UserDto;
-import lexek.wschat.security.AuthenticationManager;
-import lexek.wschat.security.UserAuthEventListener;
-import lexek.wschat.security.UserAuthEventType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-public class OutboundMessageHandler implements UserAuthEventListener {
+public class OutboundMessageHandler {
     private static final long FIVE_MINUTES = TimeUnit.MINUTES.toMillis(5);
     private static final AttributeKey<Long> lastMessageAttrKey = AttributeKey.valueOf("__last_message");
     private final Logger logger = LoggerFactory.getLogger(OutboundMessageHandler.class);
-    private final Map<Long, Boolean> checkedUsers = new HashMap<>();
     private final Map<String, Channel> connections;
     private final Bootstrap outboundBootstrap;
     private final String remoteRoom;
-    private final AuthenticationManager authenticationManager;
+    private final TwitchCredentialsService credentialsService;
     private final ScheduledExecutorService eventLoopGroup;
     private ScheduledFuture scheduledFuture;
 
     public OutboundMessageHandler(
-        AuthenticationManager authenticationManager,
+        TwitchCredentialsService credentialsService,
         EventLoopGroup eventLoopGroup,
         Map<String, Channel> connections,
         String remoteRoom
     ) {
         this.connections = connections;
         this.remoteRoom = remoteRoom;
-        this.authenticationManager = authenticationManager;
+        this.credentialsService = credentialsService;
         this.eventLoopGroup = eventLoopGroup;
 
         this.outboundBootstrap = new Bootstrap();
@@ -88,10 +81,7 @@ public class OutboundMessageHandler implements UserAuthEventListener {
         if (message.getType() == MessageType.MSG && message.get(MessageProperty.ROOM).equals("#main")) {
             long userId = message.get(MessageProperty.USER_ID);
             String name = message.get(MessageProperty.NAME);
-            UserCredentials userCredentials = null;
-            if (needsFetchingConnectionData(userId)) {
-                userCredentials = fetchConnectionDataForUser(name, userId);
-            }
+            UserCredentials userCredentials = credentialsService.getCredentials(userId, name);
 
             if (userCredentials != null) {
                 String id = userCredentials.getId();
@@ -111,28 +101,6 @@ public class OutboundMessageHandler implements UserAuthEventListener {
         }
     }
 
-    private boolean needsFetchingConnectionData(long userId) {
-        Boolean tmp = checkedUsers.get(userId);
-        return tmp == null || tmp;
-    }
-
-    private UserCredentials fetchConnectionDataForUser(String userName, long userId) {
-        UserCredentials userCredentials = null;
-        logger.debug("fetching connection data for user {}", userName);
-        boolean r = false;
-        UserAuthDto auth = authenticationManager.getAuthDataForUser(userId, "twitch");
-        if (auth != null) {
-            String token = auth.getAuthenticationKey();
-            String extName = auth.getAuthenticationName();
-            logger.debug("fetched data for user {} with ext name {}", userName, extName, token);
-            if (token != null && extName != null) {
-                userCredentials = new UserCredentials(extName, token);
-            }
-            r = true;
-        }
-        checkedUsers.put(userId, r);
-        return userCredentials;
-    }
 
     private Channel createConnection(String id, String token) throws InterruptedException {
         Channel channel;
@@ -153,34 +121,6 @@ public class OutboundMessageHandler implements UserAuthEventListener {
         this.scheduledFuture = eventLoopGroup.scheduleAtFixedRate(new ConnectionCleanupTask(), 10, 5, TimeUnit.MINUTES);
     }
 
-    @Override
-    public void onEvent(UserAuthEventType type, UserDto user, String service) {
-        if (service.equals("twitch")) {
-            if (type == UserAuthEventType.DELETED) {
-                checkedUsers.remove(user.getId());
-            } else if (type == UserAuthEventType.CREATED) {
-                checkedUsers.remove(user.getId());
-            }
-        }
-    }
-
-    private static class UserCredentials {
-        private final String id;
-        private final String token;
-
-        private UserCredentials(String id, String token) {
-            this.id = id;
-            this.token = token;
-        }
-
-        public String getId() {
-            return id;
-        }
-
-        public String getToken() {
-            return token;
-        }
-    }
 
     @Sharable
     private class Handler extends SimpleChannelInboundHandler<String> {

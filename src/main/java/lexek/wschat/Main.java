@@ -30,6 +30,7 @@ import lexek.wschat.frontend.http.*;
 import lexek.wschat.frontend.http.admin.AdminPageHandler;
 import lexek.wschat.frontend.http.rest.RedirectToAppHandler;
 import lexek.wschat.proxy.ProxyManager;
+import lexek.wschat.proxy.twitch.TwitchCredentialsService;
 import lexek.wschat.proxy.twitter.TwitterCredentials;
 import lexek.wschat.security.AuthenticationManager;
 import lexek.wschat.security.CaptchaService;
@@ -226,6 +227,9 @@ public class Main {
 
         AuthenticationManager authenticationManager = serviceLocator.getService(AuthenticationManager.class);
         CaptchaService captchaService = serviceLocator.getService(CaptchaService.class);
+
+        //todo: figure out a way to inject it automatically without circular dependency
+        authenticationManager.registerAuthEventListener(serviceLocator.getService(TwitchCredentialsService.class));
 
         TicketService ticketService = serviceLocator.getService(TicketService.class);
 

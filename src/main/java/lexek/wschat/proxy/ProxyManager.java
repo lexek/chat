@@ -18,7 +18,6 @@ import lexek.wschat.services.JournalService;
 import lexek.wschat.services.MessageConsumerService;
 import lexek.wschat.services.managed.AbstractManagedService;
 import lexek.wschat.services.managed.InitStage;
-import org.glassfish.hk2.api.IterableProvider;
 import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,7 +45,7 @@ public class ProxyManager extends AbstractManagedService implements MessageConsu
     }
 
     @Inject
-    public void init(IterableProvider<ProxyProvider> proxyProviders) {
+    public void init(Iterable<ProxyProvider> proxyProviders) {
         proxyProviders.forEach(this::registerProvider);
     }
 

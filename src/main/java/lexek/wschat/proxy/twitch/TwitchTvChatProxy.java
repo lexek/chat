@@ -17,7 +17,6 @@ import lexek.wschat.chat.model.LocalRole;
 import lexek.wschat.chat.model.Message;
 import lexek.wschat.db.model.ProxyAuth;
 import lexek.wschat.proxy.*;
-import lexek.wschat.security.AuthenticationManager;
 import lexek.wschat.services.NotificationService;
 import lexek.wschat.util.Colors;
 
@@ -44,7 +43,7 @@ public class TwitchTvChatProxy extends AbstractProxy {
         boolean outbound,
         AtomicLong messageId,
         MessageBroadcaster messageBroadcaster,
-        AuthenticationManager authenticationManager,
+        TwitchCredentialsService credentialsService,
         EventLoopGroup eventLoopGroup,
         ProxyAuthService proxyAuthService
     ) {
@@ -55,7 +54,7 @@ public class TwitchTvChatProxy extends AbstractProxy {
         this.room = room;
         if (outbound) {
             this.outboundHandler =
-                new OutboundMessageHandler(authenticationManager, eventLoopGroup, connections, remoteRoom);
+                new OutboundMessageHandler(credentialsService, eventLoopGroup, connections, remoteRoom);
         } else {
             this.outboundHandler = null;
         }

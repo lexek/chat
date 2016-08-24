@@ -15,7 +15,6 @@ import lexek.wschat.chat.model.Message;
 import lexek.wschat.services.managed.AbstractManagedService;
 import lexek.wschat.services.managed.InitStage;
 import lexek.wschat.util.LoggingExceptionHandler;
-import org.glassfish.hk2.api.IterableProvider;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
@@ -44,7 +43,7 @@ public class MessageBroadcaster extends AbstractManagedService {
     }
 
     @Inject
-    public void init(IterableProvider<MessageEventHandler> handlers) {
+    public void init(Iterable<MessageEventHandler> handlers) {
         handlers.forEach(this::registerConsumer);
     }
 

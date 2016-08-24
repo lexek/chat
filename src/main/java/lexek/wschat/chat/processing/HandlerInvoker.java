@@ -10,7 +10,6 @@ import lexek.wschat.chat.model.*;
 import lexek.wschat.security.AuthenticationManager;
 import lexek.wschat.security.CaptchaService;
 import lexek.wschat.services.ChatterService;
-import org.glassfish.hk2.api.IterableProvider;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
@@ -46,7 +45,7 @@ public class HandlerInvoker {
     }
 
     @Inject
-    public void init(IterableProvider<MessageHandler> handlers) {
+    public void init(Iterable<MessageHandler> handlers) {
         handlers.forEach(this::register);
     }
 

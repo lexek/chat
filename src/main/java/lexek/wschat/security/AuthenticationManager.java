@@ -115,7 +115,12 @@ public class AuthenticationManager {
 
     @Transactional
     public UserAuthDto getOrCreateUserAuth(SocialProfile profile, UserDto user) {
-        return userAuthDao.getOrCreateUserAuth(profile, user);
+        //todo: separate get and create logic after proper transactions are implemented
+        UserAuthDto auth = userAuthDao.getOrCreateUserAuth(profile, user);
+        if (user != null) {
+            triggerAuthEvent(UserAuthEventType.CREATED, user, profile.getService());
+        }
+        return auth;
     }
 
     @Transactional
@@ -224,8 +229,9 @@ public class AuthenticationManager {
             emailService.sendEmail(new Email(
                 email,
                 "Verify your email.",
-                "https://" + host + ":1337/rest/email/verify?code=" + URLEncoder.encode(verificationCode, "utf-8")
-                    + "&uid=" + userId
+                "https://" + host + ":1337/rest/email/verify" +
+                    "?code=" + URLEncoder.encode(verificationCode, "utf-8") +
+                    "&uid=" + userId
             ));
         } catch (UnsupportedEncodingException e) {
             logger.warn("", e);

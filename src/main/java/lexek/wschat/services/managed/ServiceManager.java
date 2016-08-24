@@ -2,7 +2,6 @@ package lexek.wschat.services.managed;
 
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.health.HealthCheckRegistry;
-import org.glassfish.hk2.api.IterableProvider;
 import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,7 +29,7 @@ public class ServiceManager {
     }
 
     @Inject
-    public void init(IterableProvider<ManagedService> services) {
+    public void init(Iterable<ManagedService> services) {
         StreamSupport
             .stream(services.spliterator(), false)
             .sorted((o1, o2) -> o1.getStage().ordinal() - o2.getStage().ordinal())

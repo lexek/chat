@@ -18,7 +18,6 @@ import lexek.wschat.chat.model.Chatter;
 import lexek.wschat.services.managed.AbstractManagedService;
 import lexek.wschat.services.managed.InitStage;
 import lexek.wschat.util.LoggingExceptionHandler;
-import org.glassfish.hk2.api.IterableProvider;
 import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,7 +51,7 @@ public class EventDispatcher extends AbstractManagedService {
     }
 
     @Inject
-    public void init(IterableProvider<EventListener> eventListeners) {
+    public void init(Iterable<EventListener> eventListeners) {
         StreamSupport.stream(eventListeners.spliterator(), false)
             .sorted((o1, o2) -> o1.getOrder() - o2.getOrder())
             .forEach(e -> registerListener(e.getEventType(), e));
