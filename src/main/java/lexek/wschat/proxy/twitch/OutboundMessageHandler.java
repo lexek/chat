@@ -18,7 +18,10 @@ import lexek.wschat.chat.model.Message;
 import lexek.wschat.chat.model.MessageProperty;
 import lexek.wschat.chat.model.MessageType;
 import lexek.wschat.db.model.UserAuthDto;
+import lexek.wschat.db.model.UserDto;
 import lexek.wschat.security.AuthenticationManager;
+import lexek.wschat.security.UserAuthEventListener;
+import lexek.wschat.security.UserAuthEventType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,7 +32,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-public class OutboundMessageHandler {
+public class OutboundMessageHandler implements UserAuthEventListener {
     private static final long FIVE_MINUTES = TimeUnit.MINUTES.toMillis(5);
     private static final AttributeKey<Long> lastMessageAttrKey = AttributeKey.valueOf("__last_message");
     private final Logger logger = LoggerFactory.getLogger(OutboundMessageHandler.class);
@@ -148,6 +151,17 @@ public class OutboundMessageHandler {
 
     public void start() {
         this.scheduledFuture = eventLoopGroup.scheduleAtFixedRate(new ConnectionCleanupTask(), 10, 5, TimeUnit.MINUTES);
+    }
+
+    @Override
+    public void onEvent(UserAuthEventType type, UserDto user, String service) {
+        if (service.equals("twitch")) {
+            if (type == UserAuthEventType.DELETED) {
+                checkedUsers.remove(user.getId());
+            } else if (type == UserAuthEventType.CREATED) {
+                checkedUsers.remove(user.getId());
+            }
+        }
     }
 
     private static class UserCredentials {
