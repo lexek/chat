@@ -101,7 +101,7 @@ public class RoomResource {
             throw new InvalidInputException("topic", "Should be string type");
         }
         String topic = topicNode.asText().trim();
-        if (topic.length() > 256) {
+        if (topic.length() > 8096) {
             throw new InvalidInputException("topic", "Too long");
         }
         if (topic.length() == 0) {
