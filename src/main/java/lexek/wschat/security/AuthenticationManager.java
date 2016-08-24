@@ -202,19 +202,18 @@ public class AuthenticationManager {
             }
         }
 
-        latestEmailChanges.put(user.getId(), Instant.now());
         doChangeEmail(user, email);
     }
 
     @Transactional
     private void doChangeEmail(UserDto user, String email) {
         String verificationCode = secureTokenGenerator.generateVerificationCode();
-        if (userAuthDao.setEmail(user.getId(), email, verificationCode)) {
-            user.setEmail(email);
-            user.setEmailVerified(false);
-            connectionManager.forEach(c -> user.getId().equals(c.getUser().getId()), lexek.wschat.chat.Connection::close);
-            sendVerificationEmail(email, verificationCode, user.getId());
-        }
+        userAuthDao.setEmail(user.getId(), email, verificationCode);
+        user.setEmail(email);
+        user.setEmailVerified(false);
+        connectionManager.forEach(c -> user.getId().equals(c.getUser().getId()), lexek.wschat.chat.Connection::close);
+        sendVerificationEmail(email, verificationCode, user.getId());
+        latestEmailChanges.put(user.getId(), Instant.now());
     }
 
     public void resendVerificationEmail(UserDto user) {

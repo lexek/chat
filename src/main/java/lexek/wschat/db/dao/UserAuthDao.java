@@ -147,11 +147,10 @@ public class UserAuthDao {
         return result;
     }
 
-    public boolean setEmail(long userId, String email, String verificationCode) {
-        boolean success = false;
+    public void setEmail(long userId, String email, String verificationCode) {
         try (Connection connection = dataSource.getConnection()) {
             final DSLContext dslContext = DSL.using(connection);
-            success = dslContext.transactionResult(conf -> {
+            dslContext.transaction(conf -> {
                 DSL.using(conf)
                     .update(USER)
                     .set(USER.EMAIL, email)
@@ -164,12 +163,12 @@ public class UserAuthDao {
                     .onDuplicateKeyUpdate()
                     .set(PENDING_CONFIRMATION.CODE, verificationCode)
                     .execute();
-                return true;
             });
-        } catch (DataAccessException | SQLException e) {
-            logger.error(e.getMessage());
+        } catch (DataAccessException e) {
+            throw new BadRequestException("This email is already in use.");
+        } catch (SQLException e) {
+            throw new InternalErrorException(e);
         }
-        return success;
     }
 
     public void setPassword(long userId, String passwordHash) {
