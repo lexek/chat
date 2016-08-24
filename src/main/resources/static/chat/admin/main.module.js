@@ -1388,8 +1388,7 @@ var RoomController = function($scope, $location, $http, $sce, $modal, alert, tit
                     position: "left",
                     align: "left",
                     width: 50
-                },
-                itemSelector: "#roomActivity",
+                },itemSelector: "#roomActivity",
                 domain: 'day',
                 subDomain: 'hour',
                 range: 8,
@@ -1621,7 +1620,6 @@ var RoomController = function($scope, $location, $http, $sce, $modal, alert, tit
             method: "DELETE",
             url: StringFormatter.format("/rest/rooms/{number}/announcements/{number}", $scope.roomId, id)
         }).success(function() {
-            var object = null;
             $scope.announcements = $scope.announcements.filter(function(e) {
                 return e.id !== id;
             });
@@ -1697,14 +1695,24 @@ var ComposeAnnouncementController = function($scope, $http, $modalInstance, room
     };
 
     $scope.submitForm = function() {
+        var onlyBroadcast = $scope.input.onlyBroadcast;
         var data = {
             "text": $scope.input.text,
-            "onlyBroadcast": $scope.input.onlyBroadcast
+            "onlyBroadcast": onlyBroadcast
         };
-        $http({method: "POST", url: StringFormatter.format("/rest/rooms/{number}/announcements/new", room.id), data: data})
-            .success(function(data) {
+        $http({
+            method: "POST",
+            url: StringFormatter.format("/rest/rooms/{number}/announcements/new", room.id),
+            data: data
+        }).success(function(data) {
+            if (onlyBroadcast) {
+                $modalInstance.close();
+            } else {
                 $modalInstance.close(data);
-            });
+            }
+        }).error(function(error) {
+            alert(error[0].message);
+        });
     };
 
     $scope.close = function() {

@@ -260,6 +260,7 @@ public class Main {
                 register(FreemarkerMvcFeature.class);
                 property(FreemarkerMvcFeature.TEMPLATE_BASE_PATH, "/templates/");
                 property(FreemarkerMvcFeature.ENCODING, "UTF-8");
+                property(ServerProperties.BV_SEND_ERROR_IN_RESPONSE, true);
                 register(new AbstractBinder() {
                     @Override
                     protected void configure() {
