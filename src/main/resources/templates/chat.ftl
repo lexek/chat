@@ -674,7 +674,9 @@
                             --><span bo-if="message.user.service==='cybergame'" class="fa fa-gamepad" style="color: #21b384"></span><!--
                             --><span bo-if="message.user.service==='youtube'" class="fa fa-youtube-play" style="color: #cd201f"></span><!--
                             --><strong bo-if="message.user.service==='goodgame'" style="color: #73ADFF">GG</strong><!--
-                            --><span bo-if="message.user.service==='sc2tv'" class="sc2tvIcon"></span></span><!--
+                            --><span bo-if="message.user.service==='sc2tv'" class="sc2tvIcon"></span><!--
+                            --><span bo-if="message.user.service==='beam'" class="beamIcon"></span><!--
+                            --></span><!--
                             --><span class="username" bo-style="{'color': message.user.color}" ng-click="addToInput($event)" bo-bind="message.user.name | inflector:'capital'"></span>:
                             <span class="userMessageContainer" ng-repeat="msg in message.messages track by $index">
                                 <br bo-if="!$first"/>
@@ -738,7 +740,9 @@
                                 --><span bo-if="message.user.service==='youtube'" class="fa fa-youtube-play" style="color: #cd201f"></span><!--
                                 --><span bo-if="message.user.service==='cybergame'" class="fa fa-gamepad" style="color: #999999"></span><!--
                                 --><strong bo-if="message.user.service==='goodgame'" style="color: #73ADFF">GG</strong><!--
-                                --><span bo-if="message.user.service==='sc2tv'" class="sc2tvIcon"></span></small>
+                                --><span bo-if="message.user.service==='sc2tv'" class="sc2tvIcon"></span><!--
+                                --><span bo-if="message.user.service==='beam'" class="beamIcon"></span><!--
+                                --></small>
                                 <div class="pull-right btn-group modButtons" bo-if="showModButtons()">
                                     <div class="btn btn-link btn-x" ng-click="clear()"><span class="fa fa-eraser"></span></div>
                                     <div class="btn btn-link btn-x" ng-click="ban()"><span class="fa fa-ban"></span></div>
