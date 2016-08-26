@@ -109,8 +109,6 @@ public class CybergameTvChatProxy extends AbstractProxy {
         channelFuture.addListener(future -> {
             if (!future.isSuccess()) {
                 fail("failed to connect");
-            } else {
-                started();
             }
         });
     }
