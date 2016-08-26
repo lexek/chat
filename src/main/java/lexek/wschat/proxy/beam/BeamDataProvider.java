@@ -19,7 +19,7 @@ public class BeamDataProvider {
     }
 
     public long getId(String channelName) throws IOException {
-        HttpGet httpGet = new HttpGet("https://beam.pro/api/v1/channels/lexek?fields=id");
+        HttpGet httpGet = new HttpGet("https://beam.pro/api/v1/channels/" + channelName + "?fields=id");
         JsonNode result = httpClient.execute(httpGet, JsonResponseHandler.INSTANCE);
         return result.get("id").asLong();
     }
