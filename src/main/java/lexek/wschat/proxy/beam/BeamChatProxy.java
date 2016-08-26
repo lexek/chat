@@ -108,7 +108,6 @@ public class BeamChatProxy extends AbstractProxy {
                     pipeline.addLast("http-aggregator", new HttpObjectAggregator(65536));
                     pipeline.addLast(new IdleStateHandler(120, 0, 140, TimeUnit.SECONDS));
                     pipeline.addLast(new WebSocketClientProtocolHandler(uri, WebSocketVersion.V13, null, false, null, 4096));
-                    pipeline.addLast(new LoggingHandler(BeamChatProxy.class, LogLevel.TRACE));
                     pipeline.addLast(new BeamCodec());
                     pipeline.addLast(new BeamChannelHandler());
                 }
@@ -184,14 +183,14 @@ public class BeamChatProxy extends AbstractProxy {
                     );
                     messageBroadcaster.submitMessage(chatMessage, room.FILTER);
                 }
-                if (type.equals("reply")) {
-                    long id = message.get("id").asLong();
-                    if (id == 0) {
-                        if (message.get("error").isNull()) {
-                            started();
-                        } else {
-                            fail(message.get("error").asText());
-                        }
+            }
+            if (type.equals("reply")) {
+                long id = message.get("id").asLong();
+                if (id == 0) {
+                    if (message.get("error").isNull()) {
+                        started();
+                    } else {
+                        fail(message.get("error").asText());
                     }
                 }
             }
