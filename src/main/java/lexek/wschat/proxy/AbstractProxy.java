@@ -111,7 +111,7 @@ public abstract class AbstractProxy implements Proxy {
         state = ProxyState.RECONNECTING;
         lastError = message;
         disconnect();
-        notificationService.notifyAdmins(
+        notificationService.notifySuperAdmins(
             "Proxy failed " + provider.getName(),
             String.format("Proxy %s/%s(%d) failed: %s", provider.getName(), remoteRoom, id, message),
             !minor
