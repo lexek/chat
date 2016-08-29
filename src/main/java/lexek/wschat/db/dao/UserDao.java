@@ -254,7 +254,7 @@ public class UserDao {
             return DSL.using(connection)
                 .select()
                 .from(USER)
-                .where(USER.ROLE.equal("SUPERADMIN"))
+                .where(USER.ROLE.in("ADMIN", "SUPERADMIN"))
                 .fetch()
                 .stream()
                 .map(UserDto::fromRecord)
