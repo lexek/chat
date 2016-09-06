@@ -30,7 +30,7 @@ public class StreamLabsProxy extends AbstractProxy {
     private final Room room;
     private volatile ScheduledFuture scheduledFuture = null;
     private volatile Long lastId = null;
-    private final long since = System.currentTimeMillis() / 1000;
+    private final long since = (System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(2)) / 1000;
 
     public StreamLabsProxy(
         ScheduledExecutorService scheduler,
