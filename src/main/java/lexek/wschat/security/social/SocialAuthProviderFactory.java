@@ -91,6 +91,15 @@ public class SocialAuthProviderFactory {
                     httpClient,
                     secureTokenGenerator
                 );
+            case "streamlabs":
+                return new StreamLabsProvider(
+                    credentials.getClientId(),
+                    credentials.getClientSecret(),
+                    getUrl(providerName, signIn),
+                    providerName,
+                    httpClient,
+                    secureTokenGenerator
+                );
             default:
                 throw new IllegalArgumentException("Unsupported provider " + providerName);
         }

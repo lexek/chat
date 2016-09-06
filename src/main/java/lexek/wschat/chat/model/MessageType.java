@@ -55,5 +55,6 @@ public enum MessageType {
     UNIGNORE,
     EMOTICONS,
     PROXY_MOD,
-    TWEET
+    TWEET,
+    DONATION
 }

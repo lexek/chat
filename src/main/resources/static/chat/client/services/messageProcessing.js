@@ -215,6 +215,18 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
         chat.messagesUpdated();
     };
 
+    var processDonationMessage = function(chat, ctx, msg) {
+        chat.lastChatter(ctx.room, null);
+        if (!msg.text) {
+            chat.addMessage(new Message("INFO", $translate.instant("MESSAGE_DONATED", msg)), ctx.room);
+        } else {
+            chat.addMessage(new Message("INFO", $translate.instant("MESSAGE_DONATED_MESSAGE", msg)), ctx.room);
+        }
+        if (!ctx.history) {
+            chat.messagesUpdated();
+        }
+    };
+
     var processTimeoutMessage = function(chat, ctx, msg) {
         chat.lastChatter(ctx.room, null);
         chat.addMessage(
@@ -507,7 +519,10 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
                 processEmoticons(chat, ctx.msg.emoticons);
                 break;
             case "TWEET":
-                processTweet(chat, ctx.msg)
+                processTweet(chat, ctx.msg);
+                break;
+            case "DONATION":
+                processDonationMessage(chat, ctx, ctx.msg);
                 break;
             default:
                 console.log(message);

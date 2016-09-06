@@ -191,7 +191,11 @@ langModule.config(['$translateProvider', function ($translateProvider) {
         "ERROR_EMAIL_SAME": "You can't change email to the same one",
         "ERROR_EMAIL_TOO_OFTEN": "You're changing email too often, try again in 30 minutes",
 
-        "TWITTER_RETWEETED": "retweeted by"
+        "TWITTER_RETWEETED": "retweeted by",
+        "MESSAGE_DONATED":
+            "<i class='fa fa-fw fa-money'></i> <strong>{{name}} donated {{amount | number:2}} {{currency}}</strong>",
+        "MESSAGE_DONATED_MESSAGE":
+            "<i class='fa fa-fw fa-money'></i> <strong>{{name}} donated {{amount | number:2}} {{currency}}</strong>: {{text}}"
     });
 
     $translateProvider.translations("ru", {
@@ -366,7 +370,11 @@ langModule.config(['$translateProvider', function ($translateProvider) {
         "ERROR_EMAIL_SAME": "Нельзя поменять email на такой же",
         "ERROR_EMAIL_TOO_OFTEN": "Вы слишком часто меняете email, попробуйте ещё раз через 30 минут",
 
-        "TWITTER_RETWEETED": "ретвит от"
+        "TWITTER_RETWEETED": "ретвит от",
+        "MESSAGE_DONATED":
+            "<i class='fa fa-fw fa-money'></i> <strong>{{name}} пожертвовал {{amount | number:2}} {{currency}}</strong>",
+        "MESSAGE_DONATED_MESSAGE":
+            "<i class='fa fa-fw fa-money'></i> <strong>{{name}} пожертвовал {{amount | number:2}} {{currency}}</strong>: {{text}}"
     });
 
     $translateProvider.translations("ua", {
