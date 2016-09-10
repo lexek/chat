@@ -20,8 +20,10 @@ public class ChatHomeHandler extends SimpleHttpHandler {
     @Override
     protected void handle(Request request, Response response) throws Exception {
         boolean debug = request.queryParamAsBoolean("debug");
+        boolean stream = request.queryParamAsBoolean("stream");
         String room = request.queryParam("room");
         response.renderTemplate("chat", ImmutableMap.builder()
+            .put("stream", stream)
             .put("title", title)
             .put("like", allowLikes)
             .put("singleRoom", singleRoom)

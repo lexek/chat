@@ -105,6 +105,9 @@
         <link rel="stylesheet" type="text/css" href="min/app.css"/>
         <script type="text/javascript" src="/js/client.min.js"></script>
     </#if>
+    <#if stream>
+        <link rel="stylesheet" type="text/css" href="/css/stream-mode.css"/>
+    </#if>
 </head>
 
 <body>
