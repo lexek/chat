@@ -36,17 +36,21 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class CybergameTvChatProxy extends AbstractProxy {
+    private final CybergameTvApiClient apiClient;
     private final MessageBroadcaster messageBroadcaster;
     private final AtomicLong messageId;
     private final Room room;
     private final Bootstrap bootstrap;
     private volatile Channel channel;
+    private String channelId;
 
     public CybergameTvChatProxy(
-        NotificationService notificationService, MessageBroadcaster messageBroadcaster, EventLoopGroup eventLoopGroup,
-        AtomicLong messageId, ProxyProvider provider, Room room, String remoteRoom, long id
+        CybergameTvApiClient apiClient, NotificationService notificationService, MessageBroadcaster messageBroadcaster,
+        EventLoopGroup eventLoopGroup, AtomicLong messageId, ProxyProvider provider, Room room, String remoteRoom,
+        long id
     ) {
         super(eventLoopGroup, notificationService, provider, id, remoteRoom);
+        this.apiClient = apiClient;
         this.messageBroadcaster = messageBroadcaster;
         this.messageId = messageId;
         this.room = room;
@@ -66,7 +70,6 @@ public class CybergameTvChatProxy extends AbstractProxy {
             bootstrap.channel(NioSocketChannel.class);
         }
         bootstrap.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
-        CybergameTvMessageCodec codec = new CybergameTvMessageCodec();
         bootstrap.handler(new ChannelInitializer<SocketChannel>() {
             @Override
             public void initChannel(final SocketChannel c) throws Exception {
@@ -75,7 +78,7 @@ public class CybergameTvChatProxy extends AbstractProxy {
                 pipeline.addLast("http-aggregator", new HttpObjectAggregator(65536));
                 pipeline.addLast(new IdleStateHandler(120, 0, 140, TimeUnit.SECONDS));
                 pipeline.addLast(new WebSocketClientProtocolHandler(uri, WebSocketVersion.V13, null, false, null, 4096));
-                pipeline.addLast(codec);
+                pipeline.addLast(new CybergameTvMessageCodec());
                 pipeline.addLast(handler);
             }
         });
@@ -104,6 +107,15 @@ public class CybergameTvChatProxy extends AbstractProxy {
 
     @Override
     protected void connect() {
+        if (channelId == null) {
+            try {
+                channelId = apiClient.getChannelId(remoteRoom());
+            } catch (Exception e) {
+                logger.error("unable to fetch channel id", e);
+                fail("unable to fetch channel id");
+                return;
+            }
+        }
         ChannelFuture channelFuture = bootstrap.connect("rutony-studio.com", 9002);
         channel = channelFuture.channel();
         channelFuture.addListener(future -> {
@@ -156,15 +168,15 @@ public class CybergameTvChatProxy extends AbstractProxy {
                     System.currentTimeMillis(),
                     messageBuilder.toString(),
                     "cybergame",
-                    remoteRoom(),
-                    "cybergame"
+                    channelId,
+                    remoteRoom()
                 );
                 messageBroadcaster.submitMessage(chatMessage, room.FILTER);
             }
             if (message.getType().equals("state")) {
                 String channel = data.get("channel").asText();
                 int state = data.get("state").asInt();
-                if (channel.equals("channel:" + remoteRoom()) && state == 2) {
+                if (channel.equals("channel:" + channelId) && state == 2) {
                     started();
                 } else {
                     fail("join failed");
@@ -183,7 +195,7 @@ public class CybergameTvChatProxy extends AbstractProxy {
                 }
             } else if (evt == WebSocketClientProtocolHandler.ClientHandshakeStateEvent.HANDSHAKE_COMPLETE) {
                 ObjectNode data = nodeFactory.objectNode();
-                data.put("cid", remoteRoom());
+                data.put("cid", channelId);
                 ctx.writeAndFlush(new CybergameTvEvent("join", data));
             }
         }
