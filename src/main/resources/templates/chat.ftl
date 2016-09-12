@@ -121,6 +121,7 @@
                 style="display: inline-block; width: 25px; cursor: pointer;"
                 ng-click="addToInput(unescapeCode(emoticon.code))"
                 ng-title="unescapeCode(::emoticon.code)"
+                tooltip="{{::unescapeCode(emoticon.code)}}"
                 >
             <img
                     style="max-height: 25px; max-width: 25px; height:auto; width: auto;"
