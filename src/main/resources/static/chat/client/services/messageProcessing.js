@@ -565,14 +565,11 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
                 text = text.replace(chat.emoticonRegExp, function (match) {
                     var emoticon = chat.emoticons[match];
                     if (emoticon) {
-                        return "<span " +
-                            "class='emoticon-parent' " +
-                            "data-code='" + emoticon.code + "'>" +
-                                "<img class='emoticon' " +
-                                "src='emoticons/" + emoticon.fileName + "' " +
-                                "style='height: " + emoticon.height + "px; width: " + emoticon.width + "px;' " +
-                                "alt='" + emoticon.code + "'></img>" +
-                            "</span>"
+                        return "<img class='emoticon' " +
+                            "src='emoticons/" + emoticon.fileName + "' " +
+                            "style='height: " + emoticon.height + "px; width: " + emoticon.width + "px;' " +
+                            "title='" + emoticon.code + "'" +
+                            "alt='" + emoticon.code + "'></img>"
                     } else {
                         return null;
                     }

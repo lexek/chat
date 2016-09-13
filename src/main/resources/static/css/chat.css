@@ -242,6 +242,7 @@ img.emoji {
 
 .meMessageBody {
     line-height: 1.2;
+    overflow: hidden;
 }
 
 .userMessageBody {
@@ -249,6 +250,7 @@ img.emoji {
     margin-top: 2px;
     padding-left: 4px;
     line-height: 1.2;
+    overflow: hidden;
     min-height: 1.2em;
 }
 
@@ -975,31 +977,4 @@ a:focus {
 .auth-button {
     width: 100%;
     text-align: left;
-}
-
-.emoticon-parent {
-    position: relative;
-}
-
-.emoticon-parent::after {
-    background: rgba(0, 0, 0, 0.8);
-    border-radius: 8px 8px 8px 8px;
-    box-shadow: 1px 1px 10px rgba(0, 0, 0, 0.5);
-    color: #FFF;
-    content: attr(data-code);
-    opacity: 0;
-    padding: 3px 7px;
-    position: absolute;
-    visibility: hidden;
-    top: 100%;
-    transform: translateX(-50%);
-
-    transition: all 0.2s ease-in-out;
-
-    z-index: 999;
-}
-
-.emoticon-parent:hover::after {
-    opacity: 1;
-    visibility: visible;
 }
