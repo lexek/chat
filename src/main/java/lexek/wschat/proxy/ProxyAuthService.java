@@ -1,7 +1,6 @@
 package lexek.wschat.proxy;
 
 import io.netty.util.internal.chmv8.ConcurrentHashMapV8;
-import lexek.wschat.chat.e.InternalErrorException;
 import lexek.wschat.chat.model.GlobalRole;
 import lexek.wschat.db.dao.ProxyAuthDao;
 import lexek.wschat.db.model.ProxyAuth;
@@ -74,7 +73,7 @@ public class ProxyAuthService {
                         ));
                         return refreshedToken.getToken();
                     } catch (IOException e) {
-                        throw new InternalErrorException("unable to refresh token", e);
+                        throw new ProxyTokenException("unable to refresh token", e);
                     }
                 } else {
                     return cachedToken.getToken();
@@ -83,7 +82,7 @@ public class ProxyAuthService {
                 return cachedToken.getToken();
             }
         }
-        throw new InternalErrorException("unable to get token");
+        throw new ProxyTokenException("unable to get token");
     }
 
     public SocialProfile getProfile(long authId) {

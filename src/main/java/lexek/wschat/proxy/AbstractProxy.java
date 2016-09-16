@@ -95,34 +95,37 @@ public abstract class AbstractProxy implements Proxy {
             checkFuture = null;
         }
         state = ProxyState.RUNNING;
+        lastError = null;
         failsInRow = 0;
     }
 
-    protected void fail(String message) {
-        fail(message, false);
-    }
-
     protected void minorFail(String message) {
-        fail(message, true);
+        fail(message, false, false);
     }
 
-    protected void fail(String message, boolean minor) {
-        logger.warn("proxy {}/{} failed: {} (minor: {})", provider.getName(), remoteRoom, message, minor);
+    protected void fail(String message) {
+        fail(message, false, true);
+    }
+
+    protected void fatalError(String message) {
+        fail(message, true, true);
+    }
+
+    private void fail(String message, boolean fatal, boolean sendMail) {
+        logger.warn("proxy {}/{} failed: {} (minor: {})", provider.getName(), remoteRoom, message, sendMail);
         state = ProxyState.RECONNECTING;
         lastError = message;
         disconnect();
         notificationService.notifySuperAdmins(
             "Proxy failed " + provider.getName(),
             String.format("Proxy %s/%s(%d) failed: %s", provider.getName(), remoteRoom, id, message),
-            !minor
+            sendMail
         );
-        if (failsInRow == 0) {
-            //reconnect right away on first fail
-            start();
-        } else {
-            if (minor) {
-                //with minor issue we shouldn't increase reconnection interval
-                reconnectFuture = scheduler.schedule(this::start, 1, TimeUnit.MINUTES);
+        //if the error is fatal we don't need to reconnect automatically
+        if (!fatal) {
+            if (failsInRow == 0) {
+                //reconnect right away on first fail
+                start();
             } else {
                 long reconnectIn = failsInRow <= 5 ? Math.round(Math.pow(2, failsInRow)) : 32;
                 reconnectFuture = scheduler.schedule(this::start, reconnectIn, TimeUnit.MINUTES);

@@ -11,6 +11,7 @@ import lexek.wschat.chat.model.Message;
 import lexek.wschat.proxy.AbstractProxy;
 import lexek.wschat.proxy.ModerationOperation;
 import lexek.wschat.proxy.ProxyAuthService;
+import lexek.wschat.proxy.ProxyTokenException;
 import lexek.wschat.services.NotificationService;
 import lexek.wschat.util.Colors;
 import lexek.wschat.util.JsonResponseHandler;
@@ -135,9 +136,12 @@ public class YouTubeProxy extends AbstractProxy {
                 } else {
                     executorService.schedule(this::doWork, 30, TimeUnit.SECONDS);
                 }
+            } catch (ProxyTokenException e) {
+                logger.error("exception", e);
+                fatalError(e.getMessage());
             } catch (Exception e) {
-                logger.warn("exception", e);
-                fail(e.getMessage(), true);
+                logger.error("exception", e);
+                minorFail(e.getMessage());
             }
         }
     }
