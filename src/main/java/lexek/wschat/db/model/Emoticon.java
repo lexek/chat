@@ -1,6 +1,9 @@
 package lexek.wschat.db.model;
 
+import java.util.regex.Pattern;
+
 public class Emoticon {
+    private Pattern pattern;
     private Long id;
     private String code;
     private String fileName;
@@ -56,6 +59,17 @@ public class Emoticon {
 
     public void setWidth(Integer width) {
         this.width = width;
+    }
+
+    public Pattern getPattern() {
+        return pattern;
+    }
+
+    public Emoticon initPattern() {
+        if (code != null) {
+            pattern = Pattern.compile(code);
+        }
+        return this;
     }
 
     @Override

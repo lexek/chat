@@ -4,6 +4,7 @@ import com.google.common.hash.Hashing;
 import lexek.wschat.chat.MessageBroadcaster;
 import lexek.wschat.chat.e.InvalidInputException;
 import lexek.wschat.chat.model.Message;
+import lexek.wschat.chat.msg.EmoticonProvider;
 import lexek.wschat.db.dao.EmoticonDao;
 import lexek.wschat.db.model.Emoticon;
 import lexek.wschat.db.model.UserDto;
@@ -23,7 +24,7 @@ import java.nio.file.Paths;
 import java.util.List;
 
 @Service
-public class EmoticonService {
+public class EmoticonService implements EmoticonProvider {
     private final Path emoticonsDir;
     private final Dimension maxSize;
     private final EmoticonDao emoticonDao;
@@ -109,6 +110,7 @@ public class EmoticonService {
             synchronized (this) {
                 if (cachedEmoticons == null) {
                     cachedEmoticons = emoticonDao.getAll();
+                    cachedEmoticons.forEach(Emoticon::initPattern);
                 }
             }
         }
