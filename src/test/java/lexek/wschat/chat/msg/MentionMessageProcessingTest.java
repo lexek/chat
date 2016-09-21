@@ -1,6 +1,7 @@
 package lexek.wschat.chat.msg;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 import org.junit.Test;
 
 import java.util.List;
@@ -12,34 +13,34 @@ public class MentionMessageProcessingTest {
 
     @Test
     public void simpleMentionTest() {
-        List<MessageNode> message = ImmutableList.of(MessageNode.textNode("@alexey"));
+        List<MessageNode> message = Lists.newArrayList(MessageNode.textNode("@alexey"));
 
-        List<MessageNode> actualResult = processor.process(message);
+        processor.process(message);
 
         List<MessageNode> expectedResult = ImmutableList.of(MessageNode.mentionNode("alexey"));
 
-        assertEquals(actualResult, expectedResult);
+        assertEquals(message, expectedResult);
     }
 
     @Test
     public void prefixMentionTest() {
-        List<MessageNode> message = ImmutableList.of(MessageNode.textNode("kek @alexey"));
+        List<MessageNode> message = Lists.newArrayList(MessageNode.textNode("kek @alexey"));
 
-        List<MessageNode> actualResult = processor.process(message);
+        processor.process(message);
 
         List<MessageNode> expectedResult = ImmutableList.of(
             MessageNode.textNode("kek "),
             MessageNode.mentionNode("alexey")
         );
 
-        assertEquals(actualResult, expectedResult);
+        assertEquals(message, expectedResult);
     }
 
     @Test
     public void surroundedMentionTest() {
-        List<MessageNode> message = ImmutableList.of(MessageNode.textNode("top @alexey kek"));
+        List<MessageNode> message = Lists.newArrayList(MessageNode.textNode("top @alexey kek"));
 
-        List<MessageNode> actualResult = processor.process(message);
+        processor.process(message);
 
         List<MessageNode> expectedResult = ImmutableList.of(
             MessageNode.textNode("top "),
@@ -47,14 +48,14 @@ public class MentionMessageProcessingTest {
             MessageNode.textNode(" kek")
         );
 
-        assertEquals(actualResult, expectedResult);
+        assertEquals(message, expectedResult);
     }
 
     @Test
     public void multipleMentionTest() {
-        List<MessageNode> message = ImmutableList.of(MessageNode.textNode("top @alexey @alesha kek"));
+        List<MessageNode> message = Lists.newArrayList(MessageNode.textNode("top @alexey @alesha kek"));
 
-        List<MessageNode> actualResult = processor.process(message);
+        processor.process(message);
 
         List<MessageNode> expectedResult = ImmutableList.of(
             MessageNode.textNode("top "),
@@ -64,14 +65,14 @@ public class MentionMessageProcessingTest {
             MessageNode.textNode(" kek")
         );
 
-        assertEquals(actualResult, expectedResult);
+        assertEquals(message, expectedResult);
     }
 
     @Test
     public void multipleNoSpaceMentionTest() {
-        List<MessageNode> message = ImmutableList.of(MessageNode.textNode("top @alexey@alesha kek"));
+        List<MessageNode> message = Lists.newArrayList(MessageNode.textNode("top @alexey@alesha kek"));
 
-        List<MessageNode> actualResult = processor.process(message);
+        processor.process(message);
 
         List<MessageNode> expectedResult = ImmutableList.of(
             MessageNode.textNode("top "),
@@ -80,19 +81,19 @@ public class MentionMessageProcessingTest {
             MessageNode.textNode(" kek")
         );
 
-        assertEquals(actualResult, expectedResult);
+        assertEquals(message, expectedResult);
     }
 
     @Test
     public void multipleNodesTest() {
-        List<MessageNode> message = ImmutableList.of(
+        List<MessageNode> message = Lists.newArrayList(
             MessageNode.textNode("before"),
             MessageNode.urlNode("https://google.com"),
             MessageNode.textNode("top @alexey@alesha kek"),
             MessageNode.textNode("after @kek")
         );
 
-        List<MessageNode> actualResult = processor.process(message);
+        processor.process(message);
 
         List<MessageNode> expectedResult = ImmutableList.of(
             MessageNode.textNode("before"),
@@ -105,6 +106,6 @@ public class MentionMessageProcessingTest {
             MessageNode.mentionNode("kek")
         );
 
-        assertEquals(actualResult, expectedResult);
+        assertEquals(message, expectedResult);
     }
 }

@@ -1,6 +1,7 @@
 package lexek.wschat.chat.msg;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 import org.junit.Test;
 
 import java.util.List;
@@ -12,34 +13,34 @@ public class UrlMessageProcessorTest {
 
     @Test
     public void simpleUrlTest() {
-        List<MessageNode> message = ImmutableList.of(MessageNode.textNode("https://google.com"));
+        List<MessageNode> message = Lists.newArrayList(MessageNode.textNode("https://google.com"));
 
-        List<MessageNode> actualResult = processor.process(message);
+        processor.process(message);
 
         List<MessageNode> expectedResult = ImmutableList.of(MessageNode.urlNode("https://google.com"));
 
-        assertEquals(actualResult, expectedResult);
+        assertEquals(message, expectedResult);
     }
 
     @Test
     public void prefixUrlTest() {
-        List<MessageNode> message = ImmutableList.of(MessageNode.textNode("kek https://google.com"));
+        List<MessageNode> message = Lists.newArrayList(MessageNode.textNode("kek https://google.com"));
 
-        List<MessageNode> actualResult = processor.process(message);
+        processor.process(message);
 
         List<MessageNode> expectedResult = ImmutableList.of(
             MessageNode.textNode("kek "),
             MessageNode.urlNode("https://google.com")
         );
 
-        assertEquals(actualResult, expectedResult);
+        assertEquals(message, expectedResult);
     }
 
     @Test
     public void surroundedUrlTest() {
-        List<MessageNode> message = ImmutableList.of(MessageNode.textNode("top https://google.com kek"));
+        List<MessageNode> message = Lists.newArrayList(MessageNode.textNode("top https://google.com kek"));
 
-        List<MessageNode> actualResult = processor.process(message);
+        processor.process(message);
 
         List<MessageNode> expectedResult = ImmutableList.of(
             MessageNode.textNode("top "),
@@ -47,14 +48,14 @@ public class UrlMessageProcessorTest {
             MessageNode.textNode(" kek")
         );
 
-        assertEquals(actualResult, expectedResult);
+        assertEquals(message, expectedResult);
     }
 
     @Test
     public void multipleUrlTest() {
-        List<MessageNode> message = ImmutableList.of(MessageNode.textNode("top https://google.com https://vk.com kek"));
+        List<MessageNode> message = Lists.newArrayList(MessageNode.textNode("top https://google.com https://vk.com kek"));
 
-        List<MessageNode> actualResult = processor.process(message);
+        processor.process(message);
 
         List<MessageNode> expectedResult = ImmutableList.of(
             MessageNode.textNode("top "),
@@ -64,19 +65,19 @@ public class UrlMessageProcessorTest {
             MessageNode.textNode(" kek")
         );
 
-        assertEquals(actualResult, expectedResult);
+        assertEquals(message, expectedResult);
     }
 
     @Test
     public void multipleNodesTest() {
-        List<MessageNode> message = ImmutableList.of(
+        List<MessageNode> message = Lists.newArrayList(
             MessageNode.textNode("before"),
             MessageNode.mentionNode("lol"),
             MessageNode.textNode("top https://google.com https://vk.com kek"),
             MessageNode.textNode("after https://google.com")
         );
 
-        List<MessageNode> actualResult = processor.process(message);
+        processor.process(message);
 
         List<MessageNode> expectedResult = ImmutableList.of(
             MessageNode.textNode("before"),
@@ -90,6 +91,6 @@ public class UrlMessageProcessorTest {
             MessageNode.urlNode("https://google.com")
         );
 
-        assertEquals(actualResult, expectedResult);
+        assertEquals(message, expectedResult);
     }
 }

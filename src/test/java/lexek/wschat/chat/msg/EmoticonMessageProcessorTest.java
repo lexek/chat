@@ -1,6 +1,7 @@
 package lexek.wschat.chat.msg;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 import lexek.wschat.db.model.Emoticon;
 import lexek.wschat.services.EmoticonService;
 import org.junit.Test;
@@ -8,7 +9,7 @@ import org.mockito.Mockito;
 
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 public class EmoticonMessageProcessorTest {
     @Test
@@ -19,15 +20,15 @@ public class EmoticonMessageProcessorTest {
         ));
         EmoticonMessageProcessor processor = new EmoticonMessageProcessor(emoticonService);
 
-        List<MessageNode> message = ImmutableList.of(MessageNode.textNode("Kappa"));
+        List<MessageNode> message = Lists.newArrayList(MessageNode.textNode("Kappa"));
 
-        List<MessageNode> actualResult = processor.process(message);
+        processor.process(message);
 
         List<MessageNode> expectedResult = ImmutableList.of(
             MessageNode.emoticonNode("Kappa", "Kappa.png", 30, 30)
         );
 
-        assertEquals(actualResult, expectedResult);
+        assertEquals(message, expectedResult);
 
     }
 
@@ -39,9 +40,9 @@ public class EmoticonMessageProcessorTest {
         ));
         EmoticonMessageProcessor processor = new EmoticonMessageProcessor(emoticonService);
 
-        List<MessageNode> message = ImmutableList.of(MessageNode.textNode("top Kappa kek"));
+        List<MessageNode> message = Lists.newArrayList(MessageNode.textNode("top Kappa kek"));
 
-        List<MessageNode> actualResult = processor.process(message);
+        processor.process(message);
 
         List<MessageNode> expectedResult = ImmutableList.of(
             MessageNode.textNode("top "),
@@ -49,6 +50,6 @@ public class EmoticonMessageProcessorTest {
             MessageNode.textNode(" kek")
         );
 
-        assertEquals(actualResult, expectedResult);
+        assertEquals(message, expectedResult);
     }
 }

@@ -1,9 +1,7 @@
 package lexek.wschat.chat.msg;
 
-import com.google.common.collect.Lists;
 import lexek.wschat.db.model.Emoticon;
 
-import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.regex.Matcher;
@@ -17,11 +15,10 @@ public class EmoticonMessageProcessor implements MessageProcessor {
     }
 
     @Override
-    public List<MessageNode> process(List<MessageNode> message) {
-        LinkedList<MessageNode> messageNodes = Lists.newLinkedList(message);
+    public void process(List<MessageNode> message) {
         for (Emoticon emoticon : emoticonProvider.getEmoticons()) {
             Pattern pattern = emoticon.getPattern();
-            for (ListIterator<MessageNode> iterator = messageNodes.listIterator(); iterator.hasNext();) {
+            for (ListIterator<MessageNode> iterator = message.listIterator(); iterator.hasNext(); ) {
                 MessageNode node = iterator.next();
                 if (node.getType() == MessageNode.Type.TEXT) {
                     iterator.remove();
@@ -50,6 +47,5 @@ public class EmoticonMessageProcessor implements MessageProcessor {
                 }
             }
         }
-        return messageNodes;
     }
 }

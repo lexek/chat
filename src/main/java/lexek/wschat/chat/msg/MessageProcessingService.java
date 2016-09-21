@@ -13,9 +13,13 @@ public class MessageProcessingService {
         this.processors.add(new UrlMessageProcessor());
     }
 
-    public List<MessageNode> parseMessage(String text) {
-        List<MessageNode> nodes = ImmutableList.of(MessageNode.textNode(text));
+    public List<MessageNode> processMessage(String message) {
+        List<MessageNode> nodes = ImmutableList.of(MessageNode.textNode(message));
+        processMessage(nodes);
+        return nodes;
+    }
 
-        return null;
+    public void processMessage(List<MessageNode> message) {
+        //todo
     }
 }
