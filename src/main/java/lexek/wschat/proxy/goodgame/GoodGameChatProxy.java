@@ -26,6 +26,7 @@ import lexek.wschat.proxy.*;
 import lexek.wschat.services.NotificationService;
 import lexek.wschat.util.Colors;
 
+import java.io.IOException;
 import java.net.URI;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
@@ -160,11 +161,14 @@ public class GoodGameChatProxy extends AbstractProxy {
         @Override
         public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
             if (cause instanceof ProxyTokenException) {
-                logger.warn("exception", cause);
+                logger.error("exception", cause);
                 fatalError(cause.getMessage());
-            } else {
+            } else if (cause instanceof IOException) {
                 logger.warn("exception", cause);
                 minorFail(cause.getMessage());
+            } else {
+                logger.error("exception", cause);
+                fail(cause.getMessage());
             }
         }
 

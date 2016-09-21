@@ -111,16 +111,18 @@ public abstract class AbstractProxy implements Proxy {
         fail(message, true, true);
     }
 
-    private void fail(String message, boolean fatal, boolean sendMail) {
-        logger.warn("proxy {}/{} failed: {} (minor: {})", provider.getName(), remoteRoom, message, sendMail);
+    private void fail(String message, boolean fatal, boolean notify) {
+        logger.warn("proxy {}/{} failed: {} (minor: {})", provider.getName(), remoteRoom, message, !notify);
         state = ProxyState.RECONNECTING;
         lastError = message;
         disconnect();
-        notificationService.notifySuperAdmins(
-            "Proxy failed " + provider.getName(),
-            String.format("Proxy %s/%s(%d) failed: %s", provider.getName(), remoteRoom, id, message),
-            sendMail
-        );
+        if (notify) {
+            notificationService.notifySuperAdmins(
+                "Proxy failed " + provider.getName(),
+                String.format("Proxy %s/%s(%d) failed: %s", provider.getName(), remoteRoom, id, message),
+                true
+            );
+        }
         //if the error is fatal we don't need to reconnect automatically
         if (!fatal) {
             if (failsInRow == 0) {

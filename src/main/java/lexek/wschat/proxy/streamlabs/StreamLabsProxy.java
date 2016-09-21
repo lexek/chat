@@ -14,6 +14,7 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URIBuilder;
 
+import java.io.IOException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -129,6 +130,9 @@ public class StreamLabsProxy extends AbstractProxy {
             } catch (ProxyTokenException e) {
                 logger.error("exception", e);
                 fatalError(e.getMessage());
+            } catch (IOException e) {
+                logger.warn("exception", e);
+                minorFail(e.getMessage());
             } catch (Exception e) {
                 logger.error("exception", e);
                 fail(e.getMessage());

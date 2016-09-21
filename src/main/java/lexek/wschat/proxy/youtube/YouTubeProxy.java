@@ -139,9 +139,12 @@ public class YouTubeProxy extends AbstractProxy {
             } catch (ProxyTokenException e) {
                 logger.error("exception", e);
                 fatalError(e.getMessage());
+            } catch (IOException e) {
+                logger.warn("exception", e);
+                minorFail(e.getMessage());
             } catch (Exception e) {
                 logger.error("exception", e);
-                minorFail(e.getMessage());
+                fail(e.getMessage());
             }
         }
     }

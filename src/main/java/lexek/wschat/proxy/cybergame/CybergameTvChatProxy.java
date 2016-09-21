@@ -31,6 +31,7 @@ import lexek.wschat.proxy.ProxyState;
 import lexek.wschat.services.NotificationService;
 import lexek.wschat.util.Colors;
 
+import java.io.IOException;
 import java.net.URI;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
@@ -145,8 +146,13 @@ public class CybergameTvChatProxy extends AbstractProxy {
 
         @Override
         public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-            logger.warn("exception", cause);
-            minorFail(cause.getMessage());
+            if (cause instanceof IOException) {
+                logger.warn("exception", cause);
+                minorFail(cause.getMessage());
+            } else {
+                logger.error("exception", cause);
+                fail(cause.getMessage());
+            }
         }
 
         @Override
