@@ -974,6 +974,17 @@ a:focus {
     background-repeat: no-repeat;
 }
 
+.cg-icon {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    background-image: url("/img/cg.png");
+    background-size: auto 14px;
+    background-position: center;
+    background-repeat: no-repeat;
+    vertical-align: text-bottom;
+}
+
 .auth-button {
     width: 100%;
     text-align: left;
