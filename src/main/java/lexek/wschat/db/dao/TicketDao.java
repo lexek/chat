@@ -93,7 +93,7 @@ public class TicketDao {
                     record.into(TICKET).into(Ticket.class),
                     record.getValue(USER.as("closedBy").NAME)))
                 .collect(Collectors.toList());
-            int total = ctx.fetchCount(ctx.select().from(TICKET).where(TICKET.IS_OPEN.equal(isOpen))) / pageLength;
+            int total = ctx.fetchCount(ctx.select().from(TICKET).where(TICKET.IS_OPEN.equal(isOpen)));
             result = new DataPage<>(data, page, total / pageLength);
         } catch (DataAccessException | SQLException e) {
             throw new InternalErrorException(e);
