@@ -869,7 +869,7 @@ function HistoryController($scope, $http, $modal, title, options) {
             "page": $scope.page
         };
         if ($scope.users) {
-            params["user"] = $scope.users;
+            params["user"] = $scope.users.map(mapToId);
         }
         if ($scope.since) {
             params["since"] = $scope.since;
@@ -877,11 +877,14 @@ function HistoryController($scope, $http, $modal, title, options) {
         if ($scope.until) {
             params["until"] = $scope.until;
         }
-        $http({method: "GET", url: StringFormatter.format("/rest/rooms/{number}/history/all", $scope.room.id), params: params})
-            .success(function (d) {
-                $scope.entries = d["data"];
-                $scope.totalPages = d["pageCount"];
-            });
+        $http({
+            method: "GET",
+            url: StringFormatter.format("/rest/rooms/{number}/history/all", $scope.room.id),
+            params: params
+        }).success(function (d) {
+            $scope.entries = d["data"];
+            $scope.totalPages = d["pageCount"];
+        });
     };
 
     $scope.removeUserFilter = function(user) {
@@ -891,7 +894,11 @@ function HistoryController($scope, $http, $modal, title, options) {
     };
 
     $scope.addUserFilter = function(user) {
-        if (user && (user.length > 0) && ($scope.users.indexOf(user) === -1)) {
+        function userNotEq(u) {
+            return u.id !== user.id;
+        }
+
+        if (user && $scope.users.every(userNotEq)) {
             $scope.input.user = null;
             $scope.users.push(user);
             $scope.page = 0;
@@ -947,6 +954,10 @@ function HistoryController($scope, $http, $modal, title, options) {
             loadPage();
         }
     };
+
+    function mapToId(user) {
+        return user.id;
+    }
 
     loadPage();
 }

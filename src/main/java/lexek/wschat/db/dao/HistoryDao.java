@@ -73,26 +73,18 @@ public class HistoryDao {
 
     public DataPage<HistoryData> getAllForUsers(
         long roomId, int page, int pageLength,
-        Optional<List<String>> users, Optional<Long> since, Optional<Long> until
+        Optional<List<Long>> users, Optional<Long> since, Optional<Long> until
     ) {
         List<Condition> conditions = new ArrayList<>();
         conditions.add(HISTORY.ROOM_ID.equal(roomId));
-        boolean userInvolved = false;
-        if (users.isPresent()) {
-            conditions.add(USER.NAME.in(users.get()));
-            userInvolved = true;
-        }
+        users.ifPresent(value -> conditions.add(HISTORY.USER_ID.in(value)));
         since.ifPresent(value -> conditions.add(HISTORY.TIMESTAMP.greaterOrEqual(value)));
         until.ifPresent(value -> conditions.add(HISTORY.TIMESTAMP.lessOrEqual(value)));
         try (Connection connection = dataSource.getConnection()) {
-            Table countTable = HISTORY;
-            if (userInvolved) {
-                countTable = HISTORY.join(USER).on(HISTORY.USER_ID.equal(USER.ID));
-            }
             int count = DSL
                 .using(connection)
                 .fetchCount(
-                    countTable,
+                    HISTORY,
                     DSL.condition(Operator.AND, conditions)
                 );
             Table<?> h = DSL
