@@ -73,8 +73,7 @@ public class HistoryDao {
 
     public DataPage<HistoryData> getAllForUsers(
         long roomId, int page, int pageLength,
-        Optional<List<String>> users,
-        Optional<Long> since, Optional<Long> until
+        Optional<List<String>> users, Optional<Long> since, Optional<Long> until
     ) {
         List<Condition> conditions = new ArrayList<>();
         conditions.add(HISTORY.ROOM_ID.equal(roomId));
@@ -96,12 +95,21 @@ public class HistoryDao {
                     countTable,
                     DSL.condition(Operator.AND, conditions)
                 );
-            List<HistoryData> data = DSL.using(connection)
-                .select(HISTORY.MESSAGE, HISTORY.TYPE, HISTORY.TIMESTAMP, USER.NAME, HISTORY.HIDDEN)
-                .from(HISTORY.join(USER).on(HISTORY.USER_ID.equal(USER.ID)))
+            Table<?> h = DSL
+                .select(HISTORY.ID.as("ID"))
+                .from(HISTORY)
                 .where(conditions)
                 .orderBy(HISTORY.TIMESTAMP.desc())
                 .limit(pageLength * page, pageLength)
+                .asTable("h");
+            List<HistoryData> data = DSL.using(connection)
+                .select(HISTORY.MESSAGE, HISTORY.TYPE, HISTORY.TIMESTAMP, USER.NAME, HISTORY.HIDDEN)
+                .from(
+                    HISTORY
+                        .join(h).on(HISTORY.ID.eq(h.field("ID", Long.class)))
+                        .join(USER).on(HISTORY.USER_ID.equal(USER.ID))
+                )
+                .orderBy(HISTORY.TIMESTAMP.desc())
                 .fetch()
                 .stream()
                 .map(record -> new HistoryData(
@@ -121,12 +129,21 @@ public class HistoryDao {
     public List<HistoryData> getLastN(long roomId, int count) {
         List<HistoryData> result;
         try (Connection connection = dataSource.getConnection()) {
-            result = DSL.using(connection)
-                .select(HISTORY.MESSAGE, HISTORY.TYPE, HISTORY.TIMESTAMP, USER.NAME, HISTORY.HIDDEN)
-                .from(HISTORY.join(USER).on(HISTORY.USER_ID.equal(USER.ID)))
+            Table<?> h = DSL
+                .select(HISTORY.ID.as("ID"))
+                .from(HISTORY)
                 .where(HISTORY.ROOM_ID.equal(roomId))
                 .orderBy(HISTORY.TIMESTAMP.desc())
                 .limit(count)
+                .asTable("h");
+            result = DSL.using(connection)
+                .select(HISTORY.MESSAGE, HISTORY.TYPE, HISTORY.TIMESTAMP, USER.NAME, HISTORY.HIDDEN)
+                .from(
+                    HISTORY
+                        .join(h).on(HISTORY.ID.eq(h.field("ID", Long.class)))
+                        .join(USER).on(HISTORY.USER_ID.equal(USER.ID))
+                )
+                .orderBy(HISTORY.TIMESTAMP.desc())
                 .fetch()
                 .stream()
                 .map(record -> new HistoryData(
