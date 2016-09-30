@@ -173,7 +173,7 @@ public class Main {
         MetricRegistry runtimeMetricRegistry = new MetricRegistry();
         HealthCheckRegistry healthCheckRegistry = new HealthCheckRegistry();
         ServiceLocatorUtilities.addOneConstant(serviceLocator, metricRegistry, "chatRegistry", MetricRegistry.class);
-        ServiceLocatorUtilities.addOneConstant(serviceLocator, metricRegistry, "runtimeRegistry", MetricRegistry.class);
+        ServiceLocatorUtilities.addOneConstant(serviceLocator, runtimeMetricRegistry, "runtimeRegistry", MetricRegistry.class);
         ServiceLocatorUtilities.addOneConstant(serviceLocator, healthCheckRegistry);
 
         runtimeMetricRegistry.registerAll(new BufferPoolMetricSet(ManagementFactory.getPlatformMBeanServer()));

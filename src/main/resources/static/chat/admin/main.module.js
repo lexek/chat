@@ -1822,7 +1822,7 @@ AdminApplication.config(["$routeProvider", "$locationProvider", function($routeP
     });
     $routeProvider.when("/services", {
         "title": "services",
-        "templateUrl": "services.html",
+        "templateUrl": "/templates/services.html",
         "controller": ServicesController,
         "menuId": "services"
     });
