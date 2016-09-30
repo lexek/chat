@@ -60,6 +60,10 @@ import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.ServerProperties;
 import org.glassfish.jersey.server.mvc.freemarker.FreemarkerMvcFeature;
 import org.glassfish.jersey.server.spi.internal.ValueFactoryProvider;
+import org.jooq.DSLContext;
+import org.jooq.SQLDialect;
+import org.jooq.impl.DSL;
+import org.jooq.impl.DefaultConfiguration;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Singleton;
@@ -191,7 +195,11 @@ public class Main {
         config.setMetricRegistry(runtimeMetricRegistry);
         config.setHealthCheckRegistry(healthCheckRegistry);
         DataSource dataSource = new HikariDataSource(config);
-        ServiceLocatorUtilities.addOneConstant(serviceLocator, dataSource, "dataSource", DataSource.class);
+        org.jooq.Configuration jooqConfiguration = new DefaultConfiguration();
+        jooqConfiguration.set(dataSource);
+        jooqConfiguration.set(SQLDialect.MYSQL);
+        DSLContext dslContext = DSL.using(jooqConfiguration);
+        ServiceLocatorUtilities.addOneConstant(serviceLocator, dslContext, "dslContext", DSLContext.class);
 
         //proxy event loop
         EventLoopGroup proxyEventLoopGroup;
