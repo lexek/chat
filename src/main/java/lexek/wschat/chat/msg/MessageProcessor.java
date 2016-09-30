@@ -4,4 +4,8 @@ import java.util.List;
 
 public interface MessageProcessor {
     void process(List<MessageNode> message);
+
+    boolean handlesRoot();
+
+    boolean handlesChildren();
 }
