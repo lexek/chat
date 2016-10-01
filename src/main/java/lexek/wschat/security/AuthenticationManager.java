@@ -14,6 +14,7 @@ import lexek.wschat.db.model.UserDto;
 import lexek.wschat.db.tx.Transactional;
 import lexek.wschat.security.social.SocialProfile;
 import lexek.wschat.services.EmailService;
+import lexek.wschat.services.JournalService;
 import lexek.wschat.util.Colors;
 import org.apache.http.HttpHeaders;
 import org.jvnet.hk2.annotations.Service;
@@ -44,6 +45,7 @@ public class AuthenticationManager {
     private final EmailService emailService;
     private final ConnectionManager connectionManager;
     private final UserAuthDao userAuthDao;
+    private final JournalService journalService;
     private final Set<String> bannedIps = new CopyOnWriteArraySet<>();
 
     @Inject
@@ -52,13 +54,15 @@ public class AuthenticationManager {
         SecureTokenGenerator secureTokenGenerator,
         EmailService emailService,
         ConnectionManager connectionManager,
-        UserAuthDao userAuthDao
+        UserAuthDao userAuthDao,
+        JournalService journalService
     ) {
         this.host = host;
         this.secureTokenGenerator = secureTokenGenerator;
         this.emailService = emailService;
         this.connectionManager = connectionManager;
         this.userAuthDao = userAuthDao;
+        this.journalService = journalService;
     }
 
     public UserDto fastAuth(String name, String password, String ip) {
@@ -181,6 +185,7 @@ public class AuthenticationManager {
         if (userId != null) {
             sendVerificationEmail(email, verificationCode, userId);
             latestEmailChanges.put(userId, Instant.now());
+            journalService.userCreated(new UserDto(userId));
         }
         return userId != null;
     }
@@ -264,7 +269,7 @@ public class AuthenticationManager {
         userAuthDao.setPassword(user.getId(), BCrypt.hashpw(password, BCrypt.gensalt()));
     }
 
-    public synchronized String createTokenForUser(UserDto user) {
+    public synchronized String generateTokenForUser(UserDto user) {
         byte[] bytes = new byte[128];
         secureTokenGenerator.nextBytes(bytes);
         String token = user.getId() + "_" + BaseEncoding.base64().encode(bytes);
@@ -276,7 +281,9 @@ public class AuthenticationManager {
     }
 
     public synchronized UserAuthDto createUserWithProfile(String name, SocialProfile socialProfile) {
-        return userAuthDao.createUserWithProfile(name, socialProfile);
+        UserAuthDto result = userAuthDao.createUserWithProfile(name, socialProfile);
+        journalService.userCreated(result.getUser());
+        return result;
     }
 
     public synchronized UserAuthDto createUserAuthFromProfile(UserDto user, SocialProfile profile) {

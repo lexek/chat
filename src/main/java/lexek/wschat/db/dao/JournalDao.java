@@ -26,6 +26,7 @@ import static lexek.wschat.db.jooq.tables.Journal.JOURNAL;
 public class JournalDao {
     private static final Set<String> GLOBAL_ACTIONS = ImmutableSet.of(
         "USER_UPDATE",
+        "USER_CREATED",
         "NAME_CHANGE",
         "NEW_EMOTICON",
         "IMAGE_EMOTICON",

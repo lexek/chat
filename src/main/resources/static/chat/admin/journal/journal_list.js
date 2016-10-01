@@ -27,6 +27,7 @@
         };
         var actionMap = {
             'USER_UPDATE': 'User changed',
+            'USER_CREATED': 'User created',
             'NAME_CHANGE': 'User name changed',
             'NEW_EMOTICON': 'New emoticon',
             'IMAGE_EMOTICON': 'Updated emoticon image',
