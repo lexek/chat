@@ -4,6 +4,7 @@ node_modules/
 *.pem
 *.pk8
 *.iml
+*.mmdb
 logback.xml
 settings.json
 steam_lib.json

@@ -6,6 +6,9 @@ import lexek.wschat.chat.model.ConnectionState;
 import lexek.wschat.chat.model.Message;
 import lexek.wschat.util.Net;
 
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+
 public class IrcConnection extends Connection {
     private final Channel channel;
     private String password;
@@ -18,6 +21,11 @@ public class IrcConnection extends Connection {
     @Override
     public String getIp() {
         return Net.getIp(channel.remoteAddress());
+    }
+
+    @Override
+    public InetAddress getAddress() {
+        return ((InetSocketAddress) channel.remoteAddress()).getAddress();
     }
 
     @Override

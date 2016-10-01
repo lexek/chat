@@ -6,6 +6,8 @@ import lexek.wschat.chat.model.User;
 import lexek.wschat.frontend.Codec;
 import lexek.wschat.frontend.Protocol;
 
+import java.net.InetAddress;
+
 public abstract class Connection {
     private final Protocol protocol;
     private ConnectionState state;
@@ -72,6 +74,8 @@ public abstract class Connection {
 
 
     public abstract String getIp();
+
+    public abstract InetAddress getAddress();
 
     public abstract void send(Message message);
 

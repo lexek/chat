@@ -1785,7 +1785,7 @@ AdminApplication.config(["$routeProvider", "$locationProvider", function($routeP
     });
     $routeProvider.when("/online", {
         "title": "online users",
-        "templateUrl": "online.html",
+        "templateUrl": "/templates/online_users.html",
         "controller": OnlineController,
         "menuId": "online"
     });
