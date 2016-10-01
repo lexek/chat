@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import lexek.wschat.chat.e.EntityNotFoundException;
 import lexek.wschat.chat.model.GlobalRole;
 import lexek.wschat.security.jersey.RequiredRole;
-import lexek.wschat.services.SteamGameResolver;
+import lexek.wschat.services.SteamGameService;
 
 import javax.inject.Inject;
 import javax.validation.constraints.Min;
@@ -14,11 +14,11 @@ import java.util.Map;
 
 @Path("/steamGames")
 public class SteamGameResource {
-    private final SteamGameResolver steamGameResolver;
+    private final SteamGameService steamGameService;
 
     @Inject
-    public SteamGameResource(SteamGameResolver steamGameResolver) {
-        this.steamGameResolver = steamGameResolver;
+    public SteamGameResource(SteamGameService steamGameService) {
+        this.steamGameService = steamGameService;
     }
 
     @Path("/{id}")
@@ -28,7 +28,7 @@ public class SteamGameResource {
     public Map<String, String> getName(
         @PathParam("id") @Min(0) long id
     ) {
-        String name = steamGameResolver.getName(id);
+        String name = steamGameService.getName(id);
         if (name == null) {
             throw new EntityNotFoundException();
         }
@@ -42,6 +42,6 @@ public class SteamGameResource {
     @Produces(MediaType.APPLICATION_JSON)
     @RequiredRole(GlobalRole.SUPERADMIN)
     public void syncDb() {
-        steamGameResolver.syncDatabase();
+        steamGameService.syncDatabase();
     }
 }
