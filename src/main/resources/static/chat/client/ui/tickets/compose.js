@@ -1,47 +1,49 @@
-{
-    var module = angular.module("chat.ui.tickets.compose", []);
+(function () {
+    'use strict';
+
+    var module = angular.module('chat.ui.tickets.compose', []);
 
     var ComposeTicketController = function($scope, $modalInstance, $http) {
         makeClosable($scope, $modalInstance);
 
         $scope.input = {
-            "category": "BAN",
-            "text": ""
+            'category': 'BAN',
+            'text': ''
         };
         $scope.submitting = false;
 
         $scope.submitTicket = function () {
             $scope.submitting = true;
             $http({
-                method: "POST",
-                url: "/api/tickets",
+                method: 'POST',
+                url: '/rest/userTicket',
                 data: $.param($scope.input),
-                headers: {"Content-Type": "application/x-www-form-urlencoded"}
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'}
             }).success(function (data) {
                 $scope.submitting = false;
-                if (data === "ok") {
+                if (data.success) {
                     $modalInstance.close();
-                    alert("Your ticket is successfully submitted.")
+                    alert('Your ticket is successfully submitted.');
                 } else {
                     $scope.response = {
-                        "success": false,
-                        "text": data
-                    }
+                        'success': false,
+                        'text': data.error
+                    };
                 }
             }).error(function (data) {
                 $scope.submitting = false;
                 $scope.response = {
-                    "success": false,
-                    "text": data
-                }
+                    'success': false,
+                    'text': data
+                };
             });
         };
 
         $scope.resetFormData = function () {
-            $scope.input.text = "";
+            $scope.input.text = '';
             $scope.response = null;
         };
     };
 
-    module.controller("ComposeTicketController", ["$scope", "$modalInstance", "$http", ComposeTicketController])
-}
+    module.controller('ComposeTicketController', ['$scope', '$modalInstance', '$http', ComposeTicketController]);
+})();

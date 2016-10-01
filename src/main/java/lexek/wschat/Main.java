@@ -40,7 +40,6 @@ import lexek.wschat.security.jersey.SecurityFeature;
 import lexek.wschat.security.jersey.UserParamValueFactoryProvider;
 import lexek.wschat.security.social.CredentialsHolder;
 import lexek.wschat.services.MessageConsumerServiceHandler;
-import lexek.wschat.services.TicketService;
 import lexek.wschat.services.managed.ServiceManager;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.CookieSpecs;
@@ -239,8 +238,6 @@ public class Main {
         //todo: figure out a way to inject it automatically without circular dependency
         authenticationManager.registerAuthEventListener(serviceLocator.getService(TwitchCredentialsService.class));
 
-        TicketService ticketService = serviceLocator.getService(TicketService.class);
-
         MessageConsumerServiceHandler messageConsumerServiceHandler = serviceLocator.getService(MessageConsumerServiceHandler.class);
         ProxyManager proxyManager = serviceLocator.getService(ProxyManager.class);
         messageConsumerServiceHandler.register(proxyManager);
@@ -292,7 +289,6 @@ public class Main {
         httpRequestDispatcher.add("/.*", new ClassPathStaticHandler(ClassPathStaticHandler.class, "/static/"));
         httpRequestDispatcher.add("/chat.html", new ChatHomeHandler(coreSettings.getTitle(), settings.getHttp().isAllowLikes(), settings.getHttp().isSingleRoom()));
         httpRequestDispatcher.add("/recaptcha/[0-9]+", new RecaptchaHandler(captchaService, reCaptcha));
-        httpRequestDispatcher.add("/api/tickets", new UserTicketsHandler(authenticationManager, ticketService));
         httpRequestDispatcher.add("/admin/.*", new AdminPageHandler(authenticationManager));
         httpRequestDispatcher.add("/login", new LoginHandler(authenticationManager, reCaptcha));
         httpRequestDispatcher.add("/register", new RegistrationHandler(authenticationManager, reCaptcha));
