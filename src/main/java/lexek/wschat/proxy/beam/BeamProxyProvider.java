@@ -12,7 +12,6 @@ import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
 import javax.inject.Named;
-import java.io.IOException;
 import java.util.EnumSet;
 import java.util.concurrent.atomic.AtomicLong;
 

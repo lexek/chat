@@ -1,12 +1,18 @@
 package lexek.wschat.chat.msg;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.*;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
 
-import java.util.LinkedList;
 import java.util.List;
 
-@Getter @ToString @EqualsAndHashCode @Builder @JsonInclude(JsonInclude.Include.NON_NULL)
+@Getter
+@ToString
+@EqualsAndHashCode
+@Builder
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class MessageNode {
     private final Type type;
     private final String text;

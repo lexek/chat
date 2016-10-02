@@ -19,7 +19,7 @@ public class MaxMindGeoIpService implements GeoIpService {
         this.databaseReader = new DatabaseReader
             .Builder(new File("geoip.mmdb"))
             .withCache(new CHMCache())
-            .build();;
+            .build();
     }
 
     @Override

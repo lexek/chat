@@ -1,7 +1,5 @@
 package lexek.wschat.chat.msg;
 
-import com.google.common.collect.ImmutableList;
-
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
