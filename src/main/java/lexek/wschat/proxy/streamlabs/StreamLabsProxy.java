@@ -7,16 +7,14 @@ import lexek.wschat.chat.Room;
 import lexek.wschat.chat.model.Message;
 import lexek.wschat.chat.model.MessageProperty;
 import lexek.wschat.chat.model.MessageType;
-import lexek.wschat.proxy.AbstractProxy;
-import lexek.wschat.proxy.ModerationOperation;
-import lexek.wschat.proxy.ProxyAuthService;
-import lexek.wschat.proxy.ProxyProvider;
+import lexek.wschat.proxy.*;
 import lexek.wschat.services.NotificationService;
 import lexek.wschat.util.JsonResponseHandler;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URIBuilder;
 
+import java.io.IOException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -129,6 +127,12 @@ public class StreamLabsProxy extends AbstractProxy {
                         ), room.FILTER);
                     }
                 }
+            } catch (ProxyTokenException e) {
+                logger.error("exception", e);
+                fatalError(e.getMessage());
+            } catch (IOException e) {
+                logger.warn("exception", e);
+                minorFail(e.getMessage());
             } catch (Exception e) {
                 logger.error("exception", e);
                 fail(e.getMessage());

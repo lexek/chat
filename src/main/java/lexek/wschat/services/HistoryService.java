@@ -52,7 +52,7 @@ public class HistoryService implements MessageEventHandler {
         this.userService = userService;
     }
 
-    public DataPage<HistoryData> getAllPagedAsJson(long roomId, int page, int pageLength, Optional<List<String>> users,
+    public DataPage<HistoryData> getAllPagedAsJson(long roomId, int page, int pageLength, Optional<List<Long>> users,
                                                    Optional<Long> since, Optional<Long> until) {
         return historyDao.getAllForUsers(roomId, page, pageLength, users, since, until);
     }

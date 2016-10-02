@@ -201,10 +201,11 @@ public class Sc2tvChatProxy extends AbstractProxy {
         public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
             if (cause instanceof IOException) {
                 logger.debug("exception", cause);
+                minorFail(cause.getMessage());
             } else {
                 logger.warn("exception", cause);
+                fail(cause.getMessage());
             }
-            minorFail(cause.getMessage());
         }
     }
 }

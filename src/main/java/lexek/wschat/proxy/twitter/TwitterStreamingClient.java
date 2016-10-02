@@ -15,6 +15,7 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.DelimiterBasedFrameDecoder;
 import io.netty.handler.codec.MessageToMessageDecoder;
 import io.netty.handler.codec.http.*;
+import io.netty.handler.codec.http.multipart.HttpPostRequestEncoder;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.timeout.IdleState;
@@ -205,17 +206,15 @@ public class TwitterStreamingClient extends AbstractProxy {
             String url = "https://stream.twitter.com/1.1/statuses/filter.json";
             Map<String, String> queryParameters = ImmutableMap.of(
                 "track", tracks.stream().collect(Collectors.joining(",")),
-                "follow", follows.stream().map(Object::toString).collect(Collectors.joining(","))
+                "follow", follows.stream().map(Object::toString).collect(Collectors.joining(",")),
+                "tweet_mode", "extended"
             );
             logger.debug("Starting with parameters {}", queryParameters);
-            QueryStringEncoder queryStringEncoder = new QueryStringEncoder(url);
-            queryParameters.forEach(queryStringEncoder::addParam);
-            String wholeUrl = queryStringEncoder.toUri().toString();
             HttpMethod method = HttpMethod.POST;
             FullHttpRequest request = new DefaultFullHttpRequest(
                 HttpVersion.HTTP_1_1,
                 HttpMethod.POST,
-                wholeUrl
+                url
             );
             String header = OAuthUtil.generateAuthorizationHeader(
                 credentials.getConsumerKey(),
@@ -226,8 +225,13 @@ public class TwitterStreamingClient extends AbstractProxy {
                 method,
                 queryParameters
             );
-            request.headers().add("Authorization", header);
-            ctx.writeAndFlush(request);
+            request.headers().add(HttpHeaders.Names.AUTHORIZATION, header);
+            request.headers().add(HttpHeaders.Names.CONTENT_TYPE, "application/x-www-form-urlencoded");
+            HttpPostRequestEncoder httpPostRequestEncoder = new HttpPostRequestEncoder(request, false);
+            for (Map.Entry<String, String> param : queryParameters.entrySet()) {
+                httpPostRequestEncoder.addBodyAttribute(param.getKey(), param.getValue());
+            }
+            ctx.writeAndFlush(httpPostRequestEncoder.finalizeRequest());
         }
 
         @Override
@@ -351,6 +355,9 @@ public class TwitterStreamingClient extends AbstractProxy {
             String fullName = userNode.get("name").asText();
             String avatarUrl = userNode.get("profile_image_url").asText();
             String text = tweetNode.get("text").asText();
+            if (tweetNode.hasNonNull("full_text")) {
+                text = tweetNode.get("full_text").asText();
+            }
             //we should render only original tweet body if tweet is retweet
             if (retweetedStatus == null || retweetedStatus.isNull()) {
                 text = renderTweetText(tweetNode);
@@ -372,6 +379,9 @@ public class TwitterStreamingClient extends AbstractProxy {
         private String renderTweetText(JsonNode tweet) {
             TreeSet<TweetEntity> entities = new TreeSet<>();
             String originalText = tweet.get("text").asText();
+            if (tweet.hasNonNull("full_text")) {
+                originalText = tweet.get("full_text").asText();
+            }
             JsonNode entitiesNode = tweet.get("entities");
             if (entitiesNode != null && !entitiesNode.isNull()) {
                 JsonNode mediaEntities = entitiesNode.get("media");

@@ -12,7 +12,7 @@
                 link: function(scope, element) {
                     element.on('click', function() {
                         $modal.open({
-                            templateUrl: '/templates/history.html',
+                            templateUrl: '/chat/admin/history/history.html',
                             controller: 'HistoryController',
                             resolve: {
                                 options: function () {

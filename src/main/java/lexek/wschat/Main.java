@@ -40,7 +40,6 @@ import lexek.wschat.security.jersey.SecurityFeature;
 import lexek.wschat.security.jersey.UserParamValueFactoryProvider;
 import lexek.wschat.security.social.CredentialsHolder;
 import lexek.wschat.services.MessageConsumerServiceHandler;
-import lexek.wschat.services.TicketService;
 import lexek.wschat.services.managed.ServiceManager;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.CookieSpecs;
@@ -60,6 +59,10 @@ import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.ServerProperties;
 import org.glassfish.jersey.server.mvc.freemarker.FreemarkerMvcFeature;
 import org.glassfish.jersey.server.spi.internal.ValueFactoryProvider;
+import org.jooq.DSLContext;
+import org.jooq.SQLDialect;
+import org.jooq.impl.DSL;
+import org.jooq.impl.DefaultConfiguration;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Singleton;
@@ -169,7 +172,7 @@ public class Main {
         MetricRegistry runtimeMetricRegistry = new MetricRegistry();
         HealthCheckRegistry healthCheckRegistry = new HealthCheckRegistry();
         ServiceLocatorUtilities.addOneConstant(serviceLocator, metricRegistry, "chatRegistry", MetricRegistry.class);
-        ServiceLocatorUtilities.addOneConstant(serviceLocator, metricRegistry, "runtimeRegistry", MetricRegistry.class);
+        ServiceLocatorUtilities.addOneConstant(serviceLocator, runtimeMetricRegistry, "runtimeRegistry", MetricRegistry.class);
         ServiceLocatorUtilities.addOneConstant(serviceLocator, healthCheckRegistry);
 
         runtimeMetricRegistry.registerAll(new BufferPoolMetricSet(ManagementFactory.getPlatformMBeanServer()));
@@ -191,7 +194,11 @@ public class Main {
         config.setMetricRegistry(runtimeMetricRegistry);
         config.setHealthCheckRegistry(healthCheckRegistry);
         DataSource dataSource = new HikariDataSource(config);
-        ServiceLocatorUtilities.addOneConstant(serviceLocator, dataSource, "dataSource", DataSource.class);
+        org.jooq.Configuration jooqConfiguration = new DefaultConfiguration();
+        jooqConfiguration.set(dataSource);
+        jooqConfiguration.set(SQLDialect.MYSQL);
+        DSLContext dslContext = DSL.using(jooqConfiguration);
+        ServiceLocatorUtilities.addOneConstant(serviceLocator, dslContext, "dslContext", DSLContext.class);
 
         //proxy event loop
         EventLoopGroup proxyEventLoopGroup;
@@ -230,8 +237,6 @@ public class Main {
 
         //todo: figure out a way to inject it automatically without circular dependency
         authenticationManager.registerAuthEventListener(serviceLocator.getService(TwitchCredentialsService.class));
-
-        TicketService ticketService = serviceLocator.getService(TicketService.class);
 
         MessageConsumerServiceHandler messageConsumerServiceHandler = serviceLocator.getService(MessageConsumerServiceHandler.class);
         ProxyManager proxyManager = serviceLocator.getService(ProxyManager.class);
@@ -284,7 +289,6 @@ public class Main {
         httpRequestDispatcher.add("/.*", new ClassPathStaticHandler(ClassPathStaticHandler.class, "/static/"));
         httpRequestDispatcher.add("/chat.html", new ChatHomeHandler(coreSettings.getTitle(), settings.getHttp().isAllowLikes(), settings.getHttp().isSingleRoom()));
         httpRequestDispatcher.add("/recaptcha/[0-9]+", new RecaptchaHandler(captchaService, reCaptcha));
-        httpRequestDispatcher.add("/api/tickets", new UserTicketsHandler(authenticationManager, ticketService));
         httpRequestDispatcher.add("/admin/.*", new AdminPageHandler(authenticationManager));
         httpRequestDispatcher.add("/login", new LoginHandler(authenticationManager, reCaptcha));
         httpRequestDispatcher.add("/register", new RegistrationHandler(authenticationManager, reCaptcha));

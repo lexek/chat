@@ -20,6 +20,7 @@ import lexek.wschat.proxy.*;
 import lexek.wschat.services.NotificationService;
 import lexek.wschat.util.Colors;
 
+import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -190,9 +191,14 @@ public class TwitchTvChatProxy extends AbstractProxy {
         }
 
         @Override
-        public void exceptionCaught(Throwable throwable) {
-            logger.warn("exception", throwable);
-            minorFail(throwable.getMessage());
+        public void exceptionCaught(Throwable cause) {
+            if (cause instanceof IOException) {
+                logger.warn("exception", cause);
+                minorFail(cause.getMessage());
+            } else {
+                logger.error("exception", cause);
+                fail(cause.getMessage());
+            }
         }
     }
 }

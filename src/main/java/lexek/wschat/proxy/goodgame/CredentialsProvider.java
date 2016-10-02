@@ -9,6 +9,7 @@ import org.apache.http.client.methods.HttpGet;
 
 import java.io.IOException;
 
+//todo: refactor as singleton api client
 class CredentialsProvider {
     private final HttpClient httpClient;
     private final ProxyAuthService proxyAuthService;

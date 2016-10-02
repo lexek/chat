@@ -1,11 +1,14 @@
 package lexek.wschat.services;
 
+import com.codahale.metrics.health.HealthCheck;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import lexek.wschat.chat.e.BadRequestException;
 import lexek.wschat.db.dao.SteamGameDao;
 import lexek.wschat.db.jooq.tables.pojos.SteamGame;
+import lexek.wschat.services.managed.AbstractManagedService;
+import lexek.wschat.services.managed.InitStage;
 import lexek.wschat.util.JsonResponseHandler;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
@@ -17,20 +20,31 @@ import javax.inject.Inject;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @Service
-public class SteamGameResolver {
-    private final Logger logger = LoggerFactory.getLogger(SteamGameResolver.class);
+public class SteamGameService extends AbstractManagedService {
+    private final Logger logger = LoggerFactory.getLogger(SteamGameService.class);
+    private final ScheduledExecutorService scheduledExecutorService;
     private final AtomicBoolean syncInProgress = new AtomicBoolean(false);
     private final Cache<Long, String> cache = CacheBuilder.newBuilder()
         .maximumSize(50)
         .build();
     private final SteamGameDao steamGameDao;
     private final HttpClient httpClient;
+    private ScheduledFuture<?> scheduledFuture;
 
     @Inject
-    public SteamGameResolver(SteamGameDao steamGameDao, HttpClient httpClient) {
+    public SteamGameService(
+        ScheduledExecutorService scheduledExecutorService,
+        SteamGameDao steamGameDao,
+        HttpClient httpClient
+    ) {
+        super("steamGameService", InitStage.SERVICES);
+        this.scheduledExecutorService = scheduledExecutorService;
         this.steamGameDao = steamGameDao;
         this.httpClient = httpClient;
     }
@@ -70,5 +84,27 @@ public class SteamGameResolver {
             syncInProgress.set(false);
             cache.invalidateAll();
         }
+    }
+
+    @Override
+    public void stop() {
+        scheduledFuture.cancel(false);
+        scheduledFuture = null;
+    }
+
+    @Override
+    public HealthCheck getHealthCheck() {
+        return new HealthCheck() {
+            @Override
+            protected Result check() throws Exception {
+                return scheduledFuture != null && !scheduledFuture.isCancelled() ?
+                    Result.healthy() : Result.unhealthy("Sync schedule is cancelled");
+            }
+        };
+    }
+
+    @Override
+    public void start() {
+        scheduledFuture = scheduledExecutorService.scheduleAtFixedRate(this::syncDatabase, 24, 24, TimeUnit.HOURS);
     }
 }

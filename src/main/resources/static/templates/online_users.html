@@ -1,0 +1,76 @@
+<div class="col-sm-8">
+    <div class="panel panel-primary">
+        <div class="panel-heading">
+            <h4 class="panel-title">
+                <i class="fa fa-users"></i> chatters
+            </h4>
+        </div>
+        <div class="panel-body" ng-if="connections.length === 0">
+            <div class="alert alert-info">
+                nothing to show
+            </div>
+        </div>
+        <table class="table table-hover" ng-if="connections.length > 0">
+            <thead>
+            <tr>
+                <th ng-click="orderBy('user.name')" class="sortableTitle">
+                    Name <span class="fa fa-fw pull-right" ng-class="getSortIconClass('user.name')"></span>
+                </th>
+                <th ng-click="orderBy('user.role')" class="sortableTitle">
+                    Role <span class="fa fa-fw pull-right" ng-class="getSortIconClass('user.role')"></span>
+                </th>
+                <th>Location</th>
+                <th>Banned</th>
+                <th>Color</th>
+            </tr>
+            </thead>
+            <tr ng-repeat="c in connections | orderBy:orderVar:orderDesc">
+                <td>
+                    <a href="/admin/users?search={{c.user.name}}&page=0" user-link="c.user.id">{{c.user.name}}</a>
+                </td>
+                <td>{{c.user.role}}</td>
+                <td>
+                    <abbr title="{{c.ip}}">{{c.geoIp}}</abbr>
+                    <span class="btn btn-link btn-link-danger btn-xs pull-right" ng-if="!isBlocked(c.ip)" ng-click="blockIp(c.ip)">
+                        <span class="fa fa-ban fa-fw"></span>
+                    </span>
+                    <span class="btn btn-link btn-link-success btn-xs pull-right" ng-if="isBlocked(c.ip)" ng-click="unblockIp(c.ip)">
+                        <span class="fa fa-check fa-fw"></span>
+                    </span>
+                </td>
+                <td>
+                    {{c.user.banned ? "YES" : "NO"}}
+                </td>
+                <td ng-style="{'color': user.color}">{{c.user.color}}</td>
+            </tr>
+        </table>
+    </div>
+</div>
+
+<div class="col-sm-4">
+    <div class="panel panel-danger">
+        <div class="panel-heading">
+            <h4 class="panel-title">
+                <i class="fa fa-user-times"></i> block IP address
+            </h4>
+        </div>
+        <div class="panel-body">
+            <div class="input-group">
+                <input type="text" class="form-control" ng-model="ipInput">
+                <span class="input-group-btn">
+                    <button class="btn btn-default" type="button" ng-click="blockIp(ipInput)">add</button>
+                </span>
+            </div>
+        </div>
+        <table class="table table-hover">
+            <tr ng-repeat="ip in blockedIps">
+                <td>
+                    {{ip}}
+                    <span class="btn btn-link btn-xs pull-right" ng-click="unblockIp(ip)">
+                    <span class="fa fa-times fa-fw"></span>
+                </span>
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>

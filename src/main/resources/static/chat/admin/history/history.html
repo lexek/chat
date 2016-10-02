@@ -1,7 +1,7 @@
 <div class="modal-header">
     <h3 class="modal-title">
         History for room {{room.name}} <small>page <a href="" ng-click="goToPage()">{{page+1}}</a>/{{totalPages}}</small>
-        <form ng-submit="input.user ? addUserFilter(input.user.name) : angular.noop()" class="pull-right">
+        <form ng-submit="input.user ? addUserFilter(input.user) : angular.noop()" class="pull-right">
             <div class="input-group" style="max-width:200px;">
                 <user-input ng-model="input.user"></user-input>
                 <span class="input-group-btn">
@@ -25,7 +25,7 @@
     <div class="well well-sm" ng-if="users.length > 0">
         <div ng-if="users">
             <div ng-repeat="user in users" class="btn-group btn-group-xs" style="margin-right: 5px; margin-bottom: 5px">
-                <div class="btn btn-default disabled">{{user}}</div>
+                <div class="btn btn-default disabled">{{user.name}}</div>
                 <div class="btn btn-default" ng-click="removeUserFilter(user)"><span class="fa fa-times"></span></div>
             </div>
         </div>

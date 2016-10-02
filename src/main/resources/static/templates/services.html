@@ -1,0 +1,302 @@
+<div class="panel panel-primary">
+    <div class="panel-heading">
+        <h4 class="panel-title">
+            Runtime statistics
+        </h4>
+    </div>
+    <ul class="list-group" ng-if="data">
+        <li class="list-group-item">
+            <h4 class="list-group-item-heading">JVM information</h4>
+            <div class="list-group-item-text">
+                <table class="table">
+                    <tr>
+                        <td class="col-xs-2">
+                            JVM
+                        </td>
+                        <td class="col-xs-10" ng-bind="getMetricValueByName('vendor')">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="col-xs-2">
+                            Socket implementation
+                        </td>
+                        <td class="col-xs-10" ng-bind="getMetricValueByName('socket.implementation')">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="col-xs-2">
+                            SSL implementation
+                        </td>
+                        <td class="col-xs-10" ng-bind="getMetricValueByName('ssl.implementation')">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="col-xs-2">
+                            SSL ciphersuites
+                        </td>
+                        <td class="col-xs-10">
+                            <table class="table">
+                                <tr ng-repeat="cipher in getMetricValueByName('ssl.cipherSuites')">
+                                    <td ng-bind="cipher">
+
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Running since
+                        </td>
+                        <td ng-bind="getUptime() | date:'dd.MM.yyyy HH:mm'">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Heap
+                        </td>
+                        <td>
+                            <progressbar class="progress"
+                                         max="getMetricValueByName('heap.committed')"
+                                         value="getMetricValueByName('heap.used')">
+                                {{getMetricValueByName('heap.used')/1048576 | number:0}}/{{getMetricValueByName('heap.committed')/1048576 | number:0}} MB
+                            </progressbar>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Non-heap
+                        </td>
+                        <td>
+                            <progressbar class="progress"
+                                         max="getMetricValueByName('non-heap.committed')"
+                                         value="getMetricValueByName('non-heap.used')">
+                                {{getMetricValueByName('non-heap.used')/1048576 | number:0}}/{{getMetricValueByName('non-heap.committed')/1048576 | number:0}} MB
+                            </progressbar>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Total
+                        </td>
+                        <td>
+                            <progressbar class="progress"
+                                         max="getMetricValueByName('total.committed')"
+                                         value="getMetricValueByName('total.used')">
+                                {{getMetricValueByName('total.used')/1048576 | number:0}}/{{getMetricValueByName('total.committed')/1048576 | number:0}} MB
+                            </progressbar>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </li>
+        <li class="list-group-item">
+            <h4 class="list-group-item-heading">
+                    <span
+                            class="fa fa-fw"
+                            ng-style="{'color': isHealthy('connection-pool.pool.ConnectivityCheck') ? 'green' : 'red'}"
+                            ng-class="{'fa-check' : isHealthy('connection-pool.pool.ConnectivityCheck'), 'fa-times' : !isHealthy('connection-pool.pool.ConnectivityCheck')}"
+                    ></span> Database connection pool
+            </h4>
+            <table class="table">
+                <tr>
+                    <td class="col-xs-2">
+                        Pool usage
+                    </td>
+                    <td class="col-xs-10">
+                        <progressbar class="progress"
+                                     max="getMetricValueByName('connection-pool.pool.TotalConnections')"
+                                     value="getMetricValueByName('connection-pool.pool.ActiveConnections')">
+                            {{getMetricValueByName('connection-pool.pool.ActiveConnections')}}/{{getMetricValueByName('connection-pool.pool.TotalConnections')}}
+                        </progressbar>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-xs-2">
+                        Connection wait
+                    </td>
+                    <td class="col-xs-10">
+                        <table class="table table-condensed">
+                            <tr>
+                                <td class="col-xs-2">
+                                    min
+                                </td>
+                                <td>
+                                    {{getMetricByName('connection-pool.pool.Wait').min | number}} ms
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    max
+                                </td>
+                                <td>
+                                    {{getMetricByName('connection-pool.pool.Wait').max | number}} ms
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    mean
+                                </td>
+                                <td>
+                                    {{getMetricByName('connection-pool.pool.Wait').mean | number}} ms
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-xs-2">
+                        In use
+                    </td>
+                    <td class="col-xs-10">
+                        <table class="table table-condensed">
+                            <tr>
+                                <td class="col-xs-2">
+                                    min
+                                </td>
+                                <td>
+                                    {{getMetricByName('connection-pool.pool.Usage').min | number}} ms
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    max
+                                </td>
+                                <td>
+                                    {{getMetricByName('connection-pool.pool.Usage').max | number}} ms
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    mean
+                                </td>
+                                <td>
+                                    {{getMetricByName('connection-pool.pool.Usage').mean | number}} ms
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </li>
+        <li class="list-group-item">
+            <h4 class="list-group-item-heading">
+                    <span
+                            class="fa fa-fw"
+                            ng-style="{'color': isHealthy('httpServer') ? 'green' : 'red'}"
+                            ng-class="{'fa-check' : isHealthy('httpServer'), 'fa-times' : !isHealthy('httpServer')}"
+                    ></span> Http server <small>running on port {{getMetricValueByName('httpServer.port')}}</small>
+            </h4>
+        </li>
+        <li class="list-group-item">
+            <h4 class="list-group-item-heading">
+                    <span
+                            class="fa fa-fw"
+                            ng-style="{'color': isHealthy('websocketServer') ? 'green' : 'red'}"
+                            ng-class="{'fa-check' : isHealthy('websocketServer'), 'fa-times' : !isHealthy('websocketServer')}"
+                    ></span> Websocket server <small>running on port {{getMetricValueByName('websocketServer.port')}}</small>
+            </h4>
+        </li>
+        <li class="list-group-item">
+            <h4 class="list-group-item-heading">
+                    <span
+                            class="fa fa-fw"
+                            ng-style="{'color': isHealthy('ircServer') ? 'green' : 'red'}"
+                            ng-class="{'fa-check' : isHealthy('ircServer'), 'fa-times' : !isHealthy('ircServer')}"
+                    ></span> IRC server <small>running on port {{getMetricValueByName('ircServer.port')}}</small>
+            </h4>
+        </li>
+        <li class="list-group-item">
+            <h4 class="list-group-item-heading">
+                    <span
+                            class="fa fa-fw"
+                            ng-style="{'color': isHealthy('messageReactor') ? 'green' : 'red'}"
+                            ng-class="{'fa-check' : isHealthy('messageReactor'), 'fa-times' : !isHealthy('messageReactor')}"
+                    ></span> Message reactor
+            </h4>
+            <table class="table">
+                <tr>
+                    <td class="col-xs-2">
+                        Queue load
+                    </td>
+                    <td class="col-xs-10">
+                        <progressbar class="progress"
+                                     max="getQueueSize('messageReactor')"
+                                     value="getQueueLoad('messageReactor')">
+                            {{getQueueLoad('messageReactor')}}/{{getQueueSize('messageReactor')}}
+                        </progressbar>
+                    </td>
+                </tr>
+            </table>
+        </li>
+        <li class="list-group-item">
+            <h4 class="list-group-item-heading">
+                    <span
+                            class="fa fa-fw"
+                            ng-style="{'color': isHealthy('messageBroadcaster') ? 'green' : 'red'}"
+                            ng-class="{'fa-check' : isHealthy('messageBroadcaster'), 'fa-times' : !isHealthy('messageBroadcaster')}"
+                    ></span> Message broadcaster
+            </h4>
+            <table class="table">
+                <tr>
+                    <td class="col-xs-2">
+                        Queue load
+                    </td>
+                    <td class="col-xs-10">
+                        <progressbar class="progress"
+                                     max="getQueueSize('messageBroadcaster')"
+                                     value="getQueueLoad('messageBroadcaster')">
+                            {{getQueueLoad('messageBroadcaster')}}/{{getQueueSize('messageBroadcaster')}}
+                        </progressbar>
+                    </td>
+                </tr>
+            </table>
+        </li>
+        <li class="list-group-item">
+            <h4 class="list-group-item-heading">
+                    <span
+                            class="fa fa-fw"
+                            ng-style="{'color': isHealthy('authenticationService') ? 'green' : 'red'}"
+                            ng-class="{'fa-check' : isHealthy('authenticationService'), 'fa-times' : !isHealthy('authenticationService')}"
+                    ></span> Authentication service
+            </h4>
+            <table class="table">
+                <tr>
+                    <td class="col-xs-2">
+                        Queue load
+                    </td>
+                    <td class="col-xs-10">
+                        <progressbar class="progress"
+                                     max="getQueueSize('authenticationService')"
+                                     value="getQueueLoad('authenticationService')">
+                            {{getQueueLoad('authenticationService')}}/{{getQueueSize('authenticationService')}}
+                        </progressbar>
+                    </td>
+                </tr>
+            </table>
+        </li>
+        <li class="list-group-item">
+            <h4 class="list-group-item-heading">
+                    <span
+                            class="fa fa-fw"
+                            ng-style="{'color': isHealthy('eventDispatcher') ? 'green' : 'red'}"
+                            ng-class="{'fa-check' : isHealthy('eventDispatcher'), 'fa-times' : !isHealthy('eventDispatcher')}"
+                    ></span> Event dispatcher
+            </h4>
+            <table class="table">
+                <tr>
+                    <td class="col-xs-2">
+                        Queue load
+                    </td>
+                    <td class="col-xs-10">
+                        <progressbar class="progress"
+                                     max="getQueueSize('eventDispatcher')"
+                                     value="getQueueLoad('eventDispatcher')">
+                            {{getQueueLoad('eventDispatcher')}}/{{getQueueSize('eventDispatcher')}}
+                        </progressbar>
+                    </td>
+                </tr>
+            </table>
+        </li>
+    </ul>
+</div>

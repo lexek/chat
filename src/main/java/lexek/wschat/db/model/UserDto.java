@@ -54,6 +54,10 @@ public class UserDto implements Serializable, Principal {
         this.checkIp = checkIp;
     }
 
+    public UserDto(Long id) {
+        this.id = id;
+    }
+
     public static UserDto fromRecord(Record record) {
         if (record != null && record.getValue(USER.ID) != null) {
             return new UserDto(

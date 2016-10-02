@@ -5,16 +5,13 @@ import com.codahale.metrics.health.HealthCheck;
 import lexek.wschat.db.jooq.tables.records.MetricRecord;
 import lexek.wschat.services.managed.InitStage;
 import lexek.wschat.services.managed.ManagedService;
-import org.jooq.exception.DataAccessException;
-import org.jooq.impl.DSL;
+import org.jooq.DSLContext;
 import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.sql.DataSource;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -23,16 +20,13 @@ import java.util.concurrent.TimeUnit;
 
 @Service
 public class MetricReporter extends ScheduledReporter implements ManagedService {
-    private final DataSource dataSource;
+    private final DSLContext ctx;
     private final Logger logger = LoggerFactory.getLogger(MetricReporter.class);
 
     @Inject
-    public MetricReporter(
-        @Named("chatRegistry") MetricRegistry registry,
-        DataSource dataSource
-    ) {
+    public MetricReporter(@Named("chatRegistry") MetricRegistry registry, DSLContext ctx) {
         super(registry, "reporter", MetricFilter.ALL, TimeUnit.MINUTES, TimeUnit.MILLISECONDS);
-        this.dataSource = dataSource;
+        this.ctx = ctx;
     }
 
     @Override
@@ -47,13 +41,7 @@ public class MetricReporter extends ScheduledReporter implements ManagedService 
             records.add(new MetricRecord(null, "online.authenticated", time, Double.valueOf(onlineCount.get("authenticated"))));
             records.add(new MetricRecord(null, "online.active", time, Double.valueOf(onlineCount.get("active"))));
 
-            try (java.sql.Connection connection = dataSource.getConnection()) {
-                DSL.using(connection)
-                    .batchInsert(records)
-                    .execute();
-            } catch (DataAccessException | SQLException e) {
-                logger.warn("sql exception", e);
-            }
+            ctx.batchInsert(records).execute();
         } catch (Exception e) {
             logger.error("Exception while submitting metric values.", e);
         }

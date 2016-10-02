@@ -675,7 +675,7 @@
                             --><span bo-if="isAdmin()" class="admin">A</span><!--
                             --><span bo-if="message.user.service!==null" class="ext" tooltip="{{message.user.serviceResName}}"
                                      tooltip-trigger="mouseenter" tooltip-placement="right"><span bo-if="message.user.service==='twitch'" class="fa fa-twitch" style="color: #6441A5"></span><!--
-                            --><span bo-if="message.user.service==='cybergame'" class="fa fa-gamepad" style="color: #21b384"></span><!--
+                            --><span bo-if="message.user.service==='cybergame'" class="cg-icon" style="color: #21b384"></span><!--
                             --><span bo-if="message.user.service==='youtube'" class="fa fa-youtube-play" style="color: #cd201f"></span><!--
                             --><strong bo-if="message.user.service==='goodgame'" style="color: #73ADFF">GG</strong><!--
                             --><span bo-if="message.user.service==='sc2tv'" class="sc2tvIcon"></span><!--
@@ -742,7 +742,7 @@
                                 <small class="role" bo-if="message.user.service!==null"><span bo-bind="message.user.serviceResName"></span> <!--
                                 --><a bo-if="message.user.service==='twitch'" bo-href="extUrl()" target="_blank"><span class="fa fa-twitch" style="color: #999999"></span></a><!--
                                 --><span bo-if="message.user.service==='youtube'" class="fa fa-youtube-play" style="color: #cd201f"></span><!--
-                                --><span bo-if="message.user.service==='cybergame'" class="fa fa-gamepad" style="color: #999999"></span><!--
+                                --><span bo-if="message.user.service==='cybergame'" class="cg-icon" style="color: #999999"></span><!--
                                 --><strong bo-if="message.user.service==='goodgame'" style="color: #73ADFF">GG</strong><!--
                                 --><span bo-if="message.user.service==='sc2tv'" class="sc2tvIcon"></span><!--
                                 --><span bo-if="message.user.service==='beam'" class="beamIcon"></span><!--

@@ -1,6 +1,7 @@
 package lexek.wschat.frontend.http.rest.admin;
 
 import com.fasterxml.jackson.annotation.JsonView;
+import lexek.wschat.chat.Connection;
 import lexek.wschat.chat.ConnectionManager;
 import lexek.wschat.chat.e.EntityNotFoundException;
 import lexek.wschat.chat.e.InvalidInputException;
@@ -15,10 +16,13 @@ import lexek.wschat.db.model.rest.ErrorModel;
 import lexek.wschat.frontend.http.rest.view.SimpleView;
 import lexek.wschat.security.jersey.Auth;
 import lexek.wschat.security.jersey.RequiredRole;
+import lexek.wschat.services.geoip.GeoIpService;
 import lexek.wschat.services.UserService;
 import lexek.wschat.util.Names;
 import lexek.wschat.util.Pages;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.validation.Valid;
@@ -33,13 +37,16 @@ import java.util.stream.Collectors;
 @RequiredRole(GlobalRole.ADMIN)
 public class UserResource {
     private static final int PAGE_LENGTH = 15;
+    private final Logger logger = LoggerFactory.getLogger(UserResource.class);
     private final ConnectionManager connectionManager;
     private final UserService userService;
+    private final GeoIpService geoIpService;
 
     @Inject
-    public UserResource(ConnectionManager connectionManager, UserService userService) {
+    public UserResource(ConnectionManager connectionManager, UserService userService, GeoIpService geoIpService) {
         this.connectionManager = connectionManager;
         this.userService = userService;
+        this.geoIpService = geoIpService;
     }
 
     @Path("/online")
@@ -49,8 +56,21 @@ public class UserResource {
     public List<OnlineUser> getOnlineUsers() {
         return connectionManager.getConnections()
             .stream()
-            .map(connection -> new OnlineUser(connection.getIp(), connection.getUser().getWrappedObject()))
+            .map(connection -> new OnlineUser(
+                connection.getIp(),
+                getLocation(connection),
+                connection.getUser().getWrappedObject())
+            )
             .collect(Collectors.toList());
+    }
+
+    private String getLocation(Connection connection) {
+        try {
+            return geoIpService.getLocation(connection.getAddress());
+        } catch (Exception e) {
+            logger.warn("couldn't get location", e);
+        }
+        return "Unavailable";
     }
 
     @Path("/all")

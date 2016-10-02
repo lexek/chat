@@ -35,6 +35,7 @@ import lexek.wschat.proxy.ProxyState;
 import lexek.wschat.services.NotificationService;
 import lexek.wschat.util.Colors;
 
+import java.io.IOException;
 import java.net.URI;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -144,8 +145,13 @@ public class BeamChatProxy extends AbstractProxy {
 
         @Override
         public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-            logger.warn("exception", cause);
-            minorFail(cause.getMessage());
+            if (cause instanceof IOException) {
+                logger.warn("exception", cause);
+                minorFail(cause.getMessage());
+            } else {
+                logger.error("exception", cause);
+                minorFail(cause.getMessage());
+            }
         }
 
         @Override

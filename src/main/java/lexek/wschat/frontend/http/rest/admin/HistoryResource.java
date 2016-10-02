@@ -32,7 +32,7 @@ public class HistoryResource {
     public DataPage<HistoryData> getRoomHistory(
         @PathParam("roomId") @Min(0) long roomId,
         @QueryParam("page") @Min(0) int page,
-        @QueryParam("user") @Size(max = 20) List<String> users,
+        @QueryParam("user") @Size(max = 20) List<Long> users,
         @QueryParam("since") @Min(0) Long since,
         @QueryParam("until") @Min(0) Long until
     ) {

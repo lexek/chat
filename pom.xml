@@ -14,13 +14,14 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <webappSourceDir>${basedir}/src/main/resources</webappSourceDir>
         <wro4j.version>1.7.6</wro4j.version>
-        <jooq.version>3.7.3</jooq.version>
-        <netty.version>4.0.36.Final</netty.version>
+        <jooq.version>3.8.4</jooq.version>
+        <netty.version>4.0.41.Final</netty.version>
         <netty.osClassifier>linux-x86_64</netty.osClassifier>
-        <jersey.version>2.23.1</jersey.version>
+        <jersey.version>2.23.2</jersey.version>
         <metrics.version>3.1.0</metrics.version>
         <hk2.version>2.5.0-b07</hk2.version>
         <slf4j.version>1.7.21</slf4j.version>
+        <jackson.version>2.8.2</jackson.version>
     </properties>
 
     <profiles>
@@ -30,7 +31,7 @@
                 <dependency>
                     <groupId>io.netty</groupId>
                     <artifactId>netty-tcnative</artifactId>
-                    <version>1.1.33.Fork16</version>
+                    <version>1.1.33.Fork21</version>
                     <classifier>${netty.osClassifier}</classifier>
                 </dependency>
             </dependencies>
@@ -417,6 +418,12 @@
             <groupId>io.dropwizard.metrics</groupId>
             <artifactId>metrics-json</artifactId>
             <version>${metrics.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-databind</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -489,6 +496,20 @@
             <groupId>org.glassfish.jersey.media</groupId>
             <artifactId>jersey-media-json-jackson</artifactId>
             <version>${jersey.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.jaxrs</groupId>
+                    <artifactId>jackson-jaxrs-base</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.jaxrs</groupId>
+                    <artifactId>jackson-jaxrs-json-provider</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-annotations</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.glassfish.jersey.media</groupId>
@@ -505,10 +526,17 @@
             <artifactId>jersey-mvc-freemarker</artifactId>
             <version>${jersey.version}</version>
         </dependency>
+
         <dependency>
             <groupId>lexek</groupId>
             <artifactId>netty-socketio</artifactId>
             <version>1.0.alpha.3</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-databind</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -530,6 +558,24 @@
             <groupId>org.glassfish.hk2</groupId>
             <artifactId>hk2-extras</artifactId>
             <version>${hk2.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.jaxrs</groupId>
+            <artifactId>jackson-jaxrs-json-provider</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.maxmind.geoip2</groupId>
+            <artifactId>geoip2</artifactId>
+            <version>2.8.0</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-databind</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>

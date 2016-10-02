@@ -22,13 +22,11 @@ import lexek.wschat.chat.Room;
 import lexek.wschat.chat.model.GlobalRole;
 import lexek.wschat.chat.model.LocalRole;
 import lexek.wschat.chat.model.Message;
-import lexek.wschat.proxy.AbstractProxy;
-import lexek.wschat.proxy.ModerationOperation;
-import lexek.wschat.proxy.ProxyProvider;
-import lexek.wschat.proxy.ProxyState;
+import lexek.wschat.proxy.*;
 import lexek.wschat.services.NotificationService;
 import lexek.wschat.util.Colors;
 
+import java.io.IOException;
 import java.net.URI;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
@@ -162,8 +160,16 @@ public class GoodGameChatProxy extends AbstractProxy {
 
         @Override
         public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-            logger.warn("exception", cause);
-            minorFail(cause.getMessage());
+            if (cause instanceof ProxyTokenException) {
+                logger.error("exception", cause);
+                fatalError(cause.getMessage());
+            } else if (cause instanceof IOException) {
+                logger.warn("exception", cause);
+                minorFail(cause.getMessage());
+            } else {
+                logger.error("exception", cause);
+                fail(cause.getMessage());
+            }
         }
 
         @Override
