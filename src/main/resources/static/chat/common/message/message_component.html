@@ -1,0 +1,6 @@
+<span ng-repeat="node in ::vm.nodes">
+    <message ng-if="::node.children" nodes="::node.children"></message>
+    <span ng-if="::!node.children">
+        {{node.text}}
+    </span>
+</span>

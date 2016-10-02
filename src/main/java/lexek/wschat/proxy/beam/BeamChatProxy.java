@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.ImmutableList;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.*;
@@ -28,6 +29,7 @@ import lexek.wschat.chat.Room;
 import lexek.wschat.chat.model.GlobalRole;
 import lexek.wschat.chat.model.LocalRole;
 import lexek.wschat.chat.model.Message;
+import lexek.wschat.chat.msg.MessageNode;
 import lexek.wschat.proxy.AbstractProxy;
 import lexek.wschat.proxy.ModerationOperation;
 import lexek.wschat.proxy.ProxyProvider;
@@ -182,7 +184,7 @@ public class BeamChatProxy extends AbstractProxy {
                         Colors.generateColor(name),
                         messageId.getAndIncrement(),
                         System.currentTimeMillis(),
-                        messageBuilder.toString(),
+                        ImmutableList.of(MessageNode.textNode(messageBuilder.toString())),
                         "beam",
                         String.valueOf(channel),
                         remoteRoom()

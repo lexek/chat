@@ -1,7 +1,5 @@
 package lexek.wschat.chat.msg;
 
-import com.google.common.collect.Lists;
-
 import java.util.List;
 
 public class PrefixStyleProcessor implements MessageProcessor {
@@ -22,20 +20,20 @@ public class PrefixStyleProcessor implements MessageProcessor {
         String text = firstNode.getText();
         if (firstNode.getType() == MessageNode.Type.TEXT) {
             for (PrefixStyleDescription style : styles) {
-                if (text.startsWith(style.getPrefix())) {
-                    MessageNode newNode = MessageNode.styledNode(text, Lists.newLinkedList(message), style.getStyle());
+                String prefix = style.getPrefix();
+                if (text.startsWith(prefix)) {
+                    String prefixlessText = text.substring(prefix.length());
+                    MessageNode newNode = MessageNode.styledNode(
+                        text,
+                        processingService.processMessage(prefixlessText, false),
+                        style.getStyle()
+                    );
                     message.clear();
                     message.add(newNode);
-                    processingService.processMessage(text, false);
                     break;
                 }
             }
         }
-    }
-
-    @Override
-    public boolean handlesRoot() {
-        return true;
     }
 
     @Override

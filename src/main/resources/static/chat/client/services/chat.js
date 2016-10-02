@@ -176,13 +176,13 @@ function($root, $modal, settings, $translate, $http, $timeout, notificationServi
 
     chatService.prototype.messagesUpdated = function() {
         angular.forEach(this.messagesUpdatedCallbacks, function (callback) {
-            callback()
+            callback();
         });
     };
 
     chatService.prototype.messageUpdated = function(message) {
         angular.forEach(message.messageUpdatedCallbacks, function (callback) {
-            callback()
+            callback();
         });
     };
 

@@ -14,6 +14,7 @@ import com.codahale.metrics.jvm.GarbageCollectorMetricSet;
 import com.codahale.metrics.jvm.MemoryUsageGaugeSet;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
@@ -26,6 +27,7 @@ import io.netty.handler.ssl.OpenSsl;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import lexek.httpserver.*;
+import lexek.wschat.chat.msg.*;
 import lexek.wschat.frontend.http.*;
 import lexek.wschat.frontend.http.admin.AdminPageHandler;
 import lexek.wschat.frontend.http.rest.RedirectToAppHandler;
@@ -39,6 +41,7 @@ import lexek.wschat.security.jersey.Auth;
 import lexek.wschat.security.jersey.SecurityFeature;
 import lexek.wschat.security.jersey.UserParamValueFactoryProvider;
 import lexek.wschat.security.social.CredentialsHolder;
+import lexek.wschat.services.EmoticonService;
 import lexek.wschat.services.MessageConsumerServiceHandler;
 import lexek.wschat.services.managed.ServiceManager;
 import org.apache.http.client.HttpClient;
@@ -77,6 +80,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.regex.Pattern;
 
 public class Main {
     private Main() {
@@ -208,6 +212,30 @@ public class Main {
             proxyEventLoopGroup = new NioEventLoopGroup(1);
         }
         ServiceLocatorUtilities.addOneConstant(serviceLocator, proxyEventLoopGroup, "proxyEventLoopGroup", EventLoopGroup.class);
+
+
+        DefaultMessageProcessingService messageProcessingService = new DefaultMessageProcessingService();
+        messageProcessingService.addProcessor(new PrefixStyleProcessor(
+            ImmutableList.of(
+                new PrefixStyleDescription(">", MessageNode.Style.QUOTE),
+                new PrefixStyleDescription("!!!", MessageNode.Style.NSFW)
+            ),
+            messageProcessingService
+        ));
+        messageProcessingService.addProcessor(new UrlMessageProcessor());
+        messageProcessingService.addProcessor(new StyleMessageProcessor(
+            ImmutableList.of(
+                new StyleDescription(Pattern.compile("\\*\\*([^*]+)\\*\\*"), MessageNode.Style.BOLD),
+                new StyleDescription(Pattern.compile("\\*([^*]+)\\*"), MessageNode.Style.ITALIC),
+                new StyleDescription(Pattern.compile("%%([^%]+)%%"), MessageNode.Style.SPOILER),
+                new StyleDescription(Pattern.compile("~~([^~]+)~~"), MessageNode.Style.STRIKETHROUGH)
+            ),
+            messageProcessingService
+        ));
+        messageProcessingService.addProcessor(new MentionMessageProcessor());
+        messageProcessingService.addProcessor(new EmoticonMessageProcessor(serviceLocator.getService(EmoticonService.class)));
+        messageProcessingService.addProcessor(new EmojiMessageProcessor());
+        ServiceLocatorUtilities.addOneConstant(serviceLocator, messageProcessingService, "messageProcessingService", MessageProcessingService.class);
 
         //frontend event loops
         EventLoopGroup bossGroup;

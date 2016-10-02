@@ -2,6 +2,7 @@ package lexek.wschat.frontend.irc;
 
 import com.google.common.collect.ImmutableMap;
 import lexek.wschat.chat.model.*;
+import lexek.wschat.chat.msg.MessageNode;
 import lexek.wschat.db.model.UserDto;
 import lexek.wschat.frontend.Codec;
 import org.jvnet.hk2.annotations.Service;
@@ -54,7 +55,8 @@ public class IrcCodec implements Codec {
             case MSG: {
                 String room = message.get(MessageProperty.ROOM);
                 String name = message.get(MessageProperty.NAME);
-                String text = message.get(MessageProperty.TEXT).replaceAll("[\r\n\t]", " ");
+                List<MessageNode> nodes = message.get(MessageProperty.MESSAGE_NODES);
+                String text = nodes.get(0).getText().replaceAll("[\r\n\t]", " ");
                 return ":" + name + " PRIVMSG " + room + " :" + text;
             }
             case INFO: {

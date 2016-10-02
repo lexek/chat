@@ -1,5 +1,6 @@
 package lexek.wschat.proxy.twitch;
 
+import com.google.common.collect.ImmutableList;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.Channel;
@@ -15,6 +16,7 @@ import lexek.wschat.chat.Room;
 import lexek.wschat.chat.model.GlobalRole;
 import lexek.wschat.chat.model.LocalRole;
 import lexek.wschat.chat.model.Message;
+import lexek.wschat.chat.msg.MessageNode;
 import lexek.wschat.db.model.ProxyAuth;
 import lexek.wschat.proxy.*;
 import lexek.wschat.services.NotificationService;
@@ -156,7 +158,7 @@ public class TwitchTvChatProxy extends AbstractProxy {
                     Colors.generateColor(user.getNick()),
                     messageId.getAndIncrement(),
                     System.currentTimeMillis(),
-                    message,
+                    ImmutableList.of(MessageNode.textNode(message)),
                     "twitch",
                     remoteRoom(),
                     remoteRoom()

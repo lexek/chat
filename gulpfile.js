@@ -13,22 +13,27 @@
     var basePath = './src/main/resources/static';
     var adminPath = basePath + '/chat/admin/';
     var clientPath = basePath + '/chat/client/';
+    var commonPath = basePath + '/chat/common/';
 
     function prepareTemplates(appPath) {
-        return gulp.src(basePath + appPath + '**/*.html')
-            .pipe(angularTemplateCache(
-                'templates.js',
-                {
-                    module: 'templates',
-                    root: appPath,
-                    standAlone: false
-                }
-            ));
+        return gulp.src([
+            commonPath + '**/*.html',
+            basePath + appPath + '**/*.html'
+        ]).pipe(angularTemplateCache(
+            'templates.js',
+            {
+                module: 'templates',
+                root: appPath,
+                standAlone: false
+            }
+        ));
     }
 
     gulp.task('admin', function () {
         var files = [
+            commonPath + '**/*.module.js',
             adminPath + '**/*.module.js',
+            commonPath + '**/*.js',
             adminPath + '**/*.js'
         ];
 
@@ -59,7 +64,7 @@
             basePath + '/vendor/js/tse.js',
             basePath + '/vendor/js/swfobject.js',
             basePath + '/vendor/js/web_socket.js',
-            basePath + '/vendor/js/angular.js',
+            basePath + '/vendor/js/angular-new.js',
             basePath + '/vendor/js/angular-sanitize.js',
             basePath + '/vendor/js/bindonce.js',
             basePath + '/vendor/js/angular-ui-utils.js',
@@ -96,6 +101,8 @@
             clientPath + '/ui/profile/profile.js',
             clientPath + '/ui/tickets/list.js',
             clientPath + '/ui/tickets/compose.js',
+            commonPath + '**/*.module.js',
+            commonPath + '**/*.js',
             clientPath + '/chat.js'
         ];
 
@@ -115,8 +122,18 @@
     });
 
     gulp.task('watch', function () {
-        gulp.watch([adminPath + '**/*.js', adminPath + '**/*.html'], ['admin']);
-        gulp.watch([clientPath + '**/*.js', clientPath + '**/*.html'], ['client']);
+        gulp.watch([
+            adminPath + '**/*.js',
+            adminPath + '**/*.html',
+            commonPath + '**/*.js',
+            commonPath + '**/*.html'
+        ], ['admin']);
+        gulp.watch([
+            clientPath + '**/*.js',
+            clientPath + '**/*.html',
+            commonPath + '**/*.js',
+            commonPath + '**/*.html'
+        ], ['client']);
     });
 
     gulp.task('default', ['admin', 'client', 'watch']);

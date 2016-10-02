@@ -25,6 +25,6 @@ public class TextMessageMatcher implements ArgumentMatcher<Message> {
             msg.get(MessageProperty.COLOR).equals(message.get(MessageProperty.COLOR)) &&
             msg.get(MessageProperty.MESSAGE_ID).equals(message.get(MessageProperty.MESSAGE_ID)) &&
             msg.get(MessageProperty.TIME) != null &&
-            msg.get(MessageProperty.TEXT).equals(message.get(MessageProperty.TEXT));
+            msg.get(MessageProperty.MESSAGE_NODES).equals(message.get(MessageProperty.MESSAGE_NODES));
     }
 }

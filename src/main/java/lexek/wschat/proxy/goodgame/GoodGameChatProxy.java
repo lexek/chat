@@ -2,6 +2,7 @@ package lexek.wschat.proxy.goodgame;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.google.common.collect.ImmutableList;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.*;
@@ -22,6 +23,7 @@ import lexek.wschat.chat.Room;
 import lexek.wschat.chat.model.GlobalRole;
 import lexek.wschat.chat.model.LocalRole;
 import lexek.wschat.chat.model.Message;
+import lexek.wschat.chat.msg.MessageNode;
 import lexek.wschat.proxy.*;
 import lexek.wschat.services.NotificationService;
 import lexek.wschat.util.Colors;
@@ -196,7 +198,7 @@ public class GoodGameChatProxy extends AbstractProxy {
                     Colors.generateColor(msg.getUser()),
                     messageId.getAndIncrement(),
                     System.currentTimeMillis(),
-                    msg.getText(),
+                    ImmutableList.of(MessageNode.textNode(msg.getText())),
                     "goodgame",
                     msg.getChannel(),
                     channelName

@@ -1,5 +1,6 @@
 package lexek.wschat.chat.handlers;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import lexek.wschat.chat.Connection;
@@ -8,6 +9,9 @@ import lexek.wschat.chat.Room;
 import lexek.wschat.chat.TestConnection;
 import lexek.wschat.chat.filters.RoomWithSendBackCheckFilter;
 import lexek.wschat.chat.model.*;
+import lexek.wschat.chat.msg.MessageNode;
+import lexek.wschat.chat.msg.MessageProcessingService;
+import lexek.wschat.chat.msg.TextReturningMessageProcessingService;
 import lexek.wschat.db.model.UserDto;
 import org.junit.Test;
 
@@ -21,21 +25,23 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
 public class MeHandlerTest {
+    private final MessageProcessingService messageProcessingService = new TextReturningMessageProcessingService();
+
     @Test
     public void shouldHaveLikeType() {
-        MeHandler handler = new MeHandler(null, null);
+        MeHandler handler = new MeHandler(null, null, messageProcessingService);
         assertEquals(handler.getType(), MessageType.ME);
     }
 
     @Test
     public void shouldBeAvailableOnlyForUsers() {
-        MeHandler handler = new MeHandler(null, null);
+        MeHandler handler = new MeHandler(null, null, messageProcessingService);
         assertEquals(handler.getRole(), LocalRole.USER);
     }
 
     @Test
     public void shouldHaveRequiredProperties() throws Exception {
-        MeHandler handler = new MeHandler(null, null);
+        MeHandler handler = new MeHandler(null, null, messageProcessingService);
         assertEquals(
             handler.requiredProperties(),
             ImmutableSet.of(MessageProperty.ROOM, MessageProperty.TEXT)
@@ -44,13 +50,13 @@ public class MeHandlerTest {
 
     @Test
     public void shouldRequireJoin() {
-        MeHandler handler = new MeHandler(null, null);
+        MeHandler handler = new MeHandler(null, null, messageProcessingService);
         assertTrue(handler.joinRequired());
     }
 
     @Test
     public void shouldRequireTimeout() {
-        MeHandler handler = new MeHandler(null, null);
+        MeHandler handler = new MeHandler(null, null, messageProcessingService);
         assertTrue(handler.isNeedsInterval());
     }
 
@@ -58,7 +64,7 @@ public class MeHandlerTest {
     public void shouldWork() {
         Room room = mock(Room.class);
         MessageBroadcaster messageBroadcaster = mock(MessageBroadcaster.class);
-        MeHandler handler = new MeHandler(messageBroadcaster, new AtomicLong());
+        MeHandler handler = new MeHandler(new AtomicLong(), messageBroadcaster, messageProcessingService);
 
         UserDto userDto = new UserDto(0L, "user", GlobalRole.USER, "#ffffff", false, false, null, false, false);
         User user = new User(userDto);
@@ -87,7 +93,8 @@ public class MeHandlerTest {
                 "#ffffff",
                 0L,
                 0L,
-                "top kek"))),
+                ImmutableList.of(MessageNode.textNode("top kek"))
+            ))),
             eq(new RoomWithSendBackCheckFilter(room, connection))
         );
     }
@@ -96,7 +103,7 @@ public class MeHandlerTest {
     public void shouldHaveErrorForLongUserMessage() {
         Room room = mock(Room.class);
         MessageBroadcaster messageBroadcaster = mock(MessageBroadcaster.class);
-        MeHandler handler = new MeHandler(messageBroadcaster, new AtomicLong());
+        MeHandler handler = new MeHandler(new AtomicLong(), messageBroadcaster, messageProcessingService);
 
         UserDto userDto = new UserDto(0L, "user", GlobalRole.USER, "#ffffff", false, false, null, false, false);
         User user = new User(userDto);
@@ -129,7 +136,7 @@ public class MeHandlerTest {
     public void shouldNotHaveErrorForLongModMessage() {
         Room room = mock(Room.class);
         MessageBroadcaster messageBroadcaster = mock(MessageBroadcaster.class);
-        MeHandler handler = new MeHandler(messageBroadcaster, new AtomicLong());
+        MeHandler handler = new MeHandler(new AtomicLong(), messageBroadcaster, messageProcessingService);
 
         UserDto userDto = new UserDto(0L, "user", GlobalRole.MOD, "#ffffff", false, false, null, false, false);
         User user = new User(userDto);
@@ -161,7 +168,8 @@ public class MeHandlerTest {
                 "#ffffff",
                 0L,
                 0L,
-                s))),
+                ImmutableList.of(MessageNode.textNode(s))
+            ))),
             eq(new RoomWithSendBackCheckFilter(room, connection))
         );
     }
@@ -170,7 +178,7 @@ public class MeHandlerTest {
     public void shouldHaveErrorForEmptyMessage() {
         Room room = mock(Room.class);
         MessageBroadcaster messageBroadcaster = mock(MessageBroadcaster.class);
-        MeHandler handler = new MeHandler(messageBroadcaster, new AtomicLong());
+        MeHandler handler = new MeHandler(new AtomicLong(), messageBroadcaster, messageProcessingService);
 
         UserDto userDto = new UserDto(0L, "user", GlobalRole.USER, "#ffffff", false, false, null, false, false);
         User user = new User(userDto);
@@ -200,7 +208,7 @@ public class MeHandlerTest {
     public void shouldHaveErrorForSpaceOnlyMessage() {
         Room room = mock(Room.class);
         MessageBroadcaster messageBroadcaster = mock(MessageBroadcaster.class);
-        MeHandler handler = new MeHandler(messageBroadcaster, new AtomicLong());
+        MeHandler handler = new MeHandler(new AtomicLong(), messageBroadcaster, messageProcessingService);
 
         UserDto userDto = new UserDto(0L, "user", GlobalRole.USER, "#ffffff", false, false, null, false, false);
         User user = new User(userDto);

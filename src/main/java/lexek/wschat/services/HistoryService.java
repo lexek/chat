@@ -1,5 +1,7 @@
 package lexek.wschat.services;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableSet;
 import lexek.wschat.chat.MessageEvent;
 import lexek.wschat.chat.MessageEventHandler;
@@ -40,6 +42,7 @@ public class HistoryService implements MessageEventHandler {
     private final int maxHistory;
     private final HistoryDao historyDao;
     private final UserService userService;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Inject
     public HistoryService(
@@ -75,12 +78,19 @@ public class HistoryService implements MessageEventHandler {
         }
     }
 
-    private void store(Message message, Room room) {
+    private void store(Message message, Room room) throws JsonProcessingException {
         MessageType type = message.getType();
         if (type == MessageType.MSG || type == MessageType.ME) {
             long userId = message.get(MessageProperty.USER_ID);
-            historyDao.add(new History(null, room.getId(), userId, message.get(MessageProperty.TIME),
-                message.getType().toString(), message.get(MessageProperty.TEXT), false));
+            historyDao.add(new History(
+                null,
+                room.getId(),
+                userId,
+                message.get(MessageProperty.TIME),
+                message.getType().toString(),
+                objectMapper.writeValueAsString(message.get(MessageProperty.MESSAGE_NODES)),
+                false
+            ));
         } else if (type == MessageType.CLEAR || type == MessageType.BAN || type == MessageType.TIMEOUT) {
             //todo: find better solution, but this works for now since it's not really frequent event type
             UserDto mod = userService.fetchByName(message.get(MessageProperty.MOD));

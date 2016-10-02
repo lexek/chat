@@ -3,6 +3,7 @@ package lexek.wschat.proxy.sc2tv;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.ImmutableList;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.*;
@@ -26,6 +27,7 @@ import lexek.wschat.chat.Room;
 import lexek.wschat.chat.model.GlobalRole;
 import lexek.wschat.chat.model.LocalRole;
 import lexek.wschat.chat.model.Message;
+import lexek.wschat.chat.msg.MessageNode;
 import lexek.wschat.proxy.AbstractProxy;
 import lexek.wschat.proxy.ModerationOperation;
 import lexek.wschat.proxy.ProxyProvider;
@@ -166,7 +168,7 @@ public class Sc2tvChatProxy extends AbstractProxy {
                             Colors.generateColor(userName),
                             messageId.getAndIncrement(),
                             System.currentTimeMillis(),
-                            text,
+                            ImmutableList.of(MessageNode.textNode(text)),
                             "sc2tv",
                             channel,
                             "sc2tv"

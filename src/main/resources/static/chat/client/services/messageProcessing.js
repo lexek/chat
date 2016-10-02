@@ -33,6 +33,28 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
         this.likes = [];
     };
 
+    var GroupedChatMessage = function(body, id_, time, hidden) {
+        this.body = body;
+        this.id_ = id_;
+        this.time = time;
+        this.hidden = hidden;
+        this.likes = [];
+    };
+
+    var ChatMessage = function (type, body, user, showModButtons, id_, time, showTS, hidden) {
+        this.type = type;
+        this.body = body;
+        this.showModButtons = showModButtons;
+        this.id_ = id_;
+        this.user = user;
+        this.hidden = hidden;
+        this.likes = [];
+        this.time = time;
+        this.showTS = showTS;
+        this.messageUpdatedCallbacks = [];
+        this.addToInputCallback = angular.noop;
+    };
+
     var processTweetMessage = function(tweet) {
         tweet.text = twemoji.parse(tweet.text, {
             base: "/img/",
@@ -48,7 +70,7 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
                 return ''.concat(options.base, options.size, '/', icon, options.ext);
             }
         });
-        tweet.text = $sce.trustAsHtml(tweet.text)
+        tweet.text = $sce.trustAsHtml(tweet.text);
         if (tweet.retweetedStatus) {
             processTweetMessage(tweet.retweetedStatus);
         }
@@ -98,7 +120,8 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
         chat.messagesUpdated();
     };
 
-    var processTextMessage = function(chat, ctx, msg) {
+    var processChatMessage = function(chat, ctx, msg) {
+        //todo: mentions
         ctx.proc = {
             unprocessedText: msg.text,
             mention: false
@@ -123,7 +146,7 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
                     (chat.self.role > user.globalRole)
                 )
             ) && (
-                (msg.type !== "MSG_EXT") || chat.isProxyModerationEnabled(ctx.room, service, serviceRes)
+                (msg.type !== 'MSG_EXT') || chat.isProxyModerationEnabled(ctx.room, service, serviceRes)
             );
         var ignored = chat.ignoredNames.indexOf(user.name.toLowerCase()) != -1;
         var showIgnored = settings.getS("showIgnored");
@@ -136,7 +159,6 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
 
         if (!omit) {
             chat.incMessageCount();
-            var tempText = htmlEscape(ctx.proc.unprocessedText);
             var elem = null;
             var lastChatter = chat.lastChatterInRoom[ctx.room];
             var previousMessage = chat.lastMessage[ctx.room];
@@ -149,28 +171,22 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
                 (previousMessage.messages.length < 5);
             chat.lastChatter(ctx.room, user);
             if (stackWithPrevious) {
-                var e = new GroupedMessage(tempText, msg.id, msg.time, hidden);
+                var e = new GroupedChatMessage(ctx.msg.messageNodes, msg.id, msg.time, hidden);
                 previousMessage.messages.push(e);
-                processMessageText(chat, ctx, msg).then(function() {
-                    e.body = $sce.trustAsHtml(ctx.proc.text);
-                });
+                chat.messageUpdated(previousMessage);
+                chat.messagesUpdated();
             } else {
                 if (msg.type === "MSG" || msg.type === "MSG_EXT") {
                     elem = new MessageGroup(user, showModButtons, ctx.history);
-                    var e = new GroupedMessage(tempText, msg.id, msg.time, hidden);
+                    var e = new GroupedChatMessage(ctx.msg.messageNodes, msg.id, msg.time, hidden);
                     elem.messages.push(e);
-                    processMessageText(chat, ctx, msg).then(function() {
-                        e.body = $sce.trustAsHtml(ctx.proc.text);
-                    });
                 } else {
-                    elem = new Message(msg.type, tempText, user, showModButtons, msg.id, msg.time, ctx.history, hidden);
-                    processMessageText(chat, ctx, msg).then(function() {
-                        elem.body = $sce.trustAsHtml(ctx.proc.text);
-                    });
+                    elem = new ChatMessage(msg.type, ctx.msg.messageNodes, user, showModButtons, msg.id, msg.time, ctx.history, hidden);
                 }
             }
             if (elem != null) {
                 chat.addMessage(elem, ctx.room, ctx.history, ctx.proc.mention);
+                chat.messagesUpdated();
             }
             if (ctx.proc.mention && !ctx.history) {
                 notificationService.notify(user.name, ctx.proc.unprocessedText);
@@ -359,7 +375,7 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
             case "MSG":
             case "MSG_EXT":
             {
-                processTextMessage(chat, ctx, message);
+                processChatMessage(chat, ctx, message);
                 break;
             }
             case 'COLOR':

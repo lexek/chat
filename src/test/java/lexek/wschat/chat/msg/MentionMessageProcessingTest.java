@@ -108,4 +108,9 @@ public class MentionMessageProcessingTest {
 
         assertEquals(message, expectedResult);
     }
+
+    @Test
+    public void shouldHandleChildren() {
+        assertEquals(processor.handlesChildren(), true);
+    }
 }

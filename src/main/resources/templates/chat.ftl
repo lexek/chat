@@ -62,7 +62,7 @@
         <script type="text/javascript" src="/vendor/js/tse.js"></script>
         <script type="text/javascript" src="/vendor/js/swfobject.js"></script>
         <script type="text/javascript" src="/vendor/js/web_socket.js"></script>
-        <script type="text/javascript" src="/vendor/js/angular.js"></script>
+        <script type="text/javascript" src="/vendor/js/angular-new.js"></script>
         <script type="text/javascript" src="/vendor/js/angular-sanitize.js"></script>
         <script type="text/javascript" src="/vendor/js/bindonce.js"></script>
         <script type="text/javascript" src="/vendor/js/angular-ui-utils.js"></script>
@@ -89,6 +89,8 @@
         <script type="text/javascript" src="/chat/client/services/windowState.js"></script>
         <script type="text/javascript" src="/chat/client/services/notifications.js"></script>
         <script type="text/javascript" src="/chat/client/services/messageProcessing.js"></script>
+        <script type="text/javascript" src="/chat/common/message/message.module.js"></script>
+        <script type="text/javascript" src="/chat/common/message/message_component.js"></script>
         <script type="text/javascript" src="/chat/client/services/chat.js"></script>
         <script type="text/javascript" src="/chat/client/services.js"></script>
         <script type="text/javascript" src="/chat/client/twitter.js"></script>
@@ -761,7 +763,7 @@
                                             --><span class="likeCount" ng-if="msg.likes.length &gt; 0">&nbsp;{{msg.likes.length}}</span>
                                         </span>
                                 </div></#if>
-                                <div class="userMessageBody" bo-style="{'border-color': message.user.color}" ng-if="!msg.hidden" ng-bind-html="msg.body"></div>
+                                <message class="userMessageBody" bo-style="{'border-color': message.user.color}" nodes="msg.body" ng-if="!msg.hidden"></message>
                                 <a class="userMessageBody" bo-style="{'border-color': message.user.color}" ng-if="msg.hidden" ng-click="msg.hidden=false">[{{'CHAT_MESSAGE_HIDDEN' | translate}}]</a>
                             </div>
                         </div>
@@ -781,7 +783,7 @@
                             <div class="me">
                                     <span class="username"
                                           ng-click="addToInput($event)" bo-bind="message.user.name | inflector:'capital'"></span>
-                                <span class="userMessageBodyMe" ng-if="!message.hidden" ng-bind-html="message.body"></span>
+                                <message class="userMessageBodyMe" nodes="::msg.body" ng-if="!message.hidden"></message>
                                 <a class="userMessageBodyMe" ng-if="message.hidden" ng-click="message.hidden=false">[{{'CHAT_MESSAGE_HIDDEN' | translate}}]</a>
                             </div>
                         </div>

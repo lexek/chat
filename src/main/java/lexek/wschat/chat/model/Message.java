@@ -1,6 +1,7 @@
 package lexek.wschat.chat.model;
 
 import com.google.common.collect.ImmutableMap;
+import lexek.wschat.chat.msg.MessageNode;
 import lexek.wschat.db.model.Emoticon;
 import lexek.wschat.db.model.ProxyMessageModel;
 import lexek.wschat.db.model.UserDto;
@@ -128,7 +129,7 @@ public class Message {
         String color,
         long messageId,
         long time,
-        String text
+        List<MessageNode> messageNodes
     ) {
         return new Message(ImmutableMap.<MessageProperty, Object>builder()
             .put(MessageProperty.TYPE, MessageType.MSG)
@@ -139,7 +140,7 @@ public class Message {
             .put(MessageProperty.COLOR, color)
             .put(MessageProperty.MESSAGE_ID, messageId)
             .put(MessageProperty.TIME, time)
-            .put(MessageProperty.TEXT, text)
+            .put(MessageProperty.MESSAGE_NODES, messageNodes)
             .put(MessageProperty.USER_ID, userId)
             .build());
     }
@@ -152,7 +153,7 @@ public class Message {
         String color,
         long messageId,
         long time,
-        String text,
+        List<MessageNode> messageNodes,
         String service,
         String serviceResource,
         String serviceResourceName
@@ -166,7 +167,7 @@ public class Message {
             .put(MessageProperty.COLOR, color)
             .put(MessageProperty.MESSAGE_ID, messageId)
             .put(MessageProperty.TIME, time)
-            .put(MessageProperty.TEXT, text)
+            .put(MessageProperty.MESSAGE_NODES, messageNodes)
             .put(MessageProperty.SERVICE, service)
             .put(MessageProperty.SERVICE_RESOURCE, serviceResource)
             .put(MessageProperty.SERVICE_RESOURCE_NAME, serviceResourceName)
@@ -182,7 +183,7 @@ public class Message {
         String color,
         long messageId,
         long time,
-        String text
+        List<MessageNode> messageNodes
     ) {
         return new Message(ImmutableMap.<MessageProperty, Object>builder()
             .put(MessageProperty.TYPE, MessageType.ME)
@@ -193,7 +194,7 @@ public class Message {
             .put(MessageProperty.COLOR, color)
             .put(MessageProperty.MESSAGE_ID, messageId)
             .put(MessageProperty.TIME, time)
-            .put(MessageProperty.TEXT, text)
+            .put(MessageProperty.MESSAGE_NODES, messageNodes)
             .put(MessageProperty.USER_ID, userId)
             .build());
     }

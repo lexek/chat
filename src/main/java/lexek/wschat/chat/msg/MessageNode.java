@@ -1,11 +1,12 @@
 package lexek.wschat.chat.msg;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 
 import java.util.LinkedList;
 import java.util.List;
 
-@Getter @ToString @EqualsAndHashCode @Builder
+@Getter @ToString @EqualsAndHashCode @Builder @JsonInclude(JsonInclude.Include.NON_NULL)
 public class MessageNode {
     private final Type type;
     private final String text;
@@ -14,7 +15,6 @@ public class MessageNode {
     private String src;
     private Integer width;
     private Integer height;
-
 
     public static MessageNode textNode(String text) {
         return MessageNode.builder().type(Type.TEXT).text(text).build();
@@ -40,6 +40,15 @@ public class MessageNode {
             .src(src)
             .width(width)
             .height(height)
+            .build();
+    }
+
+    public static MessageNode emojiNode(String text, String src) {
+        return MessageNode
+            .builder()
+            .type(Type.EMOJI)
+            .text(text)
+            .src(src)
             .build();
     }
 

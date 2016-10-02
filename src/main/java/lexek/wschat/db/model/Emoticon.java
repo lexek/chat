@@ -67,7 +67,11 @@ public class Emoticon {
 
     public Emoticon initPattern() {
         if (code != null) {
-            pattern = Pattern.compile(code);
+            String regex = code
+                .replace("\\", "\\\\")
+                .replace(")", "\\)")
+                .replace("(", "\\(");
+            pattern = Pattern.compile(regex);
         }
         return this;
     }

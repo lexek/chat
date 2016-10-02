@@ -29,7 +29,6 @@ public class EmoticonMessageProcessorTest {
         );
 
         assertEquals(message, expectedResult);
-
     }
 
     @Test
@@ -51,5 +50,12 @@ public class EmoticonMessageProcessorTest {
         );
 
         assertEquals(message, expectedResult);
+    }
+
+    @Test
+    public void shouldHandleChildren() {
+        EmoticonService emoticonService = Mockito.mock(EmoticonService.class);
+        EmoticonMessageProcessor processor = new EmoticonMessageProcessor(emoticonService);
+        assertEquals(processor.handlesChildren(), true);
     }
 }

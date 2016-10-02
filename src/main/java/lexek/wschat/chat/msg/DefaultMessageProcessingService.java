@@ -3,6 +3,7 @@ package lexek.wschat.chat.msg;
 import com.google.common.collect.ImmutableList;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 public class DefaultMessageProcessingService implements MessageProcessingService {
@@ -10,17 +11,26 @@ public class DefaultMessageProcessingService implements MessageProcessingService
 
     public DefaultMessageProcessingService() {
         this.processors = new ArrayList<>();
-        this.processors.add(new UrlMessageProcessor());
+    }
+
+    public void addProcessor(MessageProcessor processor) {
+        this.processors.add(processor);
     }
 
     @Override
     public List<MessageNode> processMessage(String message, boolean isRoot) {
-        List<MessageNode> nodes = ImmutableList.of(MessageNode.textNode(message));
+        LinkedList<MessageNode> nodes = new LinkedList<>();
+        nodes.add(MessageNode.textNode(message));
         processMessage(nodes, isRoot);
         return nodes;
     }
 
     public void processMessage(List<MessageNode> message, boolean isRoot) {
-        //todo
+        for (MessageProcessor processor : processors) {
+            if (!isRoot && processor.handlesChildren()) {
+                continue;
+            }
+            processor.process(message);
+        }
     }
 }

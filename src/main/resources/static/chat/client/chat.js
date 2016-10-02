@@ -49,7 +49,8 @@ document.chatApplication = angular.module("chatApplication", [
     "relativeDate",
     "ngSanitize",
     "chat.ui.profile",
-    "chat.ui.tickets"
+    "chat.ui.tickets",
+    "chat.common.message"
 ]);
 
 document.chatApplication.config(['$compileProvider', function ($compileProvider) {

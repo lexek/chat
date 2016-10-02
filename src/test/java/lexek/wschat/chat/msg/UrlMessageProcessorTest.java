@@ -93,4 +93,9 @@ public class UrlMessageProcessorTest {
 
         assertEquals(message, expectedResult);
     }
+
+    @Test
+    public void shouldHandleChildren() {
+        assertEquals(processor.handlesChildren(), true);
+    }
 }

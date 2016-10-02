@@ -36,11 +36,6 @@ public class UrlMessageProcessor implements MessageProcessor {
     }
 
     @Override
-    public boolean handlesRoot() {
-        return true;
-    }
-
-    @Override
     public boolean handlesChildren() {
         return true;
     }
