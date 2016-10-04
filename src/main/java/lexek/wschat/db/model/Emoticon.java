@@ -1,8 +1,11 @@
 package lexek.wschat.db.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.util.regex.Pattern;
 
 public class Emoticon {
+    @JsonIgnore
     private Pattern pattern;
     private Long id;
     private String code;

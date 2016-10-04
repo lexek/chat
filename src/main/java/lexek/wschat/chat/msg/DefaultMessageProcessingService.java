@@ -24,11 +24,11 @@ public class DefaultMessageProcessingService implements MessageProcessingService
     }
 
     public void processMessage(List<MessageNode> message, boolean isRoot) {
-        for (MessageProcessor processor : processors) {
-            if (!isRoot && processor.handlesChildren()) {
-                continue;
-            }
-            processor.process(message);
-        }
+        processors
+            .stream()
+            .filter(processor -> isRoot || processor.handlesChildren())
+            .forEach(processor -> {
+                processor.process(message);
+            });
     }
 }

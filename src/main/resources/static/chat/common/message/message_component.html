@@ -1,6 +1,34 @@
-<span ng-repeat="node in ::vm.nodes">
-    <message ng-if="::node.children" nodes="::node.children"></message>
-    <span ng-if="::!node.children">
-        {{node.text}}
+<div ng-repeat="node in ::vm.nodes" ng-switch="::node.type" class="message-node">
+    <span ng-switch-when="STYLED" ng-class="::('chat-style-' + node.style.toLowerCase())">
+        <message nodes="::node.children"></message>
     </span>
-</span>
+    <!-- todo: url formatting -->
+    <a
+        ng-switch-when="URL"
+        ng-href="{{::node.text}}"
+        target="_blank"
+        rel="noopener noreferrer"
+        tooltip="{{::node.text}}"
+    >
+        {{node.text}}
+    </a>
+    <img
+        ng-switch-when="EMOTICON"
+        class="emoticon"
+        ng-src="emoticons/{{::node.src}}"
+        ng-style="::{height: node.height + 'px', width: node.width + 'px'}"
+        tooltip="{{::node.text}}"
+        alt="{{::node.text}}"
+    />
+    <img
+        ng-switch-when="EMOJI"
+        class="emoji emoticon"
+        ng-src="img/twemoji/{{::node.src}}.png"
+        alt="{{::node.text}}"
+    />
+    <!-- todo: highlight current user -->
+    <span ng-switch-when="MENTION" class="mentionLabel">
+        {{::node.text}}
+    </span>
+    <span ng-switch-default class="message-node-text" ng-bind="::node.text"></span>
+</div>

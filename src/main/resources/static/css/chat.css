@@ -291,35 +291,6 @@ img.emoji {
     font-size: smaller;
 }
 
-.spoiler {
-    background-color: #D2D2D2;
-    color: #D2D2D2;
-    border-radius: 2px;
-    padding: 2px 3px 1px;
-    display: inline-block;
-    min-height: 1em;
-}
-
-.spoiler img.emoticon,
-.spoiler a,
-.spoiler span.mentionLabel,
-.spoiler img.emoji {
-    opacity: 0;
-}
-
-.spoiler:hover {
-    color: black;
-    transition: color .1s ease-in;
-}
-
-.spoiler:hover img.emoticon,
-.spoiler:hover a,
-.spoiler:hover span.mentionLabel,
-.spoiler:hover img.emoji {
-    opacity: 1;
-    transition: opacity .1s ease-in;
-}
-
 .face {
     min-height: 22px;
 }
@@ -469,10 +440,6 @@ img.emoji {
     font-weight: 400;
     line-height: 1;
     color: #999999;
-}
-
-.greenText{
-    color: #789922;
 }
 
 .compact .like {
@@ -768,18 +735,6 @@ a:focus {
     color: #5f5f5f;
 }
 
-.nsfwLabel {
-    display: inline-block;
-    font-size: 75%;
-    background-color: #D72D2D;
-    color: white;
-    text-decoration: none;
-    padding: 2px 3px 1px;
-    border-radius: 2px;
-    font-weight: bold;
-    vertical-align: bottom;
-}
-
 .modal-body ul {
     padding-left: 20px;
 }
@@ -988,4 +943,96 @@ a:focus {
 .auth-button {
     width: 100%;
     text-align: left;
+}
+
+message {
+    display: inline-block;
+}
+
+.message-node {
+    display: inline-flex;
+    flex-direction: column;
+    justify-content: flex-end;
+}
+
+.message-node-text {
+    white-space: pre-wrap;
+}
+
+.emoji {
+    width: 18px;
+    height: 18px;
+}
+
+.chat-style-bold {
+    font-style: italic;
+}
+
+.chat-style-italic {
+    font-weight: bold;
+}
+
+.chat-style-strikethrough {
+    text-decoration: line-through;
+}
+
+.chat-style-quote {
+    color: #789922;
+}
+
+.chat-style-quote::before {
+    display: inline-block;
+    content: '>';
+}
+
+.chat-style-spoiler > message,
+.chat-style-nsfw > message {
+    background-color: #D2D2D2;
+    color: #D2D2D2;
+    border-radius: 2px;
+    padding: 2px 3px 1px;
+    display: inline-block;
+    min-height: 1em;
+}
+
+.chat-style-spoiler > message img.emoticon,
+.chat-style-spoiler > message a,
+.chat-style-spoiler > message span.mentionLabel,
+.chat-style-spoiler > message img.emoji,
+.chat-style-nsfw > message img.emoticon,
+.chat-style-nsfw > message a,
+.chat-style-nsfw > message span.mentionLabel,
+.chat-style-nsfw > message img.emoji{
+    opacity: 0;
+}
+
+.chat-style-spoiler:hover > message,
+.chat-style-nsfw:hover > message {
+    color: black;
+    transition: color .1s ease-in;
+}
+
+.chat-style-spoiler:hover > message img.emoticon,
+.chat-style-spoiler:hover > message a,
+.chat-style-spoiler:hover > message span.mentionLabel,
+.chat-style-spoiler:hover > message img.emoji,
+.chat-style-nsfw:hover > message img.emoticon,
+.chat-style-nsfw:hover > message a,
+.chat-style-nsfw:hover > message span.mentionLabel,
+.chat-style-nsfw:hover > message img.emoji {
+    opacity: 1;
+    transition: opacity .1s ease-in;
+}
+
+.chat-style-nsfw::before {
+    content: 'NSFW';
+    display: inline-block;
+    font-size: 75%;
+    background-color: #D72D2D;
+    color: white;
+    text-decoration: none;
+    padding: 2px 3px 1px;
+    border-radius: 2px;
+    font-weight: bold;
+    vertical-align: bottom;
 }
