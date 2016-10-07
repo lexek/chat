@@ -950,7 +950,7 @@ message {
 }
 
 .message-node {
-    display: inline-flex;
+    display: inline-block;
     flex-direction: column;
     justify-content: flex-end;
 }

@@ -84,12 +84,13 @@
         <script type="text/javascript" src="/chat/client/libs.js"></script>
         <script type="text/javascript" src="/chat/client/sc2emotes.js"></script>
         <script type="text/javascript" src="/chat/client/lang.js"></script>
-        <script type="text/javascript" src="/chat/client/services/linkResolver.js"></script>
         <script type="text/javascript" src="/chat/client/services/settings.js"></script>
         <script type="text/javascript" src="/chat/client/services/windowState.js"></script>
         <script type="text/javascript" src="/chat/client/services/notifications.js"></script>
         <script type="text/javascript" src="/chat/client/services/messageProcessing.js"></script>
         <script type="text/javascript" src="/chat/common/message/message.module.js"></script>
+        <script type="text/javascript" src="/chat/common/message/message_link_service.js"></script>
+        <script type="text/javascript" src="/chat/common/message/message_link.js"></script>
         <script type="text/javascript" src="/chat/common/message/message_component.js"></script>
         <script type="text/javascript" src="/chat/client/services/chat.js"></script>
         <script type="text/javascript" src="/chat/client/services.js"></script>

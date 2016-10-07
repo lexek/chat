@@ -3,15 +3,7 @@
         <message nodes="::node.children"></message>
     </span>
     <!-- todo: url formatting -->
-    <a
-        ng-switch-when="URL"
-        ng-href="{{::node.text}}"
-        target="_blank"
-        rel="noopener noreferrer"
-        tooltip="{{::node.text}}"
-    >
-        {{node.text}}
-    </a>
+    <message-link ng-switch-when="URL" data-text="::node.text"></message-link>
     <img
         ng-switch-when="EMOTICON"
         class="emoticon"

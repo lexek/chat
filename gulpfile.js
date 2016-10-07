@@ -16,17 +16,27 @@
     var commonPath = basePath + '/chat/common/';
 
     function prepareTemplates(appPath) {
-        return gulp.src([
-            commonPath + '**/*.html',
-            basePath + appPath + '**/*.html'
-        ]).pipe(angularTemplateCache(
-            'templates.js',
-            {
-                module: 'templates',
-                root: appPath,
-                standAlone: false
-            }
-        ));
+        return gulp.src(basePath + appPath + '**/*.html')
+            .pipe(angularTemplateCache(
+                '/common/templates.js',
+                {
+                    module: 'templates',
+                    root: appPath,
+                    standAlone: false
+                }
+            ));
+    }
+
+    function prepareCommonTemplates() {
+        return gulp.src(basePath + '/chat/common/**/*.html')
+            .pipe(angularTemplateCache(
+                '/common/commonTemplates.js',
+                {
+                    module: 'templates',
+                    root: '/chat/common/',
+                    standAlone: false
+                }
+            ));
     }
 
     gulp.task('admin', function () {
@@ -39,6 +49,7 @@
 
         return gulp.src(files)
             .pipe(addStream.obj(prepareTemplates('/chat/admin/')))
+            .pipe(addStream.obj(prepareCommonTemplates()))
             .pipe(sourcemaps.init())
             .pipe(concat('admin.min.js', {newLine: ';'}))
             .pipe(ngAnnotate({
@@ -107,6 +118,8 @@
         ];
 
         return gulp.src(files)
+            .pipe(addStream.obj(prepareTemplates('/chat/client/')))
+            .pipe(addStream.obj(prepareCommonTemplates()))
             .pipe(sourcemaps.init())
             .pipe(concat('client.min.js', {newLine: ';'}))
             .pipe(ngAnnotate({

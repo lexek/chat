@@ -1,0 +1,14 @@
+<a
+    ng-href="{{::vm.model.link}}"
+    target="_blank"
+    rel="noopener noreferrer"
+    tooltip="{{::vm.model.link}}"
+    style="display: inline-block"
+>
+    <span ng-switch="vm.model.type" style="display: inline-block">
+        <i ng-switch-when="insecure" class="fa fa-external-link link-icon fa-fw"></i>
+        <i ng-switch-when="secure" class="fa fa-lock link-icon fa-fw"></i>
+        <i ng-switch-when="steam" class="fa fa-steam-square link-icon fa-fw"></i>
+        <i ng-switch-when="youtube" class="fa fa-youtube-play" style="color:#cd201f; margin-right: 3px;"></i>
+    </span>{{vm.model.text}}<strong ng-if="vm.model.youTubeTime">[<i class="fa fa-fw fa-clock-o"></i>{{::vm.model.youTubeTime}}]</strong>
+</a>

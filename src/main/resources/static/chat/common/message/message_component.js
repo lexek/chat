@@ -13,7 +13,5 @@
         });
 
     function MessageComponentController() {
-        var vm = this;
-        console.log(vm.nodes);
     }
 })();
