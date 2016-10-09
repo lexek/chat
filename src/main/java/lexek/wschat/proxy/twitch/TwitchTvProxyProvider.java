@@ -1,29 +1,20 @@
 package lexek.wschat.proxy.twitch;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableSet;
 import io.netty.channel.EventLoopGroup;
 import lexek.wschat.chat.MessageBroadcaster;
 import lexek.wschat.chat.Room;
-import lexek.wschat.proxy.*;
+import lexek.wschat.proxy.ModerationOperation;
+import lexek.wschat.proxy.Proxy;
+import lexek.wschat.proxy.ProxyAuthService;
+import lexek.wschat.proxy.ProxyProvider;
 import lexek.wschat.services.NotificationService;
-import lexek.wschat.util.JsonResponseHandler;
-import lexek.wschat.util.JsonStreamResponseHandler;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
 import javax.inject.Named;
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.EnumSet;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 @Service
 public class TwitchTvProxyProvider extends ProxyProvider {
