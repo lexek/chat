@@ -38,7 +38,7 @@ public class StyleMessageProcessorTest {
         List<StyleDescription> styles = ImmutableList.of(
             new StyleDescription(Pattern.compile("\\*\\*([^*]+)\\*\\*"), MessageNode.Style.BOLD)
         );
-        MessageNode childNode = MessageNode.emoticonNode("kek", "kek.png", 11, 12);
+        MessageNode childNode = MessageNode.emoticonNode("kek", "kek.png");
         //todo: create custom message processing services for tests
         MessageProcessingService messageProcessingService = Mockito.spy(new MessageProcessingService() {
             @Override

@@ -1,21 +1,39 @@
 package lexek.wschat.proxy.twitch;
 
-public class TwitchUserMessage extends TwitchEventMessage {
-    private final TwitchUser user;
+import lexek.wschat.chat.msg.MessageNode;
 
-    public TwitchUserMessage(String data, TwitchUser user) {
-        super(Type.MSG, data);
-        this.user = user;
+import java.util.List;
+
+public class TwitchUserMessage extends TwitchEventMessage {
+    private final String userName;
+    private final String userColor;
+    private final List<MessageNode> message;
+
+    public TwitchUserMessage(String userName, String userColor, List<MessageNode> message) {
+        super(Type.MSG, null);
+        this.userName = userName;
+        this.userColor = userColor;
+        this.message = message;
     }
 
-    public TwitchUser getUser() {
-        return user;
+    public String getUserName() {
+        return userName;
+    }
+
+    public String getUserColor() {
+        return userColor;
+    }
+
+    public List<MessageNode> getMessage() {
+        return message;
     }
 
     @Override
     public String toString() {
         return "TwitchUserMessage{" +
-            "user=" + user +
+            "userName='" + userName + '\'' +
+            ", userColor='" + userColor + '\'' +
+            ", message=" + message +
             "} " + super.toString();
     }
 }

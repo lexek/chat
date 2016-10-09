@@ -233,7 +233,7 @@ public class Main {
             messageProcessingService
         ));
         messageProcessingService.addProcessor(new MentionMessageProcessor());
-        messageProcessingService.addProcessor(new EmoticonMessageProcessor(serviceLocator.getService(EmoticonService.class)));
+        messageProcessingService.addProcessor(new EmoticonMessageProcessor(serviceLocator.getService(EmoticonService.class), "/emoticons"));
         messageProcessingService.addProcessor(new EmojiMessageProcessor());
         ServiceLocatorUtilities.addOneConstant(serviceLocator, messageProcessingService, "messageProcessingService", MessageProcessingService.class);
 

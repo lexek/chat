@@ -33,7 +33,7 @@ public class CybergameTvProxyProvider extends ProxyProvider {
         @Named("proxyEventLoopGroup") EventLoopGroup eventLoopGroup,
         @Named("messageId") AtomicLong messageId
     ) {
-        super("cybergame", false, false, false, ImmutableSet.of(), EnumSet.noneOf(ModerationOperation.class));
+        super("cybergame", false, false, false, false, ImmutableSet.of(), EnumSet.noneOf(ModerationOperation.class));
         this.apiClient = apiClient;
         this.notificationService = notificationService;
         this.eventLoopGroup = eventLoopGroup;

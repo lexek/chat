@@ -6,6 +6,6 @@ import org.jvnet.hk2.annotations.Contract;
 import java.util.List;
 
 @Contract
-public interface EmoticonProvider {
-    List<Emoticon> getEmoticons();
+public interface EmoticonProvider<T extends Emoticon> {
+    List<T> getEmoticons();
 }

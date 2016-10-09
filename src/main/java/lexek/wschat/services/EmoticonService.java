@@ -24,7 +24,7 @@ import java.nio.file.Paths;
 import java.util.List;
 
 @Service
-public class EmoticonService implements EmoticonProvider {
+public class EmoticonService implements EmoticonProvider<Emoticon> {
     private final Path emoticonsDir;
     private final Dimension maxSize;
     private final EmoticonDao emoticonDao;

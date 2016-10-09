@@ -209,4 +209,8 @@ public class ProxyManager extends AbstractManagedService implements MessageConsu
     public Collection<ProxyProvider> getProviders() {
         return providers.values();
     }
+
+    public ProxyProvider getProvider(String provider) {
+        return providers.get(provider);
+    }
 }

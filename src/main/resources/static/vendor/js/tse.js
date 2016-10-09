@@ -1,30 +1,8 @@
-/**
+/*!
  * TrackpadScrollEmulator
- * Version: 1.0.6
+ * Version: 1.0.8
  * Author: Jonathan Nicol @f6design
  * https://github.com/jnicol/trackpad-scroll-emulator
- *
- * The MIT License
- *
- * Copyright (c) 2012-2014 Jonathan Nicol
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
  */
 ;(function($) {
     var pluginName = 'TrackpadScrollEmulator';
@@ -33,7 +11,7 @@
         var el = element;
         var $el = $(element);
         var $scrollContentEl;
-        var $contentEl = $el.find('.tse-content');
+        var $contentEl = $el.find('.tse-content:first');
         var $scrollbarEl;
         var $dragHandleEl;
         var dragOffset;
@@ -58,13 +36,13 @@
             }
 
             $el.prepend('<div class="tse-scrollbar"><div class="drag-handle"></div></div>');
-            $scrollbarEl = $el.find('.tse-scrollbar');
-            $dragHandleEl = $el.find('.drag-handle');
+            $scrollbarEl = $el.find('.tse-scrollbar:first');
+            $dragHandleEl = $el.find('.drag-handle:first');
 
             if (options.wrapContent) {
                 $contentEl.wrap('<div class="tse-scroll-content" />');
             }
-            $scrollContentEl = $el.find('.tse-scroll-content');
+            $scrollContentEl = $el.find('.tse-scroll-content:first');
 
             resizeScrollContent();
 
@@ -77,6 +55,8 @@
             $scrollContentEl.on('scroll', onScrolled);
 
             resizeScrollbar();
+
+            $(window).on('resize.trackpadScollEmulator', recalculate);
 
             if (!options.autoHide) {
                 showScrollbar();
@@ -165,15 +145,15 @@
          * Resize scrollbar
          */
         function resizeScrollbar() {
-            var contentSize = $contentEl[sizeAttr]();
+            var contentSize = sizeAttr === 'height' ? $contentEl.outerHeight() : $contentEl.outerWidth();
             var scrollOffset = $scrollContentEl[scrollOffsetAttr](); // Either scrollTop() or scrollLeft().
             var scrollbarSize = $scrollbarEl[sizeAttr]();
             var scrollbarRatio = scrollbarSize / contentSize;
 
             // Calculate new height/position of drag handle.
             // Offset of 2px allows for a small top/bottom or left/right margin around handle.
-            var handleOffset = Math.floor(scrollbarRatio * scrollOffset);
-            var handleSize = Math.floor(scrollbarRatio * (scrollbarSize));
+            var handleOffset = Math.round(scrollbarRatio * scrollOffset) + 2;
+            var handleSize = Math.floor(scrollbarRatio * (scrollbarSize - 2)) - 2;
 
             if (scrollbarSize < contentSize) {
                 if (scrollDirection === 'vert'){
@@ -288,6 +268,8 @@
             $scrollbarEl.remove();
             $scrollContentEl.remove();
             $contentEl.css({'height': $el.height()+'px', 'overflow-y': 'scroll'});
+
+            $(window).off('resize.trackpadScollEmulator');
 
             hook('onDestroy');
             $el.removeData('plugin_' + pluginName);

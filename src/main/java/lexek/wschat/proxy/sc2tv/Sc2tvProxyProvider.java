@@ -29,7 +29,7 @@ public class Sc2tvProxyProvider extends ProxyProvider {
         MessageBroadcaster messageBroadcaster,
         @Named("messageId") AtomicLong messageId
     ) {
-        super("sc2tv", false, false, false, ImmutableSet.of(), EnumSet.noneOf(ModerationOperation.class));
+        super("sc2tv", false, false, false, false, ImmutableSet.of(), EnumSet.noneOf(ModerationOperation.class));
         this.notificationService = notificationService;
         this.eventLoopGroup = eventLoopGroup;
         this.messageBroadcaster = messageBroadcaster;

@@ -76,6 +76,8 @@
         <script type="text/javascript" src="/vendor/js/angular-relative-date.js"></script>
         <script type="text/javascript" src="/vendor/js/angular-recaptcha.js"></script>
         <script type="text/javascript" src="/vendor/js/bootstrap-colorpicker.js"></script>
+        <script type="text/javascript" src="/vendor/js/perfect-scrollbar.min.js"></script>
+        <script type="text/javascript" src="/vendor/js/scrollglue.js"></script>
         <script type="text/javascript" src="/chat/client/mixins/closable.js"></script>
         <script type="text/javascript" src="/chat/client/mixins/pending.js"></script>
         <script type="text/javascript" src="/chat/client/types/chatState.js"></script>
@@ -92,6 +94,7 @@
         <script type="text/javascript" src="/chat/common/message/message_link_service.js"></script>
         <script type="text/javascript" src="/chat/common/message/message_link.js"></script>
         <script type="text/javascript" src="/chat/common/message/message_component.js"></script>
+        <script type="text/javascript" src="/chat/common/message/img_onload.js"></script>
         <script type="text/javascript" src="/chat/client/services/chat.js"></script>
         <script type="text/javascript" src="/chat/client/services.js"></script>
         <script type="text/javascript" src="/chat/client/twitter.js"></script>
@@ -103,6 +106,7 @@
         <script type="text/javascript" src="/chat/client/ui/profile/profile.js"></script>
         <script type="text/javascript" src="/chat/client/ui/tickets/list.js"></script>
         <script type="text/javascript" src="/chat/client/ui/tickets/compose.js"></script>
+        <script type="text/javascript" src="/chat/common/templates.module.js"></script>
         <script type="text/javascript" src="/chat/client/chat.js"></script>
     <#else>
         <link rel="stylesheet" type="text/css" href="min/app.css"/>

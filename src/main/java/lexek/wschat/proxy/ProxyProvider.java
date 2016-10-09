@@ -1,9 +1,12 @@
 package lexek.wschat.proxy;
 
 import lexek.wschat.chat.Room;
+import lexek.wschat.db.model.ProxyEmoticon;
 import org.jvnet.hk2.annotations.Contract;
 
+import java.io.IOException;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Set;
 
 @Contract
@@ -12,6 +15,7 @@ public abstract class ProxyProvider {
     private final boolean supportsAuth;
     private final boolean supportsOutbound;
     private final boolean requiresAuth;
+    private final boolean supportsEmoticons;
 
     private final Set<String> supportedAuthServices;
     private final EnumSet<ModerationOperation> supportedOperations;
@@ -21,13 +25,14 @@ public abstract class ProxyProvider {
         boolean supportsAuth,
         boolean supportsOutbound,
         boolean requiresAuth,
-        Set<String> supportedAuthServices,
+        boolean supportsEmoticons, Set<String> supportedAuthServices,
         EnumSet<ModerationOperation> supportedOperations
     ) {
         this.name = name;
         this.supportsAuth = supportsAuth;
         this.supportsOutbound = supportsOutbound;
         this.requiresAuth = requiresAuth;
+        this.supportsEmoticons = supportsEmoticons;
         this.supportedAuthServices = supportedAuthServices;
         this.supportedOperations = supportedOperations;
     }
@@ -42,6 +47,10 @@ public abstract class ProxyProvider {
 
     public boolean isSupportsOutbound() {
         return supportsOutbound;
+    }
+
+    public boolean isSupportsEmoticons() {
+        return supportsEmoticons;
     }
 
     public boolean supportsModerationOperation(ModerationOperation operation) {
@@ -63,4 +72,9 @@ public abstract class ProxyProvider {
     public abstract Proxy newProxy(long id, Room room, String remoteRoom, Long proxyAuthId, boolean outbound);
 
     public abstract boolean validateRemoteRoom(String remoteRoom);
+
+    public List<ProxyEmoticonDescriptor> fetchEmoticonDescriptors() throws IOException {
+        throw new UnsupportedOperationException();
+    }
+
 }

@@ -8,10 +8,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class EmoticonMessageProcessor implements MessageProcessor {
-    private final EmoticonProvider emoticonProvider;
+    private final EmoticonProvider<Emoticon> emoticonProvider;
+    private final String emoticonRoot;
 
-    public EmoticonMessageProcessor(EmoticonProvider emoticonProvider) {
+    public EmoticonMessageProcessor(EmoticonProvider<Emoticon> emoticonProvider, String emoticonRoot) {
         this.emoticonProvider = emoticonProvider;
+        this.emoticonRoot = emoticonRoot;
     }
 
     @Override
@@ -35,9 +37,7 @@ public class EmoticonMessageProcessor implements MessageProcessor {
                         start = matchEnd;
                         iterator.add(MessageNode.emoticonNode(
                             text.substring(matchStart, matchEnd),
-                            emoticon.getFileName(),
-                            emoticon.getWidth(),
-                            emoticon.getHeight()
+                            emoticonRoot + '/' +emoticon.getFileName()
                         ));
                     }
                     //add leftovers to result

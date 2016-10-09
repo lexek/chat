@@ -210,7 +210,8 @@
                                 steam_game|
                                 chat_proxy|
                                 ignore_list|
-                                proxy_auth
+                                proxy_auth|
+                                proxy_emoticon
                             </includes>
                             <inputSchema>chat</inputSchema>
                             <outputSchemaToDefault>true</outputSchemaToDefault>

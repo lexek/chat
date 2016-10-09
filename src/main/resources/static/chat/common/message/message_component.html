@@ -7,10 +7,10 @@
     <img
         ng-switch-when="EMOTICON"
         class="emoticon"
-        ng-src="emoticons/{{::node.src}}"
-        ng-style="::{height: node.height + 'px', width: node.width + 'px'}"
+        ng-src="{{::node.src}}"
         tooltip="{{::node.text}}"
         alt="{{::node.text}}"
+        tse-on-load
     />
     <img
         ng-switch-when="EMOJI"

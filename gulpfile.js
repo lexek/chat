@@ -89,6 +89,7 @@
             basePath + '/vendor/js/angular-relative-date.js',
             basePath + '/vendor/js/angular-recaptcha.js',
             basePath + '/vendor/js/bootstrap-colorpicker.js',
+            basePath + '/vendor/js/scrollglue.js',
             clientPath + '/mixins/**',
             clientPath + '/types/chatState.js',
             clientPath + '/types/role.js',

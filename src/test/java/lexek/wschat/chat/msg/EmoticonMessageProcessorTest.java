@@ -18,14 +18,14 @@ public class EmoticonMessageProcessorTest {
         Mockito.when(emoticonService.getEmoticons()).thenReturn(ImmutableList.of(
             new Emoticon(0L, "Kappa", "Kappa.png", 30, 30).initPattern()
         ));
-        EmoticonMessageProcessor processor = new EmoticonMessageProcessor(emoticonService);
+        EmoticonMessageProcessor processor = new EmoticonMessageProcessor(emoticonService, "/emoticons");
 
         List<MessageNode> message = Lists.newArrayList(MessageNode.textNode("Kappa"));
 
         processor.process(message);
 
         List<MessageNode> expectedResult = ImmutableList.of(
-            MessageNode.emoticonNode("Kappa", "Kappa.png", 30, 30)
+            MessageNode.emoticonNode("Kappa", "/emoticons/Kappa.png")
         );
 
         assertEquals(message, expectedResult);
@@ -37,7 +37,7 @@ public class EmoticonMessageProcessorTest {
         Mockito.when(emoticonService.getEmoticons()).thenReturn(ImmutableList.of(
             new Emoticon(0L, "Kappa", "Kappa.png", 30, 30).initPattern()
         ));
-        EmoticonMessageProcessor processor = new EmoticonMessageProcessor(emoticonService);
+        EmoticonMessageProcessor processor = new EmoticonMessageProcessor(emoticonService, "/emoticons");
 
         List<MessageNode> message = Lists.newArrayList(MessageNode.textNode("top Kappa kek"));
 
@@ -45,7 +45,7 @@ public class EmoticonMessageProcessorTest {
 
         List<MessageNode> expectedResult = ImmutableList.of(
             MessageNode.textNode("top "),
-            MessageNode.emoticonNode("Kappa", "Kappa.png", 30, 30),
+            MessageNode.emoticonNode("Kappa", "/emoticons/Kappa.png"),
             MessageNode.textNode(" kek")
         );
 
@@ -55,7 +55,7 @@ public class EmoticonMessageProcessorTest {
     @Test
     public void shouldHandleChildren() {
         EmoticonService emoticonService = Mockito.mock(EmoticonService.class);
-        EmoticonMessageProcessor processor = new EmoticonMessageProcessor(emoticonService);
+        EmoticonMessageProcessor processor = new EmoticonMessageProcessor(emoticonService, "/emoticons");
         assertEquals(processor.handlesChildren(), true);
     }
 }

@@ -38,14 +38,12 @@ public class MessageNode {
             .build();
     }
 
-    public static MessageNode emoticonNode(String text, String src, int width, int height) {
+    public static MessageNode emoticonNode(String text, String src) {
         return MessageNode
             .builder()
             .type(Type.EMOTICON)
             .text(text)
             .src(src)
-            .width(width)
-            .height(height)
             .build();
     }
 

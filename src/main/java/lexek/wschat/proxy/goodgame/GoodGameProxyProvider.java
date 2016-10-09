@@ -36,7 +36,7 @@ public class GoodGameProxyProvider extends ProxyProvider {
         @Named("messageId") AtomicLong messsageId,
         HttpClient httpClient
     ) {
-        super("goodgame", true, false, false, ImmutableSet.of("goodgame"), EnumSet.noneOf(ModerationOperation.class));
+        super("goodgame", true, false, false, false, ImmutableSet.of("goodgame"), EnumSet.noneOf(ModerationOperation.class));
         this.notificationService = notificationService;
         this.proxyAuthService = proxyAuthService;
         this.eventLoopGroup = eventLoopGroup;
