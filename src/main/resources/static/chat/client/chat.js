@@ -21,10 +21,6 @@ document.IS_MOBILE = (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera 
 (function() {
     'use strict';
 
-    var glueCallback = angular.noop;
-    document.setGlueCallback = function(callback) {
-        glueCallback = callback;
-    };
     $(document).ready(function () {
         wide = false;
         setSizes();
@@ -32,7 +28,6 @@ document.IS_MOBILE = (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera 
         $(window).resize(function() {
             setSizes();
             $('.tse-scrollable').TrackpadScrollEmulator('recalculate');
-            glueCallback();
         });
     });
 })();

@@ -12,8 +12,9 @@
         };
 
         function link(scope, element) {
-            element.on('load', function () {
+            element.one('load', function () {
                 scope.$apply(function() {
+                    (document.onScroll || angular.noop)();
                     $('.messagesContainer').TrackpadScrollEmulator('recalculate');
                 });
             });

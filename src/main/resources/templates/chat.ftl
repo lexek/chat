@@ -76,7 +76,6 @@
         <script type="text/javascript" src="/vendor/js/angular-relative-date.js"></script>
         <script type="text/javascript" src="/vendor/js/angular-recaptcha.js"></script>
         <script type="text/javascript" src="/vendor/js/bootstrap-colorpicker.js"></script>
-        <script type="text/javascript" src="/vendor/js/perfect-scrollbar.min.js"></script>
         <script type="text/javascript" src="/vendor/js/scrollglue.js"></script>
         <script type="text/javascript" src="/chat/client/mixins/closable.js"></script>
         <script type="text/javascript" src="/chat/client/mixins/pending.js"></script>

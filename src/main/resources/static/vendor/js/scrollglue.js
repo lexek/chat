@@ -5,43 +5,43 @@
  */
 
 // Allow module to be loaded via require when using common js. e.g. npm
-if(typeof module === "object" && module.exports){
+if (typeof module === 'object' && module.exports) {
     module.exports = 'luegg.directives';
 }
 
-(function(angular, undefined){
+(function(angular, undefined) {
     'use strict';
 
-    function createActivationState($parse, attr, scope){
-        function unboundState(initValue){
+    function createActivationState($parse, attr, scope) {
+        function unboundState(initValue) {
             var activated = initValue;
             return {
-                getValue: function(){
+                getValue: function() {
                     return activated;
                 },
-                setValue: function(value){
+                setValue: function(value) {
                     activated = value;
                 }
             };
         }
 
-        function oneWayBindingState(getter, scope){
+        function oneWayBindingState(getter, scope) {
             return {
-                getValue: function(){
+                getValue: function() {
                     return getter(scope);
                 },
-                setValue: function(){}
+                setValue: function() {}
             };
         }
 
-        function twoWayBindingState(getter, setter, scope){
+        function twoWayBindingState(getter, setter, scope) {
             return {
-                getValue: function(){
+                getValue: function() {
                     return getter(scope);
                 },
-                setValue: function(value){
-                    if(value !== getter(scope)){
-                        scope.$apply(function(){
+                setValue: function(value) {
+                    if (value !== getter(scope)) {
+                        scope.$apply(function() {
                             setter(scope, value);
                         });
                     }
@@ -49,9 +49,9 @@ if(typeof module === "object" && module.exports){
             };
         }
 
-        if(attr !== ""){
+        if (attr !== '') {
             var getter = $parse(attr);
-            if(getter.assign !== undefined){
+            if (getter.assign !== undefined) {
                 return twoWayBindingState(getter, getter.assign, scope);
             } else {
                 return oneWayBindingState(getter, scope);
@@ -61,23 +61,34 @@ if(typeof module === "object" && module.exports){
         }
     }
 
-    function createDirective(module, attrName, direction){
-        module.directive(attrName, ['$parse', '$window', '$timeout', function($parse, $window, $timeout){
+    function createDirective(module, attrName, direction) {
+        module.directive(attrName, ['$parse', '$window', '$timeout', function($parse, $window, $timeout) {
             return {
                 priority: 1,
                 restrict: 'A',
-                link: function(scope, $el, attrs){
+                link: function(scope, $el, attrs) {
                     var el = $el[0],
+                        ok = false,
                         activationState = createActivationState($parse, attrs[attrName], scope);
 
                     function scrollIfGlued() {
-                        if(activationState.getValue() && !direction.isAttached(el)){
+                        if (!direction.isAttached(el)) {
+                            console.warn('ka');
+                        }
+
+                        if (activationState.getValue() && !direction.isAttached(el)) {
                             direction.scroll(el);
+                            ok = true;
                         }
                     }
 
-                    function onScroll() {
-                        activationState.setValue(direction.isAttached(el));
+                    function onScroll(ev) {
+                        console.warn(['scroll', ev]);
+                        if (!ok) {
+                            activationState.setValue(direction.isAttached(el));
+                        } else {
+                            ok = false;
+                        }
                     }
 
                     scope.$watch(scrollIfGlued);
@@ -96,44 +107,46 @@ if(typeof module === "object" && module.exports){
                     scope.$on('$destroy', function() {
                         $window.removeEventListener('resize', scrollIfGlued, false);
                     });
+
+                    document.onScroll = scrollIfGlued;
                 }
             };
         }]);
     }
 
     var bottom = {
-        isAttached: function(el){
+        isAttached: function(el) {
             // + 1 catches off by one errors in chrome
             return el.scrollTop + el.clientHeight + 1 >= el.scrollHeight;
         },
-        scroll: function(el){
+        scroll: function(el) {
             el.scrollTop = el.scrollHeight;
         }
     };
 
     var top = {
-        isAttached: function(el){
+        isAttached: function(el) {
             return el.scrollTop <= 1;
         },
-        scroll: function(el){
+        scroll: function(el) {
             el.scrollTop = 0;
         }
     };
 
     var right = {
-        isAttached: function(el){
+        isAttached: function(el) {
             return el.scrollLeft + el.clientWidth + 1 >= el.scrollWidth;
         },
-        scroll: function(el){
+        scroll: function(el) {
             el.scrollLeft = el.scrollWidth;
         }
     };
 
     var left = {
-        isAttached: function(el){
+        isAttached: function(el) {
             return el.scrollLeft <= 1;
         },
-        scroll: function(el){
+        scroll: function(el) {
             el.scrollLeft = 0;
         }
     };
