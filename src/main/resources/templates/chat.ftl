@@ -93,7 +93,8 @@
         <script type="text/javascript" src="/chat/common/message/message_link_service.js"></script>
         <script type="text/javascript" src="/chat/common/message/message_link.js"></script>
         <script type="text/javascript" src="/chat/common/message/message_component.js"></script>
-        <script type="text/javascript" src="/chat/common/message/img_onload.js"></script>
+        <script type="text/javascript" src="/chat/client/utils/utils.module.js"></script>
+        <script type="text/javascript" src="/chat/client/utils/tse_on_load.js"></script>
         <script type="text/javascript" src="/chat/client/services/chat.js"></script>
         <script type="text/javascript" src="/chat/client/services.js"></script>
         <script type="text/javascript" src="/chat/client/twitter.js"></script>
@@ -105,6 +106,8 @@
         <script type="text/javascript" src="/chat/client/ui/profile/profile.js"></script>
         <script type="text/javascript" src="/chat/client/ui/tickets/list.js"></script>
         <script type="text/javascript" src="/chat/client/ui/tickets/compose.js"></script>
+        <script type="text/javascript" src="/chat/client/ui/emoticons/emoticons.module.js"></script>
+        <script type="text/javascript" src="/chat/client/ui/emoticons/emoticons_component.js"></script>
         <script type="text/javascript" src="/chat/common/templates.module.js"></script>
         <script type="text/javascript" src="/chat/client/chat.js"></script>
     <#else>
@@ -121,20 +124,7 @@
 <div id="content" ng-class="{'dark': isDark()}" ng-controller="StyleController">
 
 <script type="text/ng-template" id="emoticons.html">
-    <div style="height: 200px; width:120px; overflow-y: auto; overflow-x: hidden" ng-controller="EmoticonsController">
-        <div
-                ng-repeat="emoticon in ::emoticons | orderBy:'code'"
-                style="display: inline-block; width: 25px; cursor: pointer;"
-                ng-click="addToInput(unescapeCode(emoticon.code))"
-                ng-title="unescapeCode(::emoticon.code)"
-                tooltip="{{::unescapeCode(emoticon.code)}}"
-                >
-            <img
-                    style="max-height: 25px; max-width: 25px; height:auto; width: auto;"
-                    ng-src="/emoticons/{{::emoticon.fileName}}"
-                    />
-        </div>
-    </div>
+    <emoticons close="hideEmoticons()"></emoticons>
 </script>
 
 <script type="text/ng-template" id="help.html">
@@ -710,7 +700,7 @@
                                         <span class="btn btn-default" ng-click="ban()" title="ban"><span class="fa fa-ban"></span></span>
                                         <span class="btn btn-default" ng-click="timeout()" title="time out"><span class="fa fa-clock-o"></span></span>
                                     </span><!--
-                                    --><span ng-if="isMod()" class="mod">M</span><!--
+                                    --><span bo-if="isMod()" class="mod">M</span><!--
                                     --><span ng-if="isAdmin()" class="admin">A</span><!--
                                     --><span ng-if="message.ext" class="ext" tooltip="{{message.extOriginRes}}"
                                              tooltip-trigger="mouseenter" tooltip-placement="right"><span class="fa fa-twitch" style="color: #6441A5"></span></span><!--
@@ -764,10 +754,10 @@
                                 <#if like><div class="like" popover-append-to-body="true" popover-template="'likedTemplate.html'" popover-title="Liked this:" popover-trigger="mouseenter" popover-placement="left">
                                         <span class="likeButton btn btn-link btn-xs" ng-click="like(msg.id_)" ng-class="{likedButton: msg.likes.length &gt; 0}">
                                             <span class="fa fa-heart"></span><!--
-                                            --><span class="likeCount" ng-if="msg.likes.length &gt; 0">&nbsp;{{msg.likes.length}}</span>
+                                            --><span class="likeCount" ng-if="msg.likes.length > 0">&nbsp;{{msg.likes.length}}</span>
                                         </span>
                                 </div></#if>
-                                <message class="userMessageBody" bo-style="{'border-color': message.user.color}" nodes="msg.body" ng-if="!msg.hidden"></message>
+                                <message class="userMessageBody" bo-style="{'border-color': message.user.color}" nodes="::msg.body" ng-if="!msg.hidden"></message>
                                 <a class="userMessageBody" bo-style="{'border-color': message.user.color}" ng-if="msg.hidden" ng-click="msg.hidden=false">[{{'CHAT_MESSAGE_HIDDEN' | translate}}]</a>
                             </div>
                         </div>

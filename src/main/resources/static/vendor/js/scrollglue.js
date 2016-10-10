@@ -72,10 +72,6 @@ if (typeof module === 'object' && module.exports) {
                         activationState = createActivationState($parse, attrs[attrName], scope);
 
                     function scrollIfGlued() {
-                        if (!direction.isAttached(el)) {
-                            console.warn('ka');
-                        }
-
                         if (activationState.getValue() && !direction.isAttached(el)) {
                             direction.scroll(el);
                             ok = true;
@@ -83,7 +79,6 @@ if (typeof module === 'object' && module.exports) {
                     }
 
                     function onScroll(ev) {
-                        console.warn(['scroll', ev]);
                         if (!ok) {
                             activationState.setValue(direction.isAttached(el));
                         } else {

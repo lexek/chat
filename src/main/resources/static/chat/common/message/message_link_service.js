@@ -12,6 +12,7 @@
         };
     }
 
+    /* @ngInject */
     function MessageLinkService($q, $http) {
         var STEAM_APP_REGEXP = /\/app\/([0-9]+).*/;
 

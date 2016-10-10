@@ -433,19 +433,6 @@ var AuthenticationController = function($scope, $modalInstance, chat, action) {
     $(".pls-container").remove();
 };
 
-controlsModule.controller("EmoticonsController", ["$scope", "chatService", function($scope, chat) {
-    $scope.emoticons = chat.emoticons;
-
-    $scope.unescapeCode = function(code) {
-        return code.replace(/\\(.)/, "$1").replace("&lt;", "<").replace("&gt;", ">").replace("&#59;", ";");
-    };
-
-    $scope.addToInput = function(text) {
-        chat.addToInputCallback(text);
-        $scope.hideEmoticons();
-    };
-}]);
-
 var HelpController = function($scope, $modalInstance) {
     $scope.close = function() {
         $modalInstance.dismiss('cancel');

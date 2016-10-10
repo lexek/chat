@@ -113,6 +113,10 @@
             clientPath + '/ui/profile/profile.js',
             clientPath + '/ui/tickets/list.js',
             clientPath + '/ui/tickets/compose.js',
+            clientPath + '/ui/emoticons/**.module.js',
+            clientPath + '/ui/emoticons/**.js',
+            clientPath + '/utils/**.module.js',
+            clientPath + '/utils/**.js',
             commonPath + '**/*.module.js',
             commonPath + '**/*.js',
             clientPath + '/chat.js'

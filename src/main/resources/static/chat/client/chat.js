@@ -47,8 +47,10 @@ document.chatApplication = angular.module('chatApplication', [
     'ngTextcomplete',
     'relativeDate',
     'ngSanitize',
+    'chat.client.utils',
     'chat.ui.profile',
     'chat.ui.tickets',
+    'chat.ui.emoticons',
     'chat.common.message',
     'templates'
 ]);

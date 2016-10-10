@@ -2,7 +2,7 @@
     'use strict';
 
     angular
-        .module('chat.common.message')
+        .module('chat.client.utils')
         .directive('tseOnLoad', tseOnLoad);
 
     function tseOnLoad() {
