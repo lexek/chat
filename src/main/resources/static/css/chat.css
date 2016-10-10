@@ -1036,3 +1036,30 @@ message {
     font-weight: bold;
     vertical-align: bottom;
 }
+
+.emoticon-list {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+.emoticon-option {
+    border-radius: 5px;
+    display: flex;
+    justify-content: space-around;
+    width: 33px;
+    height: 33px;
+    cursor: pointer;
+    text-align: center;
+    flex-direction: column;
+}
+
+.emoticon-option > img {
+    display: block;
+    vertical-align: middle;
+    flex: 0;
+}
+
+.emoticon-option:hover {
+    background-color: rgba(0, 0, 0, .2);
+}

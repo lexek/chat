@@ -1,20 +1,23 @@
 <div style="height: 200px; width:120px; overflow-y: auto; overflow-x: hidden" tse-on-link>
-    <div ng-if="vm.ready">
+    <div ng-if="vm.ready" class="emoticon-list">
         <div ng-if="::vm.error">
             Error.
         </div>
         <div
             ng-if="::!vm.error"
             ng-repeat="emoticon in ::vm.emoticons | orderBy:'code'"
-            style="display: inline-block; width: 25px; cursor: pointer;"
             ng-click="vm.addToInput(emoticon.code)"
             ng-title="::emoticon.code"
             tooltip="{{::emoticon.code}}"
+            tooltip-placement="bottom"
+            class="emoticon-option"
         >
-            <img
-                style="max-height: 25px; max-width: 25px; height:auto; width: auto;"
-                ng-src="/emoticons/{{::emoticon.fileName}}"
-            />
+            <div>
+                <img
+                    style="max-height: 33px; max-width: 33px; height:auto; width: auto;"
+                    ng-src="/emoticons/{{::emoticon.fileName}}"
+                />
+            </div>
         </div>
     </div>
     <div ng-if="!vm.ready">
