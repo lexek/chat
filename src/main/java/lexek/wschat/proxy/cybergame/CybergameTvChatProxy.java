@@ -64,7 +64,7 @@ public class CybergameTvChatProxy extends AbstractProxy {
         EventLoopGroup eventLoopGroup,
         ChannelHandler handler
     ) {
-        URI uri = URI.create("ws://rutony-studio.com:9002/");
+        URI uri = URI.create("ws://138.68.84.97:9002/");
         Bootstrap bootstrap = new Bootstrap();
         bootstrap.group(eventLoopGroup);
         if (Epoll.isAvailable()) {
@@ -119,7 +119,7 @@ public class CybergameTvChatProxy extends AbstractProxy {
                 return;
             }
         }
-        ChannelFuture channelFuture = bootstrap.connect("rutony-studio.com", 9002);
+        ChannelFuture channelFuture = bootstrap.connect("138.68.84.97", 9002);
         channel = channelFuture.channel();
         channelFuture.addListener(future -> {
             if (!future.isSuccess()) {
