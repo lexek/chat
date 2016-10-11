@@ -1,26 +1,30 @@
-<div style="height: 200px; width:120px; overflow-y: auto; overflow-x: hidden" tse-on-link>
-    <div ng-if="vm.ready" class="emoticon-list">
-        <div ng-if="::vm.error">
-            Error.
-        </div>
-        <div
-            ng-if="::!vm.error"
-            ng-repeat="emoticon in ::vm.emoticons | orderBy:'code'"
-            ng-click="vm.addToInput(emoticon.code)"
-            ng-title="::emoticon.code"
-            tooltip="{{::emoticon.code}}"
-            tooltip-placement="bottom"
-            class="emoticon-option"
-        >
-            <div>
-                <img
-                    style="max-height: 33px; max-width: 33px; height:auto; width: auto;"
-                    ng-src="/emoticons/{{::emoticon.fileName}}"
-                />
+<tse>
+    <div>
+        <div ng-if="vm.ready" class="emoticon-list">
+            <div ng-if="::vm.error">
+                Error.
+            </div>
+            <div
+                ng-if="::!vm.error"
+                ng-repeat="emoticon in ::vm.emoticons | orderBy:'code'"
+                ng-click="vm.addToInput(emoticon.code)"
+                ng-title="::emoticon.code"
+                tooltip="{{::emoticon.code}}"
+                tooltip-placement="bottom"
+                tooltip-append-to-body="true"
+                class="emoticon-option"
+            >
+                <div>
+                    <img
+                        style="max-height: 33px; max-width: 33px; height:auto; width: auto;"
+                        ng-src="/emoticons/{{::emoticon.fileName}}"
+                        tse-recalculate-on-load
+                    />
+                </div>
             </div>
         </div>
+        <div ng-if="!vm.ready">
+            Loading...
+        </div>
     </div>
-    <div ng-if="!vm.ready">
-        Loading...
-    </div>
-</div>
+</tse>

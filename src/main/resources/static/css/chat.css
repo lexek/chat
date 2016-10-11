@@ -1064,3 +1064,14 @@ message {
 .emoticon-option:hover {
     background-color: rgba(0, 0, 0, .2);
 }
+
+emoticons {
+    height: 200px;
+    width: 140px;
+    display: block;
+    overflow: hidden;
+}
+
+.popover-content {
+    padding: 2px 3px;
+}

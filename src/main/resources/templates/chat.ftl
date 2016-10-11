@@ -94,7 +94,7 @@
         <script type="text/javascript" src="/chat/common/message/message_link.js"></script>
         <script type="text/javascript" src="/chat/common/message/message_component.js"></script>
         <script type="text/javascript" src="/chat/client/utils/utils.module.js"></script>
-        <script type="text/javascript" src="/chat/client/utils/tse_on_load.js"></script>
+        <script type="text/javascript" src="/chat/client/utils/tse.js"></script>
         <script type="text/javascript" src="/chat/client/services/chat.js"></script>
         <script type="text/javascript" src="/chat/client/services.js"></script>
         <script type="text/javascript" src="/chat/client/twitter.js"></script>
