@@ -689,7 +689,7 @@
                                     </span>
                                 </#if>
                                 <span bo-if="!$first">&gt; </span>
-                                <span class="userMessageBody" ng-if="!msg.hidden" ng-bind-html="msg.body"></span>
+                                <message class="userMessageBody" ng-if="!msg.hidden" nodes="::msg.body"></message>
                                 <a class="userMessageBody" ng-if="msg.hidden" ng-click="msg.hidden=false">[{{'CHAT_MESSAGE_HIDDEN' | translate}}]</a>
                             </span>
                         </div>
@@ -713,7 +713,7 @@
                                     </span>
                                 </#if><!--
                          --><span class="username" ng-click="addToInput($event)" bo-bind="message.user.name | inflector:'capital'"></span>
-                            <span class="userMessageBody" ng-if="!message.hidden" ng-bind-html="message.body"></span>
+                            <message class="userMessageBody" ng-if="!message.hidden" nodes="::message.body"></message>
                             <a class="userMessageBody" ng-if="message.hidden" ng-click="message.hidden=false">[{{'CHAT_MESSAGE_HIDDEN' | translate}}]</a>
                         </div>
                         <div class="alert-msg alert-msg-danger" bo-if="message.type === 'ERROR'">
