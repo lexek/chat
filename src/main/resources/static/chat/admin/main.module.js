@@ -1336,7 +1336,7 @@ var TopicController = function($scope, $http) {
 AdminApplication.controller("TopicController", ["$scope", "$http", TopicController]);
 
 /* @ngInject */
-var RoomController = function($scope, $location, $http, $sce, $modal, alert, title) {
+var RoomController = function($scope, $location, $http, $sce, $modal, $interval, alert, title) {
     $scope.messages = [];
     $scope.journal = [];
     $scope.proxies = [];
@@ -1353,6 +1353,12 @@ var RoomController = function($scope, $location, $http, $sce, $modal, alert, tit
             $scope.proxies = data;
         });
     };
+
+    var stopProxyUpdate = $interval(loadProxies, 5000);
+
+    $scope.$on('$destroy', function () {
+        $interval.cancel(stopProxyUpdate);
+    });
 
     var loadPage = function() {
         $scope.messages.length = 0;
