@@ -656,7 +656,7 @@
 
 <div class="chat" ng-controller="MessagesController">
     <div class="messagesContainer tse-scrollable" style="width: 100%; height: 100%">
-        <div class="tse-scroll-content" scroll-glue="">
+        <div class="tse-scroll-content" scroll-glue="<#if stream>true</#if>">
             <div class="tse-content">
                 <div ng-if="compact()" class="messages compact " ng-cloak="">
                     <div bindonce="" ng-repeat="message in messages[getActiveRoom()] track by message.internalId" class="messageBody" ng-controller="MessageController">
