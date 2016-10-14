@@ -41,8 +41,10 @@ public class GoodGameChatProxy extends AbstractProxy {
     private final Room room;
     private final Bootstrap bootstrap;
     private final String userId;
+    private final GoodGameApiClient goodGameApiClient;
+    private final Long authId;
     private volatile Channel channel;
-    private String channelName;
+    private Long channelId;
 
     public GoodGameChatProxy(
         NotificationService notificationService,
@@ -54,7 +56,8 @@ public class GoodGameChatProxy extends AbstractProxy {
         Room room,
         String remoteRoom,
         String userId,
-        CredentialsProvider credentialsProvider
+        GoodGameApiClient goodGameApiClient,
+        Long authId
     ) {
         super(eventLoopGroup, notificationService, provider, id, remoteRoom);
 
@@ -62,13 +65,13 @@ public class GoodGameChatProxy extends AbstractProxy {
         this.messageId = messageId;
         this.room = room;
         this.userId = userId;
-        this.bootstrap = createBootstrap(eventLoopGroup, remoteRoom, credentialsProvider, new Handler());
+        this.goodGameApiClient = goodGameApiClient;
+        this.authId = authId;
+        this.bootstrap = createBootstrap(eventLoopGroup, new Handler());
     }
 
     private static Bootstrap createBootstrap(
         EventLoopGroup eventLoopGroup,
-        String channelName,
-        CredentialsProvider tokenProvider,
         Handler handler
     ) {
         URI uri = URI.create("ws://chat.goodgame.ru:8081/chat/websocket");
@@ -82,7 +85,6 @@ public class GoodGameChatProxy extends AbstractProxy {
         bootstrap.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
         JsonCodec jsonCodec = new JsonCodec();
         GoodGameCodec goodGameCodec = new GoodGameCodec();
-        GoodGameProtocolHandler goodGameProtocolHandler = new GoodGameProtocolHandler(channelName, tokenProvider);
         bootstrap.handler(new ChannelInitializer<SocketChannel>() {
             @Override
             public void initChannel(final SocketChannel c) throws Exception {
@@ -93,7 +95,6 @@ public class GoodGameChatProxy extends AbstractProxy {
                 pipeline.addLast(new WebSocketClientProtocolHandler(uri, WebSocketVersion.V13, null, false, null, 4096));
                 pipeline.addLast(jsonCodec);
                 pipeline.addLast(goodGameCodec);
-                pipeline.addLast(goodGameProtocolHandler);
                 pipeline.addLast(handler);
             }
         });
@@ -105,7 +106,7 @@ public class GoodGameChatProxy extends AbstractProxy {
         if (type == ModerationOperation.BAN) {
             String id = idCache.getIfPresent(name);
             if (id != null && !id.equals(userId)) {
-                channel.writeAndFlush(new GoodGameEvent(GoodGameEventType.BAN, remoteRoom(), null, null, null, id));
+                channel.writeAndFlush(new GoodGameEvent(GoodGameEventType.BAN, String.valueOf(channelId), null, null, null, id));
             }
         } else {
             throw new UnsupportedOperationException();
@@ -129,6 +130,14 @@ public class GoodGameChatProxy extends AbstractProxy {
 
     @Override
     protected void connect() {
+        if (channelId == null) {
+            try {
+                channelId = goodGameApiClient.getChannelId(remoteRoom());
+            } catch (Exception e) {
+                logger.error("unable to get channel id", e);
+                fail("unable to get channel id");
+            }
+        }
         ChannelFuture channelFuture = bootstrap.connect(HOST_NAME, 8081);
         channel = channelFuture.channel();
         channelFuture.addListener(future -> {
@@ -147,6 +156,9 @@ public class GoodGameChatProxy extends AbstractProxy {
 
     @ChannelHandler.Sharable
     private class Handler extends SimpleChannelInboundHandler<GoodGameEvent> {
+        private static final String PROTOCOL_VERSION = "1.1";
+        private String lastUser;
+
         @Override
         public void channelActive(ChannelHandlerContext ctx) throws Exception {
             logger.info("connected");
@@ -176,37 +188,65 @@ public class GoodGameChatProxy extends AbstractProxy {
 
         @Override
         protected void channelRead0(ChannelHandlerContext ctx, GoodGameEvent msg) throws Exception {
-            if (msg.getType() == GoodGameEventType.FAILED_AUTH) {
-                fail("failed login");
-                channel.close();
-            } else if (msg.getType() == GoodGameEventType.FAILED_JOIN) {
-                fail("failed join");
-                channel.close();
-            } else if (msg.getType() == GoodGameEventType.BAD_RIGHTS) {
-                fail("bad rights");
-                channel.close();
-            } else if (msg.getType() == GoodGameEventType.SUCCESS_JOIN) {
-                channelName = msg.getChannelName();
-                started();
-            } else if (msg.getType() == GoodGameEventType.MESSAGE) {
-                idCache.put(msg.getUser(), msg.getId());
-                Message message = Message.extMessage(
-                    room.getName(),
-                    msg.getUser(),
-                    LocalRole.USER,
-                    GlobalRole.USER,
-                    Colors.generateColor(msg.getUser()),
-                    messageId.getAndIncrement(),
-                    System.currentTimeMillis(),
-                    ImmutableList.of(MessageNode.textNode(msg.getText())),
-                    "goodgame",
-                    msg.getChannel(),
-                    channelName
-                );
-                messageBroadcaster.submitMessage(message, room.FILTER);
-            } else if (msg.getType() == GoodGameEventType.USER_BAN) {
-                Message message = Message.proxyClear("#main", "goodgame", "GoodGame", msg.getUser());
-                messageBroadcaster.submitMessage(message, room.FILTER);
+            switch (msg.getType()) {
+                case WELCOME:
+                    if (msg.getText().equals(PROTOCOL_VERSION)) {
+                        logger.debug("protocol versions match");
+                    } else {
+                        logger.warn("different protocol version");
+                    }
+                    String password = null;
+                    String name = null;
+                    if (authId != null) {
+                        Credentials credentials = goodGameApiClient.getCredentials(authId);
+                        name = credentials.getUserId();
+                        password = credentials.getToken();
+                    }
+                    lastUser = name;
+                    ctx.writeAndFlush(new GoodGameEvent(GoodGameEventType.AUTH, null, null, password, name, null));
+                    break;
+                case SUCCESS_AUTH:
+                    if (lastUser == null || msg.getUser().equals(lastUser)) {
+                        ctx.writeAndFlush(new GoodGameEvent(GoodGameEventType.JOIN, String.valueOf(channelId), null, null, null, null));
+                    } else {
+                        fail("failed login");
+                    }
+                    break;
+                case SUCCESS_JOIN:
+                    started();
+                    break;
+                case FAILED_JOIN:
+                    fail("failed join");
+                    break;
+                case BAD_RIGHTS:
+                    fail("bad rights");
+                    break;
+                case MESSAGE:
+                    idCache.put(msg.getUser(), msg.getId());
+                    Message message = Message.extMessage(
+                        room.getName(),
+                        msg.getUser(),
+                        LocalRole.USER,
+                        GlobalRole.USER,
+                        Colors.generateColor(msg.getUser()),
+                        messageId.getAndIncrement(),
+                        System.currentTimeMillis(),
+                        ImmutableList.of(MessageNode.textNode(msg.getText())),
+                        "goodgame",
+                        channelId.toString(),
+                        remoteRoom()
+                    );
+                    messageBroadcaster.submitMessage(message, room.FILTER);
+                    break;
+                case USER_BAN:
+                    messageBroadcaster.submitMessage(Message.proxyClear("#main", "goodgame", "GoodGame", msg.getUser()), room.FILTER);
+                    break;
+                case ERROR:
+                    logger.debug("error {}", msg.getText());
+                    break;
+                default:
+                    logger.debug("unsupported message type {}", msg.getType());
+                    break;
             }
         }
 

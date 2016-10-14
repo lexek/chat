@@ -10,7 +10,6 @@ import lexek.wschat.proxy.ProxyAuthService;
 import lexek.wschat.proxy.ProxyProvider;
 import lexek.wschat.security.social.SocialProfile;
 import lexek.wschat.services.NotificationService;
-import org.apache.http.client.HttpClient;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
@@ -25,7 +24,7 @@ public class GoodGameProxyProvider extends ProxyProvider {
     private final EventLoopGroup eventLoopGroup;
     private final MessageBroadcaster messageBroadcaster;
     private final AtomicLong messsageId;
-    private final HttpClient httpClient;
+    private final GoodGameApiClient apiClient;
 
     @Inject
     public GoodGameProxyProvider(
@@ -34,7 +33,7 @@ public class GoodGameProxyProvider extends ProxyProvider {
         @Named("proxyEventLoopGroup") EventLoopGroup eventLoopGroup,
         MessageBroadcaster messageBroadcaster,
         @Named("messageId") AtomicLong messsageId,
-        HttpClient httpClient
+        GoodGameApiClient apiClient
     ) {
         super("goodgame", true, false, false, false, ImmutableSet.of("goodgame"), EnumSet.noneOf(ModerationOperation.class));
         this.notificationService = notificationService;
@@ -42,15 +41,13 @@ public class GoodGameProxyProvider extends ProxyProvider {
         this.eventLoopGroup = eventLoopGroup;
         this.messageBroadcaster = messageBroadcaster;
         this.messsageId = messsageId;
-        this.httpClient = httpClient;
+        this.apiClient = apiClient;
     }
 
     @Override
     public Proxy newProxy(long id, Room room, String remoteRoom, Long userAuthId, boolean outbound) {
-        CredentialsProvider credentialsProvider = null;
         String userId = null;
         if (userAuthId != null) {
-            credentialsProvider = new CredentialsProvider(httpClient, proxyAuthService, userAuthId);
             SocialProfile profile = proxyAuthService.getProfile(userAuthId);
             if (profile != null) {
                 userId = profile.getId();
@@ -66,12 +63,17 @@ public class GoodGameProxyProvider extends ProxyProvider {
             room,
             remoteRoom,
             userId,
-            credentialsProvider
+            apiClient,
+            userAuthId
         );
     }
 
     @Override
     public boolean validateRemoteRoom(String remoteRoom) {
-        return true;
+        try {
+            return apiClient.getChannelId(remoteRoom) != null;
+        } catch (Exception e) {
+            return false;
+        }
     }
 }
