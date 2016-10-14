@@ -27,6 +27,11 @@ import lexek.wschat.chat.msg.MessageNode;
 import lexek.wschat.proxy.*;
 import lexek.wschat.services.NotificationService;
 import lexek.wschat.util.Colors;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.nodes.Node;
+import org.jsoup.nodes.TextNode;
 
 import java.io.IOException;
 import java.net.URI;
@@ -228,9 +233,6 @@ public class GoodGameChatProxy extends AbstractProxy {
                     break;
                 case MESSAGE:
                     idCache.put(msg.getUser(), msg.getId());
-                    List<MessageNode> body = new LinkedList<>();
-                    body.add(MessageNode.textNode(msg.getText()));
-                    messageProcessingService.processMessage(body, true);
                     Message message = Message.extMessage(
                         room.getName(),
                         msg.getUser(),
@@ -239,7 +241,7 @@ public class GoodGameChatProxy extends AbstractProxy {
                         Colors.generateColor(msg.getUser()),
                         messageId.getAndIncrement(),
                         System.currentTimeMillis(),
-                        body,
+                        parseMessage(msg.getText()),
                         "goodgame",
                         channelId.toString(),
                         remoteRoom()
@@ -269,5 +271,27 @@ public class GoodGameChatProxy extends AbstractProxy {
                 }
             }
         }
+    }
+
+    private List<MessageNode> parseMessage(String text) {
+        List<MessageNode> body = new LinkedList<>();
+
+        Element element = Jsoup.parseBodyFragment(text).body();
+        for (Node node : element.childNodes()) {
+            if (node instanceof TextNode) {
+                body.add(MessageNode.textNode(((TextNode) node).text()));
+            } else if (node instanceof Element) {
+                Element e = ((Element) node);
+                if ("a".equals(e.tagName())) {
+                    body.add(MessageNode.urlNode(e.attr("href")));
+                } else {
+                    logger.warn("unknown tag {}", e.tagName());
+                }
+            } else {
+                logger.warn("unknown node {}", node);
+            }
+        }
+        messageProcessingService.processMessage(body, true);
+        return body;
     }
 }
