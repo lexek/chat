@@ -27,8 +27,6 @@ public class DefaultMessageProcessingService implements MessageProcessingService
         processors
             .stream()
             .filter(processor -> isRoot || processor.handlesChildren())
-            .forEach(processor -> {
-                processor.process(message);
-            });
+            .forEach(processor -> processor.process(message));
     }
 }

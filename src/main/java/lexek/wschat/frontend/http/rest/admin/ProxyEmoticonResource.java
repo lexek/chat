@@ -25,7 +25,7 @@ public class ProxyEmoticonResource {
     @POST
     public void loadEmoticons(
         @PathParam("providerName") @NotEmpty String providerName
-    ) throws IOException {
+    ) throws Exception {
         proxyEmoticonService.loadEmoticons(providerName);
     }
 }

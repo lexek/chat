@@ -1,15 +1,20 @@
 package lexek.wschat.proxy.goodgame;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.net.HttpHeaders;
 import lexek.wschat.proxy.ProxyAuthService;
+import lexek.wschat.proxy.ProxyEmoticonDescriptor;
 import lexek.wschat.util.JsonResponseHandler;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.utils.URIBuilder;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 class GoodGameApiClient {
@@ -38,5 +43,34 @@ class GoodGameApiClient {
         request.setHeader(HttpHeaders.ACCEPT, "application/json");
         JsonNode response = httpClient.execute(request, JsonResponseHandler.INSTANCE);
         return response.get("channel").get("id").asLong();
+    }
+
+    public List<ProxyEmoticonDescriptor> getEmoticons() throws Exception {
+        int page = 0;
+        int totalPages = 1;
+        List<ProxyEmoticonDescriptor> results = new ArrayList<>();
+        while (page < totalPages) {
+            page++;
+            URIBuilder uriBuilder = new URIBuilder("http://api2.goodgame.ru/smiles");
+            uriBuilder.addParameter("page", String.valueOf(page));
+            HttpGet request = new HttpGet(uriBuilder.build());
+            request.setHeader(HttpHeaders.ACCEPT, "application/json");
+            JsonNode response = httpClient.execute(request, JsonResponseHandler.INSTANCE);
+            totalPages = response.get("page_count").asInt();
+            for (JsonNode emoticonNode : response.get("_embedded").get("smiles")) {
+                results.add(new ProxyEmoticonDescriptor(
+                    ':' + emoticonNode.get("key").asText() + ':',
+                    emoticonNode.get("urls").get("big").asText(),
+                    emoticonNode.get("key").asText() + ".png",
+                    ImmutableMap.of(
+                        "donate_lvl", emoticonNode.get("donate_lvl").asLong(),
+                        "is_premium", emoticonNode.get("is_premium").asBoolean(),
+                        "is_paid", emoticonNode.get("is_paid").asBoolean(),
+                        "channel_id", emoticonNode.get("is_paid").asText()
+                    )
+                ));
+            }
+        }
+        return results;
     }
 }

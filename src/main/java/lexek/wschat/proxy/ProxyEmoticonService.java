@@ -15,7 +15,6 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
@@ -25,6 +24,7 @@ public class ProxyEmoticonService {
     private final Logger logger = LoggerFactory.getLogger(ProxyEmoticonService.class);
     private final ProxyManager proxyManager;
     private final ProxyEmoticonDao proxyEmoticonDao;
+    private final ProxyEmoticonProviderFactory proxyEmoticonProviderFactory;
     private final File dataDir;
     private final HttpClient httpClient;
 
@@ -32,20 +32,17 @@ public class ProxyEmoticonService {
     public ProxyEmoticonService(
         ProxyManager proxyManager,
         ProxyEmoticonDao proxyEmoticonDao,
-        @Named("core.dataDirectory") File dataDir,
+        ProxyEmoticonProviderFactory proxyEmoticonProviderFactory, @Named("core.dataDirectory") File dataDir,
         HttpClient httpClient
     ) {
         this.proxyManager = proxyManager;
         this.proxyEmoticonDao = proxyEmoticonDao;
+        this.proxyEmoticonProviderFactory = proxyEmoticonProviderFactory;
         this.dataDir = dataDir;
         this.httpClient = httpClient;
     }
 
-    public List<ProxyEmoticon> getEmoticons(String service) {
-        return proxyEmoticonDao.getEmoticons(service);
-    }
-
-    public void loadEmoticons(String providerName) throws IOException {
+    public void loadEmoticons(String providerName) throws Exception {
         ProxyProvider provider = proxyManager.getProvider(providerName);
         List<ProxyEmoticonDescriptor> proxyEmoticons = provider.fetchEmoticonDescriptors();
 
@@ -83,16 +80,19 @@ public class ProxyEmoticonService {
                     }
                 }
 
-                BufferedImage image = ImageIO.read(file);
-                int width = image.getWidth();
-                int height = image.getHeight();
-                proxyEmoticonDao.saveEmoticon(
-                    providerName,
-                    new ProxyEmoticon(null, emoticon.getCode(), fileName, height, width)
-                );
+                if (file.exists()) {
+                    BufferedImage image = ImageIO.read(file);
+                    int width = image.getWidth();
+                    int height = image.getHeight();
+                    proxyEmoticonDao.saveEmoticon(
+                        providerName,
+                        new ProxyEmoticon(null, emoticon.getCode(), fileName, height, width)
+                    );
+                }
             } catch (Exception e) {
                 logger.error("unable to load emoticon", e);
             }
         }
+        proxyEmoticonProviderFactory.flush(providerName);
     }
 }

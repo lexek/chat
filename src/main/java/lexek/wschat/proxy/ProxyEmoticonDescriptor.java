@@ -6,9 +6,9 @@ public class ProxyEmoticonDescriptor {
     private final String code;
     private final String url;
     private final String fileName;
-    private final Map<Key, Object> extra;
+    private final Map<String, Object> extra;
 
-    public ProxyEmoticonDescriptor(String code, String url, String fileName, Map<Key, Object> extra) {
+    public ProxyEmoticonDescriptor(String code, String url, String fileName, Map<String, Object> extra) {
         this.code = code;
         this.url = url;
         this.fileName = fileName;
@@ -27,15 +27,7 @@ public class ProxyEmoticonDescriptor {
         return fileName;
     }
 
-    public Map<Key, Object> getExtra() {
+    public Map<String, Object> getExtra() {
         return extra;
-    }
-
-    public <T> T extra(Key<T> key) {
-        return (T) extra.get(key);
-    }
-
-    public class Key<T> {
-
     }
 }

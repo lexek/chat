@@ -8,10 +8,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class EmoticonMessageProcessor implements MessageProcessor {
-    private final EmoticonProvider<Emoticon> emoticonProvider;
+    private final EmoticonProvider<? extends Emoticon> emoticonProvider;
     private final String emoticonRoot;
 
-    public EmoticonMessageProcessor(EmoticonProvider<Emoticon> emoticonProvider, String emoticonRoot) {
+    public EmoticonMessageProcessor(EmoticonProvider<? extends Emoticon> emoticonProvider, String emoticonRoot) {
         this.emoticonProvider = emoticonProvider;
         this.emoticonRoot = emoticonRoot;
     }

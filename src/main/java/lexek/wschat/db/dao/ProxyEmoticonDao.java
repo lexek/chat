@@ -19,7 +19,10 @@ public class ProxyEmoticonDao {
     }
 
     public List<ProxyEmoticon> getEmoticons(String service) {
-        return null;
+        return ctx
+            .selectFrom(PROXY_EMOTICON)
+            .where(PROXY_EMOTICON.PROVIDER.eq(service))
+            .fetchInto(ProxyEmoticon.class);
     }
 
     public void saveEmoticon(String provider, ProxyEmoticon emoticon) {
@@ -30,6 +33,8 @@ public class ProxyEmoticonDao {
                 PROXY_EMOTICON.WIDTH, PROXY_EMOTICON.HEIGHT
             )
             .values(provider, emoticon.getCode(), emoticon.getFileName(), null, emoticon.getWidth(), emoticon.getHeight())
+            .onDuplicateKeyUpdate()
+            .set(PROXY_EMOTICON.FILE_NAME, emoticon.getFileName())//todo: update extra too
             .execute();
     }
 }

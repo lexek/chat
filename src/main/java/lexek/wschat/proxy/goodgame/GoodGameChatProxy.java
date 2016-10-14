@@ -2,7 +2,6 @@ package lexek.wschat.proxy.goodgame;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.google.common.collect.ImmutableList;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.*;
@@ -23,6 +22,7 @@ import lexek.wschat.chat.Room;
 import lexek.wschat.chat.model.GlobalRole;
 import lexek.wschat.chat.model.LocalRole;
 import lexek.wschat.chat.model.Message;
+import lexek.wschat.chat.msg.DefaultMessageProcessingService;
 import lexek.wschat.chat.msg.MessageNode;
 import lexek.wschat.proxy.*;
 import lexek.wschat.services.NotificationService;
@@ -30,12 +30,15 @@ import lexek.wschat.util.Colors;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class GoodGameChatProxy extends AbstractProxy {
     private static final String HOST_NAME = "chat.goodgame.ru";
     private final Cache<String, String> idCache = CacheBuilder.newBuilder().maximumSize(100).build();
+    private final DefaultMessageProcessingService messageProcessingService;
     private final MessageBroadcaster messageBroadcaster;
     private final AtomicLong messageId;
     private final Room room;
@@ -47,6 +50,7 @@ public class GoodGameChatProxy extends AbstractProxy {
     private Long channelId;
 
     public GoodGameChatProxy(
+        DefaultMessageProcessingService messageProcessingService,
         NotificationService notificationService,
         MessageBroadcaster messageBroadcaster,
         EventLoopGroup eventLoopGroup,
@@ -60,6 +64,7 @@ public class GoodGameChatProxy extends AbstractProxy {
         Long authId
     ) {
         super(eventLoopGroup, notificationService, provider, id, remoteRoom);
+        this.messageProcessingService = messageProcessingService;
 
         this.messageBroadcaster = messageBroadcaster;
         this.messageId = messageId;
@@ -223,6 +228,9 @@ public class GoodGameChatProxy extends AbstractProxy {
                     break;
                 case MESSAGE:
                     idCache.put(msg.getUser(), msg.getId());
+                    List<MessageNode> body = new LinkedList<>();
+                    body.add(MessageNode.textNode(msg.getText()));
+                    messageProcessingService.processMessage(body, true);
                     Message message = Message.extMessage(
                         room.getName(),
                         msg.getUser(),
@@ -231,7 +239,7 @@ public class GoodGameChatProxy extends AbstractProxy {
                         Colors.generateColor(msg.getUser()),
                         messageId.getAndIncrement(),
                         System.currentTimeMillis(),
-                        ImmutableList.of(MessageNode.textNode(msg.getText())),
+                        body,
                         "goodgame",
                         channelId.toString(),
                         remoteRoom()

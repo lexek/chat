@@ -106,7 +106,7 @@ public class TwitchTvMessageDecoder extends MessageToMessageDecoder<String> {
                 for (String indexPair : e[1].split(",")) {
                     String[] indexes = indexPair.split("-");
                     int startIndex = Integer.parseInt(indexes[0]);
-                    int endIndex = Integer.parseInt(indexes[1])+1;
+                    int endIndex = Integer.parseInt(indexes[1]) + 1;
                     emotes.add(new TwitchEmote(id, startIndex, endIndex));
                 }
             }

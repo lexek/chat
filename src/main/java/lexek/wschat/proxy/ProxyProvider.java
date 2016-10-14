@@ -1,10 +1,8 @@
 package lexek.wschat.proxy;
 
 import lexek.wschat.chat.Room;
-import lexek.wschat.db.model.ProxyEmoticon;
 import org.jvnet.hk2.annotations.Contract;
 
-import java.io.IOException;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
@@ -73,7 +71,7 @@ public abstract class ProxyProvider {
 
     public abstract boolean validateRemoteRoom(String remoteRoom);
 
-    public List<ProxyEmoticonDescriptor> fetchEmoticonDescriptors() throws IOException {
+    public List<ProxyEmoticonDescriptor> fetchEmoticonDescriptors() throws Exception {
         throw new UnsupportedOperationException();
     }
 
