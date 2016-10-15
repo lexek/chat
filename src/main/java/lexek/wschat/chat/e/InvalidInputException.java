@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableMap;
 
 import java.util.Map;
 
-@Deprecated
 public class InvalidInputException extends DomainException {
     private final String name;
     private final String message;
