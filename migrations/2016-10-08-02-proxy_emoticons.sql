@@ -8,4 +8,8 @@ CREATE TABLE `proxy_emoticon` (
   `extra`     TEXT         NULL,
   PRIMARY KEY (`id`),
   UNIQUE INDEX `provider_file_name` (`provider`, `file_name`)
-)
+);
+
+ALTER TABLE `proxy_emoticon`
+  DROP COLUMN `width`,
+  DROP COLUMN `height`;

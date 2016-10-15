@@ -1,5 +1,7 @@
 package lexek.wschat.db.dao;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lexek.wschat.chat.e.InternalErrorException;
 import lexek.wschat.db.model.ProxyEmoticon;
 import org.jooq.DSLContext;
 import org.jvnet.hk2.annotations.Service;
@@ -11,6 +13,7 @@ import static lexek.wschat.db.jooq.tables.ProxyEmoticon.PROXY_EMOTICON;
 
 @Service
 public class ProxyEmoticonDao {
+    private final ObjectMapper objectMapper = new ObjectMapper();
     private final DSLContext ctx;
 
     @Inject
@@ -26,15 +29,20 @@ public class ProxyEmoticonDao {
     }
 
     public void saveEmoticon(String provider, ProxyEmoticon emoticon) {
-        ctx
-            .insertInto(PROXY_EMOTICON)
-            .columns(
-                PROXY_EMOTICON.PROVIDER, PROXY_EMOTICON.CODE, PROXY_EMOTICON.FILE_NAME, PROXY_EMOTICON.EXTRA,
-                PROXY_EMOTICON.WIDTH, PROXY_EMOTICON.HEIGHT
-            )
-            .values(provider, emoticon.getCode(), emoticon.getFileName(), null, emoticon.getWidth(), emoticon.getHeight())
-            .onDuplicateKeyUpdate()
-            .set(PROXY_EMOTICON.FILE_NAME, emoticon.getFileName())//todo: update extra too
-            .execute();
+        try {
+            String serializedExtra = objectMapper.writeValueAsString(emoticon.getExtra());
+            ctx
+                .insertInto(PROXY_EMOTICON)
+                .columns(
+                    PROXY_EMOTICON.PROVIDER, PROXY_EMOTICON.CODE, PROXY_EMOTICON.FILE_NAME, PROXY_EMOTICON.EXTRA
+                )
+                .values(provider, emoticon.getCode(), emoticon.getFileName(), serializedExtra)
+                .onDuplicateKeyUpdate()
+                .set(PROXY_EMOTICON.FILE_NAME, emoticon.getFileName())
+                .set(PROXY_EMOTICON.EXTRA, serializedExtra)
+                .execute();
+        } catch (Exception e) {
+            throw new InternalErrorException(e);
+        }
     }
 }

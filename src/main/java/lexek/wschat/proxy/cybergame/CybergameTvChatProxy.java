@@ -3,7 +3,6 @@ package lexek.wschat.proxy.cybergame;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.collect.ImmutableList;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.*;
@@ -35,6 +34,8 @@ import lexek.wschat.util.Colors;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -162,9 +163,19 @@ public class CybergameTvChatProxy extends AbstractProxy {
             JsonNode data = message.getData();
             if (message.getType().equals("msg")) {
                 String name = data.get("nickname").asText();
-                StringBuilder messageBuilder = new StringBuilder();
+                List<MessageNode> messageBody = new ArrayList<>();
                 for (JsonNode messageNode : data.get("message")) {
-                    messageBuilder.append(messageNode.get("text").asText());
+                    String type = messageNode.get("type").asText();
+                    String text = messageNode.get("text").asText();
+                    if ("emote".equals(type)) {
+                        String image = messageNode.get("image").asText();
+                        if (image.endsWith(".svg")) {
+                            image = image.substring(0, image.length() - 4) + ".png";
+                        }
+                        messageBody.add(MessageNode.emoticonNode(text, "/emoticons/cybergame/" + image));
+                    } else {
+                        messageBody.add(MessageNode.textNode(text));
+                    }
                 }
                 Message chatMessage = Message.extMessage(
                     room.getName(),
@@ -174,7 +185,7 @@ public class CybergameTvChatProxy extends AbstractProxy {
                     Colors.generateColor(name),
                     messageId.getAndIncrement(),
                     System.currentTimeMillis(),
-                    ImmutableList.of(MessageNode.textNode(messageBuilder.toString())),
+                    messageBody,
                     "cybergame",
                     channelId,
                     remoteRoom()

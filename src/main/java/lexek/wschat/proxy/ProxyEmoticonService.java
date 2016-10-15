@@ -1,7 +1,12 @@
 package lexek.wschat.proxy;
 
+import lexek.wschat.chat.e.InvalidInputException;
 import lexek.wschat.db.dao.ProxyEmoticonDao;
 import lexek.wschat.db.model.ProxyEmoticon;
+import org.apache.batik.transcoder.SVGAbstractTranscoder;
+import org.apache.batik.transcoder.TranscoderInput;
+import org.apache.batik.transcoder.TranscoderOutput;
+import org.apache.batik.transcoder.image.PNGTranscoder;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
@@ -10,13 +15,12 @@ import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.imageio.ImageIO;
 import javax.inject.Inject;
 import javax.inject.Named;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.StandardOpenOption;
 import java.util.List;
 
 @Service
@@ -44,6 +48,9 @@ public class ProxyEmoticonService {
 
     public void loadEmoticons(String providerName) throws Exception {
         ProxyProvider provider = proxyManager.getProvider(providerName);
+        if (!provider.isSupportsEmoticons()) {
+            throw new InvalidInputException("provider", "provider doesn't support emoticon loading");
+        }
         List<ProxyEmoticonDescriptor> proxyEmoticons = provider.fetchEmoticonDescriptors();
 
         File basePath = new File(
@@ -68,6 +75,9 @@ public class ProxyEmoticonService {
                     try {
                         int statusCode = response.getStatusLine().getStatusCode();
                         if (statusCode == 200) {
+                            if (file.getParentFile().mkdirs()) {
+                                logger.info("created missing directories for {}", file);
+                            }
                             Files.copy(response.getEntity().getContent(), file.toPath(), StandardCopyOption.REPLACE_EXISTING);
                         } else {
                             logger.warn(
@@ -80,13 +90,30 @@ public class ProxyEmoticonService {
                     }
                 }
 
+                if (fileName.endsWith(".svg")) {
+                    int width = (Integer) emoticon.getExtra().get("width");
+                    int height = (Integer) emoticon.getExtra().get("height");
+                    PNGTranscoder transcoder = new PNGTranscoder();
+                    transcoder.addTranscodingHint(SVGAbstractTranscoder.KEY_WIDTH, (float) width);
+                    transcoder.addTranscodingHint(SVGAbstractTranscoder.KEY_HEIGHT, (float) height);
+                    transcoder.addTranscodingHint(SVGAbstractTranscoder.KEY_ALLOWED_SCRIPT_TYPES, "");
+                    transcoder.addTranscodingHint(SVGAbstractTranscoder.KEY_CONSTRAIN_SCRIPT_ORIGIN, false);
+
+                    String newFileName = fileName.substring(0, fileName.length() - 4) + ".png";
+                    File newFile = new File(basePath, newFileName);
+                    transcoder.transcode(
+                        new TranscoderInput(Files.newInputStream(file.toPath())),
+                        new TranscoderOutput(Files.newOutputStream(newFile.toPath(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE))
+                    );
+
+                    fileName = newFileName;
+                    file = newFile;
+                }
+
                 if (file.exists()) {
-                    BufferedImage image = ImageIO.read(file);
-                    int width = image.getWidth();
-                    int height = image.getHeight();
                     proxyEmoticonDao.saveEmoticon(
                         providerName,
-                        new ProxyEmoticon(null, emoticon.getCode(), fileName, height, width)
+                        new ProxyEmoticon(null, emoticon.getCode(), fileName, emoticon.getExtra())
                     );
                 }
             } catch (Exception e) {

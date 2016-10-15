@@ -7,6 +7,7 @@ import lexek.wschat.chat.Room;
 import lexek.wschat.chat.e.InternalErrorException;
 import lexek.wschat.proxy.ModerationOperation;
 import lexek.wschat.proxy.Proxy;
+import lexek.wschat.proxy.ProxyEmoticonDescriptor;
 import lexek.wschat.proxy.ProxyProvider;
 import lexek.wschat.services.NotificationService;
 import org.jvnet.hk2.annotations.Service;
@@ -15,6 +16,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import java.io.IOException;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
 @Service
@@ -33,7 +35,7 @@ public class CybergameTvProxyProvider extends ProxyProvider {
         @Named("proxyEventLoopGroup") EventLoopGroup eventLoopGroup,
         @Named("messageId") AtomicLong messageId
     ) {
-        super("cybergame", false, false, false, false, ImmutableSet.of(), EnumSet.noneOf(ModerationOperation.class));
+        super("cybergame", false, false, false, true, ImmutableSet.of(), EnumSet.noneOf(ModerationOperation.class));
         this.apiClient = apiClient;
         this.notificationService = notificationService;
         this.eventLoopGroup = eventLoopGroup;
@@ -55,5 +57,10 @@ public class CybergameTvProxyProvider extends ProxyProvider {
         } catch (IOException e) {
             throw new InternalErrorException(e);
         }
+    }
+
+    @Override
+    public List<ProxyEmoticonDescriptor> fetchEmoticonDescriptors() throws Exception {
+        return apiClient.getEmoticons();
     }
 }
