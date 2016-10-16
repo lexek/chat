@@ -1,6 +1,7 @@
 package lexek.wschat.db.dao;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableMap;
 import lexek.wschat.chat.e.InternalErrorException;
 import lexek.wschat.db.model.ProxyEmoticon;
 import org.jooq.DSLContext;
@@ -8,6 +9,7 @@ import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static lexek.wschat.db.jooq.tables.ProxyEmoticon.PROXY_EMOTICON;
 
@@ -25,7 +27,15 @@ public class ProxyEmoticonDao {
         return ctx
             .selectFrom(PROXY_EMOTICON)
             .where(PROXY_EMOTICON.PROVIDER.eq(providerName))
-            .fetchInto(ProxyEmoticon.class);
+            .fetch()
+            .stream()
+            .map(r -> new ProxyEmoticon(
+                r.getId(),
+                r.getCode(),
+                r.getFileName(),
+                ImmutableMap.of()
+            ))
+            .collect(Collectors.toList());
     }
 
     public void saveEmoticon(String provider, ProxyEmoticon emoticon) {
