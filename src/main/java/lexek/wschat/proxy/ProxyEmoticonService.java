@@ -71,25 +71,27 @@ public class ProxyEmoticonService {
             File file = new File(basePath, fileName);
 
             try {
-                if (!file.exists()) {
-                    HttpGet httpGet = new HttpGet(emoticon.getUrl());
-                    HttpResponse response = httpClient.execute(httpGet);
-                    try {
-                        int statusCode = response.getStatusLine().getStatusCode();
-                        if (statusCode == 200) {
-                            if (file.getParentFile().mkdirs()) {
-                                logger.info("created missing directories for {}", file);
-                            }
-                            Files.copy(response.getEntity().getContent(), file.toPath(), StandardCopyOption.REPLACE_EXISTING);
-                        } else {
-                            logger.warn(
-                                "Unable to load emoticon {}: {} ({})\r\n{}",
-                                emoticon.getCode(), emoticon.getUrl(), statusCode, EntityUtils.toString(response.getEntity())
-                            );
+                if (file.delete()) {
+                    logger.info("deleted existing file: {}", file);
+                }
+
+                HttpGet httpGet = new HttpGet(emoticon.getUrl());
+                HttpResponse response = httpClient.execute(httpGet);
+                try {
+                    int statusCode = response.getStatusLine().getStatusCode();
+                    if (statusCode == 200) {
+                        if (file.getParentFile().mkdirs()) {
+                            logger.info("created missing directories for {}", file);
                         }
-                    } finally {
-                        EntityUtils.consume(response.getEntity());
+                        Files.copy(response.getEntity().getContent(), file.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                    } else {
+                        logger.warn(
+                            "Unable to load emoticon {}: {} ({})\r\n{}",
+                            emoticon.getCode(), emoticon.getUrl(), statusCode, EntityUtils.toString(response.getEntity())
+                        );
                     }
+                } finally {
+                    EntityUtils.consume(response.getEntity());
                 }
 
                 if (fileName.endsWith(".svg")) {
