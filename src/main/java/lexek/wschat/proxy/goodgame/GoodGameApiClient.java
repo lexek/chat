@@ -8,7 +8,6 @@ import lexek.wschat.proxy.ProxyEmoticonDescriptor;
 import lexek.wschat.util.JsonResponseHandler;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.utils.URIBuilder;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
@@ -46,31 +45,25 @@ class GoodGameApiClient {
     }
 
     public List<ProxyEmoticonDescriptor> getEmoticons() throws Exception {
-        int page = 0;
-        int totalPages = 1;
         List<ProxyEmoticonDescriptor> results = new ArrayList<>();
-        while (page < totalPages) {
-            page++;
-            URIBuilder uriBuilder = new URIBuilder("http://api2.goodgame.ru/smiles");
-            uriBuilder.addParameter("page", String.valueOf(page));
-            HttpGet request = new HttpGet(uriBuilder.build());
-            request.setHeader(HttpHeaders.ACCEPT, "application/json");
-            JsonNode response = httpClient.execute(request, JsonResponseHandler.INSTANCE);
-            totalPages = response.get("page_count").asInt();
-            for (JsonNode emoticonNode : response.get("_embedded").get("smiles")) {
-                results.add(new ProxyEmoticonDescriptor(
-                    ':' + emoticonNode.get("key").asText() + ':',
-                    emoticonNode.get("urls").get("img").asText(),
-                    emoticonNode.get("key").asText() + ".png",
-                    ImmutableMap.of(
-                        "donate_lvl", emoticonNode.get("donate_lvl").asLong(),
-                        "is_premium", emoticonNode.get("is_premium").asBoolean(),
-                        "is_paid", emoticonNode.get("is_paid").asBoolean(),
-                        "channel_id", emoticonNode.get("channel_id").asText()
-                    )
-                ));
-            }
+
+        HttpGet request = new HttpGet("http://goodgame.ru/api/getchatsmiles2");
+        request.setHeader(HttpHeaders.ACCEPT, "application/json");
+        JsonNode response = httpClient.execute(request, JsonResponseHandler.INSTANCE);
+
+        for (JsonNode emoticonNode : response) {
+            results.add(new ProxyEmoticonDescriptor(
+                ':' + emoticonNode.get("key").asText() + ':',
+                emoticonNode.get("images").get("big").asText().replace("https", "http"), //change to http bc cert issue
+                emoticonNode.get("key").asText() + ".png",
+                ImmutableMap.of(
+                    "premium", emoticonNode.get("premium").asBoolean(),
+                    "donat", emoticonNode.get("donat").asBoolean(),
+                    "channel", emoticonNode.get("channel").asText()
+                )
+            ));
         }
+
         return results;
     }
 }

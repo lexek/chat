@@ -76,22 +76,29 @@ public class ProxyEmoticonService {
                 }
 
                 HttpGet httpGet = new HttpGet(emoticon.getUrl());
-                HttpResponse response = httpClient.execute(httpGet);
                 try {
-                    int statusCode = response.getStatusLine().getStatusCode();
-                    if (statusCode == 200) {
-                        if (file.getParentFile().mkdirs()) {
-                            logger.info("created missing directories for {}", file);
+                    HttpResponse response = httpClient.execute(httpGet);
+                    try {
+                        int statusCode = response.getStatusLine().getStatusCode();
+                        if (statusCode == 200) {
+                            if (file.getParentFile().mkdirs()) {
+                                logger.info("created missing directories for {}", file);
+                            }
+                            Files.copy(response.getEntity().getContent(), file.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                        } else {
+                            logger.warn(
+                                "Unable to load emoticon {}: {} ({})\r\n{}",
+                                emoticon.getCode(), emoticon.getUrl(), statusCode, EntityUtils.toString(response.getEntity())
+                            );
                         }
-                        Files.copy(response.getEntity().getContent(), file.toPath(), StandardCopyOption.REPLACE_EXISTING);
-                    } else {
-                        logger.warn(
-                            "Unable to load emoticon {}: {} ({})\r\n{}",
-                            emoticon.getCode(), emoticon.getUrl(), statusCode, EntityUtils.toString(response.getEntity())
-                        );
+                    } finally {
+                        EntityUtils.consume(response.getEntity());
                     }
-                } finally {
-                    EntityUtils.consume(response.getEntity());
+                } catch (Exception e) {
+                    logger.warn(
+                        "Unable to load emoticon {}: {}",
+                        emoticon.getCode(), emoticon.getUrl(), e
+                    );
                 }
 
                 if (fileName.endsWith(".svg")) {
