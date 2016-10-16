@@ -60,13 +60,13 @@ class GoodGameApiClient {
             for (JsonNode emoticonNode : response.get("_embedded").get("smiles")) {
                 results.add(new ProxyEmoticonDescriptor(
                     ':' + emoticonNode.get("key").asText() + ':',
-                    emoticonNode.get("urls").get("big").asText(),
+                    emoticonNode.get("urls").get("img").asText(),
                     emoticonNode.get("key").asText() + ".png",
                     ImmutableMap.of(
                         "donate_lvl", emoticonNode.get("donate_lvl").asLong(),
                         "is_premium", emoticonNode.get("is_premium").asBoolean(),
                         "is_paid", emoticonNode.get("is_paid").asBoolean(),
-                        "channel_id", emoticonNode.get("is_paid").asText()
+                        "channel_id", emoticonNode.get("channel_id").asText()
                     )
                 ));
             }
