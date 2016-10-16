@@ -21,10 +21,10 @@ public class ProxyEmoticonDao {
         this.ctx = ctx;
     }
 
-    public List<ProxyEmoticon> getEmoticons(String service) {
+    public List<ProxyEmoticon> getEmoticons(String providerName) {
         return ctx
             .selectFrom(PROXY_EMOTICON)
-            .where(PROXY_EMOTICON.PROVIDER.eq(service))
+            .where(PROXY_EMOTICON.PROVIDER.eq(providerName))
             .fetchInto(ProxyEmoticon.class);
     }
 
@@ -44,5 +44,12 @@ public class ProxyEmoticonDao {
         } catch (Exception e) {
             throw new InternalErrorException(e);
         }
+    }
+
+    public void deleteAll(String providerName) {
+        ctx
+            .delete(PROXY_EMOTICON)
+            .where(PROXY_EMOTICON.PROVIDER.eq(providerName))
+            .execute();
     }
 }

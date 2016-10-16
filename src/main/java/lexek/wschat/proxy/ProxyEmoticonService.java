@@ -47,6 +47,8 @@ public class ProxyEmoticonService {
     }
 
     public void loadEmoticons(String providerName) throws Exception {
+        proxyEmoticonDao.deleteAll(providerName);
+
         ProxyProvider provider = proxyManager.getProvider(providerName);
         if (!provider.isSupportsEmoticons()) {
             throw new InvalidInputException("provider", "provider doesn't support emoticon loading");
