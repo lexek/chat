@@ -89,6 +89,7 @@ public class HistoryService implements MessageEventHandler {
                 message.get(MessageProperty.TIME),
                 message.getType().toString(),
                 objectMapper.writeValueAsString(message.get(MessageProperty.MESSAGE_NODES)),
+                false,
                 false
             ));
         } else if (type == MessageType.CLEAR || type == MessageType.BAN || type == MessageType.TIMEOUT) {
@@ -97,7 +98,7 @@ public class HistoryService implements MessageEventHandler {
             long t = System.currentTimeMillis();
             String userName = message.get(MessageProperty.NAME);
             historyDao.hideUserMessages(
-                new History(null, room.getId(), mod.getId(), t, message.getType().toString(), userName, false),
+                new History(null, room.getId(), mod.getId(), t, message.getType().toString(), userName, false, false),
                 userName, t - TimeUnit.MINUTES.toMillis(10));
         }
         if (room != null) {

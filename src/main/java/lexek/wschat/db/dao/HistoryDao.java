@@ -74,7 +74,7 @@ public class HistoryDao {
             .limit(pageLength * page, pageLength)
             .asTable("h");
         List<HistoryData> data = ctx
-            .select(HISTORY.MESSAGE, HISTORY.TYPE, HISTORY.TIMESTAMP, USER.NAME, HISTORY.HIDDEN)
+            .select(HISTORY.ID, HISTORY.MESSAGE, HISTORY.TYPE, HISTORY.TIMESTAMP, USER.NAME, HISTORY.HIDDEN, HISTORY.LEGACY)
             .from(
                 HISTORY
                     .join(h).on(HISTORY.ID.eq(h.field("ID", Long.class)))
@@ -84,11 +84,13 @@ public class HistoryDao {
             .fetch()
             .stream()
             .map(record -> new HistoryData(
+                record.getValue(HISTORY.ID),
                 record.getValue(HISTORY.MESSAGE),
                 MessageType.valueOf(record.getValue(HISTORY.TYPE)),
                 record.getValue(HISTORY.TIMESTAMP),
                 record.getValue(USER.NAME),
-                record.getValue(HISTORY.HIDDEN)
+                record.getValue(HISTORY.HIDDEN),
+                record.getValue(HISTORY.LEGACY)
             ))
             .collect(Collectors.toList());
         return new DataPage<>(data, page, Pages.pageCount(pageLength, count));
@@ -103,7 +105,7 @@ public class HistoryDao {
             .limit(count)
             .asTable("h");
         return ctx
-            .select(HISTORY.MESSAGE, HISTORY.TYPE, HISTORY.TIMESTAMP, USER.NAME, HISTORY.HIDDEN)
+            .select(HISTORY.ID, HISTORY.MESSAGE, HISTORY.TYPE, HISTORY.TIMESTAMP, USER.NAME, HISTORY.HIDDEN, HISTORY.LEGACY)
             .from(
                 HISTORY
                     .join(h).on(HISTORY.ID.eq(h.field("ID", Long.class)))
@@ -113,11 +115,13 @@ public class HistoryDao {
             .fetch()
             .stream()
             .map(record -> new HistoryData(
+                record.getValue(HISTORY.ID),
                 record.getValue(HISTORY.MESSAGE),
                 MessageType.valueOf(record.getValue(HISTORY.TYPE)),
                 record.getValue(HISTORY.TIMESTAMP),
                 record.getValue(USER.NAME),
-                record.getValue(HISTORY.HIDDEN)
+                record.getValue(HISTORY.HIDDEN),
+                record.getValue(HISTORY.LEGACY)
             ))
             .collect(Collectors.toList());
     }

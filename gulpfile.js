@@ -7,6 +7,7 @@
     var ngAnnotate = require('gulp-ng-annotate');
     var concat = require('gulp-concat');
     var uglify = require('gulp-uglify');
+    var babel = require('gulp-babel');
     var angularTemplateCache = require('gulp-angular-templatecache');
     var addStream = require('add-stream');
 
@@ -50,6 +51,9 @@
         return gulp.src(files)
             .pipe(addStream.obj(prepareTemplates('/chat/admin/')))
             .pipe(addStream.obj(prepareCommonTemplates()))
+            .pipe(babel({
+                presets: ['es2015']
+            }))
             .pipe(sourcemaps.init())
             .pipe(concat('admin.min.js', {newLine: ';'}))
             .pipe(ngAnnotate({
