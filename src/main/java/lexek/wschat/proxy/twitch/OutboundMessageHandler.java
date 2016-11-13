@@ -14,9 +14,11 @@ import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
 import io.netty.util.AttributeKey;
 import io.netty.util.CharsetUtil;
+import lexek.wschat.chat.Room;
 import lexek.wschat.chat.model.Message;
 import lexek.wschat.chat.model.MessageProperty;
 import lexek.wschat.chat.model.MessageType;
+import lexek.wschat.chat.msg.MessageNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,6 +27,7 @@ import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 public class OutboundMessageHandler {
     private static final long FIVE_MINUTES = TimeUnit.MINUTES.toMillis(5);
@@ -35,18 +38,21 @@ public class OutboundMessageHandler {
     private final String remoteRoom;
     private final TwitchCredentialsService credentialsService;
     private final ScheduledExecutorService eventLoopGroup;
+    private final Room room;
     private ScheduledFuture scheduledFuture;
 
     public OutboundMessageHandler(
         TwitchCredentialsService credentialsService,
         EventLoopGroup eventLoopGroup,
         Map<String, Channel> connections,
-        String remoteRoom
+        String remoteRoom,
+        Room room
     ) {
         this.connections = connections;
         this.remoteRoom = remoteRoom;
         this.credentialsService = credentialsService;
         this.eventLoopGroup = eventLoopGroup;
+        this.room = room;
 
         this.outboundBootstrap = new Bootstrap();
         this.outboundBootstrap.group(eventLoopGroup);
@@ -78,7 +84,7 @@ public class OutboundMessageHandler {
     }
 
     public void onMessage(Message message) {
-        if (message.getType() == MessageType.MSG && message.get(MessageProperty.ROOM).equals("#main")) {
+        if (message.getType() == MessageType.MSG && message.get(MessageProperty.ROOM).equals(room.getName())) {
             long userId = message.get(MessageProperty.USER_ID);
             String name = message.get(MessageProperty.NAME);
             UserCredentials userCredentials = credentialsService.getCredentials(userId, name);
@@ -95,7 +101,12 @@ public class OutboundMessageHandler {
                 }
                 if (channel != null) {
                     channel.attr(lastMessageAttrKey).set(System.currentTimeMillis());
-                    channel.writeAndFlush("PRIVMSG #" + this.remoteRoom + " :" + message.get(MessageProperty.TEXT) + "\r\n");
+                    String text = message
+                        .get(MessageProperty.MESSAGE_NODES)
+                        .stream()
+                        .map(MessageNode::getText)
+                        .collect(Collectors.joining());
+                    channel.writeAndFlush("PRIVMSG #" + this.remoteRoom + " :" + text + "\r\n");
                 }
             }
         }

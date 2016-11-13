@@ -57,7 +57,7 @@ public class TwitchTvChatProxy extends AbstractProxy {
         this.room = room;
         if (outbound) {
             this.outboundHandler =
-                new OutboundMessageHandler(credentialsService, eventLoopGroup, connections, remoteRoom);
+                new OutboundMessageHandler(credentialsService, eventLoopGroup, connections, remoteRoom, room);
         } else {
             this.outboundHandler = null;
         }
