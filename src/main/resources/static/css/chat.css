@@ -951,7 +951,7 @@ message {
 }
 
 .message-node {
-    display: inline-block;
+    display: inline;
     flex-direction: column;
     justify-content: flex-end;
 }
