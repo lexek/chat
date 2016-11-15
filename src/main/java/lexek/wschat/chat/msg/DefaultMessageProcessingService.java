@@ -11,6 +11,10 @@ public class DefaultMessageProcessingService implements MessageProcessingService
         this.processors = new ArrayList<>();
     }
 
+    public DefaultMessageProcessingService(List<MessageProcessor> processors) {
+        this.processors = processors;
+    }
+
     public void addProcessor(MessageProcessor processor) {
         this.processors.add(processor);
     }
