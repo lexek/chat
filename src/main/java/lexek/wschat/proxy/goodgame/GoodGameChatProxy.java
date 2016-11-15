@@ -28,7 +28,6 @@ import lexek.wschat.proxy.*;
 import lexek.wschat.services.NotificationService;
 import lexek.wschat.util.Colors;
 import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
 import org.jsoup.nodes.TextNode;
@@ -159,7 +158,7 @@ public class GoodGameChatProxy extends AbstractProxy {
 
     @Override
     protected void disconnect() {
-        if (this.channel.isActive()) {
+        if (this.channel != null && this.channel.isActive()) {
             channel.close();
         }
     }

@@ -128,7 +128,7 @@ public class BeamChatProxy extends AbstractProxy {
 
     @Override
     protected void disconnect() {
-        if (this.channel.isActive()) {
+        if (this.channel != null && this.channel.isActive()) {
             this.channel.close();
         }
     }

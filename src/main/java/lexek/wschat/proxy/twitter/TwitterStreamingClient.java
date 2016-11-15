@@ -126,7 +126,7 @@ public class TwitterStreamingClient extends AbstractProxy {
 
     @Override
     protected void disconnect() {
-        if (channel != null) {
+        if (channel != null && channel.isActive()) {
             channel.close();
         }
     }

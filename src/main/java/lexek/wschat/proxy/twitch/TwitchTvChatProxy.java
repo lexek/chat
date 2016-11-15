@@ -131,7 +131,7 @@ public class TwitchTvChatProxy extends AbstractProxy {
 
     @Override
     protected void disconnect() {
-        if (this.channel.isActive()) {
+        if (this.channel != null && this.channel.isActive()) {
             this.channel.close();
         }
         if (this.outboundHandler != null) {
