@@ -57,7 +57,16 @@ public class GoodGameCodec extends MessageToMessageCodec<JsonNode, GoodGameEvent
             }
             case "user_ban": {
                 String user = data.get("user_name").asText();
-                out.add(new GoodGameEvent(GoodGameEventType.USER_BAN, null, null, null, user, null));
+                long duration = data.get("duration").asLong();
+                long permanent = data.get("permanent").asLong();
+                if (duration > 0 || permanent > 0) {
+                    out.add(new GoodGameEvent(GoodGameEventType.USER_BAN, null, null, null, user, null));
+                }
+                break;
+            }
+            case "user_warn": {
+                String user = data.get("user_name").asText();
+                out.add(new GoodGameEvent(GoodGameEventType.USER_WARN, null, null, null, user, null));
                 break;
             }
             case "error": {

@@ -248,7 +248,15 @@ public class GoodGameChatProxy extends AbstractProxy {
                     messageBroadcaster.submitMessage(message, room.FILTER);
                     break;
                 case USER_BAN:
-                    messageBroadcaster.submitMessage(Message.proxyClear("#main", "goodgame", "GoodGame", msg.getUser()), room.FILTER);
+                    messageBroadcaster.submitMessage(
+                        Message.proxyClear(
+                            room.getName(),
+                            "goodgame",
+                            channelId.toString(),
+                            msg.getUser()
+                        ),
+                        room.FILTER
+                    );
                     break;
                 case ERROR:
                     logger.debug("error {}", msg.getText());
