@@ -124,14 +124,15 @@ public abstract class AbstractProxy implements Proxy {
             );
         }
         //if the error is fatal we don't need to reconnect automatically
-        if (!fatal) {
-            if (failsInRow == 0) {
-                //reconnect right away on first fail
-                start();
-            } else {
-                long reconnectIn = failsInRow <= 5 ? Math.round(Math.pow(2, failsInRow)) : 32;
-                reconnectFuture = scheduler.schedule(this::start, reconnectIn, TimeUnit.MINUTES);
+        if (failsInRow == 0) {
+            //reconnect right away on first fail
+            start();
+        } else {
+            long reconnectIn = failsInRow <= 5 ? Math.round(Math.pow(2, failsInRow)) : 32;
+            if (fatal) {
+                reconnectIn = 30;
             }
+            reconnectFuture = scheduler.schedule(this::start, reconnectIn, TimeUnit.MINUTES);
         }
         failsInRow++;
     }
