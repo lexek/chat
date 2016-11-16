@@ -4,13 +4,8 @@ import com.google.common.collect.ImmutableSet;
 import io.netty.channel.EventLoopGroup;
 import lexek.wschat.chat.MessageBroadcaster;
 import lexek.wschat.chat.Room;
-import lexek.wschat.chat.msg.DefaultMessageProcessingService;
-import lexek.wschat.chat.msg.MessageProcessingService;
-import lexek.wschat.chat.msg.MessageProcessor;
-import lexek.wschat.chat.msg.UrlMessageProcessor;
-import lexek.wschat.proxy.ModerationOperation;
-import lexek.wschat.proxy.Proxy;
-import lexek.wschat.proxy.ProxyProvider;
+import lexek.wschat.chat.msg.*;
+import lexek.wschat.proxy.*;
 import lexek.wschat.services.NotificationService;
 import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
@@ -38,11 +33,12 @@ public class Sc2tvProxyProvider extends ProxyProvider {
     public Sc2tvProxyProvider(
         Peka2TvApiClient apiClient,
         NotificationService notificationService,
+        ProxyEmoticonProviderFactory proxyEmoticonProviderFactory,
         @Named("proxyEventLoopGroup") EventLoopGroup eventLoopGroup,
         MessageBroadcaster messageBroadcaster,
         @Named("messageId") AtomicLong messageId
     ) {
-        super("peka2tv", false, false, false, false, ImmutableSet.of(), EnumSet.noneOf(ModerationOperation.class));
+        super("peka2tv", false, false, false, true, ImmutableSet.of(), EnumSet.noneOf(ModerationOperation.class));
         this.apiClient = apiClient;
         this.notificationService = notificationService;
         this.eventLoopGroup = eventLoopGroup;
@@ -50,6 +46,10 @@ public class Sc2tvProxyProvider extends ProxyProvider {
         this.messageId = messageId;
         List<MessageProcessor> processors = new ArrayList<>();
         processors.add(new UrlMessageProcessor());
+        processors.add(new EmoticonMessageProcessor(
+            proxyEmoticonProviderFactory.getProvider(this.getName()),
+            "/emoticons/peka2tv"
+        ));
         this.messageProcessingService = new DefaultMessageProcessingService(processors);
 
     }
@@ -78,5 +78,10 @@ public class Sc2tvProxyProvider extends ProxyProvider {
             logger.warn("error while checking remote room", e);
             return false;
         }
+    }
+
+    @Override
+    public List<ProxyEmoticonDescriptor> fetchEmoticonDescriptors() throws Exception {
+        return apiClient.getEmoticons();
     }
 }

@@ -4,6 +4,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.net.HttpHeaders;
+import lexek.wschat.proxy.ProxyEmoticonDescriptor;
 import lexek.wschat.util.JsonResponseHandler;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
@@ -13,6 +16,8 @@ import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class Peka2TvApiClient {
@@ -34,5 +39,35 @@ public class Peka2TvApiClient {
         JsonNode response = httpClient.execute(request, JsonResponseHandler.INSTANCE);
 
         return response.get("id").asLong();
+    }
+
+    public List<ProxyEmoticonDescriptor> getEmoticons() throws IOException {
+        List<ProxyEmoticonDescriptor> results = new ArrayList<>();
+
+        HttpPost request = new HttpPost(BASE_URL + "/api/smile");
+        request.setHeader(HttpHeaders.ACCEPT, "application/json");
+        JsonNode response = httpClient.execute(request, JsonResponseHandler.INSTANCE);
+
+        for (JsonNode emoticonNode : response) {
+            ImmutableMap.Builder<String, Object> paramsBuilder = ImmutableMap.builder();
+            paramsBuilder
+                .put("level", emoticonNode.get("level").asBoolean())
+                .put("masterStreamerLevel", emoticonNode.get("masterStreamerLevel").asBoolean())
+                .put("siteLevel", emoticonNode.get("siteLevel").asText());
+
+            JsonNode user = emoticonNode.get("user");
+            if (user != null && !user.isNull()) {
+                paramsBuilder.put("user", user.get("id").asLong());
+            }
+
+            results.add(new ProxyEmoticonDescriptor(
+                ':' + emoticonNode.get("code").asText() + ':',
+                emoticonNode.get("url").asText(),
+                emoticonNode.get("id").asText() + ".png",
+                paramsBuilder.build()
+            ));
+        }
+
+        return results;
     }
 }
