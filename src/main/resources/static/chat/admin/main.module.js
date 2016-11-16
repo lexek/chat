@@ -1372,7 +1372,7 @@ var RoomController = function($scope, $location, $http, $sce, $modal, $interval,
             .success(function (data) {
                 $scope.messages = data;
                 $scope.messages.forEach(function (e) {
-                    if (!e.legacy) {
+                    if (!e.legacy && e.type === "MSG") {
                         e.message = JSON.parse(e.message);
                     }
                 });

@@ -47,8 +47,8 @@ public class GoodGameProxyProvider extends ProxyProvider {
         this.messageProcessingService = new DefaultMessageProcessingService();
         this.messageProcessingService.addProcessor(new EmoticonMessageProcessor(
             proxyEmoticonProviderFactory.getProvider(this.getName()),
-            "/emoticons/goodgame")
-        );
+            "/emoticons/goodgame"
+        ));
     }
 
     @Override
