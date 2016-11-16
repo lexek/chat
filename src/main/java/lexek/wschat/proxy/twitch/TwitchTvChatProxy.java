@@ -170,7 +170,7 @@ public class TwitchTvChatProxy extends AbstractProxy {
         @Override
         public void onClear(String name) {
             Message msg = Message.proxyClear(
-                "#main",
+                room.getName(),
                 "twitch",
                 remoteRoom(),
                 name
