@@ -950,6 +950,10 @@ message {
     display: block;
 }
 
+message message {
+    display: inline;
+}
+
 .message-node {
     display: inline;
     flex-direction: column;
@@ -982,7 +986,7 @@ message {
 }
 
 .chat-style-quote::before {
-    display: inline-block;
+    display: inline;
     content: '>';
 }
 
@@ -992,7 +996,7 @@ message {
     color: #D2D2D2;
     border-radius: 2px;
     padding: 2px 3px 1px;
-    display: inline-block;
+    display: inline;
     min-height: 1em;
 }
 
