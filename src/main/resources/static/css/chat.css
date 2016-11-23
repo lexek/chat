@@ -841,6 +841,11 @@ a:focus {
     background-size: 12px 12px;
 }
 
+.twitch-icon {
+    color: #6441A5;
+    font-size: 12px;
+}
+
 .beamIcon {
     display: inline-block;
     width: 12px;
@@ -943,7 +948,7 @@ a:focus {
     width: 10px;
     height: 14px;
     background-image: url("/img/cg.png");
-    background-size: auto 14px;
+    background-size: auto 12px;
     background-position: center;
     background-repeat: no-repeat;
     vertical-align: text-bottom;
