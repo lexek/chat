@@ -10,7 +10,7 @@
         "try",
         "catch"
     ],
-    "maxErrors": 40,
+    "maxErrors": 100,
     "requireOperatorBeforeLineBreak": true,
     "requireCamelCaseOrUpperCaseIdentifiers": true,
     "maximumLineLength": {

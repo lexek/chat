@@ -148,8 +148,6 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
         var hidden = ignored && showIgnored;
         var omit = (ignored && !showIgnored) ||
             ((msg.type === "MSG_EXT") && !chat.isProxyOutboundEnabled(ctx.room, service, serviceRes) && hideExt);
-        console.log(chat.isProxyModerationEnabled(ctx.room, service, serviceRes));
-        console.log(chat.isProxyOutboundEnabled(ctx.room, service, serviceRes));
 
         if (!omit) {
             chat.incMessageCount();

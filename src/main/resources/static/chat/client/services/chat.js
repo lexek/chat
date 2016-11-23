@@ -1,12 +1,12 @@
-var module = angular.module("chat.services.chat", ["chat.messageProcessing", "chat.services.settings", "chat.services.notifications"]);
+var module = angular.module('chat.services.chat', ['chat.messageProcessing', 'chat.services.settings', 'chat.services.notifications']);
 
-module.service("chatService",
-["$rootScope", "$modal", "chatSettings", "$translate", "$http", "$timeout", "notificationService", "messageProcessingService", "windowState",
+module.service('chatService',
+    ['$rootScope', '$modal', 'chatSettings', '$translate', '$http', '$timeout', 'notificationService', 'messageProcessingService', 'windowState',
 function($root, $modal, settings, $translate, $http, $timeout, notificationService, msgs, windowState) {
     /**
      * @constructor
      */
-    var chatService = function() {
+    var ChatService = function () {
         this.connectionAttempt = 0;
         this.messagesUpdatedCallbacks = [];
         this.selfUpdatedCallbacks = [];
@@ -22,7 +22,7 @@ function($root, $modal, settings, $translate, $http, $timeout, notificationServi
         this.pollsUpdatedCallback = angular.noop;
         this.ws = null;
         this.self = null;
-        this.lastSent = "";
+        this.lastSent = '';
         this.emoticons = {};
         this.localRole = {};
         this.activeRoom = DEFAULT_ROOM;
@@ -45,7 +45,7 @@ function($root, $modal, settings, $translate, $http, $timeout, notificationServi
         windowState.blur(resetCount);
     };
 
-    chatService.prototype.isProxyModerationEnabled = function(room, providerName, remoteRoom) {
+    ChatService.prototype.isProxyModerationEnabled = function (room, providerName, remoteRoom) {
         var proxies = this.proxies[room];
         var result = false;
         if (proxies && proxies.length) {
@@ -58,7 +58,7 @@ function($root, $modal, settings, $translate, $http, $timeout, notificationServi
         return result;
     };
 
-    chatService.prototype.isProxyOutboundEnabled = function(room, providerName, remoteRoom) {
+    ChatService.prototype.isProxyOutboundEnabled = function (room, providerName, remoteRoom) {
         var proxies = this.proxies[room];
         var result = false;
         if (proxies && proxies.length) {
@@ -71,59 +71,59 @@ function($root, $modal, settings, $translate, $http, $timeout, notificationServi
         return result;
     };
 
-    chatService.prototype.stateUpdated = function() {
+    ChatService.prototype.stateUpdated = function () {
         angular.forEach(this.stateUpdatedCallbacks, function (callback) {
-            callback()
+            callback();
         });
     };
 
     /**
      * @param {User} user
      */
-    chatService.prototype.clear = function(user) {
+    ChatService.prototype.clear = function (user) {
         this.sendMessage({
-            "type": "CLEAR",
-            "room": this.activeRoom,
-            "name": user.name
-        })
+            'type': 'CLEAR',
+            'room': this.activeRoom,
+            'name': user.name
+        });
     };
 
     /**
      * @param {User} user
      */
-    chatService.prototype.timeout = function(user) {
+    ChatService.prototype.timeout = function (user) {
         this.sendMessage({
-            "type": "TIMEOUT",
-            "room": this.activeRoom,
-            "name": user.name
-        })
+            'type': 'TIMEOUT',
+            'room': this.activeRoom,
+            'name': user.name
+        });
     };
 
     /**
      * @param {User} user
      */
-    chatService.prototype.unban = function(user) {
+    ChatService.prototype.unban = function (user) {
         this.sendMessage({
-            "type": "UNBAN",
-            "room": this.activeRoom,
-            "name": user.name
-        })
+            'type': 'UNBAN',
+            'room': this.activeRoom,
+            'name': user.name
+        });
     };
 
     /**
      * @param {User} user
      */
-    chatService.prototype.ban = function(user) {
+    ChatService.prototype.ban = function (user) {
         this.sendMessage({
-            "type": "BAN",
-            "room": this.activeRoom,
-            "name": user.name
-        })
+            'type': 'BAN',
+            'room': this.activeRoom,
+            'name': user.name
+        });
     };
 
-    chatService.prototype.showIgnoreList = function() {
+    ChatService.prototype.showIgnoreList = function () {
         var message = {
-            type: "INTERNAL_IGNORE_LIST"
+            type: 'INTERNAL_IGNORE_LIST'
         };
         msgs.processMessage(this, message, false);
     };
@@ -133,23 +133,23 @@ function($root, $modal, settings, $translate, $http, $timeout, notificationServi
      * @param {String} roomName
      * @returns {boolean}
      */
-    chatService.prototype.hasLocalRole = function(role, roomName) {
+    ChatService.prototype.hasLocalRole = function (role, roomName) {
         return this.localRole[roomName] >= role;
     };
 
-    chatService.prototype.incMessageCount = function() {
+    ChatService.prototype.incMessageCount = function () {
         this.unreadMessages++;
         this.countCallback();
         console.log(this.unreadMessages);
     };
 
-    chatService.prototype.addMessage = function(message, room, hist, mention) {
+    ChatService.prototype.addMessage = function (message, room, hist, mention) {
         message.internalId = this.idCounter++;
         if (!room) {
             room = this.activeRoom;
         }
         if (!this.messages[room]) {
-            this.messages[room] = []
+            this.messages[room] = [];
         }
         if (this.messages[room].length > 100) {
             var e = this.messages[room][0];
@@ -158,7 +158,7 @@ function($root, $modal, settings, $translate, $http, $timeout, notificationServi
         this.lastMessage[room] = message;
         this.messages[room].push(message);
 
-        if (room !== this.activeRoom && !hist && ((message.type==="ME") || (message.type==="MSG"))) {
+        if (room !== this.activeRoom && !hist && ((message.type === 'ME') || (message.type === 'MSG'))) {
             if (this.unreadCount[room]) {
                 this.unreadCount[room]++;
             } else {
@@ -174,24 +174,27 @@ function($root, $modal, settings, $translate, $http, $timeout, notificationServi
         }
     };
 
-    chatService.prototype.messagesUpdated = function() {
+    ChatService.prototype.messagesUpdated = function () {
         angular.forEach(this.messagesUpdatedCallbacks, function (callback) {
             callback();
         });
     };
 
-    chatService.prototype.messageUpdated = function(message) {
+    ChatService.prototype.messageUpdated = function (message) {
         angular.forEach(message.messageUpdatedCallbacks, function (callback) {
             callback();
         });
     };
 
-    chatService.prototype.hideMessagesFromUser = function(room, name, service, serviceRes) {
+    ChatService.prototype.hideMessagesFromUser = function (room, name, service, serviceRes) {
         var chat = this;
         angular.forEach(this.messages[room], function(message) {
-            if (!message.hidden && message.user && message.user.name == name) {
-                if (service && (message.user.service === service) && (message.user.serviceRes === serviceRes) || !service) {
-                    if (message.type === "MSG_GROUP") {
+            if (!message.hidden && message.user && message.user.name === name) {
+                if (
+                    service && (message.user.service === service) && (message.user.serviceRes === serviceRes) ||
+                    !service && !message.user.service
+                ) {
+                    if (message.type === 'MSG_GROUP') {
                         angular.forEach(message.messages, function (msg) {
                             msg.hidden = true;
                         });
@@ -204,30 +207,30 @@ function($root, $modal, settings, $translate, $http, $timeout, notificationServi
         });
     };
 
-    chatService.prototype.addRoom = function(room) {
+    ChatService.prototype.addRoom = function (room) {
         if (this.rooms.indexOf(room) === -1) {
             this.rooms.push(room);
             settings.addRoom(room);
         }
     };
 
-    chatService.prototype.deleteRoom = function(room) {
+    ChatService.prototype.deleteRoom = function (room) {
         this.rooms.remove(room);
         settings.deleteRoom(room);
     };
 
-    chatService.prototype.setActiveRoom = function(room) {
+    ChatService.prototype.setActiveRoom = function (room) {
         this.activeRoom = room;
         this.unreadCount[room] = 0;
         this.unreadMentions[room] = 0;
-        settings.setS("lastActiveRoom", room);
+        settings.setS('lastActiveRoom', room);
     };
 
-    chatService.prototype.lastChatter = function(room, name) {
+    ChatService.prototype.lastChatter = function (room, name) {
         this.lastChatterInRoom[room] = name;
         if (name) {
             if (!this.lastChatters[room]) {
-                this.lastChatters[room] = []
+                this.lastChatters[room] = [];
             }
             var a = this.lastChatters[room];
             var idx = a.indexOf(name);
@@ -242,17 +245,20 @@ function($root, $modal, settings, $translate, $http, $timeout, notificationServi
         }
     };
 
-    chatService.prototype.init = function() {
+    ChatService.prototype.init = function () {
         var chat = this;
         var start = function() {
             chat.connectionAttempt = (chat.connectionAttempt > 7) ? chat.connectionAttempt : (chat.connectionAttempt + 1);
             chat.state = CHAT_STATE.CONNECTING;
             chat.ws = new WebSocket('wss://' + document.location.hostname + ':1488');
             chat.ws.onopen = function () {
-                console.log("open");
+                console.log('open');
                 chat.state = CHAT_STATE.AUTHENTICATING;
                 chat.stateUpdated();
-                chat.sendMessage({"type": "SESSION", "text": read_cookie("sid")});
+                chat.sendMessage({
+                    'type': 'SESSION',
+                    'text': read_cookie('sid')
+                });
                 chat.connectionAttempt = 0;
             };
             chat.ws.onclose = function () {
@@ -280,10 +286,12 @@ function($root, $modal, settings, $translate, $http, $timeout, notificationServi
                     clearTimeout(chat.lastMessageTimeout);
                 }
                 chat.lastMessageTimeout = setTimeout(function() {
-                    chat.sendMessage({"type": "PING"});
+                    chat.sendMessage({
+                        'type': 'PING'
+                    });
                 }, 30000);
 
-                if (message.type !== "PONG") {
+                if (message.type !== 'PONG') {
                     msgs.processMessage(chat, message, false);
                 }
             };
@@ -295,7 +303,7 @@ function($root, $modal, settings, $translate, $http, $timeout, notificationServi
             if (event.origin == 'https://' + HOST_NAME + ':1337') {
                 if (event.data === 'auth-notify') {
                     if (chat.state == CHAT_STATE.AUTHENTICATED && chat.self.role >= globalLevels.USER_UNCONFIRMED) {
-                        $root.$broadcast("auth-updated");
+                        $root.$broadcast('auth-updated');
                     } else {
                         chat.ws.close();
                         if (document.lastModal) {
@@ -307,9 +315,9 @@ function($root, $modal, settings, $translate, $http, $timeout, notificationServi
         }, false);
     };
 
-    chatService.prototype.sendMessage = function(msg) {
+    ChatService.prototype.sendMessage = function (msg) {
         this.ws.send(JSON.stringify(msg));
     };
 
-    return new chatService();
+    return new ChatService();
 }]);
