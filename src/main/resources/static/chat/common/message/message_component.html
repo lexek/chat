@@ -2,7 +2,6 @@
     <span ng-switch-when="STYLED" ng-class="::('chat-style-' + node.style.toLowerCase())">
         <message nodes="::node.children"></message>
     </span>
-    <!-- todo: url formatting -->
     <message-link ng-switch-when="URL" data-text="::node.text"></message-link>
     <img
         ng-switch-when="EMOTICON"

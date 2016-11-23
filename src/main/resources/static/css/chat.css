@@ -833,6 +833,14 @@ a:focus {
     background-size: 12px 12px;
 }
 
+.message .gg-icon {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    background-image: url(/img/gg.png);
+    background-size: 12px 12px;
+}
+
 .beamIcon {
     display: inline-block;
     width: 12px;
