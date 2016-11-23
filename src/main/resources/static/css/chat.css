@@ -1004,7 +1004,9 @@ message message {
 }
 
 .chat-style-spoiler > message,
-.chat-style-nsfw > message {
+.chat-style-spoiler > span,
+.chat-style-nsfw > message,
+.chat-style-nsfw > span {
     background-color: #D2D2D2;
     color: #D2D2D2;
     border-radius: 2px;
@@ -1025,7 +1027,9 @@ message message {
 }
 
 .chat-style-spoiler:hover > message,
-.chat-style-nsfw:hover > message {
+.chat-style-spoiler:hover > span,
+.chat-style-nsfw:hover > message,
+.chat-style-nsfw:hover > span {
     color: black;
     transition: color .1s ease-in;
 }

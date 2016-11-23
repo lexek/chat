@@ -140,13 +140,16 @@
                 <li><code>**{{'HELP_BOLD_TEXT' | translate}}**</code> <span class="fa fa-long-arrow-right"></span> <strong>{{'HELP_BOLD_TEXT' | translate}}</strong></li>
                 <li><code>*{{'HELP_ITALIC_TEXT' | translate}}*</code> <span class="fa fa-long-arrow-right"></span> <i>{{'HELP_ITALIC_TEXT' | translate}}</i></li>
                 <li><code>~~{{'HELP_STRIKETHROUGH_TEXT' | translate}}~~</code> <span class="fa fa-long-arrow-right"></span> <del>{{'HELP_STRIKETHROUGH_TEXT' | translate}}</del></li>
-                <li><code>%%{{'HELP_SPOILER_TEXT' | translate}}%%</code> <span class="fa fa-long-arrow-right"></span> <span class="spoiler">{{'HELP_SPOILER_TEXT' | translate}}</span></li>
+                <li><code>%%{{'HELP_SPOILER_TEXT' | translate}}%%</code> <span class="fa fa-long-arrow-right"></span>
+                    <span class="chat-style-spoiler"><span>{{'HELP_SPOILER_TEXT' | translate}}</span></span></li>
                 <li>
-                    <code>!!!{{'HELP_NSFW_TEXT' | translate}}</code> <span class="fa fa-long-arrow-right"></span> <span class="nsfwLabel">NSFW</span> <span class="spoiler">{{'HELP_NSFW_TEXT' | translate}}</span><br/>
+                    <code>!!!{{'HELP_NSFW_TEXT' | translate}}</code> <span class="fa fa-long-arrow-right"></span> <span
+                    class="chat-style-nsfw"><span>{{'HELP_NSFW_TEXT' | translate}}</span></span><br/>
                     <code>!!!</code> {{'HELP_PREFIX_REQUIRED' | translate}}
                 </li>
                 <li>
-                    <code>&gt;{{'HELP_QUOTE_TEXT' | translate}}</code> <span class="fa fa-long-arrow-right"></span> <span class="greenText">&gt;{{'HELP_QUOTE_TEXT' | translate}}</span><br/>
+                    <code>&gt;{{'HELP_QUOTE_TEXT' | translate}}</code> <span class="fa fa-long-arrow-right"></span>
+                    <span class="chat-style-quote">{{'HELP_QUOTE_TEXT' | translate}}</span><br/>
                     <code>&gt;</code> {{'HELP_PREFIX_REQUIRED' | translate}}
                 </li>
                 <li>
