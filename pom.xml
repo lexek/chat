@@ -211,7 +211,8 @@
                                 chat_proxy|
                                 ignore_list|
                                 proxy_auth|
-                                proxy_emoticon
+                                proxy_emoticon|
+                                emoticon_usage
                             </includes>
                             <inputSchema>chat</inputSchema>
                             <outputSchemaToDefault>true</outputSchemaToDefault>

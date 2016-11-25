@@ -1,5 +1,6 @@
 package lexek.wschat.chat.msg;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -21,6 +22,8 @@ public class MessageNode {
     private String src;
     private Integer width;
     private Integer height;
+    @JsonIgnore
+    private Long emoticonId;
 
     public static MessageNode textNode(String text) {
         return MessageNode.builder().type(Type.TEXT).text(text).build();
@@ -38,12 +41,13 @@ public class MessageNode {
             .build();
     }
 
-    public static MessageNode emoticonNode(String text, String src) {
+    public static MessageNode emoticonNode(String text, String src, Long id) {
         return MessageNode
             .builder()
             .type(Type.EMOTICON)
             .text(text)
             .src(src)
+            .emoticonId(id)
             .build();
     }
 

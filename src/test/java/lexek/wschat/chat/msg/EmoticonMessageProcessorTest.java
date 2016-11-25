@@ -25,7 +25,7 @@ public class EmoticonMessageProcessorTest {
         processor.process(message);
 
         List<MessageNode> expectedResult = ImmutableList.of(
-            MessageNode.emoticonNode("Kappa", "/emoticons/Kappa.png")
+            MessageNode.emoticonNode("Kappa", "/emoticons/Kappa.png", 0L)
         );
 
         assertEquals(message, expectedResult);
@@ -45,7 +45,7 @@ public class EmoticonMessageProcessorTest {
 
         List<MessageNode> expectedResult = ImmutableList.of(
             MessageNode.textNode("top "),
-            MessageNode.emoticonNode("Kappa", "/emoticons/Kappa.png"),
+            MessageNode.emoticonNode("Kappa", "/emoticons/Kappa.png", 0L),
             MessageNode.textNode(" kek")
         );
 

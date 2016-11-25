@@ -120,7 +120,8 @@ public class TwitchTvMessageDecoder extends MessageToMessageDecoder<String> {
                 //todo: emoticon sizing
                 message.add(MessageNode.emoticonNode(
                     text.substring(startIndex, endIndex),
-                    "//static-cdn.jtvnw.net/emoticons/v1/" + emote.id + "/1.0"
+                    "//static-cdn.jtvnw.net/emoticons/v1/" + emote.id + "/1.0",
+                    null
                 ));
                 idx = endIndex;
             }

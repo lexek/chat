@@ -37,7 +37,8 @@ public class EmoticonMessageProcessor implements MessageProcessor {
                         start = matchEnd;
                         iterator.add(MessageNode.emoticonNode(
                             text.substring(matchStart, matchEnd),
-                            emoticonRoot + '/' +emoticon.getFileName()
+                            emoticonRoot + '/' + emoticon.getFileName(),
+                            emoticon.getId()
                         ));
                     }
                     //add leftovers to result

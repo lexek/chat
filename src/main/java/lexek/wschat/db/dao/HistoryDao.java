@@ -1,23 +1,23 @@
 package lexek.wschat.db.dao;
 
+import com.google.common.collect.Multiset;
 import lexek.wschat.chat.model.MessageType;
 import lexek.wschat.db.jooq.tables.pojos.History;
 import lexek.wschat.db.model.DataPage;
 import lexek.wschat.db.model.HistoryData;
 import lexek.wschat.util.Pages;
-import org.jooq.Condition;
-import org.jooq.DSLContext;
-import org.jooq.Operator;
-import org.jooq.Table;
+import org.jooq.*;
 import org.jooq.impl.DSL;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
+import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static lexek.wschat.db.jooq.tables.EmoticonUsage.EMOTICON_USAGE;
 import static lexek.wschat.db.jooq.tables.History.HISTORY;
 import static lexek.wschat.db.jooq.tables.User.USER;
 
@@ -32,6 +32,25 @@ public class HistoryDao {
 
     public void add(History object) {
         ctx.newRecord(HISTORY, object).store();
+    }
+
+    public void addWithStats(History history, Multiset<Long> stats) {
+        ctx.transaction(tx -> {
+            DSL.using(tx).newRecord(HISTORY, history).store();
+            List<Query> toStore = new ArrayList<>();
+            for (Multiset.Entry<Long> entry : stats.entrySet()) {
+                toStore.add(DSL
+                    .insertInto(EMOTICON_USAGE)
+                    .set(EMOTICON_USAGE.EMOTICON_ID, entry.getElement())
+                    .set(EMOTICON_USAGE.USER_ID, history.getUserId())
+                    .set(EMOTICON_USAGE.COUNT, (long) entry.getCount())
+                    .set(EMOTICON_USAGE.DATE, new Date(System.currentTimeMillis()))
+                    .onDuplicateKeyUpdate()
+                    .set(EMOTICON_USAGE.COUNT, EMOTICON_USAGE.COUNT.plus(entry.getCount()))
+                );
+            }
+            DSL.using(tx).batch(toStore).execute();
+        });
     }
 
     public void hideUserMessages(History message, String name, long since) {

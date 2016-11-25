@@ -172,7 +172,11 @@ public class CybergameTvChatProxy extends AbstractProxy {
                         if (image.endsWith(".svg")) {
                             image = image.substring(0, image.length() - 4) + ".png";
                         }
-                        messageBody.add(MessageNode.emoticonNode(text, "/emoticons/cybergame/" + image));
+                        messageBody.add(MessageNode.emoticonNode(
+                            text,
+                            "/emoticons/cybergame/" + image,
+                            null
+                        ));
                     } else {
                         messageBody.add(MessageNode.textNode(text));
                     }
