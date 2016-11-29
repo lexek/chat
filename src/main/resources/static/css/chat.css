@@ -1015,7 +1015,7 @@ message message {
     color: #D2D2D2;
     border-radius: 2px;
     padding: 2px 3px 1px;
-    display: inline;
+    display: inline-block;
     min-height: 1em;
 }
 
