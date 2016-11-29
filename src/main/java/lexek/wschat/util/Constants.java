@@ -1,5 +1,5 @@
 package lexek.wschat.util;
 
 public interface Constants {
-    long WEBSOCKET_PROTOCOL_VERSION = 17;
+    long WEBSOCKET_PROTOCOL_VERSION = 18;
 }
