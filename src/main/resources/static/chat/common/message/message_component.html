@@ -18,9 +18,8 @@
         ng-src="/img/twemoji/{{::node.src}}.png"
         alt="{{::node.text}}"
     />
-    <!-- todo: highlight current user -->
-    <span ng-switch-when="MENTION" class="mentionLabel">
-        {{::node.text}}
+    <span ng-switch-when="MENTION" class="mentionLabel" ng-class="::{'mentionLabelCurrent': node.currentUser}">
+        @{{::node.text}}
     </span>
     <span ng-switch-default class="message-node-text" ng-bind="::node.text"></span>
 </div>

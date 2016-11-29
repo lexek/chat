@@ -114,8 +114,23 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
         chat.messagesUpdated();
     };
 
+    function checkForMention(chat, msg) {
+        var notify = false;
+        angular.forEach(msg, function (e) {
+            if (e.children) {
+                notify = checkForMention(chat, e.children) || notify;
+            }
+            if (e.type === 'MENTION') {
+                if (e.text === chat.self.name) {
+                    e.currentUser = true;
+                    notify = true;
+                }
+            }
+        });
+        return notify;
+    }
+
     function processChatMessage(chat, ctx, msg) {
-        //todo: mentions
         ctx.proc = {
             unprocessedText: msg.text,
             mention: false
@@ -150,6 +165,8 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
             ((msg.type === "MSG_EXT") && !chat.isProxyOutboundEnabled(ctx.room, service, serviceRes) && hideExt);
 
         if (!omit) {
+            var mention = checkForMention(chat, ctx.msg.messageNodes);
+
             chat.incMessageCount();
             var elem = null;
             var lastChatter = chat.lastChatterInRoom[ctx.room];
@@ -177,11 +194,13 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
                 }
             }
             if (elem != null) {
-                chat.addMessage(elem, ctx.room, ctx.history, ctx.proc.mention);
+                chat.addMessage(elem, ctx.room, ctx.history, mention);
                 chat.messagesUpdated();
             }
-            if (ctx.proc.mention && !ctx.history) {
-                notificationService.notify(user.name, ctx.proc.unprocessedText);
+            if (mention && !ctx.history) {
+                notificationService.notify(user.name, ctx.msg.messageNodes.map(function (e) {
+                    return e.text;
+                }).join());
             }
         }
     };
