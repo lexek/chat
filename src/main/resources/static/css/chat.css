@@ -670,11 +670,15 @@ img.emoji {
 .mentionLabel {
     display: inline-block;
     font-size: small;
-    background-color: #428bca;
+    background-color: #8a8a8a;
     color: white;
     padding: 2px 3px 2px;
     border-radius: 2px;
     vertical-align: bottom;
+}
+
+.mentionLabel.mentionLabelCurrent {
+    background-color: #428bca;
 }
 
 .btn-checkbox {
@@ -983,11 +987,11 @@ message message {
 }
 
 .chat-style-bold {
-    font-style: italic;
+    font-weight: bold;
 }
 
 .chat-style-italic {
-    font-weight: bold;
+    font-style: italic;
 }
 
 .chat-style-strikethrough {
