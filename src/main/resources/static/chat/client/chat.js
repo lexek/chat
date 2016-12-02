@@ -18,20 +18,6 @@ var setSizes = function() {
 
 document.IS_MOBILE = (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i).test(navigator.userAgent);
 
-(function() {
-    'use strict';
-
-    $(document).ready(function () {
-        wide = false;
-        setSizes();
-        $('.tse-scrollable').TrackpadScrollEmulator({wrapContent: false, autoHide: false});
-        $(window).resize(function() {
-            setSizes();
-            $('.tse-scrollable').TrackpadScrollEmulator('recalculate');
-        });
-    });
-})();
-
 document.chatApplication = angular.module('chatApplication', [
     'ngAnimate',
     'ngTouch',
@@ -62,4 +48,16 @@ document.chatApplication.config(['$compileProvider', function ($compileProvider)
     if (!DEBUG) {
         $compileProvider.debugInfoEnabled(false);
     }
+}]);
+
+document.chatApplication.run(['$rootScope', function ($root) {
+    wide = false;
+    setSizes();
+    $('.tse-scrollable').TrackpadScrollEmulator({wrapContent: false, autoHide: false});
+    $(window).resize(function () {
+        $root.$apply(function () {
+            setSizes();
+            $('.tse-scrollable').TrackpadScrollEmulator('recalculate');
+        });
+    });
 }]);

@@ -10,12 +10,14 @@ module.service("windowState", function() {
 
         if (window === window.top) {
             $(window).focus(function () {
+                $('.tse-scrollable').TrackpadScrollEmulator('recalculate');
                 ref.active = true;
                 angular.forEach(ref.onFocus, function(callback) {
                     callback();
                 });
             });
             $(window).blur(function () {
+                $('.tse-scrollable').TrackpadScrollEmulator('recalculate');
                 ref.active = false;
                 angular.forEach(ref.onBlur, function(callback) {
                     callback();
@@ -30,11 +32,11 @@ module.service("windowState", function() {
 
     WindowStateService.prototype.blur = function(callback) {
         this.onBlur.push(callback);
-    }
+    };
 
     WindowStateService.prototype.focus = function(callback) {
         this.onFocus.push(callback);
-    }
+    };
 
     return new WindowStateService();
 });
