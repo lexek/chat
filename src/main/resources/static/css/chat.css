@@ -670,15 +670,23 @@ img.emoji {
 .mentionLabel {
     display: inline-block;
     font-size: small;
-    background-color: #8a8a8a;
-    color: white;
+    background-color: #e0e0e0;
     padding: 2px 3px 2px;
     border-radius: 2px;
-    vertical-align: bottom;
 }
 
 .mentionLabel.mentionLabelCurrent {
-    background-color: #428bca;
+    background-color: black;
+    color: white;
+}
+
+.dark .mentionLabel {
+    background-color: #585858;
+}
+
+.dark .mentionLabel.mentionLabelCurrent {
+    background-color: white;
+    color: black;
 }
 
 .btn-checkbox {
