@@ -975,7 +975,8 @@ message {
     display: block;
 }
 
-message message {
+message message,
+message.userMessageBodyMe {
     display: inline;
 }
 
