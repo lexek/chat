@@ -15,7 +15,7 @@
         <webappSourceDir>${basedir}/src/main/resources</webappSourceDir>
         <wro4j.version>1.7.6</wro4j.version>
         <jooq.version>3.8.4</jooq.version>
-        <netty.version>4.0.41.Final</netty.version>
+        <netty.version>4.1.6.Final</netty.version>
         <netty.osClassifier>linux-x86_64</netty.osClassifier>
         <jersey.version>2.23.2</jersey.version>
         <metrics.version>3.1.0</metrics.version>
@@ -31,7 +31,7 @@
                 <dependency>
                     <groupId>io.netty</groupId>
                     <artifactId>netty-tcnative</artifactId>
-                    <version>1.1.33.Fork21</version>
+                    <version>1.1.33.Fork23</version>
                     <classifier>${netty.osClassifier}</classifier>
                 </dependency>
             </dependencies>
