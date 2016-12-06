@@ -11,6 +11,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class IrcCodec implements Codec {
@@ -56,7 +57,10 @@ public class IrcCodec implements Codec {
                 String room = message.get(MessageProperty.ROOM);
                 String name = message.get(MessageProperty.NAME);
                 List<MessageNode> nodes = message.get(MessageProperty.MESSAGE_NODES);
-                String text = nodes.get(0).getText().replaceAll("[\r\n\t]", " ");
+                String text = nodes
+                    .stream()
+                    .map(e -> e.getText().replaceAll("[\r\n\t]", " "))
+                    .collect(Collectors.joining());
                 return ":" + name + " PRIVMSG " + room + " :" + text;
             }
             case INFO: {
