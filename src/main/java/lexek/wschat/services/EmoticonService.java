@@ -1,9 +1,7 @@
 package lexek.wschat.services;
 
 import com.google.common.hash.Hashing;
-import lexek.wschat.chat.MessageBroadcaster;
 import lexek.wschat.chat.e.InvalidInputException;
-import lexek.wschat.chat.model.Message;
 import lexek.wschat.chat.msg.EmoticonProvider;
 import lexek.wschat.db.dao.EmoticonDao;
 import lexek.wschat.db.model.Emoticon;
@@ -29,7 +27,6 @@ public class EmoticonService implements EmoticonProvider<Emoticon> {
     private final Dimension maxSize;
     private final EmoticonDao emoticonDao;
     private final JournalService journalService;
-    private final MessageBroadcaster messageBroadcaster;
     private volatile List<Emoticon> cachedEmoticons = null;
 
     @Inject
@@ -37,10 +34,8 @@ public class EmoticonService implements EmoticonProvider<Emoticon> {
         @Named("emoticon.maxDimensions") Dimension maxSize,
         @Named("core.dataDirectory") File dataDir,
         EmoticonDao emoticonDao,
-        JournalService journalService,
-        MessageBroadcaster messageBroadcaster
+        JournalService journalService
     ) {
-        this.messageBroadcaster = messageBroadcaster;
         this.emoticonsDir = Paths.get(dataDir.toURI()).resolve("emoticons");
         this.maxSize = maxSize;
         this.emoticonDao = emoticonDao;
@@ -89,7 +84,6 @@ public class EmoticonService implements EmoticonProvider<Emoticon> {
                 synchronized (this) {
                     cachedEmoticons = null;
                 }
-                sendEmoticons();
             }
             return success;
         }
@@ -102,7 +96,6 @@ public class EmoticonService implements EmoticonProvider<Emoticon> {
         synchronized (this) {
             cachedEmoticons = null;
         }
-        sendEmoticons();
     }
 
     public List<Emoticon> getEmoticons() {
@@ -125,9 +118,5 @@ public class EmoticonService implements EmoticonProvider<Emoticon> {
             .putLong(System.currentTimeMillis())
             .hash() + extension;
         return emoticonsDir.resolve(newName);
-    }
-
-    private void sendEmoticons() {
-        messageBroadcaster.submitMessage(Message.emoticonsMessage(getEmoticons()));
     }
 }

@@ -2,7 +2,6 @@ package lexek.wschat.chat.model;
 
 import io.netty.util.internal.chmv8.ConcurrentHashMapV8;
 import lexek.wschat.chat.msg.MessageNode;
-import lexek.wschat.db.model.Emoticon;
 import lexek.wschat.db.model.UserDto;
 import lexek.wschat.db.model.rest.ProxyRestModel;
 
@@ -37,7 +36,6 @@ public class MessageProperty<T> {
     public static final MessageProperty<String> POLL_DATA = valueOf("pollData");
     public static final MessageProperty<Integer> POLL_OPTION = valueOf("pollOption");
     public static final MessageProperty<List<ProxyRestModel>> PROXIES = valueOf("proxies");
-    public static final MessageProperty<List<Emoticon>> EMOTICONS = valueOf("emoticons");
     private final String name;
 
     private MessageProperty(String name) {

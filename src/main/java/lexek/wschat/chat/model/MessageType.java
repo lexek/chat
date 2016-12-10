@@ -53,7 +53,6 @@ public enum MessageType {
     IGNORED,
     IGNORE,
     UNIGNORE,
-    EMOTICONS,
     PROXY_MOD,
     TWEET,
     DONATION
