@@ -319,6 +319,11 @@
                             <i class="fa fa-fw fa-cogs"></i> runtime information
                         </a>
                     </li>
+                    <li ng-class="{'active': menuId === 'proxy'}">
+                        <a href="/admin/proxy">
+                            <i class="fa fa-fw fa-exchange"></i> proxies
+                        </a>
+                    </li>
                 </#if>
                 </ul>
                 <ul class="nav nav-sidebar">

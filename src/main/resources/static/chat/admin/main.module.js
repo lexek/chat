@@ -65,6 +65,7 @@ var AdminApplication = angular.module(
         'chat.admin.utils',
         'chat.admin.ticket',
         'chat.admin.history',
+        'chat.admin.proxy',
         'templates',
         'chat.common.message'
     ]
@@ -1849,6 +1850,11 @@ AdminApplication.config(["$routeProvider", "$locationProvider", function($routeP
         "controller": ProxyAuthController,
         "menuId": "proxyAuth"
     });
+    $routeProvider.when("/proxy", {
+        "title": "Proxy control",
+        "template": "<proxy-admin></proxy-admin>",
+        "menuId": "proxy"
+    })
 }]);
 
 /* @ngInject */
