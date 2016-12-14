@@ -16,6 +16,8 @@ import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.websocketx.PingWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketClientProtocolHandler;
 import io.netty.handler.codec.http.websocketx.WebSocketVersion;
+import io.netty.handler.ssl.SslContext;
+import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.handler.timeout.IdleStateHandler;
@@ -32,6 +34,7 @@ import lexek.wschat.proxy.ProxyState;
 import lexek.wschat.services.NotificationService;
 import lexek.wschat.util.Colors;
 
+import javax.net.ssl.SSLException;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
@@ -58,14 +61,18 @@ public class CybergameTvChatProxy extends AbstractProxy {
         this.messageBroadcaster = messageBroadcaster;
         this.messageId = messageId;
         this.room = room;
-        this.bootstrap = createBootstrap(eventLoopGroup, new CybergameTvChannelHandler());
+        try {
+            this.bootstrap = createBootstrap(eventLoopGroup, new CybergameTvChannelHandler());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private static Bootstrap createBootstrap(
         EventLoopGroup eventLoopGroup,
         ChannelHandler handler
-    ) {
-        URI uri = URI.create("ws://newchat.cybergame.tv:9002/");
+    ) throws SSLException {
+        URI uri = URI.create("wss://chat.cybergame.tv:9002/");
         Bootstrap bootstrap = new Bootstrap();
         bootstrap.group(eventLoopGroup);
         if (Epoll.isAvailable()) {
@@ -74,10 +81,12 @@ public class CybergameTvChatProxy extends AbstractProxy {
             bootstrap.channel(NioSocketChannel.class);
         }
         bootstrap.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
+        SslContext sslContext = SslContextBuilder.forClient().build();
         bootstrap.handler(new ChannelInitializer<SocketChannel>() {
             @Override
             public void initChannel(final SocketChannel c) throws Exception {
                 ChannelPipeline pipeline = c.pipeline();
+                pipeline.addLast(sslContext.newHandler(c.alloc()));
                 pipeline.addLast("http-codec", new HttpClientCodec(4096, 8192, 8192));
                 pipeline.addLast("http-aggregator", new HttpObjectAggregator(65536));
                 pipeline.addLast(new IdleStateHandler(120, 0, 140, TimeUnit.SECONDS));
@@ -120,7 +129,7 @@ public class CybergameTvChatProxy extends AbstractProxy {
                 return;
             }
         }
-        ChannelFuture channelFuture = bootstrap.connect("newchat.cybergame.tv", 9002);
+        ChannelFuture channelFuture = bootstrap.connect("chat.cybergame.tv", 9002);
         channel = channelFuture.channel();
         channelFuture.addListener(future -> {
             if (!future.isSuccess()) {

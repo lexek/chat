@@ -23,7 +23,7 @@ public class CybergameTvApiClient {
     }
 
     public String getChannelId(String channelName) throws IOException {
-        HttpGet httpGet = new HttpGet("http://api.cybergame.tv/p/statusv2/?channel=" + channelName);
+        HttpGet httpGet = new HttpGet("https://api.cybergame.tv/p/statusv2/?channel=" + channelName);
         JsonNode rootNode = httpClient.execute(httpGet, JsonResponseHandler.INSTANCE);
         if (rootNode.isNull()) {
             return null;
@@ -34,7 +34,7 @@ public class CybergameTvApiClient {
 
     public List<ProxyEmoticonDescriptor> getEmoticons() throws Exception {
         //todo: investigate on emotion api & path
-        HttpGet httpGet = new HttpGet("http://cybergame.tv/chats/beta1210162/emotes/emotes.json");
+        HttpGet httpGet = new HttpGet("https://cybergame.tv/chats/beta1210162/emotes/emotes.json");
         JsonNode rootNode = httpClient.execute(httpGet, JsonResponseHandler.INSTANCE);
         List<ProxyEmoticonDescriptor> result = new ArrayList<>();
         processNodes(rootNode.get("global"), result, "");
@@ -53,7 +53,7 @@ public class CybergameTvApiClient {
 
             result.add(new ProxyEmoticonDescriptor(
                 node.get("text").asText(),
-                "http://cybergame.tv/chats/beta1210162/emotes/" + node.get("image").asText(),
+                "https://cybergame.tv/chats/beta1210162/emotes/" + node.get("image").asText(),
                 node.get("image").asText(),
                 ImmutableMap.of(
                     "width", Integer.parseInt(widthString.substring(0, widthString.length() - 2)),
