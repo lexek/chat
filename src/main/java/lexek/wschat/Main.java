@@ -28,6 +28,7 @@ import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import lexek.httpserver.*;
 import lexek.wschat.chat.msg.*;
+import lexek.wschat.db.tx.TransactionalInterceptorService;
 import lexek.wschat.frontend.http.*;
 import lexek.wschat.frontend.http.admin.AdminPageHandler;
 import lexek.wschat.frontend.http.rest.RedirectToAppHandler;
@@ -65,7 +66,9 @@ import org.glassfish.jersey.server.spi.internal.ValueFactoryProvider;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;
+import org.jooq.impl.DataSourceConnectionProvider;
 import org.jooq.impl.DefaultConfiguration;
+import org.jooq.impl.ThreadLocalTransactionProvider;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Singleton;
@@ -198,11 +201,14 @@ public class Main {
         config.setMetricRegistry(runtimeMetricRegistry);
         config.setHealthCheckRegistry(healthCheckRegistry);
         DataSource dataSource = new HikariDataSource(config);
+        DataSourceConnectionProvider connectionProvider = new DataSourceConnectionProvider(dataSource);
         org.jooq.Configuration jooqConfiguration = new DefaultConfiguration();
-        jooqConfiguration.set(dataSource);
+        jooqConfiguration.set(connectionProvider);
         jooqConfiguration.set(SQLDialect.MYSQL);
+        jooqConfiguration.set(new ThreadLocalTransactionProvider(connectionProvider, true));
         DSLContext dslContext = DSL.using(jooqConfiguration);
         ServiceLocatorUtilities.addOneConstant(serviceLocator, dslContext, "dslContext", DSLContext.class);
+        ServiceLocatorUtilities.addClasses(serviceLocator, TransactionalInterceptorService.class);
 
         //proxy event loop
         EventLoopGroup proxyEventLoopGroup;
