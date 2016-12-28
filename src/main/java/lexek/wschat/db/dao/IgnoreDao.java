@@ -4,6 +4,7 @@ import com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationExceptio
 import lexek.wschat.chat.e.EntityNotFoundException;
 import lexek.wschat.chat.e.InvalidInputException;
 import lexek.wschat.db.model.UserDto;
+import org.jooq.Allow;
 import org.jooq.DSLContext;
 import org.jooq.Record1;
 import org.jooq.exception.DataAccessException;
@@ -45,6 +46,7 @@ public class IgnoreDao {
         }
     }
 
+    @Allow.PlainSQL
     public void deleteIgnore(UserDto user, String name) {
         //todo: change to jooq query when multi table delete will be implemented in jooq
         String query =

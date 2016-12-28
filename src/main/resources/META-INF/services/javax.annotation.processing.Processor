@@ -1,0 +1,2 @@
+org.jooq.checker.SQLDialectChecker
+org.jooq.checker.PlainSQLChecker

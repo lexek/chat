@@ -36,6 +36,7 @@ public class StatisticsDao {
         this.ctx = ctx;
     }
 
+    @Allow.PlainSQL
     public Map<Long, Long> getUserActivity(long userId) {
         Table<Record1<Date>> tempTable = DSL
             .select(DSL.function("FROM_UNIXTIME", Date.class, HISTORY.TIMESTAMP.div(1000)).as("date"))
@@ -65,6 +66,7 @@ public class StatisticsDao {
             ));
     }
 
+    @Allow.PlainSQL
     public Map<Long, Long> getRoomActivity(long roomId) {
         Table<Record1<Date>> tempTable = DSL
             .select(DSL.function("FROM_UNIXTIME", Date.class, HISTORY.TIMESTAMP.div(1000)).as("date"))
@@ -96,6 +98,7 @@ public class StatisticsDao {
             ));
     }
 
+    @Allow.PlainSQL
     public List<UserMessageCount> getTopChatters(long roomId) {
         return ctx
             .select(USER.ID, USER.NAME, DSL.count().as("count"))
@@ -126,6 +129,7 @@ public class StatisticsDao {
             .into(Metric.class);
     }
 
+    @Allow.PlainSQL
     public List<EmoticonCount> getEmoticonUage(long since, Long userId) {
         List<Condition> where = Lists.newArrayList(
             EMOTICON_USAGE.DATE.greaterOrEqual(new Date(since))
@@ -163,6 +167,7 @@ public class StatisticsDao {
             .collect(Collectors.toList());
     }
 
+    @Allow.PlainSQL
     public List<UserMessageCount> getEmoticonUsers(long since, long emoticonId) {
         return ctx
             .select(
