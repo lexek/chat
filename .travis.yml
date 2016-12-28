@@ -10,6 +10,7 @@ before_install:
 cache:
   directories:
     - $HOME/.m2/repository
+    - target/node
     - node_modules
 #skip
 install: true
