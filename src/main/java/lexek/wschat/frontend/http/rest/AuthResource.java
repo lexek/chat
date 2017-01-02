@@ -6,7 +6,6 @@ import lexek.wschat.chat.e.BadRequestException;
 import lexek.wschat.chat.e.EntityNotFoundException;
 import lexek.wschat.chat.model.GlobalRole;
 import lexek.wschat.db.model.SessionDto;
-import lexek.wschat.db.model.UserAuthDto;
 import lexek.wschat.db.model.UserDto;
 import lexek.wschat.db.model.rest.BooleanValueContainer;
 import lexek.wschat.security.AuthenticationManager;
@@ -158,12 +157,11 @@ public class AuthResource {
             if (newAccount) {
                 if (USERNAME_PATTERN.matcher(username).matches()) {
                     try {
-                        UserAuthDto userAuth = authenticationManager.createUserWithProfile(username, profile);
-                        SessionDto sessionDto = authenticationManager.createSession(userAuth.getUser(), request.ip());
+                        SessionDto session = socialAuthService.createUser(username, profile, request.ip());
                         socialAuthService.expireTemporarySession(tempSessionId);
                         return Response
                             .ok(new Viewable("/auth"))
-                            .cookie(sessionCookie("sid", sessionDto.getSessionId()))
+                            .cookie(sessionCookie("sid", session.getSessionId()))
                             .build();
                     } catch (Exception e) {
                         return Response.ok(new Viewable(
@@ -206,13 +204,11 @@ public class AuthResource {
                                     "captchaRequired", captchaRequired
                                 ))).build();
                         } else {
-                            UserAuthDto newAuth =
-                                authenticationManager.createUserAuthFromProfile(user, profile);
-                            SessionDto sessionDto = authenticationManager.createSession(newAuth.getUser(), ip);
+                            SessionDto session = socialAuthService.createAuth(user, profile, request.ip());
                             socialAuthService.expireTemporarySession(tempSessionId);
                             return Response
                                 .ok(new Viewable("/auth"))
-                                .cookie(sessionCookie("sid", sessionDto.getSessionId()))
+                                .cookie(sessionCookie("sid", session.getSessionId()))
                                 .build();
                         }
                     } else {
