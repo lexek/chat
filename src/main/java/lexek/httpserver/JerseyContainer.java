@@ -92,7 +92,7 @@ public class JerseyContainer extends SimpleHttpHandler implements Container {
         final String hostHeader = request.header(HttpHeaders.Names.HOST);
         URI baseUri = new URI("https://" + hostHeader + "/rest/");
         URI requestUri = new URI("https://" + hostHeader + request.uri());
-        UserDto userDto = authenticationManager.checkAuthentication(request);
+        UserDto userDto = authenticationManager.checkFullAuthentication(request);
         ContainerRequest containerRequest = new ContainerRequest(
             baseUri,
             requestUri,

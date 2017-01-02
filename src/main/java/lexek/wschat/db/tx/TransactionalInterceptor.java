@@ -16,6 +16,8 @@ public class TransactionalInterceptor implements MethodInterceptor {
         return ctx.transactionResult(configuration -> {
             try {
                 return invocation.proceed();
+            } catch (Exception e) {
+                throw e;
             } catch (Throwable throwable) {
                 throw new Exception(throwable);
             }

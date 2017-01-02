@@ -3,19 +3,15 @@ package lexek.wschat.security;
 import com.google.common.io.BaseEncoding;
 import io.netty.util.internal.chmv8.ConcurrentHashMapV8;
 import lexek.httpserver.Request;
-import lexek.wschat.chat.ConnectionManager;
 import lexek.wschat.chat.e.InvalidInputException;
 import lexek.wschat.chat.model.GlobalRole;
 import lexek.wschat.db.dao.UserAuthDao;
-import lexek.wschat.db.model.Email;
 import lexek.wschat.db.model.SessionDto;
 import lexek.wschat.db.model.UserAuthDto;
 import lexek.wschat.db.model.UserDto;
 import lexek.wschat.db.tx.Transactional;
 import lexek.wschat.security.social.SocialProfile;
-import lexek.wschat.services.EmailService;
 import lexek.wschat.services.JournalService;
-import lexek.wschat.util.Colors;
 import org.apache.http.HttpHeaders;
 import org.jvnet.hk2.annotations.Service;
 import org.mindrot.jbcrypt.BCrypt;
@@ -23,11 +19,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
-import javax.inject.Named;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -38,31 +29,27 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class AuthenticationManager {
     private final Logger logger = LoggerFactory.getLogger(AuthenticationManager.class);
     private final Map<String, AtomicInteger> failedLogin = new ConcurrentHashMapV8<>();
-    private final Map<Long, Instant> latestEmailChanges = new ConcurrentHashMapV8<>();
     private final Set<UserAuthEventListener> userAuthEventListeners = new HashSet<>();
     private final SecureTokenGenerator secureTokenGenerator;
-    private final String host;
-    private final EmailService emailService;
-    private final ConnectionManager connectionManager;
-    private final UserAuthDao userAuthDao;
     private final JournalService journalService;
+    private final UserEmailManager userEmailManager;
+    private final UserAuthDao userAuthDao;
+    private final SessionService sessionService;
     private final Set<String> bannedIps = new CopyOnWriteArraySet<>();
 
     @Inject
     public AuthenticationManager(
-        @Named("core.hostname") String host,
         SecureTokenGenerator secureTokenGenerator,
-        EmailService emailService,
-        ConnectionManager connectionManager,
         UserAuthDao userAuthDao,
-        JournalService journalService
+        JournalService journalService,
+        UserEmailManager userEmailManager,
+        SessionService sessionService
     ) {
-        this.host = host;
         this.secureTokenGenerator = secureTokenGenerator;
-        this.emailService = emailService;
-        this.connectionManager = connectionManager;
         this.userAuthDao = userAuthDao;
         this.journalService = journalService;
+        this.userEmailManager = userEmailManager;
+        this.sessionService = sessionService;
     }
 
     public UserDto fastAuth(String name, String password, String ip) {
@@ -95,7 +82,6 @@ public class AuthenticationManager {
         return i != null ? i.get() : 0;
     }
 
-    @Transactional
     public SessionDto authenticate(String username, String password, String ip) {
         UserDto user = fastAuth(username, password, ip);
         if (user != null) {
@@ -108,29 +94,29 @@ public class AuthenticationManager {
         if (userAuth == null || ip == null) {
             throw new NullPointerException();
         }
-        String sid = userAuth.getId() + "_" + secureTokenGenerator.generateSessionId();
-        return userAuthDao.newSession(
-            sid,
-            ip,
-            userAuth,
-            System.currentTimeMillis()
-        );
-    }
-
-    @Transactional
-    public UserAuthDto getOrCreateUserAuth(SocialProfile profile, UserDto user) {
-        //todo: separate get and create logic after proper transactions are implemented
-        UserAuthDto auth = userAuthDao.getOrCreateUserAuth(profile, user);
-        if (user != null) {
-            triggerAuthEvent(UserAuthEventType.CREATED, user, profile.getService());
+        try {
+            return sessionService.createSession(ip, userAuth);
+        } catch (Exception e) {
+            logger.error("exception", e);
+            return null;
         }
-        return auth;
     }
 
-    @Transactional
+    public UserAuthDto getOrCreateUserAuth(SocialProfile profile, UserDto user) {
+        try {
+            UserAuthDto auth = userAuthDao.getOrCreateUserAuth(profile, user);
+            if (user != null) {
+                triggerAuthEvent(UserAuthEventType.CREATED, user, profile.getService());
+            }
+            return auth;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     public UserDto checkFullAuthentication(String sid, String ip) {
         UserDto user = null;
-        SessionDto session = userAuthDao.getSession(sid, ip);
+        SessionDto session = sessionService.getSession(sid, ip);
         if (session != null) {
             user = session.getUserAuth();
         }
@@ -173,87 +159,16 @@ public class AuthenticationManager {
         return user;
     }
 
-    @Deprecated
-    public UserDto checkAuthentication(Request request) {
-        return checkFullAuthentication(request);
-    }
-
+    @Transactional
     public synchronized boolean registerWithPassword(final String name, final String password, final String email) {
-        final String color = Colors.generateColor(name);
         String verificationCode = secureTokenGenerator.generateVerificationCode();
-        Long userId = userAuthDao.registerWithPassword(name, password, email, color, verificationCode);
-        if (userId != null) {
-            sendVerificationEmail(email, verificationCode, userId);
-            latestEmailChanges.put(userId, Instant.now());
-            journalService.userCreated(new UserDto(userId));
+        UserDto user = userAuthDao.registerWithPassword(name, password, email, verificationCode);
+        if (user != null) {
+            userEmailManager.sendVerificationEmail(email, verificationCode, user.getId());
+            userEmailManager.userCreated(user);
+            journalService.userCreated(user);
         }
-        return userId != null;
-    }
-
-    public synchronized void setEmail(UserDto user, String email) {
-        if (email == null) {
-            throw new InvalidInputException("email", "ERROR_EMAIL_NULL");
-        }
-
-        if (email.equals(user.getEmail())) {
-            throw new InvalidInputException("email", "ERROR_EMAIL_SAME");
-        }
-
-        Instant lastChange = latestEmailChanges.get(user.getId());
-        if (lastChange != null) {
-            Instant now = Instant.now();
-            if (now.minus(30, ChronoUnit.MINUTES).isBefore(lastChange)) {
-                throw new InvalidInputException("email", "ERROR_EMAIL_TOO_OFTEN");
-            }
-        }
-
-        doChangeEmail(user, email);
-    }
-
-    @Transactional
-    private void doChangeEmail(UserDto user, String email) {
-        String verificationCode = secureTokenGenerator.generateVerificationCode();
-        userAuthDao.setEmail(user.getId(), email, verificationCode);
-        user.setEmail(email);
-        user.setEmailVerified(false);
-        connectionManager.forEach(c -> user.getId().equals(c.getUser().getId()), lexek.wschat.chat.Connection::close);
-        sendVerificationEmail(email, verificationCode, user.getId());
-        latestEmailChanges.put(user.getId(), Instant.now());
-    }
-
-    public void resendVerificationEmail(UserDto user) {
-        String code = userAuthDao.getPendingVerificationCode(user.getId());
-        if (code != null) {
-            sendVerificationEmail(user.getEmail(), code, user.getId());
-        }
-    }
-
-    private void sendVerificationEmail(String email, String verificationCode, long userId) {
-        try {
-            emailService.sendEmail(new Email(
-                email,
-                "Verify your email.",
-                "https://" + host + ":1337/rest/email/verify" +
-                    "?code=" + URLEncoder.encode(verificationCode, "utf-8") +
-                    "&uid=" + userId
-            ));
-        } catch (UnsupportedEncodingException e) {
-            logger.warn("", e);
-        }
-    }
-
-    @Transactional
-    public synchronized boolean verifyEmail(String code, long userId) {
-        boolean success = userAuthDao.verifyEmail(code, userId);
-        if (success) {
-            connectionManager.forEach(connection -> {
-                Long id = connection.getUser().getId();
-                if (id != null && id.equals(userId)) {
-                    connection.close();
-                }
-            });
-        }
-        return success;
+        return user != null;
     }
 
     @Transactional
@@ -287,7 +202,7 @@ public class AuthenticationManager {
     }
 
     public synchronized UserAuthDto createUserAuthFromProfile(UserDto user, SocialProfile profile) {
-        UserAuthDto userAuth = userAuthDao.createAuthFromProfile(user, profile);
+        UserAuthDto userAuth = userAuthDao.createAuthFromProfile(profile, user);
         triggerAuthEvent(UserAuthEventType.CREATED, user, profile.getService());
         return userAuth;
     }
@@ -303,10 +218,6 @@ public class AuthenticationManager {
     public boolean hasRole(Request request, GlobalRole role) {
         UserDto user = checkFullAuthentication(request);
         return user != null && user.hasRole(role);
-    }
-
-    public void invalidateSession(String sid) {
-        userAuthDao.invalidateSession(sid);
     }
 
     public synchronized void deleteAuth(UserDto user, String serviceName) {

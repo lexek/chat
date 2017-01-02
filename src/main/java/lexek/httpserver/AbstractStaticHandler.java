@@ -74,7 +74,7 @@ public abstract class AbstractStaticHandler implements HttpHandler {
 
             int maxAge = 3600;
             for (Tuple2<Pattern, Integer> override : maxAgeOverrides) {
-                if (override.getL().matcher(request.getUri()).matches()) {
+                if (override.getL().matcher(request.uri()).matches()) {
                     maxAge = override.getR();
                     break;
                 }

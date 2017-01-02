@@ -9,7 +9,6 @@ import javax.inject.Inject;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
-import java.io.IOException;
 
 @Path("/proxy/emoticons")
 @RequiredRole(GlobalRole.SUPERADMIN)

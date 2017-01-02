@@ -24,6 +24,7 @@ public class HistoryData {
     public long getId() {
         return id;
     }
+
     public String getMessage() {
         return message;
     }

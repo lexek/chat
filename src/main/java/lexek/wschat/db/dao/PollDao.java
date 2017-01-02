@@ -5,6 +5,7 @@ import com.google.common.collect.Sets;
 import lexek.wschat.db.jooq.tables.records.PollOptionRecord;
 import lexek.wschat.db.jooq.tables.records.PollRecord;
 import lexek.wschat.db.model.DataPage;
+import lexek.wschat.db.tx.Transactional;
 import lexek.wschat.services.poll.Poll;
 import lexek.wschat.services.poll.PollOption;
 import lexek.wschat.services.poll.PollState;
@@ -35,24 +36,22 @@ public class PollDao {
         this.ctx = ctx;
     }
 
+    @Transactional
     public Poll add(final String question, final ImmutableList<PollOption> options, final long roomId) {
         Poll result = null;
-        Long id = ctx.transactionResult(txConf -> {
-            Long id1 = DSL.using(txConf)
-                .insertInto(POLL, POLL.QUESTION, POLL.ROOM_ID, POLL.OPEN)
-                .values(question, roomId, true)
-                .returning(POLL.ID)
-                .fetchOne().getId();
-            if (id1 != null) {
-                DSL.using(txConf)
-                    .batchInsert(options
-                        .stream()
-                        .map(option -> new PollOptionRecord(id1, option.getOptionId(), option.getText()))
-                        .collect(Collectors.toList()))
-                    .execute();
-            }
-            return id1;
-        });
+        Long id = ctx
+            .insertInto(POLL, POLL.QUESTION, POLL.ROOM_ID, POLL.OPEN)
+            .values(question, roomId, true)
+            .returning(POLL.ID)
+            .fetchOne().getId();
+        if (id != null) {
+            ctx
+                .batchInsert(options
+                    .stream()
+                    .map(option -> new PollOptionRecord(id, option.getOptionId(), option.getText()))
+                    .collect(Collectors.toList()))
+                .execute();
+        }
         if (id != null) {
             result = new Poll(id, question, options);
         }

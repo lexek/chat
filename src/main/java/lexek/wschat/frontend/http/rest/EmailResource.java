@@ -3,7 +3,7 @@ package lexek.wschat.frontend.http.rest;
 import lexek.wschat.chat.model.GlobalRole;
 import lexek.wschat.db.model.UserDto;
 import lexek.wschat.db.model.form.EmailForm;
-import lexek.wschat.security.AuthenticationManager;
+import lexek.wschat.security.UserEmailManager;
 import lexek.wschat.security.jersey.Auth;
 import lexek.wschat.security.jersey.RequiredRole;
 
@@ -17,11 +17,11 @@ import javax.ws.rs.core.Response;
 @Path("/email")
 @RequiredRole(GlobalRole.USER_UNCONFIRMED)
 public class EmailResource {
-    private final AuthenticationManager authenticationManager;
+    private final UserEmailManager userEmailManager;
 
     @Inject
-    public EmailResource(AuthenticationManager authenticationManager) {
-        this.authenticationManager = authenticationManager;
+    public EmailResource(UserEmailManager userEmailManager) {
+        this.userEmailManager = userEmailManager;
     }
 
     private static boolean hasPendingVerification(UserDto user) {
@@ -35,7 +35,7 @@ public class EmailResource {
         @Auth UserDto user,
         @Valid @NotNull EmailForm form
     ) {
-        authenticationManager.setEmail(user, form.getEmail().trim().toLowerCase());
+        userEmailManager.setEmail(user, form.getEmail().trim().toLowerCase());
         return Response.ok().build();
     }
 
@@ -43,7 +43,7 @@ public class EmailResource {
     @Path("/resendVerification")
     public void resendVerificationEmail(@Auth UserDto user) {
         if (hasPendingVerification(user)) {
-            authenticationManager.resendVerificationEmail(user);
+            userEmailManager.resendVerificationEmail(user);
         }
     }
 
@@ -55,8 +55,7 @@ public class EmailResource {
         @QueryParam("code") String code,
         @QueryParam("uid") long userId
     ) {
-        boolean success = this.authenticationManager.verifyEmail(code, userId);
-        if (success) {
+        if (userEmailManager.verifyEmail(code, userId)) {
             return "your email is successfully verified";
         }
         return "there was an error with verifying your email";

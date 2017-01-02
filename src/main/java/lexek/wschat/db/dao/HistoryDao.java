@@ -5,6 +5,7 @@ import lexek.wschat.chat.model.MessageType;
 import lexek.wschat.db.jooq.tables.pojos.History;
 import lexek.wschat.db.model.DataPage;
 import lexek.wschat.db.model.HistoryData;
+import lexek.wschat.db.tx.Transactional;
 import lexek.wschat.util.Pages;
 import org.jooq.*;
 import org.jooq.impl.DSL;
@@ -34,34 +35,32 @@ public class HistoryDao {
         ctx.newRecord(HISTORY, object).store();
     }
 
+    @Transactional
     public void addWithStats(History history, Multiset<Long> stats) {
-        ctx.transaction(tx -> {
-            DSL.using(tx).newRecord(HISTORY, history).store();
-            List<Query> toStore = new ArrayList<>();
-            for (Multiset.Entry<Long> entry : stats.entrySet()) {
-                toStore.add(DSL
-                    .insertInto(EMOTICON_USAGE)
-                    .set(EMOTICON_USAGE.EMOTICON_ID, entry.getElement())
-                    .set(EMOTICON_USAGE.USER_ID, history.getUserId())
-                    .set(EMOTICON_USAGE.COUNT, (long) entry.getCount())
-                    .set(EMOTICON_USAGE.DATE, new Date(System.currentTimeMillis()))
-                    .onDuplicateKeyUpdate()
-                    .set(EMOTICON_USAGE.COUNT, EMOTICON_USAGE.COUNT.plus(entry.getCount()))
-                );
-            }
-            DSL.using(tx).batch(toStore).execute();
-        });
+        ctx.newRecord(HISTORY, history).store();
+        List<Query> toStore = new ArrayList<>();
+        for (Multiset.Entry<Long> entry : stats.entrySet()) {
+            toStore.add(DSL
+                .insertInto(EMOTICON_USAGE)
+                .set(EMOTICON_USAGE.EMOTICON_ID, entry.getElement())
+                .set(EMOTICON_USAGE.USER_ID, history.getUserId())
+                .set(EMOTICON_USAGE.COUNT, (long) entry.getCount())
+                .set(EMOTICON_USAGE.DATE, new Date(System.currentTimeMillis()))
+                .onDuplicateKeyUpdate()
+                .set(EMOTICON_USAGE.COUNT, EMOTICON_USAGE.COUNT.plus(entry.getCount()))
+            );
+        }
+        ctx.batch(toStore).execute();
     }
 
+    @Transactional
     public void hideUserMessages(History message, String name, long since) {
-        ctx.transaction(txCfg -> {
-            DSL.using(txCfg)
-                .update(HISTORY.join(USER).on(HISTORY.USER_ID.equal(USER.ID)))
-                .set(HISTORY.HIDDEN, true)
-                .where(USER.NAME.equal(name).and(HISTORY.TIMESTAMP.greaterOrEqual(since)))
-                .execute();
-            DSL.using(txCfg).newRecord(HISTORY, message).store();
-        });
+        ctx
+            .update(HISTORY.join(USER).on(HISTORY.USER_ID.equal(USER.ID)))
+            .set(HISTORY.HIDDEN, true)
+            .where(USER.NAME.equal(name).and(HISTORY.TIMESTAMP.greaterOrEqual(since)))
+            .execute();
+        ctx.newRecord(HISTORY, message).store();
     }
 
     public void hideRoomMessages(long roomId, long since) {

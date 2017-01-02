@@ -7,11 +7,11 @@ import lexek.wschat.chat.model.User;
 import lexek.wschat.db.model.ChatterData;
 import lexek.wschat.db.model.DataPage;
 import lexek.wschat.db.model.UserDto;
+import lexek.wschat.db.tx.Transactional;
 import lexek.wschat.util.Pages;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.Record;
-import org.jooq.impl.DSL;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
@@ -30,28 +30,25 @@ public class ChatterDao {
         this.ctx = ctx;
     }
 
+    @Transactional
     public Chatter getChatter(User user, long roomId) {
-        return ctx.transactionResult(conf -> {
-            Chatter chatter = null;
-            Record record = DSL.using(conf)
+        Chatter chatter = Chatter.fromRecord(
+            ctx
                 .select()
                 .from(CHATTER)
                 .where(CHATTER.USER_ID.equal(user.getId()).and(CHATTER.ROOM_ID.equal(roomId)))
-                .fetchOne();
-            chatter = Chatter.fromRecord(record, user);
-            if (record == null) {
-                long id = DSL.using(conf)
-                    .insertInto(CHATTER, CHATTER.USER_ID, CHATTER.ROOM_ID, CHATTER.ROLE, CHATTER.TIMEOUT, CHATTER.BANNED)
-                    .values(user.getId(), roomId, LocalRole.USER.toString(), null, false)
-                    .returning(CHATTER.ID)
-                    .fetchOne().getId();
-                chatter = new Chatter(id, LocalRole.USER, false, null, user);
-            }
-            if (chatter == null) {
-                chatter = new Chatter(null, LocalRole.USER, false, null, user);
-            }
-            return chatter;
-        });
+                .fetchOne(),
+            user
+        );
+        if (chatter == null) {
+            long id = ctx
+                .insertInto(CHATTER, CHATTER.USER_ID, CHATTER.ROOM_ID, CHATTER.ROLE, CHATTER.TIMEOUT, CHATTER.BANNED)
+                .values(user.getId(), roomId, LocalRole.USER.toString(), null, false)
+                .returning(CHATTER.ID)
+                .fetchOne().getId();
+            chatter = new Chatter(id, LocalRole.USER, false, null, user);
+        }
+        return chatter;
     }
 
     public Chatter getChatter(String name, long roomId) {

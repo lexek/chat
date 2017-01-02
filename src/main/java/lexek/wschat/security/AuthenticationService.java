@@ -23,7 +23,6 @@ import lexek.wschat.util.LoggingExceptionHandler;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 
 @Service
@@ -31,6 +30,7 @@ public class AuthenticationService extends AbstractManagedService {
     private final Disruptor<AuthenticationEvent> disruptor;
     private final RingBuffer<AuthenticationEvent> ringBuffer;
     private final AuthenticationManager authenticationManager;
+    private final SessionService sessionService;
     private final UserService userService;
     private final CaptchaService captchaService;
     private final EventDispatcher eventDispatcher;
@@ -38,12 +38,14 @@ public class AuthenticationService extends AbstractManagedService {
     @Inject
     public AuthenticationService(
         AuthenticationManager authenticationManager,
+        SessionService sessionService,
         UserService userService,
         CaptchaService captchaService,
         EventDispatcher eventDispatcher
     ) {
         super("authenticationService", InitStage.SERVICES);
         this.authenticationManager = authenticationManager;
+        this.sessionService = sessionService;
         this.userService = userService;
         this.captchaService = captchaService;
         this.eventDispatcher = eventDispatcher;
@@ -52,12 +54,12 @@ public class AuthenticationService extends AbstractManagedService {
         this.disruptor = new Disruptor<>(
             eventFactory,
             32,
-            Executors.newSingleThreadExecutor(threadFactory),
+            threadFactory,
             ProducerType.MULTI,
             new BlockingWaitStrategy()
         );
         this.ringBuffer = this.disruptor.getRingBuffer();
-        this.disruptor.handleExceptionsWith(new LoggingExceptionHandler());
+        this.disruptor.setDefaultExceptionHandler(new LoggingExceptionHandler());
         this.disruptor.handleEventsWith(new AuthenticationServiceWorker());
     }
 
@@ -87,8 +89,8 @@ public class AuthenticationService extends AbstractManagedService {
         metricRegistry.register(this.getName() + ".queue.bufferSize", (Gauge<Integer>) ringBuffer::getBufferSize);
     }
 
-    public void invalidate(String sid) {
-        authenticationManager.invalidateSession(sid);
+    public void invalidateSession(String sid) {
+        sessionService.invalidateSession(sid);
     }
 
     public void authenticateWithSid(Connection connection, String sid, AuthenticationCallback callback) {
