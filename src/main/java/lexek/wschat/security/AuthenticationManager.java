@@ -69,10 +69,6 @@ public class AuthenticationManager {
         }
     }
 
-    private boolean validatePassword(String password, String hash) {
-        return BCrypt.checkpw(password, hash);
-    }
-
     public UserDto fastAuthToken(String token) {
         return userAuthDao.getUserForToken(token);
     }
@@ -195,6 +191,7 @@ public class AuthenticationManager {
         }
     }
 
+    @Transactional
     public synchronized UserAuthDto createUserWithProfile(String name, SocialProfile socialProfile) {
         UserAuthDto result = userAuthDao.createUserWithProfile(name, socialProfile);
         journalService.userCreated(result.getUser());
@@ -229,11 +226,15 @@ public class AuthenticationManager {
         return this.bannedIps;
     }
 
-    private void triggerAuthEvent(UserAuthEventType type, UserDto user, String service) {
-        userAuthEventListeners.forEach(listener -> listener.onEvent(type, user, service));
-    }
-
     public void registerAuthEventListener(UserAuthEventListener listener) {
         userAuthEventListeners.add(listener);
+    }
+
+    private boolean validatePassword(String password, String hash) {
+        return BCrypt.checkpw(password, hash);
+    }
+
+    private void triggerAuthEvent(UserAuthEventType type, UserDto user, String service) {
+        userAuthEventListeners.forEach(listener -> listener.onEvent(type, user, service));
     }
 }

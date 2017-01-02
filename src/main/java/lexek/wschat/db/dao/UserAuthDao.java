@@ -70,20 +70,6 @@ public class UserAuthDao {
         return null;
     }
 
-    private UserAuthDto getUserAuthByExternalId(String service, String externalId) {
-        return UserAuthDto.fromRecord(
-            ctx
-                .select()
-                .from(USERAUTH)
-                .leftOuterJoin(USER).on(USERAUTH.USER_ID.equal(USER.ID))
-                .where(
-                    USERAUTH.SERVICE.equal(service),
-                    USERAUTH.AUTH_ID.equal(externalId)
-                )
-                .fetchOne()
-        );
-    }
-
     public UserAuthDto createAuthFromProfile(SocialProfile profile, UserDto user) {
         return UserAuthDto.fromRecord(
             ctx
@@ -105,16 +91,6 @@ public class UserAuthDao {
                 .returning()
                 .fetchOne(),
             user
-        );
-    }
-
-    private UserDto createUser(String name, String email, GlobalRole role) {
-        return UserDto.fromRecord(
-            ctx
-                .insertInto(USER, USER.NAME, USER.BANNED, USER.COLOR, USER.RENAME_AVAILABLE, USER.ROLE, USER.EMAIL, USER.EMAIL_VERIFIED)
-                .values(name, false, Colors.generateColor(name), false, role.toString(), email, false)
-                .returning()
-                .fetchOne()
         );
     }
 
@@ -224,7 +200,6 @@ public class UserAuthDao {
         return auth;
     }
 
-
     @Transactional
     public boolean verifyEmail(final String code, long userId) {
         Record record = ctx
@@ -300,5 +275,29 @@ public class UserAuthDao {
         if (deleted != 1) {
             throw new BadRequestException("service not connected");
         }
+    }
+
+    private UserDto createUser(String name, String email, GlobalRole role) {
+        return UserDto.fromRecord(
+            ctx
+                .insertInto(USER, USER.NAME, USER.BANNED, USER.COLOR, USER.RENAME_AVAILABLE, USER.ROLE, USER.EMAIL, USER.EMAIL_VERIFIED)
+                .values(name, false, Colors.generateColor(name), false, role.toString(), email, false)
+                .returning()
+                .fetchOne()
+        );
+    }
+
+    private UserAuthDto getUserAuthByExternalId(String service, String externalId) {
+        return UserAuthDto.fromRecord(
+            ctx
+                .select()
+                .from(USERAUTH)
+                .leftOuterJoin(USER).on(USERAUTH.USER_ID.equal(USER.ID))
+                .where(
+                    USERAUTH.SERVICE.equal(service),
+                    USERAUTH.AUTH_ID.equal(externalId)
+                )
+                .fetchOne()
+        );
     }
 }

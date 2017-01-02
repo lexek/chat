@@ -61,10 +61,6 @@ public class UserEmailManager {
             }
         }
 
-        doChangeEmail(user, email);
-    }
-
-    private void doChangeEmail(UserDto user, String email) {
         String verificationCode = secureTokenGenerator.generateVerificationCode();
         userAuthDao.setEmail(user.getId(), email, verificationCode);
         user.setEmail(email);

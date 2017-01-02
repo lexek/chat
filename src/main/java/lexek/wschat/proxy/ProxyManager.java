@@ -14,6 +14,7 @@ import lexek.wschat.db.dao.ProxyDao;
 import lexek.wschat.db.jooq.tables.pojos.ChatProxy;
 import lexek.wschat.db.model.ProxyAuth;
 import lexek.wschat.db.model.UserDto;
+import lexek.wschat.db.tx.Transactional;
 import lexek.wschat.services.JournalService;
 import lexek.wschat.services.MessageConsumerService;
 import lexek.wschat.services.managed.AbstractManagedService;
@@ -53,6 +54,7 @@ public class ProxyManager extends AbstractManagedService implements MessageConsu
         providers.put(proxyProvider.getName(), proxyProvider);
     }
 
+    @Transactional
     public Proxy newProxy(
         UserDto admin,
         Room room,
@@ -91,6 +93,7 @@ public class ProxyManager extends AbstractManagedService implements MessageConsu
             .anyMatch(e -> e.provider().getName().equals(providerName) && e.remoteRoom().equals(remoteRoom));
     }
 
+    @Transactional
     public void remove(UserDto admin, Room room, String provider, String remoteRoom) {
         Proxy proxy = getProxy(room, provider, remoteRoom);
         if (proxy != null) {
