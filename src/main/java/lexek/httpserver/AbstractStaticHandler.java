@@ -6,7 +6,6 @@ import io.netty.handler.codec.http.*;
 import io.netty.util.CharsetUtil;
 import lexek.wschat.util.Tuple2;
 
-import java.text.ParseException;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -86,7 +85,7 @@ public abstract class AbstractStaticHandler implements HttpHandler {
         }
     }
 
-    private boolean checkIfNotModified(FullHttpRequest request, Date lastModified) throws ParseException {
+    private boolean checkIfNotModified(FullHttpRequest request, Date lastModified) {
         if (request.headers().contains(IF_MODIFIED_SINCE)) {
             long ifModifiedSince = request.headers().getTimeMillis(IF_MODIFIED_SINCE);
             return ifModifiedSince / 1000 >= lastModified.getTime() / 1000;

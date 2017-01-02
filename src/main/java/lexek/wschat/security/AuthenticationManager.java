@@ -1,6 +1,8 @@
 package lexek.wschat.security;
 
 import com.google.common.io.BaseEncoding;
+import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.util.AsciiString;
 import io.netty.util.internal.chmv8.ConcurrentHashMapV8;
 import lexek.httpserver.Request;
 import lexek.wschat.chat.e.InvalidInputException;
@@ -12,7 +14,6 @@ import lexek.wschat.db.model.UserDto;
 import lexek.wschat.db.tx.Transactional;
 import lexek.wschat.security.social.SocialProfile;
 import lexek.wschat.services.JournalService;
-import org.apache.http.HttpHeaders;
 import org.jvnet.hk2.annotations.Service;
 import org.mindrot.jbcrypt.BCrypt;
 import org.slf4j.Logger;
@@ -121,8 +122,8 @@ public class AuthenticationManager {
 
     public UserDto checkFullAuthentication(Request request) {
         UserDto user = null;
-        if (request.hasHeader(HttpHeaders.AUTHORIZATION)) {
-            String[] tmp = request.header(HttpHeaders.AUTHORIZATION).split(" ", 2);
+        if (request.hasHeader(HttpHeaderNames.AUTHORIZATION)) {
+            String[] tmp = request.header(HttpHeaderNames.AUTHORIZATION).split(" ", 2);
             if (tmp.length == 2) {
                 String type = tmp[0];
                 String token = tmp[1];
@@ -144,7 +145,7 @@ public class AuthenticationManager {
             if (sid != null) {
                 String ip = request.ip();
                 if (ip.equals("127.0.0.1")) {
-                    String realIpHeader = request.header("X-REAL-IP");
+                    String realIpHeader = request.header(new AsciiString("X-REAL-IP"));
                     if (realIpHeader != null) {
                         ip = realIpHeader;
                     }

@@ -1,6 +1,7 @@
 package lexek.httpserver;
 
 import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.util.AsciiString;
 import lexek.wschat.db.model.UserDto;
 import lexek.wschat.security.AuthenticationManager;
 import lexek.wschat.util.BufferInputStream;
@@ -124,7 +125,13 @@ public class JerseyContainer extends SimpleHttpHandler implements Container {
 
         @Override
         public OutputStream writeResponseStatusAndHeaders(long contentLength, ContainerResponse responseContext) throws ContainerException {
-            responseContext.getHeaders().forEach((k, v) -> v.forEach(e -> response.header(k, e.toString())));
+            responseContext
+                .getHeaders()
+                .forEach((k, v) ->
+                    v.forEach(e ->
+                        response.header(AsciiString.of(k), e.toString())
+                    )
+                );
             response.status(responseContext.getStatus());
             return new BufferOutputStream(response.getBuffer());
         }

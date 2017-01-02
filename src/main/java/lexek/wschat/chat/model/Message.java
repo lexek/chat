@@ -19,31 +19,31 @@ public class Message {
     }
 
     public static Message ignoreMessage(MessageType type, String name) {
-        return new Message(ImmutableMap.<MessageProperty, Object>of(MessageProperty.TYPE, type, MessageProperty.NAME, name));
+        return new Message(ImmutableMap.of(MessageProperty.TYPE, type, MessageProperty.NAME, name));
     }
 
     public static Message errorMessage(String text) {
-        return new Message(ImmutableMap.<MessageProperty, Object>of(MessageProperty.TYPE, MessageType.ERROR, MessageProperty.TEXT, text));
+        return new Message(ImmutableMap.of(MessageProperty.TYPE, MessageType.ERROR, MessageProperty.TEXT, text));
     }
 
     public static Message authCompleteMessage(UserDto user) {
-        return new Message(ImmutableMap.<MessageProperty, Object>of(MessageProperty.TYPE, MessageType.AUTH_COMPLETE, MessageProperty.USER, user));
+        return new Message(ImmutableMap.of(MessageProperty.TYPE, MessageType.AUTH_COMPLETE, MessageProperty.USER, user));
     }
 
     public static Message errorMessage(String text, List errorData) {
-        return new Message(ImmutableMap.<MessageProperty, Object>of(MessageProperty.TYPE, MessageType.ERROR, MessageProperty.TEXT, text, MessageProperty.ERROR_DATA, errorData));
+        return new Message(ImmutableMap.of(MessageProperty.TYPE, MessageType.ERROR, MessageProperty.TEXT, text, MessageProperty.ERROR_DATA, errorData));
     }
 
     public static Message infoMessage(String text) {
-        return new Message(ImmutableMap.<MessageProperty, Object>of(MessageProperty.TYPE, MessageType.INFO, MessageProperty.TEXT, text));
+        return new Message(ImmutableMap.of(MessageProperty.TYPE, MessageType.INFO, MessageProperty.TEXT, text));
     }
 
     public static Message infoMessage(String text, String room) {
-        return new Message(ImmutableMap.<MessageProperty, Object>of(MessageProperty.TYPE, MessageType.INFO, MessageProperty.TEXT, text, MessageProperty.ROOM, room));
+        return new Message(ImmutableMap.of(MessageProperty.TYPE, MessageType.INFO, MessageProperty.TEXT, text, MessageProperty.ROOM, room));
     }
 
     public static Message joinMessage(String room, UserDto user, LocalRole localRole) {
-        return new Message(ImmutableMap.<MessageProperty, Object>of(
+        return new Message(ImmutableMap.of(
             MessageProperty.TYPE, MessageType.JOIN,
             MessageProperty.ROOM, room,
             MessageProperty.USER, user,
@@ -52,11 +52,11 @@ public class Message {
     }
 
     public static Message partMessage(String room, String name) {
-        return new Message(ImmutableMap.<MessageProperty, Object>of(MessageProperty.TYPE, MessageType.PART, MessageProperty.ROOM, room, MessageProperty.NAME, name));
+        return new Message(ImmutableMap.of(MessageProperty.TYPE, MessageType.PART, MessageProperty.ROOM, room, MessageProperty.NAME, name));
     }
 
     public static Message selfJoinMessage(String room, Chatter chatter, String topic) {
-        return new Message(ImmutableMap.<MessageProperty, Object>of(
+        return new Message(ImmutableMap.of(
             MessageProperty.TYPE, MessageType.SELF_JOIN,
             MessageProperty.ROOM, room,
             MessageProperty.CHATTER, chatter,
@@ -65,19 +65,19 @@ public class Message {
     }
 
     public static Message historyMessage(List<Message> messages) {
-        return new Message(ImmutableMap.<MessageProperty, Object>of(MessageProperty.TYPE, MessageType.HIST, MessageProperty.HISTORY_DATA, messages));
+        return new Message(ImmutableMap.of(MessageProperty.TYPE, MessageType.HIST, MessageProperty.HISTORY_DATA, messages));
     }
 
     public static Message pollMessage(MessageType type, String room, PollState pollState) {
-        return new Message(ImmutableMap.<MessageProperty, Object>of(MessageProperty.TYPE, type, MessageProperty.ROOM, room, MessageProperty.POLL_DATA, pollState));
+        return new Message(ImmutableMap.of(MessageProperty.TYPE, type, MessageProperty.ROOM, room, MessageProperty.POLL_DATA, pollState));
     }
 
     public static Message pollVotedMessage(String room) {
-        return new Message(ImmutableMap.<MessageProperty, Object>of(MessageProperty.TYPE, MessageType.POLL_VOTED, MessageProperty.ROOM, room));
+        return new Message(ImmutableMap.of(MessageProperty.TYPE, MessageType.POLL_VOTED, MessageProperty.ROOM, room));
     }
 
     public static Message namesMessage(String room, List<Chatter> users, String selfName) {
-        return new Message(ImmutableMap.<MessageProperty, Object>of(
+        return new Message(ImmutableMap.of(
             MessageProperty.TYPE, MessageType.NAMES,
             MessageProperty.ROOM, room,
             MessageProperty.CHATTERS, users,
@@ -86,11 +86,11 @@ public class Message {
     }
 
     public static Message moderationMessage(MessageType messageType, String room, String mod, String user) {
-        return new Message(ImmutableMap.<MessageProperty, Object>of(MessageProperty.TYPE, messageType, MessageProperty.ROOM, room, MessageProperty.NAME, user, MessageProperty.MOD, mod));
+        return new Message(ImmutableMap.of(MessageProperty.TYPE, messageType, MessageProperty.ROOM, room, MessageProperty.NAME, user, MessageProperty.MOD, mod));
     }
 
     public static Message proxyClear(String room, String service, String remoteRoom, String user) {
-        return new Message(ImmutableMap.<MessageProperty, Object>of(
+        return new Message(ImmutableMap.of(
             MessageProperty.TYPE, MessageType.PROXY_CLEAR,
             MessageProperty.SERVICE, service,
             MessageProperty.SERVICE_RESOURCE, remoteRoom,
@@ -100,19 +100,19 @@ public class Message {
     }
 
     public static Message clearMessage(String room) {
-        return new Message(ImmutableMap.<MessageProperty, Object>of(MessageProperty.TYPE, MessageType.CLEAR_ROOM, MessageProperty.ROOM, room));
+        return new Message(ImmutableMap.of(MessageProperty.TYPE, MessageType.CLEAR_ROOM, MessageProperty.ROOM, room));
     }
 
     public static Message colorMessage(String color) {
-        return new Message(ImmutableMap.<MessageProperty, Object>of(MessageProperty.TYPE, MessageType.COLOR, MessageProperty.COLOR, color));
+        return new Message(ImmutableMap.of(MessageProperty.TYPE, MessageType.COLOR, MessageProperty.COLOR, color));
     }
 
     public static Message pongMessage(String text) {
-        return new Message(ImmutableMap.<MessageProperty, Object>of(MessageProperty.TYPE, MessageType.PONG, MessageProperty.TEXT, text));
+        return new Message(ImmutableMap.of(MessageProperty.TYPE, MessageType.PONG, MessageProperty.TEXT, text));
     }
 
     public static Message captchaMessage(String captchaId, String name) {
-        return new Message(ImmutableMap.<MessageProperty, Object>of(
+        return new Message(ImmutableMap.of(
             MessageProperty.TYPE, MessageType.RECAPTCHA,
             MessageProperty.TEXT, captchaId,
             MessageProperty.NAME, name
@@ -208,11 +208,11 @@ public class Message {
     }
 
     public static Message emptyMessage(MessageType messageType) {
-        return new Message(ImmutableMap.<MessageProperty, Object>of(MessageProperty.TYPE, messageType));
+        return new Message(ImmutableMap.of(MessageProperty.TYPE, messageType));
     }
 
     public static Message proxyListMessage(List<ProxyMessageModel> proxies, String room) {
-        return new Message(ImmutableMap.<MessageProperty, Object>of(
+        return new Message(ImmutableMap.of(
             MessageProperty.TYPE, MessageType.PROXIES,
             MessageProperty.ROOM, room,
             MessageProperty.PROXIES, proxies
@@ -220,14 +220,14 @@ public class Message {
     }
 
     public static Message protocolMessage(long version) {
-        return new Message(ImmutableMap.<MessageProperty, Object>of(
+        return new Message(ImmutableMap.of(
             MessageProperty.TYPE, MessageType.PROTOCOL_VERSION,
             MessageProperty.VERSION, version
         ));
     }
 
     public static Message ignoredMessage(List<String> ignoredNames) {
-        return new Message(ImmutableMap.<MessageProperty, Object>of(
+        return new Message(ImmutableMap.of(
             MessageProperty.TYPE, MessageType.IGNORED,
             MessageProperty.NAMES, ignoredNames
         ));
