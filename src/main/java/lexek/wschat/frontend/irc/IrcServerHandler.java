@@ -53,12 +53,12 @@ public class IrcServerHandler extends ChannelInboundHandlerAdapter implements Au
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         IrcConnection connection = new IrcConnection(protocol, ctx.channel());
-        ctx.attr(WRAPPER_ATTR_KEY).set(connection);
+        ctx.channel().attr(WRAPPER_ATTR_KEY).set(connection);
     }
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
-        IrcConnection connection = ctx.attr(WRAPPER_ATTR_KEY).get();
+        IrcConnection connection = ctx.channel().attr(WRAPPER_ATTR_KEY).get();
         if (connection.getState() == ConnectionState.AUTHENTICATED) {
             roomManager.partAll(connection, true);
             connectionGroup.deregisterConnection(connection);
@@ -68,7 +68,7 @@ public class IrcServerHandler extends ChannelInboundHandlerAdapter implements Au
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object message) {
-        IrcConnection connection = ctx.attr(WRAPPER_ATTR_KEY).get();
+        IrcConnection connection = ctx.channel().attr(WRAPPER_ATTR_KEY).get();
         onMessage(connection, (String) message);
     }
 

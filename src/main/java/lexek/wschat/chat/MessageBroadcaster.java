@@ -18,7 +18,6 @@ import lexek.wschat.util.LoggingExceptionHandler;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 
 @Service
@@ -34,12 +33,12 @@ public class MessageBroadcaster extends AbstractManagedService {
         this.disruptor = new Disruptor<>(
             eventFactory,
             64,
-            Executors.newCachedThreadPool(threadFactory),
+            threadFactory,
             ProducerType.MULTI,
             new BlockingWaitStrategy()
         );
         this.ringBuffer = this.disruptor.getRingBuffer();
-        this.disruptor.handleExceptionsWith(new LoggingExceptionHandler());
+        this.disruptor.setDefaultExceptionHandler(new LoggingExceptionHandler());
     }
 
     @Inject

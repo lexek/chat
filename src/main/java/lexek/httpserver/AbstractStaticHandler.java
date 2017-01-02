@@ -2,10 +2,7 @@ package lexek.httpserver;
 
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
-import io.netty.handler.codec.http.DefaultFullHttpResponse;
-import io.netty.handler.codec.http.FullHttpRequest;
-import io.netty.handler.codec.http.FullHttpResponse;
-import io.netty.handler.codec.http.HttpHeaders;
+import io.netty.handler.codec.http.*;
 import io.netty.util.CharsetUtil;
 import lexek.wschat.util.Tuple2;
 
@@ -13,10 +10,11 @@ import java.text.ParseException;
 import java.util.*;
 import java.util.regex.Pattern;
 
-import static io.netty.handler.codec.http.HttpHeaders.Names.*;
+import static io.netty.handler.codec.http.HttpHeaderNames.*;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_MODIFIED;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
+import static io.netty.handler.codec.rtsp.RtspHeaderNames.CACHE_CONTROL;
 
 public abstract class AbstractStaticHandler implements HttpHandler {
     public static final Map<String, String> DEFAULT_MIME_TYPES;
@@ -55,7 +53,7 @@ public abstract class AbstractStaticHandler implements HttpHandler {
 
     @Override
     public FullHttpResponse handle(ViewResolvers viewResolvers, FullHttpRequest request, Channel channel) throws Exception {
-        StaticHandlerContext context = getContext(withoutQuery(request.getUri()));
+        StaticHandlerContext context = getContext(withoutQuery(request.uri()));
         if (context.exists()) {
             Date lastModified = new Date(context.lastModified());
 
@@ -65,12 +63,13 @@ public abstract class AbstractStaticHandler implements HttpHandler {
             } else {
                 response = new DefaultFullHttpResponse(HTTP_1_1, OK, Unpooled.wrappedBuffer(context.read()));
             }
+            HttpHeaders headers = response.headers();
 
             String contentType = context.getContentType();
             if (contentType != null) {
-                response.headers().add(CONTENT_TYPE, contentType);
+                headers.add(CONTENT_TYPE, contentType);
             }
-            response.headers().add(ETAG, lastModified.toString());
+            headers.add(ETAG, lastModified.toString());
 
             int maxAge = 3600;
             for (Tuple2<Pattern, Integer> override : maxAgeOverrides) {
@@ -79,9 +78,8 @@ public abstract class AbstractStaticHandler implements HttpHandler {
                     break;
                 }
             }
-            response.headers().add(CACHE_CONTROL, HttpHeaders.Values.MAX_AGE + "=" + maxAge);
-
-            HttpHeaders.setDateHeader(response, LAST_MODIFIED, lastModified);
+            headers.add(CACHE_CONTROL, HttpHeaderValues.MAX_AGE.concat("=" + maxAge));
+            headers.add(LAST_MODIFIED, lastModified);
             return response;
         } else {
             return null;
@@ -90,8 +88,8 @@ public abstract class AbstractStaticHandler implements HttpHandler {
 
     private boolean checkIfNotModified(FullHttpRequest request, Date lastModified) throws ParseException {
         if (request.headers().contains(IF_MODIFIED_SINCE)) {
-            Date ifModifiedSince = HttpHeaders.getDateHeader(request, IF_MODIFIED_SINCE);
-            return ifModifiedSince.getTime() / 1000 >= lastModified.getTime() / 1000;
+            long ifModifiedSince = request.headers().getTimeMillis(IF_MODIFIED_SINCE);
+            return ifModifiedSince / 1000 >= lastModified.getTime() / 1000;
         } else {
             return false;
         }

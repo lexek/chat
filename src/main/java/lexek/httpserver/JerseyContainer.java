@@ -1,6 +1,6 @@
 package lexek.httpserver;
 
-import io.netty.handler.codec.http.HttpHeaders;
+import io.netty.handler.codec.http.HttpHeaderNames;
 import lexek.wschat.db.model.UserDto;
 import lexek.wschat.security.AuthenticationManager;
 import lexek.wschat.util.BufferInputStream;
@@ -89,7 +89,7 @@ public class JerseyContainer extends SimpleHttpHandler implements Container {
 
     @Override
     protected void handle(Request request, Response response) throws Exception {
-        final String hostHeader = request.header(HttpHeaders.Names.HOST);
+        final String hostHeader = request.header(HttpHeaderNames.HOST);
         URI baseUri = new URI("https://" + hostHeader + "/rest/");
         URI requestUri = new URI("https://" + hostHeader + request.uri());
         UserDto userDto = authenticationManager.checkFullAuthentication(request);
