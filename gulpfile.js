@@ -14,6 +14,7 @@
     var basePath = './src/main/resources/static';
     var adminPath = basePath + '/chat/admin/';
     var clientPath = basePath + '/chat/client/';
+    var newClientPath = basePath + '/chat/client-new/';
     var commonPath = basePath + '/chat/common/';
 
     function prepareTemplates(appPath) {
@@ -51,10 +52,10 @@
         return gulp.src(files)
             .pipe(addStream.obj(prepareTemplates('/chat/admin/')))
             .pipe(addStream.obj(prepareCommonTemplates()))
+            .pipe(sourcemaps.init())
             .pipe(babel({
                 presets: ['es2015']
             }))
-            .pipe(sourcemaps.init())
             .pipe(concat('admin.min.js', {newLine: ';'}))
             .pipe(ngAnnotate({
                 // true helps add where @ngInject is not used. It infers.
@@ -112,30 +113,27 @@
             clientPath + '/messages.js',
             clientPath + '/users.js',
             clientPath + '/controls.js',
-            clientPath + '/ui/profile/email.js',
-            clientPath + '/ui/profile/password.js',
-            clientPath + '/ui/profile/profile.js',
             clientPath + '/ui/tickets/list.js',
             clientPath + '/ui/tickets/compose.js',
-            clientPath + '/ui/emoticons/**.module.js',
-            clientPath + '/ui/emoticons/**.js',
             clientPath + '/utils/**.module.js',
             clientPath + '/utils/**.js',
             commonPath + '**/*.module.js',
             commonPath + '**/*.js',
+            newClientPath + '**/*.module.js',
+            newClientPath + '**/*.js',
             clientPath + '/chat.js'
         ];
 
         return gulp.src(files)
-            .pipe(addStream.obj(prepareTemplates('/chat/client/')))
+            .pipe(addStream.obj(prepareTemplates('/chat/client-new/')))
             .pipe(addStream.obj(prepareCommonTemplates()))
             .pipe(sourcemaps.init())
-            .pipe(concat('client.min.js', {newLine: ';'}))
             .pipe(ngAnnotate({
                 // true helps add where @ngInject is not used. It infers.
                 // Doesn't work with resolve, so we must be explicit there
                 add: true
             }))
+            .pipe(concat('client.min.js', {newLine: ';'}))
             .pipe(bytediff.start())
             .pipe(uglify({mangle: false}))
             .pipe(bytediff.stop())
@@ -152,7 +150,8 @@
         ], ['admin']);
         gulp.watch([
             clientPath + '**/*.js',
-            clientPath + '**/*.html',
+            newClientPath + '**/*.js',
+            newClientPath + '**/*.html',
             commonPath + '**/*.js',
             commonPath + '**/*.html'
         ], ['client']);

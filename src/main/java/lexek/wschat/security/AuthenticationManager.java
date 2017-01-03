@@ -5,7 +5,9 @@ import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.util.AsciiString;
 import io.netty.util.internal.chmv8.ConcurrentHashMapV8;
 import lexek.httpserver.Request;
+import lexek.wschat.chat.e.BadRequestException;
 import lexek.wschat.chat.e.InvalidInputException;
+import lexek.wschat.chat.e.PasswordRequiredException;
 import lexek.wschat.chat.model.GlobalRole;
 import lexek.wschat.db.dao.UserAuthDao;
 import lexek.wschat.db.model.SessionDto;
@@ -175,6 +177,19 @@ public class AuthenticationManager {
             throw new InvalidInputException("oldPassword", "invalid");
         }
         userAuthDao.setPassword(user.getId(), BCrypt.hashpw(password, BCrypt.gensalt()));
+    }
+
+    public synchronized void deletePassword(UserDto user, String oldPassword) {
+        UserAuthDto authData = getAuthDataForUser(user, "password");
+        if (authData != null) {
+            if (oldPassword == null) {
+                throw new PasswordRequiredException();
+            }
+            if (!validatePassword(oldPassword, authData.getAuthenticationKey())) {
+                throw new BadRequestException("Invalid password.");
+            }
+        }
+        deleteAuth(user, "password");
     }
 
     public synchronized void setPasswordNoCheck(UserDto user, String password) {

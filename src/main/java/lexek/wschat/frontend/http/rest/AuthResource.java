@@ -8,6 +8,7 @@ import lexek.wschat.chat.model.GlobalRole;
 import lexek.wschat.db.model.SessionDto;
 import lexek.wschat.db.model.UserDto;
 import lexek.wschat.db.model.rest.BooleanValueContainer;
+import lexek.wschat.db.model.rest.PasswordModel;
 import lexek.wschat.security.AuthenticationManager;
 import lexek.wschat.security.ReCaptcha;
 import lexek.wschat.security.jersey.Auth;
@@ -242,16 +243,25 @@ public class AuthResource {
 
     @DELETE
     @Path("/{serviceName}")
+    @Consumes(MediaType.APPLICATION_JSON)
     @RequiredRole(GlobalRole.USER_UNCONFIRMED)
     public Response deleteAuth(
         @PathParam("serviceName") @NotEmpty String serviceName,
-        @Auth UserDto user
+        @Auth UserDto user,
+        PasswordModel passwordModel
     ) {
+        String password = passwordModel != null ? passwordModel.getPassword() : null;
         serviceName = serviceName.toLowerCase().trim();
-        if (serviceName.equals("password") || serviceName.equals("token")) {
-            authenticationManager.deleteAuth(user, serviceName);
-        } else {
-            socialAuthService.deleteAuth(user, serviceName);
+        switch (serviceName) {
+            case "password":
+                authenticationManager.deletePassword(user, password);
+                break;
+            case "token":
+                authenticationManager.deleteAuth(user, serviceName);
+                break;
+            default:
+                socialAuthService.deleteAuth(user, serviceName);
+                break;
         }
         return Response.ok().build();
     }

@@ -35,6 +35,7 @@ langModule.config(['$translateProvider', function ($translateProvider) {
         "CONTROLS_SIGN_IN": "Sign in",
         "CONTROLS_SIGN_UP": "Register",
         "CONTROLS_MENU_SIGN_IN_WITH": "with",
+        "CONTROLS_PASSWORD": "Password required",
 
         "CONTROLS_MENU_ADMIN_PANEL": "admin panel",
         "CONTROLS_MENU_COLOR": "color",
@@ -214,6 +215,7 @@ langModule.config(['$translateProvider', function ($translateProvider) {
         "CONTROLS_SIGN_IN": "Войти",
         "CONTROLS_SIGN_UP": "Зарегистрироваться",
         "CONTROLS_MENU_SIGN_IN_WITH": "через",
+        "CONTROLS_PASSWORD": "Введите пароль",
 
         "CONTROLS_MENU_ADMIN_PANEL": "админка",
         "CONTROLS_MENU_COLOR": "цвет",
