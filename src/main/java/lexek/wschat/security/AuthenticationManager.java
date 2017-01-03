@@ -179,6 +179,7 @@ public class AuthenticationManager {
         userAuthDao.setPassword(user.getId(), BCrypt.hashpw(password, BCrypt.gensalt()));
     }
 
+    @Transactional
     public synchronized void deletePassword(UserDto user, String oldPassword) {
         UserAuthDto authData = getAuthDataForUser(user, "password");
         if (authData != null) {
