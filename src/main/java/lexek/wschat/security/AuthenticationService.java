@@ -191,9 +191,16 @@ public class AuthenticationService extends AbstractManagedService {
                     auth = authenticationManager.checkFullAuthentication(event.getKey(), ip);
                 } else if (event.getType() == AuthenticationType.PASSWORD && event.getKey() != null && event.getName() != null) {
                     if (authenticationManager.failedLoginTries(ip) > 10) {
-                        callback.captchaRequired(connection, event.getName(), captchaService.tryAuthorize(() ->
-                            finishAuthentication(authenticationManager.fastAuth(event.getName(), event.getKey(), ip),
-                                connection, callback)));
+                        callback.captchaRequired(
+                            connection,
+                            event.getName(),
+                            captchaService.tryAuthorize(() ->
+                                finishAuthentication(
+                                    authenticationManager.fastAuth(event.getName(), event.getKey(), ip),
+                                    connection,
+                                    callback
+                                )
+                            ));
                         return;
                     } else {
                         auth = authenticationManager.fastAuth(event.getName(), event.getKey(), ip);
