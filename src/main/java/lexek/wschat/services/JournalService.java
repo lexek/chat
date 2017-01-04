@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 @Service
 public class JournalService {
     private static final Map<String, Set<String>> GLOBAL_CATEGORIES = ImmutableMap.of(
-        "user_self", ImmutableSet.of("NAME_CHANGE", "USER_CREATED"),
+        "user_self", ImmutableSet.of("NAME_CHANGE", "USER_CREATED", "PASSWORD_RESET"),
         "user_admin", ImmutableSet.of("USER_UPDATE", "PASSWORD"),
         "emoticon", ImmutableSet.of("NEW_EMOTICON", "IMAGE_EMOTICON", "DELETED_EMOTICON"),
         "room_admin", ImmutableSet.of("NEW_ROOM", "DELETE_ROOM")
@@ -83,6 +83,17 @@ public class JournalService {
             user,
             admin,
             "PASSWORD",
+            null,
+            now(),
+            null
+        ));
+    }
+
+    public void userPasswordReset(UserDto user) {
+        journalDao.add(new JournalEntry(
+            user,
+            null,
+            "PASSWORD_RESET",
             null,
             now(),
             null

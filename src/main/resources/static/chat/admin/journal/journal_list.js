@@ -29,6 +29,7 @@
             'USER_UPDATE': 'User changed',
             'USER_CREATED': 'User created',
             'NAME_CHANGE': 'User name changed',
+            'PASSWORD_RESET': 'Password reset',
             'NEW_EMOTICON': 'New emoticon',
             'IMAGE_EMOTICON': 'Updated emoticon image',
             'DELETED_EMOTICON': 'Deleted emoticon',

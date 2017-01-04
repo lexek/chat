@@ -468,7 +468,7 @@
             <groupId>org.jooq</groupId>
             <artifactId>jooq-checker</artifactId>
             <version>${jooq.version}</version>
-            <scope>compile</scope>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>javax.mail</groupId>
@@ -568,7 +568,7 @@
             <groupId>org.glassfish.hk2</groupId>
             <artifactId>hk2-metadata-generator</artifactId>
             <version>${hk2.version}</version>
-            <scope>compile</scope>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>

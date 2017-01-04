@@ -463,6 +463,9 @@
                     <div vc-recaptcha="" key="'6Lepxv4SAAAAAMFC4jmtZvnzyekEQ3XuX0xQ-3TB'" on-create="recaptchaCreated(widgetId)"></div>
                 </div>
                 <div class="form-group">
+                    <div class="btn btn-link" ng-click="forgotPassword()">{{'AUTH_FORGOT_PASSWORD' | translate}}</div>
+                </div>
+                <div class="form-group">
                     <div ng-disabled="busy" class="btn btn-default" ng-click="switchTo('registration')">{{'AUTH_NEW_ACCOUNT' | translate}}</div>
                     <input type="submit" ng-disabled="busy || form.$invalid" class="btn btn-primary pull-right" value="{{'AUTH_SIGN_IN' | translate}}"/>
                 </div>

@@ -352,7 +352,7 @@ var AnonCaptchaController = function($scope, $modalInstance, id, isUser) {
     };
 };
 
-var AuthenticationController = function($scope, $modalInstance, chat, action) {
+var AuthenticationController = function ($scope, $modalInstance, $modal, chat, action) {
     $scope.action = action;
     $scope.captchaRequired = false;
     $scope.input = {};
@@ -422,6 +422,14 @@ var AuthenticationController = function($scope, $modalInstance, chat, action) {
 
     $scope.close = function() {
         $modalInstance.dismiss('cancel');
+    };
+
+    $scope.forgotPassword = function () {
+        $modal.open({
+            templateUrl: '/chat/client-new/ui/auth/forgot_password.html',
+            controller: 'ForgotPasswordController',
+            size: "sm"
+        });
     };
 
     $.ajax("/login").done(function(data) {

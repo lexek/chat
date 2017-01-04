@@ -19,6 +19,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import freemarker.template.DefaultObjectWrapper;
+import freemarker.template.Version;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.epoll.Epoll;
 import io.netty.channel.epoll.EpollEventLoopGroup;
@@ -61,6 +62,7 @@ import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.ServerProperties;
+import org.glassfish.jersey.server.mvc.freemarker.FreemarkerConfigurationFactory;
 import org.glassfish.jersey.server.mvc.freemarker.FreemarkerMvcFeature;
 import org.glassfish.jersey.server.spi.internal.ValueFactoryProvider;
 import org.jooq.DSLContext;
@@ -276,10 +278,11 @@ public class Main {
         ProxyManager proxyManager = serviceLocator.getService(ProxyManager.class);
         messageConsumerServiceHandler.register(proxyManager);
 
-        freemarker.template.Configuration freemarker = new freemarker.template.Configuration();
+        Version freemarkerVersion = new Version(2, 3, 23);
+        freemarker.template.Configuration freemarker = new freemarker.template.Configuration(freemarkerVersion);
         freemarker.setClassForTemplateLoading(Main.class, "/templates");
         freemarker.setDefaultEncoding("UTF-8");
-        freemarker.setObjectWrapper(new DefaultObjectWrapper());
+        freemarker.setObjectWrapper(new DefaultObjectWrapper(freemarkerVersion));
 
         ReCaptcha reCaptcha = serviceLocator.getService(ReCaptcha.class);
         ViewResolvers viewResolvers = new ViewResolvers(freemarker);
@@ -299,6 +302,12 @@ public class Main {
                 register(FreemarkerMvcFeature.class);
                 property(FreemarkerMvcFeature.TEMPLATE_BASE_PATH, "/templates/");
                 property(FreemarkerMvcFeature.ENCODING, "UTF-8");
+                property(FreemarkerMvcFeature.TEMPLATE_OBJECT_FACTORY, new FreemarkerConfigurationFactory() {
+                    @Override
+                    public freemarker.template.Configuration getConfiguration() {
+                        return freemarker;
+                    }
+                });
                 property(ServerProperties.BV_SEND_ERROR_IN_RESPONSE, true);
                 register(new AbstractBinder() {
                     @Override

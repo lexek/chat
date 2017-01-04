@@ -97,6 +97,7 @@ langModule.config(['$translateProvider', function ($translateProvider) {
         "AUTH_SIGN_IN": "Sign in",
         "AUTH_NEW_ACCOUNT": "Create new account",
         "AUTH_USERNAME": "Username",
+        "AUTH_NAME_OR_EMAIL": "Username or email",
         "AUTH_PASSWORD": "Password",
         "AUTH_OLD_PASSWORD": "Current password",
         "AUTH_CAPTCHA": "Captcha",
@@ -115,6 +116,8 @@ langModule.config(['$translateProvider', function ($translateProvider) {
         "AUTH_CHANGE_PASSWORD": "Change password",
         "AUTH_TOKEN": "API token",
         "AUTH_GET_TOKEN": "Press button to get token",
+        "AUTH_FORGOT_PASSWORD": "Forgot password?",
+        "AUTH_RESTORE_PASSWORD": "Restore password",
 
         "HELP_ABOUT": "About this chat",
         "HELP_ABOUT_TEXT": "Our github: <a href='https://github.com/lexek/chat' target='_blank'><i class='fa fa-fw fa-github'/>lexek/chat</a>",
@@ -277,6 +280,7 @@ langModule.config(['$translateProvider', function ($translateProvider) {
         "AUTH_SIGN_IN": "Войти",
         "AUTH_NEW_ACCOUNT": "Создать аккаунт",
         "AUTH_USERNAME": "Имя",
+        "AUTH_NAME_OR_EMAIL": "Имя или email",
         "AUTH_PASSWORD": "Пароль",
         "AUTH_OLD_PASSWORD": "Текущий пароль",
         "AUTH_CAPTCHA": "Капча",
@@ -295,6 +299,8 @@ langModule.config(['$translateProvider', function ($translateProvider) {
         "AUTH_CHANGE_PASSWORD": "Изменить пароль",
         "AUTH_TOKEN": "API токен",
         "AUTH_GET_TOKEN": "Нажми кнопку для получения токена",
+        "AUTH_FORGOT_PASSWORD": "Забыли пароль?",
+        "AUTH_RESTORE_PASSWORD": "Восстановление пароля",
 
         "HELP_ABOUT": "О чате",
         "HELP_ABOUT_TEXT": "Наш гитхаб: <a href='https://github.com/lexek/chat' target='_blank'><i class='fa fa-fw fa-github'/>lexek/chat</a>",

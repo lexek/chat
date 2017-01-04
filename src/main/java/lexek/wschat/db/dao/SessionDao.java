@@ -50,4 +50,11 @@ public class SessionDao {
             .where(SESSION.SID.equal(sid))
             .execute();
     }
+
+    public void invalidateUserSessions(long userId) {
+        ctx
+            .delete(SESSION)
+            .where(SESSION.USER_ID.equal(userId))
+            .execute();
+    }
 }

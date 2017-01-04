@@ -7,10 +7,12 @@ import lexek.wschat.chat.e.EntityNotFoundException;
 import lexek.wschat.chat.model.GlobalRole;
 import lexek.wschat.db.model.SessionDto;
 import lexek.wschat.db.model.UserDto;
+import lexek.wschat.db.model.form.PasswordResetForm;
 import lexek.wschat.db.model.rest.BooleanValueContainer;
 import lexek.wschat.db.model.rest.PasswordModel;
 import lexek.wschat.security.AuthenticationManager;
 import lexek.wschat.security.ReCaptcha;
+import lexek.wschat.security.ResetPasswordService;
 import lexek.wschat.security.jersey.Auth;
 import lexek.wschat.security.jersey.RequiredRole;
 import lexek.wschat.security.social.*;
@@ -20,6 +22,7 @@ import org.glassfish.jersey.server.mvc.Viewable;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import javax.inject.Inject;
+import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.*;
@@ -34,6 +37,7 @@ public class AuthResource {
 
     private final SocialAuthService socialAuthService;
     private final AuthenticationManager authenticationManager;
+    private final ResetPasswordService resetPasswordService;
     private final UserService userService;
     private final ReCaptcha reCaptcha;
 
@@ -41,11 +45,13 @@ public class AuthResource {
     public AuthResource(
         SocialAuthService socialAuthService,
         AuthenticationManager authenticationManager,
+        ResetPasswordService resetPasswordService,
         UserService userService,
         ReCaptcha reCaptcha
     ) {
         this.socialAuthService = socialAuthService;
         this.authenticationManager = authenticationManager;
+        this.resetPasswordService = resetPasswordService;
         this.userService = userService;
         this.reCaptcha = reCaptcha;
     }
@@ -280,5 +286,63 @@ public class AuthResource {
 
     private static NewCookie sessionCookie(String name, String id) {
         return new NewCookie(name, id, "/", null, null, COOKIE_MAX_AGE, true);
+    }
+
+    @POST
+    @Path("/requestPasswordReset")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @RequiredRole(GlobalRole.UNAUTHENTICATED)
+    public Response requestPasswordReset(
+        @Context Request request,
+        @Valid PasswordResetForm form
+    ) {
+        if (!reCaptcha.verify(form.getCaptcha(), request.ip())) {
+            throw new BadRequestException("Invalid captcha");
+        }
+        resetPasswordService.requestPasswordReset(form.getName());
+        return Response.ok().build();
+    }
+
+    @GET
+    @Path("/forgotPassword")
+    @Produces(MediaType.TEXT_HTML)
+    public Response passwordResetView(
+        @NotEmpty @QueryParam("token") String token,
+        @NotEmpty @QueryParam("uid") String uid
+    ) {
+        return Response.ok(new Viewable(
+            "/forgot_password",
+            ImmutableMap.of(
+                "token", token,
+                "uid", uid
+            )
+        )).build();
+    }
+
+    @POST
+    @Path("/forgotPassword")
+    @Produces(MediaType.TEXT_HTML)
+    public Response passwordReset(
+        @FormParam("token") @NotEmpty String token,
+        @FormParam("uid") long userId,
+        @FormParam("password") @NotEmpty String password
+    ) {
+        try {
+            resetPasswordService.resetPassword(token, userId, password);
+            return Response.ok(new Viewable(
+                "/password_changed"
+            )).build();
+        } catch (BadRequestException e) {
+            return Response.ok(new Viewable(
+                "/forgot_password",
+                ImmutableMap.of(
+                    "token", token,
+                    "uid", userId,
+                    "password", password,
+                    "error", e.getMessage()
+                )
+            )).build();
+        }
     }
 }

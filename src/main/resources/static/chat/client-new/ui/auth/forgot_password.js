@@ -2,32 +2,32 @@
     'use strict';
 
     angular
-        .module('chat.ui.profile')
-        .controller('PasswordSettingsController', PasswordSettingsController);
+        .module('chat.ui.auth')
+        .controller('ForgotPasswordController', Controller);
 
     /* @ngInject */
-    function PasswordSettingsController($scope, $modalInstance, $http, hasPassword) {
+    function Controller($scope, $modalInstance, $http) {
         makeClosable($scope, $modalInstance);
         makeProgressable($scope);
 
-        $scope.errors = {};
-        $scope.hasPassword = hasPassword;
+        $scope.error = null;
         $scope.input = {
-            'oldPassword': null,
-            'password': ''
+            'name': ''
         };
-        $scope.password2 = '';
 
         $scope.submit = function () {
             $http({
-                method: 'PUT',
-                url: '/rest/password',
+                method: 'POST',
+                url: '/rest/auth/requestPasswordReset',
                 data: $scope.input
             }).success(function () {
                 $modalInstance.close();
             }).error(function (data) {
                 $scope.info = null;
-                $scope.errors = data;
+                $scope.error = data;
+                if (data[0]) {
+                    $scope.error = data[0].message;
+                }
             });
         };
     }

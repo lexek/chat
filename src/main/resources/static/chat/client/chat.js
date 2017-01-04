@@ -34,6 +34,7 @@ document.chatApplication = angular.module('chatApplication', [
     'relativeDate',
     'ngSanitize',
     'chat.client.utils',
+    'chat.ui.auth',
     'chat.ui.profile',
     'chat.ui.tickets',
     'chat.ui.emoticons',
