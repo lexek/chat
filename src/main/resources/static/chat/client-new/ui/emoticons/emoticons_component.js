@@ -9,7 +9,7 @@
             },
             controller: MessageComponentController,
             controllerAs: 'vm',
-            templateUrl: '/chat/client/ui/emoticons/emoticons_component.html'
+            templateUrl: '/chat/client-new/ui/emoticons/emoticons_component.html'
         });
 
     /* @ngInject */
