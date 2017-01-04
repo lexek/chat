@@ -66,6 +66,10 @@ public class Response {
         header(HttpHeaderNames.SET_COOKIE, ServerCookieEncoder.STRICT.encode(cookie));
     }
 
+    public int status() {
+        return wrappedResponse.status().code();
+    }
+
     public void status(int status) {
         wrappedResponse.setStatus(HttpResponseStatus.valueOf(status));
     }
@@ -111,5 +115,9 @@ public class Response {
             e.printStackTrace();
             stringContent(message);
         }
+    }
+
+    public int size() {
+        return wrappedResponse.content().readableBytes();
     }
 }

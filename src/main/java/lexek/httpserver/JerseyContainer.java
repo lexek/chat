@@ -24,13 +24,21 @@ import javax.ws.rs.core.Application;
 import java.io.OutputStream;
 import java.lang.reflect.Type;
 import java.net.URI;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 public class JerseyContainer extends SimpleHttpHandler implements Container {
+    private static final DateTimeFormatter apacheDateFormatter = DateTimeFormatter
+        .ofPattern("dd/MMM/yyyy:HH:mm:ss Z")
+        .withLocale(Locale.US);
+
     private final Type RequestType = (new TypeLiteral<Ref<Request>>() {}).getType();
     private final Type ResponseType = (new TypeLiteral<Ref<Response>>() {}).getType();
 
     private final Logger logger = LoggerFactory.getLogger(JerseyContainer.class);
+    private final Logger accessLogger = LoggerFactory.getLogger("access");
     private final AuthenticationManager authenticationManager;
     private final ApplicationHandler applicationHandler;
 
@@ -101,7 +109,7 @@ public class JerseyContainer extends SimpleHttpHandler implements Container {
             new JerseySecurityContext(userDto),
             new MapPropertiesDelegate()
         );
-        ResponseWriter responseWriter = new ResponseWriter(response);
+        ResponseWriter responseWriter = new ResponseWriter(request, response, userDto);
         containerRequest.setEntityStream(new BufferInputStream(request.content()));
         request.headers().forEach(e -> containerRequest.getHeaders().putSingle(e.getKey(), e.getValue()));
         containerRequest.setWriter(responseWriter);
@@ -112,15 +120,19 @@ public class JerseyContainer extends SimpleHttpHandler implements Container {
         try {
             applicationHandler.handle(containerRequest);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("exception occured", e);
         }
     }
 
     private class ResponseWriter implements ContainerResponseWriter {
+        private final Request request;
         private final Response response;
+        private final UserDto userDto;
 
-        private ResponseWriter(Response response) {
+        private ResponseWriter(Request request, Response response, UserDto userDto) {
+            this.request = request;
             this.response = response;
+            this.userDto = userDto;
         }
 
         @Override
@@ -148,6 +160,19 @@ public class JerseyContainer extends SimpleHttpHandler implements Container {
 
         @Override
         public void commit() {
+            int responseSize = response.size();
+            accessLogger.info(
+                "{} {} - [{}] \"{} {} HTTP/1.1\" {} {} \"{}\" \"{}\"",
+                request.ip(),
+                userDto != null ? userDto.getName() : "-",
+                ZonedDateTime.now().format(apacheDateFormatter),
+                request.method().name(),
+                request.uri(),
+                response.status(),
+                responseSize != 0 ? responseSize : "-",
+                request.header(HttpHeaderNames.REFERER),
+                request.header(HttpHeaderNames.USER_AGENT)
+            );
         }
 
         @Override
