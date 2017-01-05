@@ -57,4 +57,14 @@ public class SessionDao {
             .where(SESSION.USER_ID.equal(userId))
             .execute();
     }
+
+    public void invalidateUserSessionsExcept(Long userId, String sid) {
+        ctx
+            .delete(SESSION)
+            .where(
+                SESSION.USER_ID.equal(userId),
+                SESSION.SID.notEqual(sid)
+            )
+            .execute();
+    }
 }

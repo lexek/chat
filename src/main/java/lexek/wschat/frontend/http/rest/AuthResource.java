@@ -7,6 +7,7 @@ import lexek.wschat.chat.e.EntityNotFoundException;
 import lexek.wschat.chat.model.GlobalRole;
 import lexek.wschat.db.model.SessionDto;
 import lexek.wschat.db.model.UserDto;
+import lexek.wschat.db.model.form.PasswordForm;
 import lexek.wschat.db.model.form.PasswordResetForm;
 import lexek.wschat.db.model.rest.BooleanValueContainer;
 import lexek.wschat.db.model.rest.PasswordModel;
@@ -273,6 +274,20 @@ public class AuthResource {
     }
 
     @PUT
+    @Path("/password")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response changePassword(
+        @Auth UserDto user,
+        @NotNull @Valid PasswordForm passwordForm
+    ) {
+        String password = passwordForm.getPassword();
+        String oldPassword = passwordForm.getOldPassword();
+        authenticationManager.setPassword(user, password, oldPassword);
+        return Response.ok().build();
+    }
+
+    @PUT
     @Path("/self/checkIp")
     @Produces(MediaType.APPLICATION_JSON)
     @RequiredRole(GlobalRole.USER_UNCONFIRMED)
@@ -282,10 +297,6 @@ public class AuthResource {
     ) {
         userService.setCheckIp(user, valueContainer.getValue());
         return Response.ok().build();
-    }
-
-    private static NewCookie sessionCookie(String name, String id) {
-        return new NewCookie(name, id, "/", null, null, COOKIE_MAX_AGE, true);
     }
 
     @POST
@@ -344,5 +355,9 @@ public class AuthResource {
                 )
             )).build();
         }
+    }
+
+    private static NewCookie sessionCookie(String name, String id) {
+        return new NewCookie(name, id, "/", null, null, COOKIE_MAX_AGE, true);
     }
 }

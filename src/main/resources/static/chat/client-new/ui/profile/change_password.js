@@ -21,7 +21,7 @@
         $scope.submit = function () {
             $http({
                 method: 'PUT',
-                url: '/rest/password',
+                url: '/rest/auth/password',
                 data: $scope.input
             }).success(function () {
                 $modalInstance.close();
