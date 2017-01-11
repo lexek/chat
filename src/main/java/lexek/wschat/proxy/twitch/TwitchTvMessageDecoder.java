@@ -58,7 +58,11 @@ public class TwitchTvMessageDecoder extends MessageToMessageDecoder<String> {
 
         switch (command) {
             case "CLEARCHAT": {
-                out.add(new TwitchEventMessage(TwitchEventMessage.Type.CLEAR, arg[2]));
+                if (arg.length == 3) {
+                    //user cleared
+                    out.add(new TwitchEventMessage(TwitchEventMessage.Type.CLEAR, arg[2]));
+                }
+                //todo: support room clear also (2 args)
                 break;
             }
             case "NOTICE": {
