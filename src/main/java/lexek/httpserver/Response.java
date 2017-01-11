@@ -11,11 +11,14 @@ import io.netty.handler.codec.http.cookie.Cookie;
 import io.netty.handler.codec.http.cookie.ServerCookieEncoder;
 import io.netty.util.AsciiString;
 import io.netty.util.CharsetUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.StringWriter;
 
 public class Response {
+    private static final Logger logger = LoggerFactory.getLogger(Response.class);
     private final FullHttpResponse wrappedResponse;
     private final ViewResolvers viewResolvers;
 
@@ -29,9 +32,15 @@ public class Response {
     }
 
     public void renderTemplate(String template, Object data) throws IOException, TemplateException {
-        StringWriter stringWriter = new StringWriter();
-        viewResolvers.getTemplateEngine().getTemplate(template + ".ftl").process(data, stringWriter);
-        stringContent(stringWriter.toString(), "text/html; charset=UTF-8");
+        try {
+            StringWriter stringWriter = new StringWriter();
+            viewResolvers.getTemplateEngine().getTemplate("/templates/" + template + ".ftl").process(data, stringWriter);
+            stringContent(stringWriter.toString(), "text/html; charset=UTF-8");
+        } catch (Exception e) {
+            logger.error("unable to render template for url", e);
+            stringContent("unable to render template");
+            status(500);
+        }
     }
 
     public void stringContent(String content) {

@@ -18,6 +18,9 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import freemarker.cache.ClassTemplateLoader;
+import freemarker.cache.MultiTemplateLoader;
+import freemarker.cache.TemplateLoader;
 import freemarker.template.DefaultObjectWrapper;
 import freemarker.template.Version;
 import io.netty.channel.EventLoopGroup;
@@ -27,6 +30,7 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.handler.ssl.OpenSsl;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
+import jersey.repackaged.com.google.common.collect.Lists;
 import lexek.httpserver.*;
 import lexek.wschat.chat.msg.*;
 import lexek.wschat.db.tx.TransactionalInterceptorService;
@@ -279,8 +283,12 @@ public class Main {
         messageConsumerServiceHandler.register(proxyManager);
 
         Version freemarkerVersion = new Version(2, 3, 23);
+
+        final List<TemplateLoader> loaders = Lists.newArrayList();
+        loaders.add(new ClassTemplateLoader(Main.class, "/"));
+
         freemarker.template.Configuration freemarker = new freemarker.template.Configuration(freemarkerVersion);
-        freemarker.setClassForTemplateLoading(Main.class, "/templates");
+        freemarker.setTemplateLoader(new MultiTemplateLoader(loaders.toArray(new TemplateLoader[loaders.size()])));
         freemarker.setDefaultEncoding("UTF-8");
         freemarker.setObjectWrapper(new DefaultObjectWrapper(freemarkerVersion));
 
@@ -291,7 +299,7 @@ public class Main {
         ResourceConfig resourceConfig = new ResourceConfig() {
             {
                 property(ServerProperties.WADL_FEATURE_DISABLE, Boolean.TRUE);
-                //property(ServerProperties.TRACING, "ALL");
+                property(ServerProperties.TRACING, "ALL");
                 register(ErrorBodyWriter.class);
                 register(ObjectMapperProvider.class);
                 register(new Slf4jLoggingFilter());
@@ -300,14 +308,10 @@ public class Main {
                 register(MultiPartFeature.class);
                 register(SecurityFeature.class);
                 register(FreemarkerMvcFeature.class);
-                property(FreemarkerMvcFeature.TEMPLATE_BASE_PATH, "/templates/");
-                property(FreemarkerMvcFeature.ENCODING, "UTF-8");
-                property(FreemarkerMvcFeature.TEMPLATE_OBJECT_FACTORY, new FreemarkerConfigurationFactory() {
-                    @Override
-                    public freemarker.template.Configuration getConfiguration() {
-                        return freemarker;
-                    }
-                });
+                property(FreemarkerMvcFeature.TEMPLATE_BASE_PATH, "/templates");
+                property(FreemarkerMvcFeature.TEMPLATE_OBJECT_FACTORY, (FreemarkerConfigurationFactory) () ->
+                    freemarker
+                );
                 property(ServerProperties.BV_SEND_ERROR_IN_RESPONSE, true);
                 register(new AbstractBinder() {
                     @Override
