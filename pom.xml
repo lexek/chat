@@ -213,30 +213,6 @@
                         <name>org.jooq.util.JavaGenerator</name>
                         <database>
                             <name>org.jooq.util.mysql.MySQLDatabase</name>
-                            <includes>
-                                poll|
-                                poll_option|
-                                poll_answer|
-                                chatter|
-                                user|
-                                userauth|
-                                session|
-                                emoticon|
-                                metric|
-                                journal|
-                                history|
-                                ticket|
-                                announcement|
-                                room|
-                                pending_confirmation|
-                                pending_notification|
-                                steam_game|
-                                chat_proxy|
-                                ignore_list|
-                                proxy_auth|
-                                proxy_emoticon|
-                                emoticon_usage
-                            </includes>
                             <inputSchema>chat</inputSchema>
                             <outputSchemaToDefault>true</outputSchemaToDefault>
                         </database>
@@ -492,6 +468,11 @@
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
             <version>4.5.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.5</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.jersey.core</groupId>
