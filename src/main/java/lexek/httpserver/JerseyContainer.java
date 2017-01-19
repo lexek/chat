@@ -128,6 +128,7 @@ public class JerseyContainer extends SimpleHttpHandler implements Container {
         private final Request request;
         private final Response response;
         private final UserDto userDto;
+        private final long startTime = System.currentTimeMillis();
 
         private ResponseWriter(Request request, Response response, UserDto userDto) {
             this.request = request;
@@ -162,7 +163,7 @@ public class JerseyContainer extends SimpleHttpHandler implements Container {
         public void commit() {
             int responseSize = response.size();
             accessLogger.info(
-                "{} {} - [{}] \"{} {} HTTP/1.1\" {} {} \"{}\" \"{}\"",
+                "{} {} - [{}] \"{} {} HTTP/1.1\" {} {} \"{}\" \"{}\" {}",
                 request.ip(),
                 userDto != null ? userDto.getName() : "-",
                 ZonedDateTime.now().format(apacheDateFormatter),
@@ -171,7 +172,8 @@ public class JerseyContainer extends SimpleHttpHandler implements Container {
                 response.status(),
                 responseSize != 0 ? responseSize : "-",
                 request.header(HttpHeaderNames.REFERER),
-                request.header(HttpHeaderNames.USER_AGENT)
+                request.header(HttpHeaderNames.USER_AGENT),
+                (System.currentTimeMillis() - startTime)
             );
         }
 
