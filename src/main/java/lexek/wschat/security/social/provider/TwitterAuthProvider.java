@@ -73,7 +73,7 @@ public class TwitterAuthProvider implements SocialAuthProvider {
             url,
             "https://api.twitter.com/oauth/request_token",
             HttpMethod.POST,
-            ImmutableMap.<String, String>of()
+            ImmutableMap.of()
         ));
         String response = httpClient.execute(request, new BasicResponseHandler());
         List<NameValuePair> parsedEntities = URLEncodedUtils.parse(response, StandardCharsets.UTF_8);

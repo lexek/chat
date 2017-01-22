@@ -11,6 +11,7 @@ import org.jooq.impl.DSL;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
+import java.math.BigDecimal;
 import java.sql.Date;
 import java.time.Duration;
 import java.time.Instant;
@@ -21,6 +22,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static lexek.wschat.db.jooq.tables.Emoticon.EMOTICON;
+import static lexek.wschat.db.jooq.tables.EmoticonUsage.EMOTICON_USAGE;
 import static lexek.wschat.db.jooq.tables.History.HISTORY;
 import static lexek.wschat.db.jooq.tables.Metric.METRIC;
 import static lexek.wschat.db.jooq.tables.User.USER;
@@ -34,6 +36,7 @@ public class StatisticsDao {
         this.ctx = ctx;
     }
 
+    @Allow.PlainSQL
     public Map<Long, Long> getUserActivity(long userId) {
         Table<Record1<Date>> tempTable = DSL
             .select(DSL.function("FROM_UNIXTIME", Date.class, HISTORY.TIMESTAMP.div(1000)).as("date"))
@@ -48,13 +51,13 @@ public class StatisticsDao {
             ))
             .asTable("t", "date");
 
+        Field<Date> dayField = DSL.date(tempTable.field("date", Date.class)).as("d");
+        Field<Integer> hourField = DSL.hour(tempTable.field("date", Date.class)).as("h");
         return ctx
-            .select(DSL.date(tempTable.field("date", Date.class)).as("d"),
-                DSL.hour(tempTable.field("date", Date.class)).as("h"),
-                DSL.count().as("count"))
+            .select(dayField, hourField, DSL.count().as("count"))
             .from(tempTable)
-            .groupBy(DSL.field("d"), DSL.field("h"))
-            .orderBy(DSL.field("d"), DSL.field("h"))
+            .groupBy(dayField, hourField)
+            .orderBy(dayField, hourField)
             .fetch()
             .stream()
             .collect(Collectors.groupingBy(
@@ -63,6 +66,7 @@ public class StatisticsDao {
             ));
     }
 
+    @Allow.PlainSQL
     public Map<Long, Long> getRoomActivity(long roomId) {
         Table<Record1<Date>> tempTable = DSL
             .select(DSL.function("FROM_UNIXTIME", Date.class, HISTORY.TIMESTAMP.div(1000)).as("date"))
@@ -77,15 +81,17 @@ public class StatisticsDao {
             )
             .asTable("t", "date");
 
+        Field<Date> dayField = DSL.date(tempTable.field("date", Date.class)).as("d");
+        Field<Integer> hourField = DSL.hour(tempTable.field("date", Date.class)).as("h");
         return ctx
             .select(
-                DSL.date(tempTable.field("date", Date.class)).as("d"),
-                DSL.hour(tempTable.field("date", Date.class)).as("h"),
+                dayField,
+                hourField,
                 DSL.count().as("count")
             )
             .from(tempTable)
-            .groupBy(DSL.field("d"), DSL.field("h"))
-            .orderBy(DSL.field("d"), DSL.field("h"))
+            .groupBy(dayField, hourField)
+            .orderBy(dayField, hourField)
             .fetch()
             .stream()
             .collect(Collectors.groupingBy(
@@ -95,8 +101,9 @@ public class StatisticsDao {
     }
 
     public List<UserMessageCount> getTopChatters(long roomId) {
+        Field<Integer> countField = DSL.count().as("count");
         return ctx
-            .select(USER.ID, USER.NAME, DSL.count().as("count"))
+            .select(USER.ID, USER.NAME, countField)
             .from(HISTORY.join(USER).on(HISTORY.USER_ID.equal(USER.ID)))
             .where(ImmutableList.of(
                 HISTORY.ROOM_ID.equal(roomId),
@@ -106,11 +113,15 @@ public class StatisticsDao {
                     .toEpochMilli())
             ))
             .groupBy(HISTORY.USER_ID)
-            .orderBy(DSL.field("count", Long.class).desc())
+            .orderBy(countField.desc())
             .limit(20)
             .fetch()
             .stream()
-            .map(r -> new UserMessageCount(r.value2(), r.value1(), r.value3()))
+            .map(r -> new UserMessageCount(
+                r.getValue(USER.NAME),
+                r.getValue(USER.ID),
+                r.getValue(countField)
+            ))
             .collect(Collectors.toList());
     }
 
@@ -124,84 +135,68 @@ public class StatisticsDao {
             .into(Metric.class);
     }
 
-    public List<EmoticonCount> getEmoticonUage(long since, Long userId) {
-        Table<Record4<String, Long, String, String>> emoteTable = DSL.table(
-            DSL.select(
-                DSL.concat("%", EMOTICON.CODE.replace("\\", "\\\\").replace("_", "\\_")).concat("%").as("code"),
-                EMOTICON.ID.as("id"),
-                EMOTICON.FILE_NAME.as("file_name"),
-                EMOTICON.CODE.as("original_code")
-            ).from(EMOTICON)
-        ).as("emote");
+    public List<EmoticonCount> getEmoticonUsage(long since, Long userId) {
         List<Condition> where = Lists.newArrayList(
-            HISTORY.MESSAGE.like(emoteTable.field("code", String.class)),
-            HISTORY.TIMESTAMP.greaterOrEqual(since)
+            EMOTICON_USAGE.DATE.greaterOrEqual(new Date(since))
         );
         if (userId != null) {
-            where.add(HISTORY.USER_ID.equal(userId));
+            where.add(EMOTICON_USAGE.USER_ID.equal(userId));
         }
+        Field<BigDecimal> sumField = DSL.sum(EMOTICON_USAGE.COUNT).as("sum");
         return ctx
             .select(
-                emoteTable.field("id"),
-                emoteTable.field("file_name"),
-                emoteTable.field("original_code"),
-                DSL.count().as("count")
+                EMOTICON.ID,
+                EMOTICON.FILE_NAME,
+                EMOTICON.CODE,
+                sumField
             )
-            .from(emoteTable, HISTORY)
+            .from(
+                EMOTICON_USAGE.join(EMOTICON).on(EMOTICON_USAGE.EMOTICON_ID.eq(EMOTICON.ID))
+            )
             .where(where)
-            .groupBy(emoteTable.field("id"))
-            .orderBy(DSL.field("count").desc(), emoteTable.field("id").asc())
+            .groupBy(EMOTICON_USAGE.EMOTICON_ID)
+            .orderBy(sumField.desc(), EMOTICON_USAGE.EMOTICON_ID.desc())
             .fetch()
             .stream()
             .map(record ->
                 new EmoticonCount(
                     new Emoticon(
-                        record.getValue("id", Long.class),
-                        record.getValue("original_code", String.class),
-                        record.getValue("file_name", String.class),
+                        record.getValue(EMOTICON.ID),
+                        record.getValue(EMOTICON.CODE),
+                        record.getValue(EMOTICON.FILE_NAME),
                         null,
                         null
                     ),
-                    record.getValue("count", Long.class)
+                    record.getValue(sumField).longValue()
                 )
             )
             .collect(Collectors.toList());
     }
 
     public List<UserMessageCount> getEmoticonUsers(long since, long emoticonId) {
-        Table<Record4<String, Long, String, String>> emoteTable = DSL.table(DSL
-            .select(
-                DSL.concat("%", EMOTICON.CODE.replace("\\", "\\\\").replace("_", "\\_")).concat("%").as("code"),
-                EMOTICON.ID.as("id"),
-                EMOTICON.FILE_NAME.as("file_name"),
-                EMOTICON.CODE.as("original_code")
-            )
-            .from(EMOTICON)
-            .where(EMOTICON.ID.equal(emoticonId))
-        ).as("emote");
+        Field<BigDecimal> sumField = DSL.sum(EMOTICON_USAGE.COUNT).as("sum");
         return ctx
             .select(
                 USER.ID,
                 USER.NAME,
-                DSL.count().as("count")
+                sumField
             )
             .from(
-                emoteTable,
-                HISTORY.join(USER).on(HISTORY.USER_ID.equal(USER.ID))
+                EMOTICON_USAGE.join(USER).on(EMOTICON_USAGE.USER_ID.eq(USER.ID))
             )
             .where(
-                HISTORY.MESSAGE.like(emoteTable.field("code", String.class)),
-                HISTORY.TIMESTAMP.greaterOrEqual(since)
+                EMOTICON_USAGE.EMOTICON_ID.eq(emoticonId),
+                EMOTICON_USAGE.DATE.greaterOrEqual(new Date(since))
             )
             .groupBy(USER.ID)
-            .orderBy(DSL.field("count").desc(), USER.NAME.asc())
+            .orderBy(sumField.desc(), USER.NAME.asc())
             .fetch()
             .stream()
             .map(record ->
                 new UserMessageCount(
                     record.getValue(USER.NAME),
                     record.getValue(USER.ID),
-                    record.getValue("count", Long.class)
+                    record.getValue(sumField).longValue()
                 )
             )
             .collect(Collectors.toList());

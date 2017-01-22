@@ -10,11 +10,12 @@ before_install:
 cache:
   directories:
     - $HOME/.m2/repository
+    - target/node
     - node_modules
 #skip
 install: true
 script:
-  - mvn -B package jacoco:report coveralls:report -P netty-native-linux
+  - mvn -B package jacoco:report coveralls:report -P production
 notifications:
   email:
     recipients:

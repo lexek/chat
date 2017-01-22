@@ -1,10 +1,10 @@
 package lexek.wschat.db.model.form;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lexek.wschat.chat.model.GlobalRole;
 
-@JsonSerialize(include = JsonSerialize.Inclusion.NON_NULL)
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class UserChangeSet {
     private final Boolean renameAvailable;
     private final Boolean banned;

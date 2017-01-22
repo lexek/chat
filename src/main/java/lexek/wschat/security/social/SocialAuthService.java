@@ -9,6 +9,7 @@ import lexek.wschat.chat.e.InvalidInputException;
 import lexek.wschat.db.model.SessionDto;
 import lexek.wschat.db.model.UserAuthDto;
 import lexek.wschat.db.model.UserDto;
+import lexek.wschat.db.tx.Transactional;
 import lexek.wschat.security.AuthenticationManager;
 import lexek.wschat.security.SecureTokenGenerator;
 import lexek.wschat.security.social.provider.SocialAuthProvider;
@@ -96,6 +97,17 @@ public class SocialAuthService {
         }
         authenticationManager.deleteAuth(user, serviceName);
         //todo: invalidate
+    }
+
+    @Transactional
+    public SessionDto createUser(String username, SocialProfile profile, String ip) {
+        UserAuthDto userAuth = authenticationManager.createUserWithProfile(username, profile);
+        return authenticationManager.createSession(userAuth.getUser(), ip);
+    }
+
+    public SessionDto createAuth(UserDto user, SocialProfile profile, String ip) {
+        UserAuthDto userAuth = authenticationManager.createUserAuthFromProfile(user, profile);
+        return authenticationManager.createSession(userAuth.getUser(), ip);
     }
 
     private class TemporarySession {

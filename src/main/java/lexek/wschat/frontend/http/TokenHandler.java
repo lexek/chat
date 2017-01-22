@@ -17,7 +17,7 @@ public class TokenHandler extends SimpleHttpHandler {
 
     @Override
     protected void handle(Request request, Response response) throws Exception {
-        UserDto user = authenticationManager.checkAuthentication(request);
+        UserDto user = authenticationManager.checkFullAuthentication(request);
         if (user != null) {
             if (request.method() == HttpMethod.POST) {
                 String token = authenticationManager.generateTokenForUser(user);

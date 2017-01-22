@@ -352,7 +352,7 @@ var AnonCaptchaController = function($scope, $modalInstance, id, isUser) {
     };
 };
 
-var AuthenticationController = function($scope, $modalInstance, chat, action) {
+var AuthenticationController = function ($scope, $modalInstance, $modal, chat, action) {
     $scope.action = action;
     $scope.captchaRequired = false;
     $scope.input = {};
@@ -424,6 +424,14 @@ var AuthenticationController = function($scope, $modalInstance, chat, action) {
         $modalInstance.dismiss('cancel');
     };
 
+    $scope.forgotPassword = function () {
+        $modal.open({
+            templateUrl: '/chat/client-new/ui/auth/forgot_password.html',
+            controller: 'ForgotPasswordController',
+            size: "sm"
+        });
+    };
+
     $.ajax("/login").done(function(data) {
         $scope.captchaRequired = data["captchaRequired"];
         $scope.$digest();
@@ -432,19 +440,6 @@ var AuthenticationController = function($scope, $modalInstance, chat, action) {
     document.lastModal = $modalInstance;
     $(".pls-container").remove();
 };
-
-controlsModule.controller("EmoticonsController", ["$scope", "chatService", function($scope, chat) {
-    $scope.emoticons = chat.emoticons;
-
-    $scope.unescapeCode = function(code) {
-        return code.replace(/\\(.)/, "$1").replace("&lt;", "<").replace("&gt;", ">").replace("&#59;", ";");
-    };
-
-    $scope.addToInput = function(text) {
-        chat.addToInputCallback(text);
-        $scope.hideEmoticons();
-    };
-}]);
 
 var HelpController = function($scope, $modalInstance) {
     $scope.close = function() {

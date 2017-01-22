@@ -89,7 +89,7 @@ public class OAuthUtil {
         String url,
         String consumerSecret,
         String accessTokenSecret
-    ) throws UnsupportedEncodingException, NoSuchAlgorithmException, InvalidKeyException {
+    ) throws NoSuchAlgorithmException, InvalidKeyException {
         TreeMap<String, String> parameters = new TreeMap<>();
         parameters.putAll(oauthParameters);
         parameters.putAll(requestParameters);

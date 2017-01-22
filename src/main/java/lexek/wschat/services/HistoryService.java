@@ -1,6 +1,10 @@
 package lexek.wschat.services;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Multiset;
 import lexek.wschat.chat.MessageEvent;
 import lexek.wschat.chat.MessageEventHandler;
 import lexek.wschat.chat.Room;
@@ -8,6 +12,7 @@ import lexek.wschat.chat.filters.BroadcastFilter;
 import lexek.wschat.chat.model.Message;
 import lexek.wschat.chat.model.MessageProperty;
 import lexek.wschat.chat.model.MessageType;
+import lexek.wschat.chat.msg.MessageNode;
 import lexek.wschat.db.dao.HistoryDao;
 import lexek.wschat.db.jooq.tables.pojos.History;
 import lexek.wschat.db.model.DataPage;
@@ -40,6 +45,7 @@ public class HistoryService implements MessageEventHandler {
     private final int maxHistory;
     private final HistoryDao historyDao;
     private final UserService userService;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Inject
     public HistoryService(
@@ -75,19 +81,34 @@ public class HistoryService implements MessageEventHandler {
         }
     }
 
-    private void store(Message message, Room room) {
+    private void store(Message message, Room room) throws JsonProcessingException {
         MessageType type = message.getType();
         if (type == MessageType.MSG || type == MessageType.ME) {
             long userId = message.get(MessageProperty.USER_ID);
-            historyDao.add(new History(null, room.getId(), userId, message.get(MessageProperty.TIME),
-                message.getType().toString(), message.get(MessageProperty.TEXT), false));
+            List<MessageNode> messageBody = message.get(MessageProperty.MESSAGE_NODES);
+            Multiset<Long> stats = HashMultiset.create();
+            collectEmoticons(messageBody, stats);
+            historyDao.addWithStats(
+                new History(
+                    null,
+                    room.getId(),
+                    userId,
+                    message.get(MessageProperty.TIME),
+                    message.getType().toString(),
+                    objectMapper.writeValueAsString(messageBody),
+                    false,
+                    false
+                ),
+                stats
+            );
+
         } else if (type == MessageType.CLEAR || type == MessageType.BAN || type == MessageType.TIMEOUT) {
             //todo: find better solution, but this works for now since it's not really frequent event type
             UserDto mod = userService.fetchByName(message.get(MessageProperty.MOD));
             long t = System.currentTimeMillis();
             String userName = message.get(MessageProperty.NAME);
             historyDao.hideUserMessages(
-                new History(null, room.getId(), mod.getId(), t, message.getType().toString(), userName, false),
+                new History(null, room.getId(), mod.getId(), t, message.getType().toString(), userName, false, false),
                 userName, t - TimeUnit.MINUTES.toMillis(10));
         }
         if (room != null) {
@@ -95,6 +116,17 @@ public class HistoryService implements MessageEventHandler {
             messages.add(message);
             if (messages.size() == maxHistory) {
                 messages.remove(0);
+            }
+        }
+    }
+
+    private void collectEmoticons(List<MessageNode> nodes, Multiset<Long> result) {
+        for (MessageNode node : nodes) {
+            if (node.getType() == MessageNode.Type.EMOTICON) {
+                result.add(node.getEmoticonId());
+            }
+            if (node.getChildren() != null) {
+                collectEmoticons(node.getChildren(), result);
             }
         }
     }

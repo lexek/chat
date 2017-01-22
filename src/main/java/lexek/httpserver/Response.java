@@ -5,19 +5,20 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import freemarker.template.TemplateException;
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http.FullHttpResponse;
-import io.netty.handler.codec.http.HttpHeaders;
+import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.cookie.Cookie;
-import io.netty.handler.codec.http.cookie.DefaultCookie;
 import io.netty.handler.codec.http.cookie.ServerCookieEncoder;
+import io.netty.util.AsciiString;
 import io.netty.util.CharsetUtil;
-import lexek.wschat.db.model.SessionDto;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.StringWriter;
 
 public class Response {
-    private static final int COOKIE_MAX_AGE = 2592000;
+    private static final Logger logger = LoggerFactory.getLogger(Response.class);
     private final FullHttpResponse wrappedResponse;
     private final ViewResolvers viewResolvers;
 
@@ -31,9 +32,15 @@ public class Response {
     }
 
     public void renderTemplate(String template, Object data) throws IOException, TemplateException {
-        StringWriter stringWriter = new StringWriter();
-        viewResolvers.getTemplateEngine().getTemplate(template + ".ftl").process(data, stringWriter);
-        stringContent(stringWriter.toString(), "text/html; charset=UTF-8");
+        try {
+            StringWriter stringWriter = new StringWriter();
+            viewResolvers.getTemplateEngine().getTemplate("/templates/" + template + ".ftl").process(data, stringWriter);
+            stringContent(stringWriter.toString(), "text/html; charset=UTF-8");
+        } catch (Exception e) {
+            logger.error("unable to render template for url", e);
+            stringContent("unable to render template");
+            status(500);
+        }
     }
 
     public void stringContent(String content) {
@@ -43,7 +50,7 @@ public class Response {
     public void stringContent(String content, String mimeType) {
         if (content != null) {
             wrappedResponse.content().writeBytes(content.getBytes(CharsetUtil.UTF_8));
-            header(HttpHeaders.Names.CONTENT_TYPE, mimeType);
+            header(HttpHeaderNames.CONTENT_TYPE, mimeType);
         }
     }
 
@@ -60,12 +67,16 @@ public class Response {
         }
     }
 
-    public void header(String key, String value) {
+    public void header(AsciiString key, String value) {
         wrappedResponse.headers().add(key, value);
     }
 
     public void cookie(Cookie cookie) {
-        header(HttpHeaders.Names.SET_COOKIE, ServerCookieEncoder.STRICT.encode(cookie));
+        header(HttpHeaderNames.SET_COOKIE, ServerCookieEncoder.STRICT.encode(cookie));
+    }
+
+    public int status() {
+        return wrappedResponse.status().code();
     }
 
     public void status(int status) {
@@ -98,7 +109,7 @@ public class Response {
 
     public void redirect(String location) {
         wrappedResponse.setStatus(HttpResponseStatus.FOUND);
-        header("Location", location);
+        header(HttpHeaderNames.LOCATION, location);
     }
 
     public void internalError() {
@@ -115,11 +126,7 @@ public class Response {
         }
     }
 
-    public void setSessionCookie(SessionDto session) {
-        Cookie cookie = new DefaultCookie("sid", session.getSessionId());
-        cookie.setMaxAge(COOKIE_MAX_AGE);
-        cookie.setSecure(true);
-        cookie.setPath("/");
-        this.cookie(cookie);
+    public int size() {
+        return wrappedResponse.content().readableBytes();
     }
 }

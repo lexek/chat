@@ -1,0 +1,25 @@
+<div ng-repeat="node in ::vm.nodes" ng-switch="::node.type" class="message-node">
+    <span ng-switch-when="STYLED" ng-class="::('chat-style-' + node.style.toLowerCase())">
+        <message nodes="::node.children"></message>
+    </span>
+    <message-link ng-switch-when="URL" data-text="::node.text"></message-link>
+    <img
+        ng-switch-when="EMOTICON"
+        class="emoticon"
+        ng-src="{{::node.src}}"
+        tooltip="{{::node.text}}"
+        tooltip-animation="false"
+        alt="{{::node.text}}"
+        tse-on-load
+    />
+    <img
+        ng-switch-when="EMOJI"
+        class="emoji emoticon"
+        ng-src="/img/twemoji/{{::node.src}}.png"
+        alt="{{::node.text}}"
+    />
+    <span ng-switch-when="MENTION" class="mentionLabel" ng-class="::{'mentionLabelCurrent': node.currentUser}">
+        @{{::node.text}}
+    </span>
+    <span ng-switch-default class="message-node-text" ng-bind="::node.text"></span>
+</div>

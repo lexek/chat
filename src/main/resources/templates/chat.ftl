@@ -62,7 +62,7 @@
         <script type="text/javascript" src="/vendor/js/tse.js"></script>
         <script type="text/javascript" src="/vendor/js/swfobject.js"></script>
         <script type="text/javascript" src="/vendor/js/web_socket.js"></script>
-        <script type="text/javascript" src="/vendor/js/angular.js"></script>
+        <script type="text/javascript" src="/vendor/js/angular-new.js"></script>
         <script type="text/javascript" src="/vendor/js/angular-sanitize.js"></script>
         <script type="text/javascript" src="/vendor/js/bindonce.js"></script>
         <script type="text/javascript" src="/vendor/js/angular-ui-utils.js"></script>
@@ -76,6 +76,7 @@
         <script type="text/javascript" src="/vendor/js/angular-relative-date.js"></script>
         <script type="text/javascript" src="/vendor/js/angular-recaptcha.js"></script>
         <script type="text/javascript" src="/vendor/js/bootstrap-colorpicker.js"></script>
+        <script type="text/javascript" src="/vendor/js/scrollglue.js"></script>
         <script type="text/javascript" src="/chat/client/mixins/closable.js"></script>
         <script type="text/javascript" src="/chat/client/mixins/pending.js"></script>
         <script type="text/javascript" src="/chat/client/types/chatState.js"></script>
@@ -84,11 +85,16 @@
         <script type="text/javascript" src="/chat/client/libs.js"></script>
         <script type="text/javascript" src="/chat/client/sc2emotes.js"></script>
         <script type="text/javascript" src="/chat/client/lang.js"></script>
-        <script type="text/javascript" src="/chat/client/services/linkResolver.js"></script>
         <script type="text/javascript" src="/chat/client/services/settings.js"></script>
         <script type="text/javascript" src="/chat/client/services/windowState.js"></script>
         <script type="text/javascript" src="/chat/client/services/notifications.js"></script>
         <script type="text/javascript" src="/chat/client/services/messageProcessing.js"></script>
+        <script type="text/javascript" src="/chat/common/message/message.module.js"></script>
+        <script type="text/javascript" src="/chat/common/message/message_link_service.js"></script>
+        <script type="text/javascript" src="/chat/common/message/message_link.js"></script>
+        <script type="text/javascript" src="/chat/common/message/message_component.js"></script>
+        <script type="text/javascript" src="/chat/client/utils/utils.module.js"></script>
+        <script type="text/javascript" src="/chat/client/utils/tse.js"></script>
         <script type="text/javascript" src="/chat/client/services/chat.js"></script>
         <script type="text/javascript" src="/chat/client/services.js"></script>
         <script type="text/javascript" src="/chat/client/twitter.js"></script>
@@ -100,6 +106,9 @@
         <script type="text/javascript" src="/chat/client/ui/profile/profile.js"></script>
         <script type="text/javascript" src="/chat/client/ui/tickets/list.js"></script>
         <script type="text/javascript" src="/chat/client/ui/tickets/compose.js"></script>
+        <script type="text/javascript" src="/chat/client/ui/emoticons/emoticons.module.js"></script>
+        <script type="text/javascript" src="/chat/client/ui/emoticons/emoticons_component.js"></script>
+        <script type="text/javascript" src="/chat/common/templates.module.js"></script>
         <script type="text/javascript" src="/chat/client/chat.js"></script>
     <#else>
         <link rel="stylesheet" type="text/css" href="min/app.css"/>
@@ -115,20 +124,7 @@
 <div id="content" ng-class="{'dark': isDark()}" ng-controller="StyleController">
 
 <script type="text/ng-template" id="emoticons.html">
-    <div style="height: 200px; width:120px; overflow-y: auto; overflow-x: hidden" ng-controller="EmoticonsController">
-        <div
-                ng-repeat="emoticon in ::emoticons | orderBy:'code'"
-                style="display: inline-block; width: 25px; cursor: pointer;"
-                ng-click="addToInput(unescapeCode(emoticon.code))"
-                ng-title="unescapeCode(::emoticon.code)"
-                tooltip="{{::unescapeCode(emoticon.code)}}"
-                >
-            <img
-                    style="max-height: 25px; max-width: 25px; height:auto; width: auto;"
-                    ng-src="/emoticons/{{::emoticon.fileName}}"
-                    />
-        </div>
-    </div>
+    <emoticons close="hideEmoticons()"></emoticons>
 </script>
 
 <script type="text/ng-template" id="help.html">
@@ -144,13 +140,16 @@
                 <li><code>**{{'HELP_BOLD_TEXT' | translate}}**</code> <span class="fa fa-long-arrow-right"></span> <strong>{{'HELP_BOLD_TEXT' | translate}}</strong></li>
                 <li><code>*{{'HELP_ITALIC_TEXT' | translate}}*</code> <span class="fa fa-long-arrow-right"></span> <i>{{'HELP_ITALIC_TEXT' | translate}}</i></li>
                 <li><code>~~{{'HELP_STRIKETHROUGH_TEXT' | translate}}~~</code> <span class="fa fa-long-arrow-right"></span> <del>{{'HELP_STRIKETHROUGH_TEXT' | translate}}</del></li>
-                <li><code>%%{{'HELP_SPOILER_TEXT' | translate}}%%</code> <span class="fa fa-long-arrow-right"></span> <span class="spoiler">{{'HELP_SPOILER_TEXT' | translate}}</span></li>
+                <li><code>%%{{'HELP_SPOILER_TEXT' | translate}}%%</code> <span class="fa fa-long-arrow-right"></span>
+                    <span class="chat-style-spoiler"><span>{{'HELP_SPOILER_TEXT' | translate}}</span></span></li>
                 <li>
-                    <code>!!!{{'HELP_NSFW_TEXT' | translate}}</code> <span class="fa fa-long-arrow-right"></span> <span class="nsfwLabel">NSFW</span> <span class="spoiler">{{'HELP_NSFW_TEXT' | translate}}</span><br/>
+                    <code>!!!{{'HELP_NSFW_TEXT' | translate}}</code> <span class="fa fa-long-arrow-right"></span> <span
+                    class="chat-style-nsfw"><span>{{'HELP_NSFW_TEXT' | translate}}</span></span><br/>
                     <code>!!!</code> {{'HELP_PREFIX_REQUIRED' | translate}}
                 </li>
                 <li>
-                    <code>&gt;{{'HELP_QUOTE_TEXT' | translate}}</code> <span class="fa fa-long-arrow-right"></span> <span class="greenText">&gt;{{'HELP_QUOTE_TEXT' | translate}}</span><br/>
+                    <code>&gt;{{'HELP_QUOTE_TEXT' | translate}}</code> <span class="fa fa-long-arrow-right"></span>
+                    <span class="chat-style-quote">{{'HELP_QUOTE_TEXT' | translate}}</span><br/>
                     <code>&gt;</code> {{'HELP_PREFIX_REQUIRED' | translate}}
                 </li>
                 <li>
@@ -266,42 +265,6 @@
         <div class="btn btn-default pull-left" ng-click="close()">{{'CONTROLS_CLOSE' | translate}}</div>
         <div class="btn btn-primary" ng-click="compose()" translate="TICKETS_COMPOSE"></div>
     </div>
-</script>
-
-<script type="text/ng-template" id="chat/ui/profile/email.html">
-    <div class='modal-header'>
-        <h3><i class='fa fa-envelope'></i> {{'PROFILE_EMAIL_SETTINGS' | translate}}</h3>
-    </div>
-    <form class="panel-body" name="form">
-        <div class='modal-body' ng-if="hasPendingVerification">
-            <div class="btn btn-default" ng-click="resendVerification()" translate="PROFILE_EMAIL_RESEND"></div>
-        </div>
-        <div class='modal-body'>
-            <div class='alert alert-danger' ng-if='error' ng-bind='error | translate'></div>
-            <div class='alert alert-info' ng-if='info' ng-bind='info'></div>
-            <div class="form-group" ng-class="{'has-error': form.email.$invalid && form.email.$dirty, 'has-success': !form.email.$invalid}">
-                <label for="email" class="control-label" translate="AUTH_EMAIL"></label>
-                <input
-                    ng-model="email"
-                    id="email"
-                    type="email"
-                    class="form-control"
-                    name="email"
-                    ng-placeholder="'AUTH_EMAIL' | translate"
-                    required
-                    />
-            </div>
-        </div>
-        <div class='modal-footer'>
-            <div class='btn btn-warning pull-left' ng-click='close()' translate='CONTROLS_CLOSE'></div>
-            <input
-                    type="submit"
-                    class="btn btn-primary"
-                    ng-value="'CONTROLS_SET_EMAIL' | translate"
-                    ng-click="setEmail(email)"
-                    ng-disabled="inProgress || form.$invalid"/>
-        </div>
-    </form>
 </script>
 
 <script type="text/ng-template" id="chat/ui/profile/profile.html">
@@ -500,6 +463,9 @@
                     <div vc-recaptcha="" key="'6Lepxv4SAAAAAMFC4jmtZvnzyekEQ3XuX0xQ-3TB'" on-create="recaptchaCreated(widgetId)"></div>
                 </div>
                 <div class="form-group">
+                    <div class="btn btn-link" ng-click="forgotPassword()">{{'AUTH_FORGOT_PASSWORD' | translate}}</div>
+                </div>
+                <div class="form-group">
                     <div ng-disabled="busy" class="btn btn-default" ng-click="switchTo('registration')">{{'AUTH_NEW_ACCOUNT' | translate}}</div>
                     <input type="submit" ng-disabled="busy || form.$invalid" class="btn btn-primary pull-right" value="{{'AUTH_SIGN_IN' | translate}}"/>
                 </div>
@@ -660,7 +626,7 @@
 
 <div class="chat" ng-controller="MessagesController">
     <div class="messagesContainer tse-scrollable" style="width: 100%; height: 100%">
-        <div class="tse-scroll-content" scroll-glue="">
+        <div class="tse-scroll-content" scroll-glue="<#if stream>true</#if>">
             <div class="tse-content">
                 <div ng-if="compact()" class="messages compact " ng-cloak="">
                     <div bindonce="" ng-repeat="message in messages[getActiveRoom()] track by message.internalId" class="messageBody" ng-controller="MessageController">
@@ -674,10 +640,11 @@
                             --><span bo-if="isMod()" class="mod">M</span><!--
                             --><span bo-if="isAdmin()" class="admin">A</span><!--
                             --><span bo-if="message.user.service!==null" class="ext" tooltip="{{message.user.serviceResName}}"
-                                     tooltip-trigger="mouseenter" tooltip-placement="right"><span bo-if="message.user.service==='twitch'" class="fa fa-twitch" style="color: #6441A5"></span><!--
+                                     tooltip-trigger="mouseenter" tooltip-placement="right"><span
+                            bo-if="message.user.service==='twitch'" class="fa fa-twitch twitch-icon"></span><!--
                             --><span bo-if="message.user.service==='cybergame'" class="cg-icon" style="color: #21b384"></span><!--
                             --><span bo-if="message.user.service==='youtube'" class="fa fa-youtube-play" style="color: #cd201f"></span><!--
-                            --><strong bo-if="message.user.service==='goodgame'" style="color: #73ADFF">GG</strong><!--
+                            --><strong bo-if="message.user.service==='goodgame'" class="gg-icon"></strong><!--
                             --><span bo-if="message.user.service==='sc2tv'" class="sc2tvIcon"></span><!--
                             --><span bo-if="message.user.service==='beam'" class="beamIcon"></span><!--
                             --></span><!--
@@ -693,7 +660,7 @@
                                     </span>
                                 </#if>
                                 <span bo-if="!$first">&gt; </span>
-                                <span class="userMessageBody" ng-if="!msg.hidden" ng-bind-html="msg.body"></span>
+                                <message class="userMessageBody" ng-if="!msg.hidden" nodes="::msg.body"></message>
                                 <a class="userMessageBody" ng-if="msg.hidden" ng-click="msg.hidden=false">[{{'CHAT_MESSAGE_HIDDEN' | translate}}]</a>
                             </span>
                         </div>
@@ -704,10 +671,11 @@
                                         <span class="btn btn-default" ng-click="ban()" title="ban"><span class="fa fa-ban"></span></span>
                                         <span class="btn btn-default" ng-click="timeout()" title="time out"><span class="fa fa-clock-o"></span></span>
                                     </span><!--
-                                    --><span ng-if="isMod()" class="mod">M</span><!--
+                                    --><span bo-if="isMod()" class="mod">M</span><!--
                                     --><span ng-if="isAdmin()" class="admin">A</span><!--
                                     --><span ng-if="message.ext" class="ext" tooltip="{{message.extOriginRes}}"
-                                             tooltip-trigger="mouseenter" tooltip-placement="right"><span class="fa fa-twitch" style="color: #6441A5"></span></span><!--
+                                             tooltip-trigger="mouseenter" tooltip-placement="right"><span
+                            class="fa fa-twitch twitch-icon"></span></span><!--
                                 --><#if like>
                                     <span class="like" popover-append-to-body="true" popover-template="'likedTemplate.html'" popover-title="Liked this:" popover-trigger="mouseenter" popover-placement="left">
                                         <span class="likeButton btn btn-link btn-xs" ng-click="like(message.id_)" ng-class="{likedButton: message.likes.length &gt; 0}">
@@ -717,7 +685,7 @@
                                     </span>
                                 </#if><!--
                          --><span class="username" ng-click="addToInput($event)" bo-bind="message.user.name | inflector:'capital'"></span>
-                            <span class="userMessageBody" ng-if="!message.hidden" ng-bind-html="message.body"></span>
+                            <message class="userMessageBody" ng-if="!message.hidden" nodes="::message.body"></message>
                             <a class="userMessageBody" ng-if="message.hidden" ng-click="message.hidden=false">[{{'CHAT_MESSAGE_HIDDEN' | translate}}]</a>
                         </div>
                         <div class="alert-msg alert-msg-danger" bo-if="message.type === 'ERROR'">
@@ -740,10 +708,11 @@
                                 <span class="username" bo-style="{'color': message.user.color}" ng-click="addToInput($event)" bo-bind="message.user.name | inflector:'capital'"></span>
                                 <small class="role" bo-if="message.user.service===null" bo-bind="'ROLE_' + getHighestRole().role.title | translate"></small>
                                 <small class="role" bo-if="message.user.service!==null"><span bo-bind="message.user.serviceResName"></span> <!--
-                                --><a bo-if="message.user.service==='twitch'" bo-href="extUrl()" target="_blank"><span class="fa fa-twitch" style="color: #999999"></span></a><!--
+                                --><a bo-if="message.user.service==='twitch'" bo-href="extUrl()" target="_blank"><span
+                                    class="fa fa-twitch twitch-icon"></span></a><!--
                                 --><span bo-if="message.user.service==='youtube'" class="fa fa-youtube-play" style="color: #cd201f"></span><!--
                                 --><span bo-if="message.user.service==='cybergame'" class="cg-icon" style="color: #999999"></span><!--
-                                --><strong bo-if="message.user.service==='goodgame'" style="color: #73ADFF">GG</strong><!--
+                                --><strong bo-if="message.user.service==='goodgame'" class="gg-icon"></strong><!--
                                 --><span bo-if="message.user.service==='sc2tv'" class="sc2tvIcon"></span><!--
                                 --><span bo-if="message.user.service==='beam'" class="beamIcon"></span><!--
                                 --></small>
@@ -758,10 +727,10 @@
                                 <#if like><div class="like" popover-append-to-body="true" popover-template="'likedTemplate.html'" popover-title="Liked this:" popover-trigger="mouseenter" popover-placement="left">
                                         <span class="likeButton btn btn-link btn-xs" ng-click="like(msg.id_)" ng-class="{likedButton: msg.likes.length &gt; 0}">
                                             <span class="fa fa-heart"></span><!--
-                                            --><span class="likeCount" ng-if="msg.likes.length &gt; 0">&nbsp;{{msg.likes.length}}</span>
+                                            --><span class="likeCount" ng-if="msg.likes.length > 0">&nbsp;{{msg.likes.length}}</span>
                                         </span>
                                 </div></#if>
-                                <div class="userMessageBody" bo-style="{'border-color': message.user.color}" ng-if="!msg.hidden" ng-bind-html="msg.body"></div>
+                                <message class="userMessageBody" bo-style="{'border-color': message.user.color}" nodes="::msg.body" ng-if="!msg.hidden"></message>
                                 <a class="userMessageBody" bo-style="{'border-color': message.user.color}" ng-if="msg.hidden" ng-click="msg.hidden=false">[{{'CHAT_MESSAGE_HIDDEN' | translate}}]</a>
                             </div>
                         </div>
@@ -781,7 +750,7 @@
                             <div class="me">
                                     <span class="username"
                                           ng-click="addToInput($event)" bo-bind="message.user.name | inflector:'capital'"></span>
-                                <span class="userMessageBodyMe" ng-if="!message.hidden" ng-bind-html="message.body"></span>
+                                <message class="userMessageBodyMe" nodes="::msg.body" ng-if="!message.hidden"></message>
                                 <a class="userMessageBodyMe" ng-if="message.hidden" ng-click="message.hidden=false">[{{'CHAT_MESSAGE_HIDDEN' | translate}}]</a>
                             </div>
                         </div>

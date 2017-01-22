@@ -35,7 +35,7 @@ public class StreamLabsProxyProvider extends ProxyProvider {
         HttpClient httpClient,
         MessageBroadcaster messageBroadcaster
     ) {
-        super("streamlabs", true, false, true, ImmutableSet.of("streamlabs"), EnumSet.noneOf(ModerationOperation.class));
+        super("streamlabs", true, false, true, false, ImmutableSet.of("streamlabs"), EnumSet.noneOf(ModerationOperation.class));
         this.scheduledExecutorService = scheduledExecutorService;
         this.notificationService = notificationService;
         this.proxyAuthService = proxyAuthService;

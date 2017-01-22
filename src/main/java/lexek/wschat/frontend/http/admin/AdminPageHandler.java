@@ -19,7 +19,7 @@ public class AdminPageHandler extends SimpleHttpHandler {
     @Override
     protected void handle(Request request, Response response) throws Exception {
         if (request.method() == HttpMethod.GET) {
-            UserDto user = authenticationManager.checkAuthentication(request);
+            UserDto user = authenticationManager.checkFullAuthentication(request);
             if (user != null && user.hasRole(GlobalRole.ADMIN)) {
                 response.renderTemplate("admin", ImmutableMap.of("user", user));
             } else {

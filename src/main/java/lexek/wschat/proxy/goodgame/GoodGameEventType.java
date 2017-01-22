@@ -12,5 +12,6 @@ public enum GoodGameEventType {
     MESSAGE,
     BAN,
     USER_BAN,
+    USER_WARN,
     ERROR
 }

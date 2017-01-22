@@ -85,7 +85,7 @@ public class WebSocketChatHandler extends SimpleChannelInboundHandler<WebSocketF
                 ctx.writeAndFlush(new CloseWebSocketFrame()).addListener(ChannelFutureListener.CLOSE);
             }
         }
-        if (evt == WebSocketServerProtocolHandler.ServerHandshakeStateEvent.HANDSHAKE_COMPLETE) {
+        if (evt instanceof WebSocketServerProtocolHandler.HandshakeComplete) {
             WebSocketConnectionAdapter wrapper = ctx.channel().attr(WRAPPER_ATTR_KEY).get();
             wrapper.send(Message.protocolMessage(Constants.WEBSOCKET_PROTOCOL_VERSION));
         }
@@ -100,7 +100,7 @@ public class WebSocketChatHandler extends SimpleChannelInboundHandler<WebSocketF
             } else if (decodedMessage.getType() == MessageType.LOGOUT) {
                 String sid = channel.attr(SID_ATTR_KEY).get();
                 if (sid != null) {
-                    authenticationService.invalidate(sid);
+                    authenticationService.invalidateSession(sid);
                 }
             } else {
                 messageReactor.processMessage(wrapper, decodedMessage);
@@ -128,7 +128,7 @@ public class WebSocketChatHandler extends SimpleChannelInboundHandler<WebSocketF
         logger.debug("{}[{}] joined; ip: {}", user.getName(), user.getRole(), connection.getIp());
         connectionGroup.registerConnection(connection);
         if (!user.hasRole(GlobalRole.USER)) {
-            connection.getChannel().attr(SID_ATTR_KEY).remove();
+            connection.getChannel().attr(SID_ATTR_KEY).set(null);
         }
     }
 

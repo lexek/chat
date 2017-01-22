@@ -6,6 +6,7 @@ import lexek.wschat.chat.MessageBroadcaster;
 import lexek.wschat.chat.Room;
 import lexek.wschat.chat.filters.RoomWithSendBackCheckFilter;
 import lexek.wschat.chat.model.*;
+import lexek.wschat.chat.msg.MessageProcessingService;
 import lexek.wschat.chat.processing.AbstractRoomMessageHandler;
 import org.jvnet.hk2.annotations.Service;
 
@@ -17,9 +18,14 @@ import java.util.concurrent.atomic.AtomicLong;
 public class MsgHandler extends AbstractRoomMessageHandler {
     private final AtomicLong messageId;
     private final MessageBroadcaster messageBroadcaster;
+    private final MessageProcessingService messageProcessingService;
 
     @Inject
-    public MsgHandler(@Named("messageId") AtomicLong messageId, MessageBroadcaster messageBroadcaster) {
+    public MsgHandler(
+        @Named("messageId") AtomicLong messageId,
+        MessageBroadcaster messageBroadcaster,
+        MessageProcessingService messageProcessingService
+    ) {
         super(
             ImmutableSet.of(
                 MessageProperty.ROOM,
@@ -30,6 +36,7 @@ public class MsgHandler extends AbstractRoomMessageHandler {
             true);
         this.messageId = messageId;
         this.messageBroadcaster = messageBroadcaster;
+        this.messageProcessingService = messageProcessingService;
     }
 
     @Override
@@ -50,7 +57,7 @@ public class MsgHandler extends AbstractRoomMessageHandler {
                     chatter.getUser().getColor(),
                     messageId.getAndIncrement(),
                     System.currentTimeMillis(),
-                    text
+                    messageProcessingService.processMessage(text, true)
                 ),
                 new RoomWithSendBackCheckFilter(room, connection)
             );

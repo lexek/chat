@@ -34,7 +34,7 @@ public class TwitchTvProxyProvider extends ProxyProvider {
         ProxyAuthService authService,
         NotificationService notificationService
     ) {
-        super("twitch", true, true, false, ImmutableSet.of("twitch"), EnumSet.allOf(ModerationOperation.class));
+        super("twitch", true, true, false, false, ImmutableSet.of("twitch"), EnumSet.allOf(ModerationOperation.class));
         this.messageId = messageId;
         this.messageBroadcaster = messageBroadcaster;
         this.credentialsService = credentialsService;

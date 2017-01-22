@@ -6,11 +6,14 @@ import lexek.wschat.chat.e.BadRequestException;
 import lexek.wschat.chat.e.EntityNotFoundException;
 import lexek.wschat.chat.model.GlobalRole;
 import lexek.wschat.db.model.SessionDto;
-import lexek.wschat.db.model.UserAuthDto;
 import lexek.wschat.db.model.UserDto;
+import lexek.wschat.db.model.form.PasswordForm;
+import lexek.wschat.db.model.form.PasswordResetForm;
 import lexek.wschat.db.model.rest.BooleanValueContainer;
+import lexek.wschat.db.model.rest.PasswordModel;
 import lexek.wschat.security.AuthenticationManager;
 import lexek.wschat.security.ReCaptcha;
+import lexek.wschat.security.ResetPasswordService;
 import lexek.wschat.security.jersey.Auth;
 import lexek.wschat.security.jersey.RequiredRole;
 import lexek.wschat.security.social.*;
@@ -20,6 +23,7 @@ import org.glassfish.jersey.server.mvc.Viewable;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import javax.inject.Inject;
+import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.*;
@@ -34,6 +38,7 @@ public class AuthResource {
 
     private final SocialAuthService socialAuthService;
     private final AuthenticationManager authenticationManager;
+    private final ResetPasswordService resetPasswordService;
     private final UserService userService;
     private final ReCaptcha reCaptcha;
 
@@ -41,11 +46,13 @@ public class AuthResource {
     public AuthResource(
         SocialAuthService socialAuthService,
         AuthenticationManager authenticationManager,
+        ResetPasswordService resetPasswordService,
         UserService userService,
         ReCaptcha reCaptcha
     ) {
         this.socialAuthService = socialAuthService;
         this.authenticationManager = authenticationManager;
+        this.resetPasswordService = resetPasswordService;
         this.userService = userService;
         this.reCaptcha = reCaptcha;
     }
@@ -158,12 +165,11 @@ public class AuthResource {
             if (newAccount) {
                 if (USERNAME_PATTERN.matcher(username).matches()) {
                     try {
-                        UserAuthDto userAuth = authenticationManager.createUserWithProfile(username, profile);
-                        SessionDto sessionDto = authenticationManager.createSession(userAuth.getUser(), request.ip());
+                        SessionDto session = socialAuthService.createUser(username, profile, request.ip());
                         socialAuthService.expireTemporarySession(tempSessionId);
                         return Response
                             .ok(new Viewable("/auth"))
-                            .cookie(sessionCookie("sid", sessionDto.getSessionId()))
+                            .cookie(sessionCookie("sid", session.getSessionId()))
                             .build();
                     } catch (Exception e) {
                         return Response.ok(new Viewable(
@@ -206,13 +212,11 @@ public class AuthResource {
                                     "captchaRequired", captchaRequired
                                 ))).build();
                         } else {
-                            UserAuthDto newAuth =
-                                authenticationManager.createUserAuthFromProfile(user, profile);
-                            SessionDto sessionDto = authenticationManager.createSession(newAuth.getUser(), ip);
+                            SessionDto session = socialAuthService.createAuth(user, profile, request.ip());
                             socialAuthService.expireTemporarySession(tempSessionId);
                             return Response
                                 .ok(new Viewable("/auth"))
-                                .cookie(sessionCookie("sid", sessionDto.getSessionId()))
+                                .cookie(sessionCookie("sid", session.getSessionId()))
                                 .build();
                         }
                     } else {
@@ -246,17 +250,40 @@ public class AuthResource {
 
     @DELETE
     @Path("/{serviceName}")
+    @Consumes(MediaType.APPLICATION_JSON)
     @RequiredRole(GlobalRole.USER_UNCONFIRMED)
     public Response deleteAuth(
         @PathParam("serviceName") @NotEmpty String serviceName,
-        @Auth UserDto user
+        @Auth UserDto user,
+        PasswordModel passwordModel
     ) {
+        String password = passwordModel != null ? passwordModel.getPassword() : null;
         serviceName = serviceName.toLowerCase().trim();
-        if (serviceName.equals("password") || serviceName.equals("token")) {
-            authenticationManager.deleteAuth(user, serviceName);
-        } else {
-            socialAuthService.deleteAuth(user, serviceName);
+        switch (serviceName) {
+            case "password":
+                authenticationManager.deletePassword(user, password);
+                break;
+            case "token":
+                authenticationManager.deleteAuth(user, serviceName);
+                break;
+            default:
+                socialAuthService.deleteAuth(user, serviceName);
+                break;
         }
+        return Response.ok().build();
+    }
+
+    @PUT
+    @Path("/password")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response changePassword(
+        @Auth UserDto user,
+        @NotNull @Valid PasswordForm passwordForm
+    ) {
+        String password = passwordForm.getPassword();
+        String oldPassword = passwordForm.getOldPassword();
+        authenticationManager.setPassword(user, password, oldPassword);
         return Response.ok().build();
     }
 
@@ -270,6 +297,64 @@ public class AuthResource {
     ) {
         userService.setCheckIp(user, valueContainer.getValue());
         return Response.ok().build();
+    }
+
+    @POST
+    @Path("/requestPasswordReset")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @RequiredRole(GlobalRole.UNAUTHENTICATED)
+    public Response requestPasswordReset(
+        @Context Request request,
+        @Valid PasswordResetForm form
+    ) {
+        if (!reCaptcha.verify(form.getCaptcha(), request.ip())) {
+            throw new BadRequestException("Invalid captcha");
+        }
+        resetPasswordService.requestPasswordReset(form.getName());
+        return Response.ok().build();
+    }
+
+    @GET
+    @Path("/forgotPassword")
+    @Produces(MediaType.TEXT_HTML)
+    public Response passwordResetView(
+        @NotEmpty @QueryParam("token") String token,
+        @NotEmpty @QueryParam("uid") String uid
+    ) {
+        return Response.ok(new Viewable(
+            "/forgot_password",
+            ImmutableMap.of(
+                "token", token,
+                "uid", uid
+            )
+        )).build();
+    }
+
+    @POST
+    @Path("/forgotPassword")
+    @Produces(MediaType.TEXT_HTML)
+    public Response passwordReset(
+        @FormParam("token") @NotEmpty String token,
+        @FormParam("uid") long userId,
+        @FormParam("password") @NotEmpty String password
+    ) {
+        try {
+            resetPasswordService.resetPassword(token, userId, password);
+            return Response.ok(new Viewable(
+                "/password_changed"
+            )).build();
+        } catch (BadRequestException e) {
+            return Response.ok(new Viewable(
+                "/forgot_password",
+                ImmutableMap.of(
+                    "token", token,
+                    "uid", userId,
+                    "password", password,
+                    "error", e.getMessage()
+                )
+            )).build();
+        }
     }
 
     private static NewCookie sessionCookie(String name, String id) {

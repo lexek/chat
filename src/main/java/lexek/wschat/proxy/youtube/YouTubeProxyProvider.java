@@ -36,7 +36,7 @@ public class YouTubeProxyProvider extends ProxyProvider {
         ProxyAuthService proxyAuthService,
         HttpClient httpClient
     ) {
-        super("youtube", true, false, true, ImmutableSet.of("google"), EnumSet.of(ModerationOperation.BAN));
+        super("youtube", true, false, true, false, ImmutableSet.of("google"), EnumSet.of(ModerationOperation.BAN));
         this.messageId = messageId;
         this.messageBroadcaster = messageBroadcaster;
         this.notificationService = notificationService;

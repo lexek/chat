@@ -26,6 +26,7 @@ import lexek.wschat.chat.Room;
 import lexek.wschat.chat.model.GlobalRole;
 import lexek.wschat.chat.model.LocalRole;
 import lexek.wschat.chat.model.Message;
+import lexek.wschat.chat.msg.MessageProcessingService;
 import lexek.wschat.proxy.AbstractProxy;
 import lexek.wschat.proxy.ModerationOperation;
 import lexek.wschat.proxy.ProxyProvider;
@@ -40,21 +41,26 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class Sc2tvChatProxy extends AbstractProxy {
+    private final Peka2TvApiClient apiClient;
     private final MessageBroadcaster messageBroadcaster;
+    private final MessageProcessingService messageProcessingService;
     private final AtomicLong messageId;
     private final Room room;
     private final Bootstrap bootstrap;
     private volatile Channel channel;
+    private Long streamId;
 
     protected Sc2tvChatProxy(
         NotificationService notificationService, String remoteRoom, MessageBroadcaster messageBroadcaster,
-        EventLoopGroup eventLoopGroup, AtomicLong messageId, Room room, long id, ProxyProvider provider
-    ) {
+        EventLoopGroup eventLoopGroup, AtomicLong messageId, Room room, long id, ProxyProvider provider,
+        Peka2TvApiClient apiClient, MessageProcessingService messageProcessingService) {
         super(eventLoopGroup, notificationService, provider, id, remoteRoom);
         this.messageBroadcaster = messageBroadcaster;
         this.messageId = messageId;
         this.room = room;
         this.bootstrap = createBootstrap(eventLoopGroup, new Sc2ChannelHandler());
+        this.apiClient = apiClient;
+        this.messageProcessingService = messageProcessingService;
     }
 
     private static Bootstrap createBootstrap(EventLoopGroup eventLoopGroup, ChannelHandler handler) {
@@ -108,6 +114,15 @@ public class Sc2tvChatProxy extends AbstractProxy {
 
     @Override
     protected void connect() {
+        if (streamId == null) {
+            try {
+                streamId = apiClient.getStreamId(remoteRoom());
+            } catch (Exception e) {
+                logger.error("unable to get stream id");
+                this.fail(e.getMessage());
+                return;
+            }
+        }
         ChannelFuture channelFuture = bootstrap.connect("funstream.tv", 80);
         channel = channelFuture.channel();
         channelFuture.addListener(future -> {
@@ -119,7 +134,7 @@ public class Sc2tvChatProxy extends AbstractProxy {
 
     @Override
     protected void disconnect() {
-        if (this.channel.isActive()) {
+        if (this.channel != null && this.channel.isActive()) {
             this.channel.close();
         }
     }
@@ -138,7 +153,7 @@ public class Sc2tvChatProxy extends AbstractProxy {
                 switch (socketIoPacket.getType()) {
                     case CONNECT: {
                         ObjectNode object = JsonNodeFactory.instance.objectNode();
-                        object.put("channel", "stream/" + remoteRoom());
+                        object.put("channel", "stream/" + streamId);
                         joinEventId = eventId++;
                         ctx.writeAndFlush(new Sc2tvMessage(joinEventId, "/chat/join", object));
                         break;
@@ -166,10 +181,10 @@ public class Sc2tvChatProxy extends AbstractProxy {
                             Colors.generateColor(userName),
                             messageId.getAndIncrement(),
                             System.currentTimeMillis(),
-                            text,
+                            messageProcessingService.processMessage(text, true),
                             "sc2tv",
                             channel,
-                            "sc2tv"
+                            remoteRoom()
                         );
                         messageBroadcaster.submitMessage(out, room.FILTER);
                         receivedMessages.add(sc2tvId);

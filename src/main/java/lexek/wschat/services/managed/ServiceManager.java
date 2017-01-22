@@ -47,7 +47,7 @@ public class ServiceManager {
         return services;
     }
 
-    public void startAll() throws Exception {
+    public void startAll() {
         for (ManagedService service : services) {
             service.registerMetrics(metricRegistry);
             logger.info("starting service {} {}", service.getName(), service.getClass().getCanonicalName());

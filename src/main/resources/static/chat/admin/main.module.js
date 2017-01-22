@@ -49,23 +49,24 @@ AdminServices.factory("title", TitleServiceFactory);
 var AdminApplication = angular.module(
     "AdminApplication",
     [
-        "ngRoute",
-        "ngAnimate",
-        "AdminServices",
-        "relativeDate",
-        "ui.inflector",
-        "ui.bootstrap",
-        "ui.bootstrap.datetimepicker",
-        "highcharts-ng",
-        "ngSanitize",
-        "rgkevin.datetimeRangePicker",
-        "cgBusy",
-        "chat.admin.auth",
-        "chat.admin.journal",
-        "chat.admin.utils",
-        "chat.admin.ticket",
+        'ngRoute',
+        'ngAnimate',
+        'AdminServices',
+        'relativeDate',
+        'ui.inflector',
+        'ui.bootstrap',
+        'ui.bootstrap.datetimepicker',
+        'highcharts-ng',
+        'ngSanitize',
+        'rgkevin.datetimeRangePicker',
+        'cgBusy',
+        'chat.admin.auth',
+        'chat.admin.journal',
+        'chat.admin.utils',
+        'chat.admin.ticket',
         'chat.admin.history',
-        "templates"
+        'templates',
+        'chat.common.message'
     ]
 );
 
@@ -75,7 +76,7 @@ AdminApplication.value('cgBusyDefaults',{
 });
 
 //todo: remove later
-Role = function(title, value) {
+var Role = function (title, value) {
     this.title = title;
     this.value = value;
 };
@@ -883,6 +884,11 @@ function HistoryController($scope, $http, $modal, title, options) {
             params: params
         }).success(function (d) {
             $scope.entries = d["data"];
+            $scope.entries.forEach(function (e) {
+                if (!e.legacy) {
+                    e.message = JSON.parse(e.message);
+                }
+            });
             $scope.totalPages = d["pageCount"];
         });
     };
@@ -1336,7 +1342,7 @@ var TopicController = function($scope, $http) {
 AdminApplication.controller("TopicController", ["$scope", "$http", TopicController]);
 
 /* @ngInject */
-var RoomController = function($scope, $location, $http, $sce, $modal, alert, title) {
+var RoomController = function($scope, $location, $http, $sce, $modal, $interval, alert, title) {
     $scope.messages = [];
     $scope.journal = [];
     $scope.proxies = [];
@@ -1354,11 +1360,22 @@ var RoomController = function($scope, $location, $http, $sce, $modal, alert, tit
         });
     };
 
+    var stopProxyUpdate = $interval(loadProxies, 5000);
+
+    $scope.$on('$destroy', function () {
+        $interval.cancel(stopProxyUpdate);
+    });
+
     var loadPage = function() {
         $scope.messages.length = 0;
         $http({method: "GET", url: StringFormatter.format("/rest/rooms/{number}/history/peek", $scope.roomId)})
             .success(function (data) {
                 $scope.messages = data;
+                $scope.messages.forEach(function (e) {
+                    if (!e.legacy && e.type === "MSG") {
+                        e.message = JSON.parse(e.message);
+                    }
+                });
             });
         $http({method: "GET", url: StringFormatter.format("/rest/rooms/{number}/announcements/all", $scope.roomId)})
             .success(function (data) {

@@ -29,6 +29,7 @@ public class TwitchMessageHandler extends SimpleChannelInboundHandler<TwitchEven
             ctx.write("NICK justinfan1337\r\n");
         }
         ctx.write("CAP REQ :twitch.tv/commands\r\n");
+        ctx.write("CAP REQ :twitch.tv/tags\r\n");
         ctx.writeAndFlush("JOIN #" + channel + "\r\n");
     }
 
@@ -42,7 +43,7 @@ public class TwitchMessageHandler extends SimpleChannelInboundHandler<TwitchEven
         if (msg.getType() == TwitchEventMessage.Type.CLEAR) {
             eventListener.onClear(msg.getData());
         } else if (msg.getType() == TwitchEventMessage.Type.MSG && msg instanceof TwitchUserMessage) {
-            eventListener.onMessage(((TwitchUserMessage) msg).getUser(), msg.getData());
+            eventListener.onMessage(((TwitchUserMessage) msg).getUserName(), ((TwitchUserMessage) msg).getMessage());
         } else if (msg.getType() == TwitchEventMessage.Type.LOGIN_FAILED) {
             eventListener.loginFailed();
         } else if (msg.getType() == TwitchEventMessage.Type.JOIN) {

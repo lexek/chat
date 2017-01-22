@@ -2,6 +2,7 @@ package lexek.wschat.frontend.irc;
 
 import com.google.common.collect.ImmutableMap;
 import lexek.wschat.chat.model.*;
+import lexek.wschat.chat.msg.MessageNode;
 import lexek.wschat.db.model.UserDto;
 import lexek.wschat.frontend.Codec;
 import org.jvnet.hk2.annotations.Service;
@@ -10,6 +11,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class IrcCodec implements Codec {
@@ -54,7 +56,11 @@ public class IrcCodec implements Codec {
             case MSG: {
                 String room = message.get(MessageProperty.ROOM);
                 String name = message.get(MessageProperty.NAME);
-                String text = message.get(MessageProperty.TEXT).replaceAll("[\r\n\t]", " ");
+                List<MessageNode> nodes = message.get(MessageProperty.MESSAGE_NODES);
+                String text = nodes
+                    .stream()
+                    .map(e -> e.getText().replaceAll("[\r\n\t]", " "))
+                    .collect(Collectors.joining());
                 return ":" + name + " PRIVMSG " + room + " :" + text;
             }
             case INFO: {

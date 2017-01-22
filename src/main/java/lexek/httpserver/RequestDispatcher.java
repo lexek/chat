@@ -57,11 +57,11 @@ public class RequestDispatcher extends SimpleChannelInboundHandler<FullHttpReque
     protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest request) throws Exception {
         Channel channel = ctx.channel();
         channel.config().setAutoRead(false);
-        boolean keepAlive = HttpHeaders.isKeepAlive(request);
+        boolean keepAlive = HttpUtil.isKeepAlive(request);
 
         boolean hostnameOk = false;
-        String host = request.headers().get(HttpHeaders.Names.HOST);
-        String origin = request.headers().get(HttpHeaders.Names.ORIGIN);
+        String host = request.headers().get(HttpHeaderNames.HOST);
+        String origin = request.headers().get(HttpHeaderNames.ORIGIN);
         if (this.host.equalsIgnoreCase(host) && (origin == null || this.origin.equals(origin))) {
             hostnameOk = true;
         }
@@ -72,7 +72,7 @@ public class RequestDispatcher extends SimpleChannelInboundHandler<FullHttpReque
         if (hostnameOk && referrerOk) {
             Timer.Context timerContext = timer.time();
             for (MatcherEntry matcherEntry : matcherEntries) {
-                if (matcherEntry.getPattern().matcher(withoutQuery(request.getUri())).matches()) {
+                if (matcherEntry.getPattern().matcher(withoutQuery(request.uri())).matches()) {
                     try {
                         response = matcherEntry.getHandler().handle(viewResolvers, request, channel);
                     } catch (Exception e) {
@@ -89,9 +89,9 @@ public class RequestDispatcher extends SimpleChannelInboundHandler<FullHttpReque
             if (millis > 500) {
                 slowRequestLogger.info(
                     "{} {} ({}) {} ms",
-                    request.getUri(),
-                    request.getMethod(),
-                    response != null ? response.getStatus() : 0,
+                    request.uri(),
+                    request.method(),
+                    response != null ? response.status() : 0,
                     millis
                 );
             }
@@ -129,13 +129,13 @@ public class RequestDispatcher extends SimpleChannelInboundHandler<FullHttpReque
                 new Response(response, viewResolvers));
         }
 
-        HttpHeaders.setContentLength(response, response.content().readableBytes());
-        HttpHeaders.setDate(response, new Date());
-        response.headers().add(HttpHeaders.Names.SERVER, "Kappa server v.1.3.3.7");
+        HttpUtil.setContentLength(response, response.content().readableBytes());
+        response.headers().add(HttpHeaderNames.DATE, new Date());
+        response.headers().add(HttpHeaderNames.SERVER, "Kappa server v.1.3.3.7");
         if (keepAlive) {
-            response.headers().add(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
+            response.headers().add(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
         } else {
-            response.headers().add(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.CLOSE);
+            response.headers().add(HttpHeaderNames.CONNECTION, HttpHeaderValues.CLOSE);
         }
         ChannelFuture writeFuture = channel.writeAndFlush(response);
         if (!keepAlive) {
@@ -146,12 +146,12 @@ public class RequestDispatcher extends SimpleChannelInboundHandler<FullHttpReque
     }
 
     private boolean checkReferrer(HttpRequest request) {
-        if (request.getMethod() == HttpMethod.POST) {
+        if (request.method() == HttpMethod.POST) {
             String disableCheckHeader = request.headers().get("X-Referrer-Check");
             if (disableCheckHeader != null && disableCheckHeader.equals("no-check")) {
                 return true;
             }
-            String contentTypeHeader = request.headers().get(HttpHeaders.Names.CONTENT_TYPE);
+            String contentTypeHeader = request.headers().get(HttpHeaderNames.CONTENT_TYPE);
             if (contentTypeHeader != null) {
                 ContentType contentType = ContentType.parse(contentTypeHeader);
                 if (!csrfTypes.contains(contentType.getMimeType())) {
@@ -159,7 +159,7 @@ public class RequestDispatcher extends SimpleChannelInboundHandler<FullHttpReque
                 }
             }
 
-            String referrer = request.headers().get(HttpHeaders.Names.REFERER);
+            String referrer = request.headers().get(HttpHeaderNames.REFERER);
             if (referrer == null) {
                 return false;
             }

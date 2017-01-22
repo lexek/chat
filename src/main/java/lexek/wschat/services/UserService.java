@@ -47,6 +47,10 @@ public class UserService {
         return userDao.getByName(name);
     }
 
+    public UserDto findByNameOrEmail(String name) {
+        return userDao.getByNameOrEmail(name);
+    }
+
     @Transactional
     public void update(UserDto user, UserDto admin, UserChangeSet changeSet) {
         UserDto updatedUser = userDao.update(user.getId(), changeSet);

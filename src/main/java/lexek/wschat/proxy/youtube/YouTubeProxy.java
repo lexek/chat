@@ -1,6 +1,7 @@
 package lexek.wschat.proxy.youtube;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.ImmutableList;
 import com.google.common.net.HttpHeaders;
 import com.google.common.net.UrlEscapers;
 import lexek.wschat.chat.MessageBroadcaster;
@@ -8,6 +9,7 @@ import lexek.wschat.chat.Room;
 import lexek.wschat.chat.model.GlobalRole;
 import lexek.wschat.chat.model.LocalRole;
 import lexek.wschat.chat.model.Message;
+import lexek.wschat.chat.msg.MessageNode;
 import lexek.wschat.proxy.AbstractProxy;
 import lexek.wschat.proxy.ModerationOperation;
 import lexek.wschat.proxy.ProxyAuthService;
@@ -123,7 +125,7 @@ public class YouTubeProxy extends AbstractProxy {
                             Colors.generateColor(e.getName()),
                             messageId.getAndIncrement(),
                             e.getPublishedAt(),
-                            e.getMessage(),
+                            ImmutableList.of(MessageNode.textNode(e.getMessage())),
                             "youtube",
                             channelId,
                             ownerName

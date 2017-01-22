@@ -66,7 +66,7 @@ public class TwitterStreamingClient extends AbstractProxy {
             throw new RuntimeException(e);
         }
         this.credentials = credentials;
-        eventLoopGroup.scheduleAtFixedRate((Runnable) () -> {
+        eventLoopGroup.scheduleAtFixedRate(() -> {
             if (state() == ProxyState.RUNNING) {
                 logger.debug("running update task");
                 if (changed) {
@@ -126,7 +126,7 @@ public class TwitterStreamingClient extends AbstractProxy {
 
     @Override
     protected void disconnect() {
-        if (channel != null) {
+        if (channel != null && channel.isActive()) {
             channel.close();
         }
     }
@@ -225,8 +225,8 @@ public class TwitterStreamingClient extends AbstractProxy {
                 method,
                 queryParameters
             );
-            request.headers().add(HttpHeaders.Names.AUTHORIZATION, header);
-            request.headers().add(HttpHeaders.Names.CONTENT_TYPE, "application/x-www-form-urlencoded");
+            request.headers().add(HttpHeaderNames.AUTHORIZATION, header);
+            request.headers().add(HttpHeaderNames.CONTENT_TYPE, "application/x-www-form-urlencoded");
             HttpPostRequestEncoder httpPostRequestEncoder = new HttpPostRequestEncoder(request, false);
             for (Map.Entry<String, String> param : queryParameters.entrySet()) {
                 httpPostRequestEncoder.addBodyAttribute(param.getKey(), param.getValue());
@@ -249,10 +249,10 @@ public class TwitterStreamingClient extends AbstractProxy {
             }
             if (msg instanceof HttpResponse) {
                 HttpResponse response = ((HttpResponse) msg);
-                if (response.getStatus().code() == 200) {
+                if (response.status().code() == 200) {
                     started();
                 } else {
-                    fail(response.getStatus().reasonPhrase());
+                    fail(response.status().reasonPhrase());
                 }
             }
             if (msg instanceof ByteBuf) {

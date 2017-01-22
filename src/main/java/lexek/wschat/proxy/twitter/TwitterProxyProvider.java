@@ -30,7 +30,7 @@ public class TwitterProxyProvider extends ProxyProvider {
         TwitterCredentials credentials,
         TwitterApiClient profileSource
     ) {
-        super("twitter", false, false, false, ImmutableSet.of(), EnumSet.noneOf(ModerationOperation.class));
+        super("twitter", false, false, false, false, ImmutableSet.of(), EnumSet.noneOf(ModerationOperation.class));
         this.messageBroadcaster = messageBroadcaster;
         this.profileSource = profileSource;
         this.twitterClient = new TwitterStreamingClient(notificationService, eventLoopGroup, this, profileSource, credentials);

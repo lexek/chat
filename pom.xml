@@ -14,27 +14,47 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <webappSourceDir>${basedir}/src/main/resources</webappSourceDir>
         <wro4j.version>1.7.6</wro4j.version>
-        <jooq.version>3.8.4</jooq.version>
-        <netty.version>4.0.41.Final</netty.version>
+        <jooq.version>3.9.0</jooq.version>
+        <netty.version>4.1.6.Final</netty.version>
         <netty.osClassifier>linux-x86_64</netty.osClassifier>
-        <jersey.version>2.23.2</jersey.version>
-        <metrics.version>3.1.0</metrics.version>
-        <hk2.version>2.5.0-b07</hk2.version>
+        <jersey.version>2.25</jersey.version>
+        <metrics.version>3.1.2</metrics.version>
+        <hk2.version>2.5.0-b31</hk2.version>
         <slf4j.version>1.7.21</slf4j.version>
-        <jackson.version>2.8.2</jackson.version>
+        <logback.version>1.1.8</logback.version>
+        <jackson.version>2.8.5</jackson.version>
     </properties>
 
     <profiles>
         <profile>
-            <id>netty-native-linux</id>
+            <id>production</id>
             <dependencies>
                 <dependency>
                     <groupId>io.netty</groupId>
                     <artifactId>netty-tcnative</artifactId>
-                    <version>1.1.33.Fork21</version>
+                    <version>1.1.33.Fork23</version>
                     <classifier>${netty.osClassifier}</classifier>
                 </dependency>
             </dependencies>
+        </profile>
+        <profile>
+            <id>force inhabitants</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.glassfish.hk2</groupId>
+                        <artifactId>hk2-inhabitant-generator</artifactId>
+                        <version>2.3.0</version>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>generate-inhabitants</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
     </profiles>
 
@@ -72,17 +92,18 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>2.4</version>
+                <version>3.6.0</version>
                 <configuration>
                     <source>8</source>
                     <target>8</target>
+                    <forceJavacCompilerUse>true</forceJavacCompilerUse>
                 </configuration>
             </plugin>
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>2.4.2</version>
+                <version>2.4.3</version>
                 <configuration>
 
                 </configuration>
@@ -95,6 +116,8 @@
                         <configuration>
                             <outputFile>target/wschat.jar</outputFile>
                             <transformers>
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <mainClass>lexek.wschat.Main</mainClass>
                                 </transformer>
@@ -133,7 +156,7 @@
             <plugin>
                 <groupId>org.eluder.coveralls</groupId>
                 <artifactId>coveralls-maven-plugin</artifactId>
-                <version>4.0.0</version>
+                <version>4.3.0</version>
             </plugin>
 
             <plugin>
@@ -190,28 +213,6 @@
                         <name>org.jooq.util.JavaGenerator</name>
                         <database>
                             <name>org.jooq.util.mysql.MySQLDatabase</name>
-                            <includes>
-                                poll|
-                                poll_option|
-                                poll_answer|
-                                chatter|
-                                user|
-                                userauth|
-                                session|
-                                emoticon|
-                                metric|
-                                journal|
-                                history|
-                                ticket|
-                                announcement|
-                                room|
-                                pending_confirmation|
-                                pending_notification|
-                                steam_game|
-                                chat_proxy|
-                                ignore_list|
-                                proxy_auth
-                            </includes>
                             <inputSchema>chat</inputSchema>
                             <outputSchemaToDefault>true</outputSchemaToDefault>
                         </database>
@@ -246,8 +247,8 @@
                             <goal>install-node-and-npm</goal>
                         </goals>
                         <configuration>
-                            <nodeVersion>v4.4.5</nodeVersion>
-                            <npmVersion>2.15.5</npmVersion>
+                            <nodeVersion>v6.9.2</nodeVersion>
+                            <npmVersion>3.10.10</npmVersion>
                             <nodeDownloadRoot>https://nodejs.org/dist/</nodeDownloadRoot>
                             <npmDownloadRoot>https://registry.npmjs.org/npm/-/</npmDownloadRoot>
                         </configuration>
@@ -285,18 +286,6 @@
                             <arguments>client</arguments>
                         </configuration>
                         <phase>generate-resources</phase>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.glassfish.hk2</groupId>
-                <artifactId>hk2-inhabitant-generator</artifactId>
-                <version>2.3.0</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>generate-inhabitants</goal>
-                        </goals>
                     </execution>
                 </executions>
             </plugin>
@@ -350,7 +339,7 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>19.0</version>
+            <version>20.0</version>
         </dependency>
 
         <dependency>
@@ -373,7 +362,7 @@
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>1.1.3</version>
+            <version>${logback.version}</version>
         </dependency>
 
         <dependency>
@@ -385,14 +374,14 @@
         <dependency>
             <groupId>com.zaxxer</groupId>
             <artifactId>HikariCP</artifactId>
-            <version>2.4.1</version>
+            <version>2.5.1</version>
             <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>org.freemarker</groupId>
             <artifactId>freemarker</artifactId>
-            <version>2.3.20</version>
+            <version>2.3.23</version>
         </dependency>
 
         <dependency>
@@ -434,7 +423,7 @@
         <dependency>
             <groupId>com.lmax</groupId>
             <artifactId>disruptor</artifactId>
-            <version>3.3.2</version>
+            <version>3.3.6</version>
         </dependency>
 
         <dependency>
@@ -453,6 +442,12 @@
             <version>${jooq.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.jooq</groupId>
+            <artifactId>jooq-checker</artifactId>
+            <version>${jooq.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>javax.mail</groupId>
             <artifactId>mail</artifactId>
             <version>1.4.7</version>
@@ -466,13 +461,18 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <version>2.0.5-beta</version>
+            <version>2.3.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
-            <version>4.5.1</version>
+            <version>4.5.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.5</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.jersey.core</groupId>
@@ -546,6 +546,12 @@
             <artifactId>hk2-extras</artifactId>
             <version>${hk2.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.glassfish.hk2</groupId>
+            <artifactId>hk2-metadata-generator</artifactId>
+            <version>${hk2.version}</version>
+            <scope>provided</scope>
+        </dependency>
 
         <dependency>
             <groupId>com.fasterxml.jackson.jaxrs</groupId>
@@ -563,6 +569,35 @@
                     <artifactId>jackson-databind</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.16.12</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jsoup</groupId>
+            <artifactId>jsoup</artifactId>
+            <version>1.10.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.xmlgraphics</groupId>
+            <artifactId>batik-transcoder</artifactId>
+            <version>1.8</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.xmlgraphics</groupId>
+            <artifactId>xmlgraphics-commons</artifactId>
+            <version>2.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.xmlgraphics</groupId>
+            <artifactId>batik-codec</artifactId>
+            <version>1.8</version>
         </dependency>
     </dependencies>
 </project>

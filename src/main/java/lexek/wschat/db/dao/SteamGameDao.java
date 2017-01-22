@@ -1,9 +1,9 @@
 package lexek.wschat.db.dao;
 
 import lexek.wschat.db.jooq.tables.pojos.SteamGame;
+import lexek.wschat.db.tx.Transactional;
 import org.jooq.DSLContext;
 import org.jooq.Record1;
-import org.jooq.impl.DSL;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
@@ -21,19 +21,17 @@ public class SteamGameDao {
         this.ctx = ctx;
     }
 
+    @Transactional
     public void add(List<SteamGame> steamGames) {
-        ctx.transaction(txCtx -> {
-            DSLContext create = DSL.using(txCtx);
-            create.batch(
-                steamGames
-                    .stream()
-                    .map(game -> create
-                        .insertInto(STEAM_GAME, STEAM_GAME.ID, STEAM_GAME.NAME)
-                        .values(game.getId(), game.getName())
-                        .onDuplicateKeyIgnore()
-                    ).collect(Collectors.toList())
-            ).execute();
-        });
+        ctx.batch(
+            steamGames
+                .stream()
+                .map(game -> ctx
+                    .insertInto(STEAM_GAME, STEAM_GAME.ID, STEAM_GAME.NAME)
+                    .values(game.getId(), game.getName())
+                    .onDuplicateKeyIgnore()
+                ).collect(Collectors.toList())
+        ).execute();
     }
 
     public String get(long id) {

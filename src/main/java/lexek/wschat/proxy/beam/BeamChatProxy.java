@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.ImmutableList;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.*;
@@ -16,8 +17,6 @@ import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.websocketx.PingWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketClientProtocolHandler;
 import io.netty.handler.codec.http.websocketx.WebSocketVersion;
-import io.netty.handler.logging.LogLevel;
-import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.timeout.IdleState;
@@ -28,6 +27,7 @@ import lexek.wschat.chat.Room;
 import lexek.wschat.chat.model.GlobalRole;
 import lexek.wschat.chat.model.LocalRole;
 import lexek.wschat.chat.model.Message;
+import lexek.wschat.chat.msg.MessageNode;
 import lexek.wschat.proxy.AbstractProxy;
 import lexek.wschat.proxy.ModerationOperation;
 import lexek.wschat.proxy.ProxyProvider;
@@ -128,7 +128,7 @@ public class BeamChatProxy extends AbstractProxy {
 
     @Override
     protected void disconnect() {
-        if (this.channel.isActive()) {
+        if (this.channel != null && this.channel.isActive()) {
             this.channel.close();
         }
     }
@@ -182,7 +182,7 @@ public class BeamChatProxy extends AbstractProxy {
                         Colors.generateColor(name),
                         messageId.getAndIncrement(),
                         System.currentTimeMillis(),
-                        messageBuilder.toString(),
+                        ImmutableList.of(MessageNode.textNode(messageBuilder.toString())),
                         "beam",
                         String.valueOf(channel),
                         remoteRoom()

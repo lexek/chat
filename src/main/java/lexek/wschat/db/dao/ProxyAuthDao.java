@@ -3,9 +3,9 @@ package lexek.wschat.db.dao;
 import lexek.wschat.chat.e.EntityNotFoundException;
 import lexek.wschat.db.model.ProxyAuth;
 import lexek.wschat.db.model.UserDto;
+import lexek.wschat.db.tx.Transactional;
 import org.jooq.DSLContext;
 import org.jooq.Record;
-import org.jooq.impl.DSL;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
@@ -25,57 +25,54 @@ public class ProxyAuthDao {
         this.ctx = ctx;
     }
 
+    @Transactional
     public ProxyAuth createOrUpdate(ProxyAuth proxyAuth) {
-        return ctx.transactionResult(configuration -> {
-            DSLContext ctx = DSL.using(configuration);
+        String service = proxyAuth.getService();
+        String externalId = proxyAuth.getExternalId();
+        UserDto owner = proxyAuth.getOwner();
 
-            String service = proxyAuth.getService();
-            String externalId = proxyAuth.getExternalId();
-            UserDto owner = proxyAuth.getOwner();
+        Long id;
 
-            Long id = null;
+        Record existingRecord = ctx
+            .select(PROXY_AUTH.ID)
+            .from(PROXY_AUTH)
+            .where(
+                PROXY_AUTH.SERVICE.equal(service),
+                PROXY_AUTH.EXTERNAL_ID.equal(externalId)
+            )
+            .fetchOne();
 
-            Record existingRecord = ctx
-                .select(PROXY_AUTH.ID)
-                .from(PROXY_AUTH)
-                .where(
-                    PROXY_AUTH.SERVICE.equal(service),
-                    PROXY_AUTH.EXTERNAL_ID.equal(externalId)
+        if (existingRecord != null) {
+            id = existingRecord.getValue(PROXY_AUTH.ID);
+            ctx
+                .update(PROXY_AUTH)
+                .set(PROXY_AUTH.KEY, proxyAuth.getKey())
+                .set(PROXY_AUTH.OWNER_ID, owner.getId())
+                .set(PROXY_AUTH.EXTERNAL_NAME, proxyAuth.getExternalName())
+                .where(PROXY_AUTH.ID.equal(id))
+                .execute();
+        } else {
+            id = ctx
+                .insertInto(
+                    PROXY_AUTH,
+                    PROXY_AUTH.SERVICE,
+                    PROXY_AUTH.EXTERNAL_ID,
+                    PROXY_AUTH.EXTERNAL_NAME,
+                    PROXY_AUTH.OWNER_ID,
+                    PROXY_AUTH.KEY
                 )
-                .fetchOne();
-
-            if (existingRecord != null) {
-                id = existingRecord.getValue(PROXY_AUTH.ID);
-                ctx
-                    .update(PROXY_AUTH)
-                    .set(PROXY_AUTH.KEY, proxyAuth.getKey())
-                    .set(PROXY_AUTH.OWNER_ID, owner.getId())
-                    .set(PROXY_AUTH.EXTERNAL_NAME, proxyAuth.getExternalName())
-                    .where(PROXY_AUTH.ID.equal(id))
-                    .execute();
-            } else {
-                id = ctx
-                    .insertInto(
-                        PROXY_AUTH,
-                        PROXY_AUTH.SERVICE,
-                        PROXY_AUTH.EXTERNAL_ID,
-                        PROXY_AUTH.EXTERNAL_NAME,
-                        PROXY_AUTH.OWNER_ID,
-                        PROXY_AUTH.KEY
-                    )
-                    .values(
-                        proxyAuth.getService(),
-                        proxyAuth.getExternalId(),
-                        proxyAuth.getExternalName(),
-                        proxyAuth.getOwner().getId(),
-                        proxyAuth.getKey()
-                    )
-                    .returning(PROXY_AUTH.ID)
-                    .fetchOne()
-                    .value1();
-            }
-            return new ProxyAuth(id, proxyAuth);
-        });
+                .values(
+                    proxyAuth.getService(),
+                    proxyAuth.getExternalId(),
+                    proxyAuth.getExternalName(),
+                    proxyAuth.getOwner().getId(),
+                    proxyAuth.getKey()
+                )
+                .returning(PROXY_AUTH.ID)
+                .fetchOne()
+                .value1();
+        }
+        return new ProxyAuth(id, proxyAuth);
     }
 
     public void delete(long id, Long ownerId) {

@@ -49,6 +49,19 @@ public class UserDao {
         }
     }
 
+    public UserDto getByNameOrEmail(String name) {
+        Record record = ctx
+            .select()
+            .from(USER)
+            .where(
+                USER.EMAIL.isNotNull(),
+                USER.NAME.equal(name).or(USER.EMAIL.equal(name)),
+                USER.EMAIL_VERIFIED.isTrue()
+            )
+            .fetchOne();
+        return UserDto.fromRecord(record);
+    }
+
     public UserDto getByName(String name) {
         Record record = ctx
             .select()

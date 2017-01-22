@@ -21,11 +21,10 @@ public class CaptchaService {
         .asMap();
     private final AtomicLong counter = new AtomicLong();
 
-    public long tryAuthorize(final Connection connection, Runnable onSuccess) {
+    public void tryAuthorize(final Connection connection, Runnable onSuccess) {
         long id = counter.incrementAndGet();
         connection.send(Message.captchaMessage(String.valueOf(id), connection.getUser().getName()));
         onSuccessActions.put(id, onSuccess);
-        return id;
     }
 
     public long tryAuthorize(Runnable onSuccess) {

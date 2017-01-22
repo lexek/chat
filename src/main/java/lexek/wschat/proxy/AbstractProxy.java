@@ -4,6 +4,7 @@ import lexek.wschat.services.NotificationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Objects;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -34,6 +35,19 @@ public abstract class AbstractProxy implements Proxy {
         this.id = id;
         this.provider = provider;
         this.remoteRoom = remoteRoom;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        AbstractProxy that = (AbstractProxy) o;
+        return id == that.id;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 
     @Override
@@ -124,14 +138,15 @@ public abstract class AbstractProxy implements Proxy {
             );
         }
         //if the error is fatal we don't need to reconnect automatically
-        if (!fatal) {
-            if (failsInRow == 0) {
-                //reconnect right away on first fail
-                start();
-            } else {
-                long reconnectIn = failsInRow <= 5 ? Math.round(Math.pow(2, failsInRow)) : 32;
-                reconnectFuture = scheduler.schedule(this::start, reconnectIn, TimeUnit.MINUTES);
+        if (failsInRow == 0) {
+            //reconnect right away on first fail
+            start();
+        } else {
+            long reconnectIn = failsInRow <= 5 ? Math.round(Math.pow(2, failsInRow)) : 32;
+            if (fatal) {
+                reconnectIn = 30;
             }
+            reconnectFuture = scheduler.schedule(this::start, reconnectIn, TimeUnit.MINUTES);
         }
         failsInRow++;
     }

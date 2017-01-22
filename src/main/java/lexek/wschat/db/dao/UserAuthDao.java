@@ -1,20 +1,17 @@
 package lexek.wschat.db.dao;
 
 import lexek.wschat.chat.e.BadRequestException;
-import lexek.wschat.chat.e.InternalErrorException;
 import lexek.wschat.chat.model.GlobalRole;
 import lexek.wschat.db.jooq.tables.pojos.PendingConfirmation;
-import lexek.wschat.db.model.SessionDto;
 import lexek.wschat.db.model.UserAuthDto;
 import lexek.wschat.db.model.UserDto;
+import lexek.wschat.db.tx.Transactional;
 import lexek.wschat.security.social.SocialProfile;
 import lexek.wschat.util.Colors;
-import org.jooq.Configuration;
 import org.jooq.DSLContext;
 import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.exception.DataAccessException;
-import org.jooq.impl.DSL;
 import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,10 +19,8 @@ import org.slf4j.LoggerFactory;
 import javax.inject.Inject;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import static lexek.wschat.db.jooq.tables.PendingConfirmation.PENDING_CONFIRMATION;
-import static lexek.wschat.db.jooq.tables.Session.SESSION;
 import static lexek.wschat.db.jooq.tables.User.USER;
 import static lexek.wschat.db.jooq.tables.Userauth.USERAUTH;
 
@@ -75,94 +70,86 @@ public class UserAuthDao {
         return null;
     }
 
-    public UserAuthDto getOrCreateUserAuth(SocialProfile profile, UserDto user) {
-        UserAuthDto auth = null;
-        try {
-            auth = ctx.transactionResult(conf -> {
-                UserAuthDto result;
-                Record record = DSL.using(conf).select()
-                    .from(USERAUTH)
-                    .leftOuterJoin(USER).on(USERAUTH.USER_ID.equal(USER.ID))
-                    .where(USERAUTH.SERVICE.equal(profile.getService())
-                        .and(USERAUTH.AUTH_ID.equal(String.valueOf(profile.getId()))))
-                    .fetchOne();
-                result = UserAuthDto.fromRecord(record);
-                if (result == null) {
-                    if (user != null) {
-                        record = DSL.using(conf)
-                            .insertInto(USERAUTH, USERAUTH.AUTH_NAME, USERAUTH.AUTH_ID, USERAUTH.AUTH_KEY, USERAUTH.SERVICE, USERAUTH.USER_ID)
-                            .values(profile.getName(), String.valueOf(profile.getId()), profile.getToken().getToken(), profile.getService(), user.getId())
-                            .returning().fetchOne();
-                        result = UserAuthDto.fromRecord(record, null);
-                    }
-                } else {
-                    Map<Field<?>, Object> extras = new HashMap<>();
-                    if (user != null) {
-                        extras.put(USERAUTH.USER_ID, user.getId());
-                    }
-                    DSL.using(conf)
-                        .update(USERAUTH)
-                        .set(USERAUTH.AUTH_NAME, profile.getName())
-                        .set(USERAUTH.AUTH_KEY, profile.getToken().getToken())
-                        .set(extras)
-                        .where(USERAUTH.SERVICE.equal(profile.getService()).and(USERAUTH.AUTH_ID.equal(String.valueOf(profile.getId()))))
-                        .execute();
-                }
-                return result;
-            });
-        } catch (Exception e) {
-            logger.error("exception", e);
-        }
-        return auth;
+    public UserAuthDto createAuthFromProfile(SocialProfile profile, UserDto user) {
+        return UserAuthDto.fromRecord(
+            ctx
+                .insertInto(
+                    USERAUTH,
+                    USERAUTH.AUTH_NAME,
+                    USERAUTH.AUTH_ID,
+                    USERAUTH.AUTH_KEY,
+                    USERAUTH.SERVICE,
+                    USERAUTH.USER_ID
+                )
+                .values(
+                    profile.getName(),
+                    profile.getId(),
+                    profile.getToken().getToken(),
+                    profile.getService(),
+                    user.getId()
+                )
+                .returning()
+                .fetchOne(),
+            user
+        );
     }
 
-    public Long registerWithPassword(String name, String password, String email, String color, String verificationCode) {
-        Long result = null;
-        try {
-            result = ctx.transactionResult(conf -> {
-                Long id = DSL.using(conf)
-                    .insertInto(USER, USER.NAME, USER.BANNED, USER.COLOR, USER.RENAME_AVAILABLE, USER.ROLE, USER.EMAIL, USER.EMAIL_VERIFIED)
-                    .values(name, false, color, false, GlobalRole.USER_UNCONFIRMED.toString(), email, false)
-                    .returning(USER.ID)
-                    .fetchOne().getValue(USER.ID);
-                if (id != null) {
-                    DSL.using(conf)
-                        .insertInto(USERAUTH, USERAUTH.AUTH_NAME, USERAUTH.AUTH_ID, USERAUTH.AUTH_KEY, USERAUTH.SERVICE, USERAUTH.USER_ID)
-                        .values(null, null, password, "password", id)
-                        .execute();
-                    DSL.using(conf)
-                        .insertInto(PENDING_CONFIRMATION, PENDING_CONFIRMATION.CODE, PENDING_CONFIRMATION.USER_ID)
-                        .values(verificationCode, id)
-                        .execute();
-                }
-                return id;
-            });
-        } catch (Exception e) {
-            logger.error("exception", e);
+    @Transactional
+    public UserAuthDto getOrCreateUserAuth(SocialProfile profile, UserDto user) {
+        UserAuthDto result = getUserAuthByExternalId(profile.getService(), profile.getId());
+        if (result == null) {
+            if (user != null) {
+                result = createAuthFromProfile(profile, user);
+            }
+        } else {
+            Map<Field<?>, Object> extras = new HashMap<>();
+            if (user != null) {
+                extras.put(USERAUTH.USER_ID, user.getId());
+            }
+            ctx
+                .update(USERAUTH)
+                .set(USERAUTH.AUTH_NAME, profile.getName())
+                .set(USERAUTH.AUTH_KEY, profile.getToken().getToken())
+                .set(extras)
+                .where(USERAUTH.SERVICE.equal(profile.getService()).and(USERAUTH.AUTH_ID.equal(String.valueOf(profile.getId()))))
+                .execute();
         }
         return result;
     }
 
+    @Transactional
+    public UserDto registerWithPassword(String name, String password, String email, String verificationCode) {
+        UserDto user = createUser(name, email, GlobalRole.USER_UNCONFIRMED);
+        if (user != null) {
+            ctx
+                .insertInto(USERAUTH, USERAUTH.AUTH_NAME, USERAUTH.AUTH_ID, USERAUTH.AUTH_KEY, USERAUTH.SERVICE, USERAUTH.USER_ID)
+                .values(null, null, password, "password", user.getId())
+                .execute();
+            ctx
+                .insertInto(PENDING_CONFIRMATION, PENDING_CONFIRMATION.CODE, PENDING_CONFIRMATION.USER_ID)
+                .values(verificationCode, user.getId())
+                .execute();
+        }
+        return user;
+    }
+
+    @Transactional
     public void setEmail(long userId, String email, String verificationCode) {
         try {
-            ctx.transaction(conf -> {
-                DSL.using(conf)
-                    .update(USER)
-                    .set(USER.EMAIL, email)
-                    .set(USER.EMAIL_VERIFIED, false)
-                    .where(USER.ID.equal(userId))
-                    .execute();
-                DSL.using(conf)
-                    .insertInto(PENDING_CONFIRMATION, PENDING_CONFIRMATION.CODE, PENDING_CONFIRMATION.USER_ID)
-                    .values(verificationCode, userId)
-                    .onDuplicateKeyUpdate()
-                    .set(PENDING_CONFIRMATION.CODE, verificationCode)
-                    .execute();
-            });
+            ctx
+                .update(USER)
+                .set(USER.EMAIL, email)
+                .set(USER.EMAIL_VERIFIED, false)
+                .where(USER.ID.equal(userId))
+                .execute();
+            ctx
+                .insertInto(PENDING_CONFIRMATION, PENDING_CONFIRMATION.CODE, PENDING_CONFIRMATION.USER_ID)
+                .values(verificationCode, userId)
+                .onDuplicateKeyUpdate()
+                .set(PENDING_CONFIRMATION.CODE, verificationCode)
+                .execute();
         } catch (DataAccessException e) {
             throw new BadRequestException("This email is already in use.");
-        } catch (Exception e) {
-            throw new InternalErrorException(e);
         }
     }
 
@@ -213,89 +200,37 @@ public class UserAuthDao {
         return auth;
     }
 
-    public SessionDto getSession(String sid, String ip) {
-        SessionDto session = null;
-        try {
-            Record record = ctx
-                .select()
-                .from(SESSION)
-                .leftOuterJoin(USER).on(SESSION.USER_ID.equal(USER.ID))
-                .where(SESSION.SID.equal(sid)
-                    .and(SESSION.IP.equal(ip).or(USER.CHECK_IP.isFalse()))
-                    .and(SESSION.EXPIRES.greaterOrEqual(System.currentTimeMillis())))
-                .fetchOne();
-            session = SessionDto.fromRecord(record);
-        } catch (Exception e) {
-            logger.error("exception", e);
-        }
-        return session;
-    }
-
-    public SessionDto newSession(String sid, String ip, UserDto user, long timestamp) {
-        SessionDto session = null;
-        try {
-            session = ctx.transactionResult(txConf -> {
-                Record record = DSL.using(txConf)
-                    .insertInto(SESSION, SESSION.IP, SESSION.SID, SESSION.USER_ID, SESSION.EXPIRES)
-                    .values(ip, sid, user.getId(), timestamp + TimeUnit.DAYS.toMillis(30))
-                    .returning().fetchOne();
-                return SessionDto.fromRecord(record, user);
-            });
-        } catch (Exception e) {
-            logger.error("exception", e);
-        }
-        return session;
-    }
-
+    @Transactional
     public boolean verifyEmail(final String code, long userId) {
-        boolean success = false;
-        try {
-            success = ctx.transactionResult(conf -> {
-                Record record = DSL.using(conf)
-                    .select()
-                    .from(PENDING_CONFIRMATION.join(USER).on(PENDING_CONFIRMATION.USER_ID.equal(USER.ID)))
-                    .where(PENDING_CONFIRMATION.CODE.equal(code).and(USER.ID.equal(userId)))
-                    .fetchOne();
-                if (record != null) {
-                    PendingConfirmation pendingConfirmation = record.into(PENDING_CONFIRMATION).into(PendingConfirmation.class);
-                    UserDto user = UserDto.fromRecord(record.into(USER));
-                    if (user.hasRole(GlobalRole.USER)) {
-                        DSL.using(conf)
-                            .update(USER)
-                            .set(USER.EMAIL_VERIFIED, true)
-                            .where(USER.ID.equal(pendingConfirmation.getUserId()))
-                            .execute();
-                    } else {
-                        DSL.using(conf)
-                            .update(USER)
-                            .set(USER.ROLE, GlobalRole.USER.toString())
-                            .set(USER.EMAIL_VERIFIED, true)
-                            .where(USER.ID.equal(pendingConfirmation.getUserId()))
-                            .execute();
-                    }
-                    DSL.using(conf)
-                        .delete(PENDING_CONFIRMATION)
-                        .where(PENDING_CONFIRMATION.ID.equal(pendingConfirmation.getId()))
-                        .execute();
-                    return true;
-                }
-                return false;
-            });
-        } catch (Exception e) {
-            logger.error("exception", e);
-        }
-        return success;
-    }
-
-    public void invalidateSession(String sid) {
-        try {
+        Record record = ctx
+            .select()
+            .from(PENDING_CONFIRMATION.join(USER).on(PENDING_CONFIRMATION.USER_ID.equal(USER.ID)))
+            .where(PENDING_CONFIRMATION.CODE.equal(code).and(USER.ID.equal(userId)))
+            .fetchOne();
+        if (record != null) {
+            PendingConfirmation pendingConfirmation = record.into(PENDING_CONFIRMATION).into(PendingConfirmation.class);
+            UserDto user = UserDto.fromRecord(record.into(USER));
+            if (user.hasRole(GlobalRole.USER)) {
+                ctx
+                    .update(USER)
+                    .set(USER.EMAIL_VERIFIED, true)
+                    .where(USER.ID.equal(pendingConfirmation.getUserId()))
+                    .execute();
+            } else {
+                ctx
+                    .update(USER)
+                    .set(USER.ROLE, GlobalRole.USER.toString())
+                    .set(USER.EMAIL_VERIFIED, true)
+                    .where(USER.ID.equal(pendingConfirmation.getUserId()))
+                    .execute();
+            }
             ctx
-                .delete(SESSION)
-                .where(SESSION.SID.equal(sid))
+                .delete(PENDING_CONFIRMATION)
+                .where(PENDING_CONFIRMATION.ID.equal(pendingConfirmation.getId()))
                 .execute();
-        } catch (Exception e) {
-            logger.error("exception", e);
+            return true;
         }
+        return false;
     }
 
     public String getPendingVerificationCode(long id) {
@@ -313,71 +248,56 @@ public class UserAuthDao {
         return code;
     }
 
+    @Transactional
     public UserAuthDto createUserWithProfile(String name, SocialProfile profile) {
-        final String color = Colors.generateColor(name);
-        return ctx.transactionResult(conf -> {
-            UserDto userDto = UserDto.fromRecord(
-                DSL.using(conf)
-                    .insertInto(USER, USER.NAME, USER.BANNED, USER.COLOR, USER.RENAME_AVAILABLE, USER.ROLE, USER.EMAIL, USER.EMAIL_VERIFIED)
-                    .values(name, false, color, false, GlobalRole.USER.toString(), null, false)
-                    .returning()
-                    .fetchOne()
-            );
-            return createAuthFromProfile(conf, profile, userDto);
-        });
-    }
-
-    public UserAuthDto createAuthFromProfile(UserDto user, SocialProfile profile) {
-        return ctx.transactionResult(conf -> createAuthFromProfile(conf, profile, user));
-    }
-
-    private UserAuthDto createAuthFromProfile(Configuration conf, SocialProfile profile, UserDto user) {
-        return UserAuthDto.fromRecord(
-            DSL.using(conf)
-                .insertInto(
-                    USERAUTH,
-                    USERAUTH.AUTH_NAME,
-                    USERAUTH.AUTH_ID,
-                    USERAUTH.AUTH_KEY,
-                    USERAUTH.SERVICE,
-                    USERAUTH.USER_ID)
-                .values(
-                    profile.getName(),
-                    String.valueOf(profile.getId()),
-                    profile.getToken().getToken(),
-                    profile.getService(),
-                    user.getId())
-                .returning()
-                .fetchOne(),
-            user
-        );
+        return createAuthFromProfile(profile, createUser(name, profile.getEmail(), GlobalRole.USER));
     }
 
     public void deleteAuth(UserDto user, String serviceName) {
-        ctx.transaction(conf -> {
-            //excluding token because user can be easily locked out with only token auth
-            if (!"token".equals(serviceName)) {
-                int authCount = DSL
-                    .using(conf)
-                    .fetchCount(
-                        USERAUTH,
-                        USERAUTH.USER_ID.equal(user.getId()).and(USERAUTH.SERVICE.notEqual("token"))
-                    );
-                if (authCount <= 1) {
-                    throw new BadRequestException("You can't delete last auth method.");
-                }
+        //excluding token because user can be easily locked out with only token auth
+        if (!"token".equals(serviceName)) {
+            int authCount = ctx
+                .fetchCount(
+                    USERAUTH,
+                    USERAUTH.USER_ID.equal(user.getId()).and(USERAUTH.SERVICE.notEqual("token"))
+                );
+            if (authCount <= 1) {
+                throw new BadRequestException("You can't delete last auth method.");
             }
-            int deleted = DSL
-                .using(conf)
-                .delete(USERAUTH)
+        }
+        int deleted = ctx
+            .delete(USERAUTH)
+            .where(
+                USERAUTH.USER_ID.equal(user.getId()),
+                USERAUTH.SERVICE.equal(serviceName)
+            )
+            .execute();
+        if (deleted != 1) {
+            throw new BadRequestException("service not connected");
+        }
+    }
+
+    private UserDto createUser(String name, String email, GlobalRole role) {
+        return UserDto.fromRecord(
+            ctx
+                .insertInto(USER, USER.NAME, USER.BANNED, USER.COLOR, USER.RENAME_AVAILABLE, USER.ROLE, USER.EMAIL, USER.EMAIL_VERIFIED)
+                .values(name, false, Colors.generateColor(name), false, role.toString(), email, false)
+                .returning()
+                .fetchOne()
+        );
+    }
+
+    private UserAuthDto getUserAuthByExternalId(String service, String externalId) {
+        return UserAuthDto.fromRecord(
+            ctx
+                .select()
+                .from(USERAUTH)
+                .leftOuterJoin(USER).on(USERAUTH.USER_ID.equal(USER.ID))
                 .where(
-                    USERAUTH.USER_ID.equal(user.getId()),
-                    USERAUTH.SERVICE.equal(serviceName)
+                    USERAUTH.SERVICE.equal(service),
+                    USERAUTH.AUTH_ID.equal(externalId)
                 )
-                .execute();
-            if (deleted != 1) {
-                throw new BadRequestException("service not connected");
-            }
-        });
+                .fetchOne()
+        );
     }
 }

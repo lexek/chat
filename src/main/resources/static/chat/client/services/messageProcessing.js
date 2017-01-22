@@ -1,6 +1,8 @@
-var module = angular.module("chat.messageProcessing", ["chat.services.settings", "chat.services.notifications", "chat.services.linkResolver"]);
+var module = angular.module("chat.messageProcessing", ["chat.services.settings", "chat.services.notifications"]);
 
-module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal", "$timeout", "chatSettings", "notificationService", "linkResolver", function($q, $sce, $translate, $modal, $timeout, settings, notificationService, linkResolver) {
+module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal", "$timeout", "chatSettings", "notificationService", function($q, $sce, $translate, $modal, $timeout, settings, notificationService) {
+    'use strict';
+
     var Message = function (type, body, user, showModButtons, id_, time, showTS, hidden) {
         this.type = type;
         this.body = $sce.trustAsHtml(body);
@@ -25,12 +27,26 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
         this.showTS = showTS;
     };
 
-    var GroupedMessage = function(body, id_, time, hidden) {
-        this.body = $sce.trustAsHtml(body);
+    var GroupedChatMessage = function(body, id_, time, hidden) {
+        this.body = body;
         this.id_ = id_;
         this.time = time;
         this.hidden = hidden;
         this.likes = [];
+    };
+
+    var ChatMessage = function (type, body, user, showModButtons, id_, time, showTS, hidden) {
+        this.type = type;
+        this.body = body;
+        this.showModButtons = showModButtons;
+        this.id_ = id_;
+        this.user = user;
+        this.hidden = hidden;
+        this.likes = [];
+        this.time = time;
+        this.showTS = showTS;
+        this.messageUpdatedCallbacks = [];
+        this.addToInputCallback = angular.noop;
     };
 
     var processTweetMessage = function(tweet) {
@@ -48,7 +64,7 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
                 return ''.concat(options.base, options.size, '/', icon, options.ext);
             }
         });
-        tweet.text = $sce.trustAsHtml(tweet.text)
+        tweet.text = $sce.trustAsHtml(tweet.text);
         if (tweet.retweetedStatus) {
             processTweetMessage(tweet.retweetedStatus);
         }
@@ -98,7 +114,23 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
         chat.messagesUpdated();
     };
 
-    var processTextMessage = function(chat, ctx, msg) {
+    function checkForMention(chat, msg) {
+        var notify = false;
+        angular.forEach(msg, function (e) {
+            if (e.children) {
+                notify = checkForMention(chat, e.children) || notify;
+            }
+            if (e.type === 'MENTION') {
+                if (e.text === chat.self.name) {
+                    e.currentUser = true;
+                    notify = true;
+                }
+            }
+        });
+        return notify;
+    }
+
+    function processChatMessage(chat, ctx, msg) {
         ctx.proc = {
             unprocessedText: msg.text,
             mention: false
@@ -123,7 +155,7 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
                     (chat.self.role > user.globalRole)
                 )
             ) && (
-                (msg.type !== "MSG_EXT") || chat.isProxyModerationEnabled(ctx.room, service, serviceRes)
+                (msg.type !== 'MSG_EXT') || chat.isProxyModerationEnabled(ctx.room, service, serviceRes)
             );
         var ignored = chat.ignoredNames.indexOf(user.name.toLowerCase()) != -1;
         var showIgnored = settings.getS("showIgnored");
@@ -131,12 +163,11 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
         var hidden = ignored && showIgnored;
         var omit = (ignored && !showIgnored) ||
             ((msg.type === "MSG_EXT") && !chat.isProxyOutboundEnabled(ctx.room, service, serviceRes) && hideExt);
-        console.log(chat.isProxyModerationEnabled(ctx.room, service, serviceRes));
-        console.log(chat.isProxyOutboundEnabled(ctx.room, service, serviceRes));
 
         if (!omit) {
+            var mention = checkForMention(chat, ctx.msg.messageNodes);
+
             chat.incMessageCount();
-            var tempText = htmlEscape(ctx.proc.unprocessedText);
             var elem = null;
             var lastChatter = chat.lastChatterInRoom[ctx.room];
             var previousMessage = chat.lastMessage[ctx.room];
@@ -149,31 +180,27 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
                 (previousMessage.messages.length < 5);
             chat.lastChatter(ctx.room, user);
             if (stackWithPrevious) {
-                var e = new GroupedMessage(tempText, msg.id, msg.time, hidden);
+                var e = new GroupedChatMessage(ctx.msg.messageNodes, msg.id, msg.time, hidden);
                 previousMessage.messages.push(e);
-                processMessageText(chat, ctx, msg).then(function() {
-                    e.body = $sce.trustAsHtml(ctx.proc.text);
-                });
+                chat.messageUpdated(previousMessage);
+                chat.messagesUpdated();
             } else {
                 if (msg.type === "MSG" || msg.type === "MSG_EXT") {
                     elem = new MessageGroup(user, showModButtons, ctx.history);
-                    var e = new GroupedMessage(tempText, msg.id, msg.time, hidden);
+                    var e = new GroupedChatMessage(ctx.msg.messageNodes, msg.id, msg.time, hidden);
                     elem.messages.push(e);
-                    processMessageText(chat, ctx, msg).then(function() {
-                        e.body = $sce.trustAsHtml(ctx.proc.text);
-                    });
                 } else {
-                    elem = new Message(msg.type, tempText, user, showModButtons, msg.id, msg.time, ctx.history, hidden);
-                    processMessageText(chat, ctx, msg).then(function() {
-                        elem.body = $sce.trustAsHtml(ctx.proc.text);
-                    });
+                    elem = new ChatMessage(msg.type, ctx.msg.messageNodes, user, showModButtons, msg.id, msg.time, ctx.history, hidden);
                 }
             }
             if (elem != null) {
-                chat.addMessage(elem, ctx.room, ctx.history, ctx.proc.mention);
+                chat.addMessage(elem, ctx.room, ctx.history, mention);
+                chat.messagesUpdated();
             }
-            if (ctx.proc.mention && !ctx.history) {
-                notificationService.notify(user.name, ctx.proc.unprocessedText);
+            if (mention && !ctx.history) {
+                notificationService.notify(user.name, ctx.msg.messageNodes.map(function (e) {
+                    return e.text;
+                }).join());
             }
         }
     };
@@ -288,25 +315,6 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
         }
     };
 
-    var processEmoticons = function(chat, emoticons) {
-        chat.emoticons = {};
-        var emoticonCodeList = [];
-        angular.forEach(emoticons, function (e) {
-            e.code = htmlEscape(e.code);
-            chat.emoticons[e.code] = e;
-            emoticonCodeList.push(
-                e.code
-                    .replace("\\", "\\\\")
-                    .replace(")", "\\)")
-                    .replace("(", "\\(")
-                    .replace(".", "\\.")
-                    .replace("*", "\\*")
-            );
-            (new Image()).src = "emoticons/" + e.fileName;
-        });
-        chat.emoticonRegExp = new RegExp(emoticonCodeList.join("|"), "g");
-    };
-
     var processTweet = function(chat, msg) {
         chat.addMessage(new TweetMessage(msg.tweet), msg.room);
         chat.messagesUpdated();
@@ -359,7 +367,7 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
             case "MSG":
             case "MSG_EXT":
             {
-                processTextMessage(chat, ctx, message);
+                processChatMessage(chat, ctx, message);
                 break;
             }
             case 'COLOR':
@@ -515,9 +523,6 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
                     "names": chat.ignoredNames.join(", ")
                 }), ctx.room));
                 break;
-            case "EMOTICONS":
-                processEmoticons(chat, ctx.msg.emoticons);
-                break;
             case "TWEET":
                 processTweet(chat, ctx.msg);
                 break;
@@ -528,144 +533,6 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
                 console.log(message);
                 break;
         }
-    };
-
-    var processTextPart = function(chat, ctx, msg, text) {
-        text = htmlEscape(text);
-        text = twemoji.parse(text, {
-            base: "/img/",
-            folder: "twemoji",
-            ext: ".png",
-            callback: function(icon, options) {
-                switch ( icon ) {
-                    case 'a9':      // copyright
-                    case 'ae':      // registered trademark
-                    case '2122':    // trademark
-                        return false;
-                }
-                return ''.concat(options.base, options.size, '/', icon, options.ext);
-            }
-        });
-        if ((msg.type === "MSG_EXT") && (ctx.proc.user.service === "sc2tv.ru")) {
-            text = text.replace(/\[\/?b]/g, "**");
-            text = text.replace(SC2TV_REGEX, function (match) {
-                var emoticon = SC2TV_EMOTE_MAP[match];
-                if (emoticon) {
-                    return "<img class='emoticon' " +
-                        "src='/img/sc2tv/" + emoticon.fileName + "' " +
-                        "style='height: " + emoticon.height + "px; width: " + emoticon.width + "px;' " +
-                        "title='" + emoticon.code + "'" +
-                        "alt='" + emoticon.code + "'></img>"
-                } else {
-                    return null;
-                }
-            });
-        } else {
-            if (chat.emoticons.length !== 0) {
-                text = text.replace(chat.emoticonRegExp, function (match) {
-                    var emoticon = chat.emoticons[match];
-                    if (emoticon) {
-                        return "<img class='emoticon' " +
-                            "src='emoticons/" + emoticon.fileName + "' " +
-                            "style='height: " + emoticon.height + "px; width: " + emoticon.width + "px;' " +
-                            "title='" + emoticon.code + "'" +
-                            "alt='" + emoticon.code + "'></img>"
-                    } else {
-                        return null;
-                    }
-                });
-            }
-        }
-        text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-        text = text.replace(/\*([^*]+)\*/g, '<em>$1</em>');
-        text = text.replace(/~~(.+?)~~/g, '<del>$1</del>');
-        text = text.replace("@" + chat.self.name, function () {
-            ctx.proc.mention = true;
-            return "<span class='mentionLabel'>@" + chat.self.name + "</span>"
-        });
-        return text;
-    };
-
-    var isPromise = function(o) {
-        return o && angular.isFunction(o.then);
-    };
-
-    var doSpoilers = function(data) {
-        var spoilers = [];
-        angular.forEach(data, function(e, i) {
-            if (!isPromise(e)) {
-                var idx = -1;
-                while ((idx = e.indexOf("%%", idx !== -1 ? idx+2 : 0)) !== -1) {
-                    if (idx != -1) {
-                        spoilers.push({
-                            "chunk": i,
-                            "i": idx
-                        });
-                    }
-                }
-            }
-        });
-        if (!(spoilers.length % 2 === 0)) {
-            spoilers.pop();
-        }
-        var chunkOffset = {};
-        angular.forEach(spoilers, function(e, i) {
-            var s = data[e.chunk];
-            var offset = (chunkOffset[e.chunk] || 0);
-            var idx = e.i + offset;
-            if (i % 2 === 0) {
-                data[e.chunk] = s.substring(0, idx) + "<span class=\"spoiler\">" + s.substring(idx+2);
-                chunkOffset[e.chunk] = offset + 20;
-            } else {
-                data[e.chunk] = s.substring(0, idx) + "</span>" + s.substring(idx+2);
-                chunkOffset[e.chunk] = offset + 5;
-            }
-        });
-    };
-
-    var processMessageText = function(chat, ctx, msg) {
-        var deferred = $q.defer();
-        ctx.proc.text = ctx.proc.unprocessedText;
-        if ((msg.type === "MSG_EXT") && (ctx.proc.user.service === "sc2tv.ru")) {
-            ctx.proc.text = ctx.proc.text.replace(/\[\/?url]/g, "");
-        }
-        var match;
-        var raw = ctx.proc.text;
-        var html = [];
-        var i;
-        while ((match = raw.match(/(https?:\/\/)([^\s]*)/))) {
-            i = match.index;
-            html.push(processTextPart(chat, ctx, msg, raw.substr(0, i)));
-            html.push(linkResolver.resolve(match[0], match[1], match[2]));
-            raw = raw.substring(i + match[0].length);
-        }
-        html.push(processTextPart(chat, ctx, msg, raw));
-        var promises = [];
-        doSpoilers(html);
-        angular.forEach(html, function(e) {
-            if (isPromise(e)) {
-                promises.push(e);
-            }
-        });
-        $q.all(promises).then(function(result) {
-            var i = 0;
-            html = $.map(html, function(e) {
-                if (isPromise(e)) {
-                    return result[i++];
-                } else {
-                    return e;
-                }
-            });
-            var text = html.join('');
-            if (text.startsWith("&gt;")) {
-                text = "<span class=\"greenText\">" + text + "</span>";
-            } else if (text.indexOf("!!!") === 0 && text.length > 3) {
-                text = "<span class=\"nsfwLabel\">NSFW</span> <span class=\"spoiler\">" + text.substr(3) + "</span>";
-            }
-            ctx.proc.text = text;
-            deferred.resolve();
-        });
-        return deferred.promise;
     };
 
     return new MessageProcessingService();

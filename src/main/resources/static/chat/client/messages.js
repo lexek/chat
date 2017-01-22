@@ -36,7 +36,9 @@ messagesModule.controller("MessageController", ["$scope", "chatService", "chatSe
         }
     };
 
-    $scope.message.messageUpdatedCallbacks.push(function() {$scope.$digest();});
+    $scope.message.messageUpdatedCallbacks.push(function() {
+        $scope.$digest();
+    });
 
     $scope.showModButtons = function() {
         return $scope.message.showModButtons && !settings.getS("hideMB");

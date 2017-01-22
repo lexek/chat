@@ -19,12 +19,20 @@ public class MaxMindGeoIpService implements GeoIpService {
         this.databaseReader = new DatabaseReader
             .Builder(new File("geoip.mmdb"))
             .withCache(new CHMCache())
-            .build();;
+            .build();
     }
 
     @Override
     public String getLocation(InetAddress ip) throws Exception {
-        CityResponse city = databaseReader.city(ip);
-        return city.getCountry().getName() + " - " + city.getCity().getName();
+        CityResponse response = databaseReader.city(ip);
+        String country = response.getCountry().getName();
+        if (country == null) {
+            country = "Unknown";
+        }
+        String city = response.getCity().getName();
+        if (city == null) {
+            city = "Unknown";
+        }
+        return country + " - " + city;
     }
 }

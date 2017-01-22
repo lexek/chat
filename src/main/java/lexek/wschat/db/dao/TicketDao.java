@@ -4,6 +4,7 @@ import lexek.wschat.db.jooq.tables.pojos.Ticket;
 import lexek.wschat.db.model.DataPage;
 import lexek.wschat.db.model.UserDto;
 import lexek.wschat.db.model.rest.TicketRestModel;
+import lexek.wschat.db.tx.Transactional;
 import org.jooq.DSLContext;
 import org.jooq.impl.DSL;
 import org.jvnet.hk2.annotations.Service;
@@ -24,20 +25,21 @@ public class TicketDao {
         this.ctx = ctx;
     }
 
+    @Transactional
     public boolean add(final Ticket pojo) {
-        return ctx.transactionResult(c -> {
-            int count = DSL.using(c).fetchCount(
-                DSL.using(c)
-                    .select()
-                    .from(TICKET)
-                    .where(TICKET.USER.equal(pojo.getUser()).and(TICKET.IS_OPEN.isTrue())));
-            if (count < 5) {
-                DSL.using(c).executeInsert(DSL.using(c).newRecord(TICKET, pojo));
-                return true;
-            } else {
-                return false;
-            }
-        });
+        int count = ctx.fetchCount(
+            TICKET,
+            DSL.and(
+                TICKET.USER.equal(pojo.getUser()),
+                TICKET.IS_OPEN.isTrue()
+            )
+        );
+        if (count < 5) {
+            ctx.executeInsert(ctx.newRecord(TICKET, pojo));
+            return true;
+        } else {
+            return false;
+        }
     }
 
     public Ticket getById(long id) {

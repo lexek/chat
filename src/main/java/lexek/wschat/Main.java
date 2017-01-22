@@ -14,10 +14,15 @@ import com.codahale.metrics.jvm.GarbageCollectorMetricSet;
 import com.codahale.metrics.jvm.MemoryUsageGaugeSet;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import freemarker.cache.ClassTemplateLoader;
+import freemarker.cache.MultiTemplateLoader;
+import freemarker.cache.TemplateLoader;
 import freemarker.template.DefaultObjectWrapper;
+import freemarker.template.Version;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.epoll.Epoll;
 import io.netty.channel.epoll.EpollEventLoopGroup;
@@ -25,7 +30,10 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.handler.ssl.OpenSsl;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
+import jersey.repackaged.com.google.common.collect.Lists;
 import lexek.httpserver.*;
+import lexek.wschat.chat.msg.*;
+import lexek.wschat.db.tx.TransactionalInterceptorService;
 import lexek.wschat.frontend.http.*;
 import lexek.wschat.frontend.http.admin.AdminPageHandler;
 import lexek.wschat.frontend.http.rest.RedirectToAppHandler;
@@ -39,6 +47,7 @@ import lexek.wschat.security.jersey.Auth;
 import lexek.wschat.security.jersey.SecurityFeature;
 import lexek.wschat.security.jersey.UserParamValueFactoryProvider;
 import lexek.wschat.security.social.CredentialsHolder;
+import lexek.wschat.services.EmoticonService;
 import lexek.wschat.services.MessageConsumerServiceHandler;
 import lexek.wschat.services.managed.ServiceManager;
 import org.apache.http.client.HttpClient;
@@ -57,12 +66,15 @@ import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.ServerProperties;
+import org.glassfish.jersey.server.mvc.freemarker.FreemarkerConfigurationFactory;
 import org.glassfish.jersey.server.mvc.freemarker.FreemarkerMvcFeature;
 import org.glassfish.jersey.server.spi.internal.ValueFactoryProvider;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;
+import org.jooq.impl.DataSourceConnectionProvider;
 import org.jooq.impl.DefaultConfiguration;
+import org.jooq.impl.ThreadLocalTransactionProvider;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Singleton;
@@ -77,6 +89,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.regex.Pattern;
 
 public class Main {
     private Main() {
@@ -194,11 +207,14 @@ public class Main {
         config.setMetricRegistry(runtimeMetricRegistry);
         config.setHealthCheckRegistry(healthCheckRegistry);
         DataSource dataSource = new HikariDataSource(config);
+        DataSourceConnectionProvider connectionProvider = new DataSourceConnectionProvider(dataSource);
         org.jooq.Configuration jooqConfiguration = new DefaultConfiguration();
-        jooqConfiguration.set(dataSource);
+        jooqConfiguration.set(connectionProvider);
         jooqConfiguration.set(SQLDialect.MYSQL);
+        jooqConfiguration.set(new ThreadLocalTransactionProvider(connectionProvider, true));
         DSLContext dslContext = DSL.using(jooqConfiguration);
         ServiceLocatorUtilities.addOneConstant(serviceLocator, dslContext, "dslContext", DSLContext.class);
+        ServiceLocatorUtilities.addClasses(serviceLocator, TransactionalInterceptorService.class);
 
         //proxy event loop
         EventLoopGroup proxyEventLoopGroup;
@@ -208,6 +224,30 @@ public class Main {
             proxyEventLoopGroup = new NioEventLoopGroup(1);
         }
         ServiceLocatorUtilities.addOneConstant(serviceLocator, proxyEventLoopGroup, "proxyEventLoopGroup", EventLoopGroup.class);
+
+
+        DefaultMessageProcessingService messageProcessingService = new DefaultMessageProcessingService();
+        messageProcessingService.addProcessor(new PrefixStyleProcessor(
+            ImmutableList.of(
+                new PrefixStyleDescription(">", MessageNode.Style.QUOTE),
+                new PrefixStyleDescription("!!!", MessageNode.Style.NSFW)
+            ),
+            messageProcessingService
+        ));
+        messageProcessingService.addProcessor(new UrlMessageProcessor());
+        messageProcessingService.addProcessor(new StyleMessageProcessor(
+            ImmutableList.of(
+                new StyleDescription(Pattern.compile("\\*\\*([^*]+)\\*\\*"), MessageNode.Style.BOLD),
+                new StyleDescription(Pattern.compile("\\*([^*]+)\\*"), MessageNode.Style.ITALIC),
+                new StyleDescription(Pattern.compile("%%([^%]+)%%"), MessageNode.Style.SPOILER),
+                new StyleDescription(Pattern.compile("~~([^~]+)~~"), MessageNode.Style.STRIKETHROUGH)
+            ),
+            messageProcessingService
+        ));
+        messageProcessingService.addProcessor(new MentionMessageProcessor());
+        messageProcessingService.addProcessor(new EmoticonMessageProcessor(serviceLocator.getService(EmoticonService.class), "/emoticons"));
+        messageProcessingService.addProcessor(new EmojiMessageProcessor());
+        ServiceLocatorUtilities.addOneConstant(serviceLocator, messageProcessingService, "messageProcessingService", MessageProcessingService.class);
 
         //frontend event loops
         EventLoopGroup bossGroup;
@@ -242,10 +282,15 @@ public class Main {
         ProxyManager proxyManager = serviceLocator.getService(ProxyManager.class);
         messageConsumerServiceHandler.register(proxyManager);
 
-        freemarker.template.Configuration freemarker = new freemarker.template.Configuration();
-        freemarker.setClassForTemplateLoading(Main.class, "/templates");
+        Version freemarkerVersion = new Version(2, 3, 23);
+
+        final List<TemplateLoader> loaders = Lists.newArrayList();
+        loaders.add(new ClassTemplateLoader(Main.class, "/"));
+
+        freemarker.template.Configuration freemarker = new freemarker.template.Configuration(freemarkerVersion);
+        freemarker.setTemplateLoader(new MultiTemplateLoader(loaders.toArray(new TemplateLoader[loaders.size()])));
         freemarker.setDefaultEncoding("UTF-8");
-        freemarker.setObjectWrapper(new DefaultObjectWrapper());
+        freemarker.setObjectWrapper(new DefaultObjectWrapper(freemarkerVersion));
 
         ReCaptcha reCaptcha = serviceLocator.getService(ReCaptcha.class);
         ViewResolvers viewResolvers = new ViewResolvers(freemarker);
@@ -254,7 +299,7 @@ public class Main {
         ResourceConfig resourceConfig = new ResourceConfig() {
             {
                 property(ServerProperties.WADL_FEATURE_DISABLE, Boolean.TRUE);
-                //property(ServerProperties.TRACING, "ALL");
+                property(ServerProperties.TRACING, "ALL");
                 register(ErrorBodyWriter.class);
                 register(ObjectMapperProvider.class);
                 register(new Slf4jLoggingFilter());
@@ -263,8 +308,10 @@ public class Main {
                 register(MultiPartFeature.class);
                 register(SecurityFeature.class);
                 register(FreemarkerMvcFeature.class);
-                property(FreemarkerMvcFeature.TEMPLATE_BASE_PATH, "/templates/");
-                property(FreemarkerMvcFeature.ENCODING, "UTF-8");
+                property(FreemarkerMvcFeature.TEMPLATE_BASE_PATH, "/templates");
+                property(FreemarkerMvcFeature.TEMPLATE_OBJECT_FACTORY, (FreemarkerConfigurationFactory) () ->
+                    freemarker
+                );
                 property(ServerProperties.BV_SEND_ERROR_IN_RESPONSE, true);
                 register(new AbstractBinder() {
                     @Override

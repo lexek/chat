@@ -33,6 +33,9 @@ public class JerseyExceptionMapper implements ExceptionMapper<Throwable> {
             if (exception instanceof AccessDeniedException) {
                 return Response.status(403).entity(new ErrorModel(exception.getMessage())).build();
             }
+            if (exception instanceof PasswordRequiredException) {
+                return Response.status(418).build();
+            }
             logger.warn("exception", exception);
             return Response.status(500).entity(new ErrorModel(exception.getMessage())).build();
         }

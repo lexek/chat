@@ -8,6 +8,7 @@
                 items: '<'
             },
             controller: HistoryList,
+            controllerAs: 'vm',
             templateUrl: '/chat/admin/history/history_list.html'
         });
 

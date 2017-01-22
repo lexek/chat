@@ -5,6 +5,7 @@ import lexek.wschat.chat.model.GlobalRole;
 import lexek.wschat.chat.model.Message;
 import lexek.wschat.db.dao.RoomDao;
 import lexek.wschat.db.model.UserDto;
+import lexek.wschat.db.tx.Transactional;
 import lexek.wschat.services.ChatterService;
 import lexek.wschat.services.JournalService;
 import lexek.wschat.services.UserService;
@@ -60,6 +61,7 @@ public class RoomManager {
             );
     }
 
+    @Transactional
     public void createRoom(String name, String topic, UserDto admin) {
         if (!rooms.containsKey(name)) {
             lexek.wschat.db.jooq.tables.pojos.Room pojo = new lexek.wschat.db.jooq.tables.pojos.Room(null, name, topic);
@@ -71,12 +73,14 @@ public class RoomManager {
         }
     }
 
+    @Transactional
     public void updateTopic(UserDto admin, Room room, String newTopic) {
         roomDao.updateTopic(room.getId(), newTopic);
         journalService.topicChanged(admin, room, newTopic);
         room.setTopic(newTopic);
     }
 
+    @Transactional
     public void deleteRoom(Room room, UserDto admin) {
         if (!room.getName().equals("#main")) {
             roomDao.delete(room.getId());

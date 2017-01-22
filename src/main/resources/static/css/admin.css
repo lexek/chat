@@ -316,3 +316,95 @@ table.ng-enter.ng-enter-active {
     flex-grow: 0;
     flex-shrink: 0;
 }
+
+message {
+    display: block;
+}
+
+.message-node {
+    display: inline-block;
+    flex-direction: column;
+    justify-content: flex-end;
+}
+
+.message-node-text {
+    white-space: normal;
+}
+
+.emoji {
+    width: 18px;
+    height: 18px;
+}
+
+.chat-style-bold {
+    font-style: italic;
+}
+
+.chat-style-italic {
+    font-weight: bold;
+}
+
+.chat-style-strikethrough {
+    text-decoration: line-through;
+}
+
+.chat-style-quote {
+    color: #789922;
+}
+
+.chat-style-quote::before {
+    display: inline-block;
+    content: '>';
+}
+
+.chat-style-spoiler > message,
+.chat-style-nsfw > message {
+    background-color: #D2D2D2;
+    color: #D2D2D2;
+    border-radius: 2px;
+    padding: 2px 3px 1px;
+    display: inline-block;
+    min-height: 1em;
+}
+
+.chat-style-spoiler > message img.emoticon,
+.chat-style-spoiler > message a,
+.chat-style-spoiler > message span.mentionLabel,
+.chat-style-spoiler > message img.emoji,
+.chat-style-nsfw > message img.emoticon,
+.chat-style-nsfw > message a,
+.chat-style-nsfw > message span.mentionLabel,
+.chat-style-nsfw > message img.emoji {
+    opacity: 0;
+}
+
+.chat-style-spoiler:hover > message,
+.chat-style-nsfw:hover > message {
+    color: black;
+    transition: color .1s ease-in;
+}
+
+.chat-style-spoiler:hover > message img.emoticon,
+.chat-style-spoiler:hover > message a,
+.chat-style-spoiler:hover > message span.mentionLabel,
+.chat-style-spoiler:hover > message img.emoji,
+.chat-style-nsfw:hover > message img.emoticon,
+.chat-style-nsfw:hover > message a,
+.chat-style-nsfw:hover > message span.mentionLabel,
+.chat-style-nsfw:hover > message img.emoji {
+    opacity: 1;
+    transition: opacity .1s ease-in;
+}
+
+.chat-style-nsfw::before {
+    content: 'NSFW';
+    display: inline-block;
+    font-size: 75%;
+    background-color: #D72D2D;
+    color: white;
+    text-decoration: none;
+    padding: 2px 3px 1px;
+    border-radius: 2px;
+    font-weight: bold;
+    vertical-align: bottom;
+}

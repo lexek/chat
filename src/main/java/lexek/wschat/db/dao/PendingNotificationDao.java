@@ -1,8 +1,8 @@
 package lexek.wschat.db.dao;
 
 import lexek.wschat.db.jooq.tables.records.PendingNotificationRecord;
+import lexek.wschat.db.tx.Transactional;
 import org.jooq.DSLContext;
-import org.jooq.impl.DSL;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
@@ -23,20 +23,19 @@ public class PendingNotificationDao {
         ctx.executeInsert(new PendingNotificationRecord(null, userId, message));
     }
 
+    @Transactional
     public List<String> getPendingNotifications(long userId) {
-        return ctx.transactionResult(txCtx -> {
-            List<String> r = DSL.using(txCtx)
-                .select(PENDING_NOTIFICATION.TEXT)
-                .from(PENDING_NOTIFICATION)
+        List<String> r = ctx
+            .select(PENDING_NOTIFICATION.TEXT)
+            .from(PENDING_NOTIFICATION)
+            .where(PENDING_NOTIFICATION.USER_ID.equal(userId))
+            .fetch(PENDING_NOTIFICATION.TEXT);
+        if (r != null && r.size() > 0) {
+            ctx
+                .deleteFrom(PENDING_NOTIFICATION)
                 .where(PENDING_NOTIFICATION.USER_ID.equal(userId))
-                .fetch(PENDING_NOTIFICATION.TEXT);
-            if (r != null && r.size() > 0) {
-                DSL.using(txCtx)
-                    .deleteFrom(PENDING_NOTIFICATION)
-                    .where(PENDING_NOTIFICATION.USER_ID.equal(userId))
-                    .execute();
-            }
-            return r;
-        });
+                .execute();
+        }
+        return r;
     }
 }

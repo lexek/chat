@@ -23,7 +23,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.stream.StreamSupport;
 
@@ -41,12 +40,12 @@ public class EventDispatcher extends AbstractManagedService {
         this.disruptor = new Disruptor<>(
             eventFactory,
             32,
-            Executors.newSingleThreadExecutor(threadFactory),
+            threadFactory,
             ProducerType.MULTI,
             new BlockingWaitStrategy()
         );
         this.ringBuffer = this.disruptor.getRingBuffer();
-        this.disruptor.handleExceptionsWith(new LoggingExceptionHandler());
+        this.disruptor.setDefaultExceptionHandler(new LoggingExceptionHandler());
         this.disruptor.handleEventsWith(new NotificationServiceWorker());
     }
 

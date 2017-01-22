@@ -7,17 +7,20 @@
     var ngAnnotate = require('gulp-ng-annotate');
     var concat = require('gulp-concat');
     var uglify = require('gulp-uglify');
+    var babel = require('gulp-babel');
     var angularTemplateCache = require('gulp-angular-templatecache');
     var addStream = require('add-stream');
 
     var basePath = './src/main/resources/static';
     var adminPath = basePath + '/chat/admin/';
     var clientPath = basePath + '/chat/client/';
+    var newClientPath = basePath + '/chat/client-new/';
+    var commonPath = basePath + '/chat/common/';
 
     function prepareTemplates(appPath) {
         return gulp.src(basePath + appPath + '**/*.html')
             .pipe(angularTemplateCache(
-                'templates.js',
+                '/common/templates.js',
                 {
                     module: 'templates',
                     root: appPath,
@@ -26,15 +29,33 @@
             ));
     }
 
+    function prepareCommonTemplates() {
+        return gulp.src(basePath + '/chat/common/**/*.html')
+            .pipe(angularTemplateCache(
+                '/common/commonTemplates.js',
+                {
+                    module: 'templates',
+                    root: '/chat/common/',
+                    standAlone: false
+                }
+            ));
+    }
+
     gulp.task('admin', function () {
         var files = [
+            commonPath + '**/*.module.js',
             adminPath + '**/*.module.js',
+            commonPath + '**/*.js',
             adminPath + '**/*.js'
         ];
 
         return gulp.src(files)
             .pipe(addStream.obj(prepareTemplates('/chat/admin/')))
+            .pipe(addStream.obj(prepareCommonTemplates()))
             .pipe(sourcemaps.init())
+            .pipe(babel({
+                presets: ['es2015']
+            }))
             .pipe(concat('admin.min.js', {newLine: ';'}))
             .pipe(ngAnnotate({
                 // true helps add where @ngInject is not used. It infers.
@@ -59,7 +80,7 @@
             basePath + '/vendor/js/tse.js',
             basePath + '/vendor/js/swfobject.js',
             basePath + '/vendor/js/web_socket.js',
-            basePath + '/vendor/js/angular.js',
+            basePath + '/vendor/js/angular-new.js',
             basePath + '/vendor/js/angular-sanitize.js',
             basePath + '/vendor/js/bindonce.js',
             basePath + '/vendor/js/angular-ui-utils.js',
@@ -73,6 +94,7 @@
             basePath + '/vendor/js/angular-relative-date.js',
             basePath + '/vendor/js/angular-recaptcha.js',
             basePath + '/vendor/js/bootstrap-colorpicker.js',
+            basePath + '/vendor/js/scrollglue.js',
             clientPath + '/mixins/**',
             clientPath + '/types/chatState.js',
             clientPath + '/types/role.js',
@@ -91,22 +113,27 @@
             clientPath + '/messages.js',
             clientPath + '/users.js',
             clientPath + '/controls.js',
-            clientPath + '/ui/profile/email.js',
-            clientPath + '/ui/profile/password.js',
-            clientPath + '/ui/profile/profile.js',
             clientPath + '/ui/tickets/list.js',
             clientPath + '/ui/tickets/compose.js',
+            clientPath + '/utils/**.module.js',
+            clientPath + '/utils/**.js',
+            commonPath + '**/*.module.js',
+            commonPath + '**/*.js',
+            newClientPath + '**/*.module.js',
+            newClientPath + '**/*.js',
             clientPath + '/chat.js'
         ];
 
         return gulp.src(files)
+            .pipe(addStream.obj(prepareTemplates('/chat/client-new/')))
+            .pipe(addStream.obj(prepareCommonTemplates()))
             .pipe(sourcemaps.init())
-            .pipe(concat('client.min.js', {newLine: ';'}))
             .pipe(ngAnnotate({
                 // true helps add where @ngInject is not used. It infers.
                 // Doesn't work with resolve, so we must be explicit there
                 add: true
             }))
+            .pipe(concat('client.min.js', {newLine: ';'}))
             .pipe(bytediff.start())
             .pipe(uglify({mangle: false}))
             .pipe(bytediff.stop())
@@ -115,8 +142,19 @@
     });
 
     gulp.task('watch', function () {
-        gulp.watch([adminPath + '**/*.js', adminPath + '**/*.html'], ['admin']);
-        gulp.watch([clientPath + '**/*.js', clientPath + '**/*.html'], ['client']);
+        gulp.watch([
+            adminPath + '**/*.js',
+            adminPath + '**/*.html',
+            commonPath + '**/*.js',
+            commonPath + '**/*.html'
+        ], ['admin']);
+        gulp.watch([
+            clientPath + '**/*.js',
+            newClientPath + '**/*.js',
+            newClientPath + '**/*.html',
+            commonPath + '**/*.js',
+            commonPath + '**/*.html'
+        ], ['client']);
     });
 
     gulp.task('default', ['admin', 'client', 'watch']);

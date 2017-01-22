@@ -49,7 +49,7 @@ public class StatisticsResource {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public List<EmoticonCount> getUserEmoticonUsage(@PathParam("userId") long userId) {
-        return statisticsDao.getEmoticonUage(System.currentTimeMillis() - TimeUnit.DAYS.toMillis(7), userId);
+        return statisticsDao.getEmoticonUsage(System.currentTimeMillis() - TimeUnit.DAYS.toMillis(7), userId);
     }
 
     @Path("/room/{roomId}/topChatters")
@@ -91,7 +91,7 @@ public class StatisticsResource {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public List<EmoticonCount> getGlobalEmoticonUsage() {
-        return statisticsDao.getEmoticonUage(System.currentTimeMillis() - TimeUnit.DAYS.toMillis(7), null);
+        return statisticsDao.getEmoticonUsage(System.currentTimeMillis() - TimeUnit.DAYS.toMillis(7), null);
     }
 
     @Path("/global/emoticons/{emoticonId}")

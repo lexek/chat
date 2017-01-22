@@ -259,6 +259,7 @@ img.emoji {
     margin: 0;
     padding: 0;
     min-height: 18px;
+    display: initial;
 }
 
 .compact .messageHeading {
@@ -289,35 +290,6 @@ img.emoji {
 
 #onlineMenu {
     font-size: smaller;
-}
-
-.spoiler {
-    background-color: #D2D2D2;
-    color: #D2D2D2;
-    border-radius: 2px;
-    padding: 2px 3px 1px;
-    display: inline-block;
-    min-height: 1em;
-}
-
-.spoiler img.emoticon,
-.spoiler a,
-.spoiler span.mentionLabel,
-.spoiler img.emoji {
-    opacity: 0;
-}
-
-.spoiler:hover {
-    color: black;
-    transition: color .1s ease-in;
-}
-
-.spoiler:hover img.emoticon,
-.spoiler:hover a,
-.spoiler:hover span.mentionLabel,
-.spoiler:hover img.emoji {
-    opacity: 1;
-    transition: opacity .1s ease-in;
 }
 
 .face {
@@ -469,10 +441,6 @@ img.emoji {
     font-weight: 400;
     line-height: 1;
     color: #999999;
-}
-
-.greenText{
-    color: #789922;
 }
 
 .compact .like {
@@ -702,11 +670,23 @@ img.emoji {
 .mentionLabel {
     display: inline-block;
     font-size: small;
-    background-color: #428bca;
-    color: white;
+    background-color: #e0e0e0;
     padding: 2px 3px 2px;
     border-radius: 2px;
-    vertical-align: bottom;
+}
+
+.mentionLabel.mentionLabelCurrent {
+    background-color: black;
+    color: white;
+}
+
+.dark .mentionLabel {
+    background-color: #585858;
+}
+
+.dark .mentionLabel.mentionLabelCurrent {
+    background-color: white;
+    color: black;
 }
 
 .btn-checkbox {
@@ -766,18 +746,6 @@ a:focus {
 .dark a:hover,
 .dark a:focus {
     color: #5f5f5f;
-}
-
-.nsfwLabel {
-    display: inline-block;
-    font-size: 75%;
-    background-color: #D72D2D;
-    color: white;
-    text-decoration: none;
-    padding: 2px 3px 1px;
-    border-radius: 2px;
-    font-weight: bold;
-    vertical-align: bottom;
 }
 
 .modal-body ul {
@@ -875,6 +843,19 @@ a:focus {
     height: 12px;
     background-image: url(/img/sc2.png);
     background-size: 12px 12px;
+}
+
+.message .gg-icon {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    background-image: url(/img/gg.png);
+    background-size: 12px 12px;
+}
+
+.twitch-icon {
+    color: #6441A5;
+    font-size: 12px;
 }
 
 .beamIcon {
@@ -979,7 +960,7 @@ a:focus {
     width: 10px;
     height: 14px;
     background-image: url("/img/cg.png");
-    background-size: auto 14px;
+    background-size: auto 12px;
     background-position: center;
     background-repeat: no-repeat;
     vertical-align: text-bottom;
@@ -988,4 +969,143 @@ a:focus {
 .auth-button {
     width: 100%;
     text-align: left;
+}
+
+message {
+    display: block;
+}
+
+message message,
+message.userMessageBodyMe {
+    display: inline;
+}
+
+.message-node {
+    display: inline;
+    flex-direction: column;
+    justify-content: flex-end;
+}
+
+.message-node-text {
+    white-space: normal;
+}
+
+.emoji {
+    width: 18px;
+    height: 18px;
+}
+
+.chat-style-bold {
+    font-weight: bold;
+}
+
+.chat-style-italic {
+    font-style: italic;
+}
+
+.chat-style-strikethrough {
+    text-decoration: line-through;
+}
+
+.chat-style-quote {
+    color: #789922;
+}
+
+.chat-style-quote::before {
+    display: inline;
+    content: '>';
+}
+
+.chat-style-spoiler > message,
+.chat-style-spoiler > span,
+.chat-style-nsfw > message,
+.chat-style-nsfw > span {
+    background-color: #D2D2D2;
+    color: #D2D2D2;
+    border-radius: 2px;
+    padding: 2px 3px 1px;
+    display: inline-block;
+    min-height: 1em;
+}
+
+.chat-style-spoiler > message img.emoticon,
+.chat-style-spoiler > message a,
+.chat-style-spoiler > message span.mentionLabel,
+.chat-style-spoiler > message img.emoji,
+.chat-style-nsfw > message img.emoticon,
+.chat-style-nsfw > message a,
+.chat-style-nsfw > message span.mentionLabel,
+.chat-style-nsfw > message img.emoji{
+    opacity: 0;
+}
+
+.chat-style-spoiler:hover > message,
+.chat-style-spoiler:hover > span,
+.chat-style-nsfw:hover > message,
+.chat-style-nsfw:hover > span {
+    color: black;
+    transition: color .1s ease-in;
+}
+
+.chat-style-spoiler:hover > message img.emoticon,
+.chat-style-spoiler:hover > message a,
+.chat-style-spoiler:hover > message span.mentionLabel,
+.chat-style-spoiler:hover > message img.emoji,
+.chat-style-nsfw:hover > message img.emoticon,
+.chat-style-nsfw:hover > message a,
+.chat-style-nsfw:hover > message span.mentionLabel,
+.chat-style-nsfw:hover > message img.emoji {
+    opacity: 1;
+    transition: opacity .1s ease-in;
+}
+
+.chat-style-nsfw::before {
+    content: 'NSFW';
+    display: inline-block;
+    font-size: 75%;
+    background-color: #D72D2D;
+    color: white;
+    text-decoration: none;
+    padding: 2px 3px 1px;
+    border-radius: 2px;
+    font-weight: bold;
+    vertical-align: bottom;
+}
+
+.emoticon-list {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+.emoticon-option {
+    border-radius: 5px;
+    display: flex;
+    justify-content: space-around;
+    width: 33px;
+    height: 33px;
+    cursor: pointer;
+    text-align: center;
+    flex-direction: column;
+}
+
+.emoticon-option > img {
+    display: block;
+    vertical-align: middle;
+    flex: 0;
+}
+
+.emoticon-option:hover {
+    background-color: rgba(0, 0, 0, .2);
+}
+
+emoticons {
+    height: 200px;
+    width: 140px;
+    display: block;
+    overflow: hidden;
+}
+
+.popover-content {
+    padding: 2px 3px;
 }

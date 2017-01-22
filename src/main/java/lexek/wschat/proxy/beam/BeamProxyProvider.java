@@ -12,7 +12,6 @@ import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
 import javax.inject.Named;
-import java.io.IOException;
 import java.util.EnumSet;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -32,7 +31,7 @@ public class BeamProxyProvider extends ProxyProvider {
         @Named("messageId") AtomicLong messageId,
         BeamDataProvider beamDataProvider
     ) {
-        super("beam", false, false, false, ImmutableSet.of(), EnumSet.noneOf(ModerationOperation.class));
+        super("beam", false, false, false, false, ImmutableSet.of(), EnumSet.noneOf(ModerationOperation.class));
         this.notificationService = notificationService;
         this.eventLoopGroup = eventLoopGroup;
         this.messageBroadcaster = messageBroadcaster;

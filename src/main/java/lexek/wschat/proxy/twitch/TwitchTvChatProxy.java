@@ -15,12 +15,14 @@ import lexek.wschat.chat.Room;
 import lexek.wschat.chat.model.GlobalRole;
 import lexek.wschat.chat.model.LocalRole;
 import lexek.wschat.chat.model.Message;
+import lexek.wschat.chat.msg.MessageNode;
 import lexek.wschat.db.model.ProxyAuth;
 import lexek.wschat.proxy.*;
 import lexek.wschat.services.NotificationService;
 import lexek.wschat.util.Colors;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -55,7 +57,7 @@ public class TwitchTvChatProxy extends AbstractProxy {
         this.room = room;
         if (outbound) {
             this.outboundHandler =
-                new OutboundMessageHandler(credentialsService, eventLoopGroup, connections, remoteRoom);
+                new OutboundMessageHandler(credentialsService, eventLoopGroup, connections, remoteRoom, room);
         } else {
             this.outboundHandler = null;
         }
@@ -129,7 +131,7 @@ public class TwitchTvChatProxy extends AbstractProxy {
 
     @Override
     protected void disconnect() {
-        if (this.channel.isActive()) {
+        if (this.channel != null && this.channel.isActive()) {
             this.channel.close();
         }
         if (this.outboundHandler != null) {
@@ -146,14 +148,14 @@ public class TwitchTvChatProxy extends AbstractProxy {
         }
 
         @Override
-        public void onMessage(TwitchUser user, String message) {
-            if (!connections.containsKey(user.getNick().toLowerCase())) {
+        public void onMessage(String userName, List<MessageNode> message) {
+            if (!connections.containsKey(userName.toLowerCase())) {
                 Message msg = Message.extMessage(
                     room.getName(),
-                    user.getNick(),
+                    userName,
                     LocalRole.USER,
                     GlobalRole.USER,
-                    Colors.generateColor(user.getNick()),
+                    Colors.generateColor(userName),
                     messageId.getAndIncrement(),
                     System.currentTimeMillis(),
                     message,
@@ -168,7 +170,7 @@ public class TwitchTvChatProxy extends AbstractProxy {
         @Override
         public void onClear(String name) {
             Message msg = Message.proxyClear(
-                "#main",
+                room.getName(),
                 "twitch",
                 remoteRoom(),
                 name
