@@ -1,5 +1,7 @@
 package lexek.wschat.services;
 
+import com.google.common.escape.Escaper;
+import com.google.common.html.HtmlEscapers;
 import lexek.wschat.db.dao.TicketDao;
 import lexek.wschat.db.jooq.tables.pojos.Ticket;
 import lexek.wschat.db.model.DataPage;
@@ -14,6 +16,7 @@ import javax.inject.Inject;
 public class TicketService {
     private static final int PAGE_LENGTH = 20;
 
+    private final Escaper escaper = HtmlEscapers.htmlEscaper();
     private final UserService userService;
     private final NotificationService notificationService;
     private final TicketDao dao;
@@ -37,13 +40,13 @@ public class TicketService {
             if (category.equals("BUG")) {
                 notificationService.notifyAdmins(
                     "New bug reported",
-                    "New bug reported by " + user.getName() + ": " + ticket.getText(),
+                    "New bug reported by " + user.getName() + ": " + escaper.escape(ticket.getText()),
                     true
                 );
             } else {
                 notificationService.notifyAdmins(
                     "New ticket",
-                    "New ticket opened by " + user.getName() + ": " + ticket.getText(),
+                    "New ticket opened by " + user.getName() + ": " + escaper.escape(ticket.getText()),
                     true
                 );
             }
@@ -60,8 +63,8 @@ public class TicketService {
 
             dao.update(ticket);
 
-            String text = "Your ticket " + ticket.getText() + " was closed by " + closedBy.getName() +
-                " with comment: " + comment;
+            String text = "Your ticket " + escaper.escape(ticket.getText()) + " was closed by " + closedBy.getName() +
+                " with comment: " + escaper.escape(comment);
 
             UserDto user = userService.fetchById(ticket.getUser());
             notificationService.notify(user, "Your ticket is closed", text, true);
