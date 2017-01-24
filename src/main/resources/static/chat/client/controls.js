@@ -397,8 +397,7 @@ var AuthenticationController = function ($scope, $modalInstance, $modal, chat, a
         $.post("/register", $("#regForm").serialize(), function(data) {
             if (data["success"]) {
                 $scope.busy = false;
-                $scope.info = "You have successfuly registered. An email with information how to confirm your " +
-                    "account has been sent to address you entered.";
+                $scope.info = "REGISTRATION_SUCCESS";
                 $scope.switchTo("sign_in");
                 $scope.$digest();
             } else {

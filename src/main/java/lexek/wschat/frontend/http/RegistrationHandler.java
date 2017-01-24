@@ -31,7 +31,7 @@ public class RegistrationHandler extends SimpleHttpHandler {
             String email = request.postParam("email");
             String captchaResponse = request.postParam("g-recaptcha-response");
             if (authenticationManager.getBannedIps().contains(request.ip())) {
-                response.jsonContent(ImmutableMap.of("success", false, "error", "You can't register new accounts."));
+                response.jsonContent(ImmutableMap.of("success", false, "error", "REGISTRATION_DENIED"));
                 return;
             } else if ((captchaResponse != null) && (username != null) && (password != null) && email != null) {
                 email = email.trim();
@@ -39,21 +39,23 @@ public class RegistrationHandler extends SimpleHttpHandler {
                 if (USERNAME_PATTERN.matcher(username).matches() && PASSWORD_PATTERN.matcher(password).matches() && EMAIL.matcher(email).matches()) {
                     if (reCaptcha.verify(captchaResponse, request.ip())) {
                         password = BCrypt.hashpw(password, BCrypt.gensalt());
-                        if (authenticationManager.registerWithPassword(username, password, email)) {
+                        try {
+                            authenticationManager.registerWithPassword(username, password, email);
                             logger.debug("registered user {}", username);
                             response.jsonContent(ImmutableMap.of("success", true));
-                        } else {
-                            response.jsonContent(ImmutableMap.of("success", false, "error", "This name is already taken."));
+                        } catch (Exception e) {
+                            logger.warn("caught exception", e);
+                            response.jsonContent(ImmutableMap.of("success", false, "error", e.getMessage()));
                         }
                         return;
                     } else {
-                        response.jsonContent(ImmutableMap.of("success", false, "error", "Wrong captcha."));
+                        response.jsonContent(ImmutableMap.of("success", false, "error", "WRONG_CAPTCHA"));
                         logger.debug("failed captcha {}", username);
                         return;
                     }
                 }
             }
-            response.jsonContent(ImmutableMap.of("success", false, "error", "Bad username, email or password format."));
+            response.jsonContent(ImmutableMap.of("success", false, "error", "BAD_REGISTRATION_FORMAT"));
             logger.debug("failed to register user {}", username);
         } else {
             response.badRequest();

@@ -194,6 +194,13 @@ langModule.config(['$translateProvider', function ($translateProvider) {
         "ERROR_EMAIL_NULL": "Email shoudn't be empty",
         "ERROR_EMAIL_SAME": "You can't change email to the same one",
         "ERROR_EMAIL_TOO_OFTEN": "You're changing email too often, try again in 30 minutes",
+        "ERROR_WRONG_CAPTCHA": "Captcha is incorrect.",
+        "ERROR_BAD_REGISTRATION_FORMAT": "Incorrect username, email or password format.",
+        "ERROR_REGISTRATION_DENIED": "You can't register new accounts.",
+        "ERROR_DUPLICATE_EMAIL_OR_USERNAME": "Provided username or email is already in use.",
+
+        "REGISTRATION_SUCCESS": "You have successfuly registered. An email with information how to confirm your " +
+        "account has been sent to address you entered.",
 
         "TWITTER_RETWEETED": "retweeted by",
         "MESSAGE_DONATED":
@@ -377,6 +384,13 @@ langModule.config(['$translateProvider', function ($translateProvider) {
         "ERROR_EMAIL_NULL": "Email не должен быть пустым",
         "ERROR_EMAIL_SAME": "Нельзя поменять email на такой же",
         "ERROR_EMAIL_TOO_OFTEN": "Вы слишком часто меняете email, попробуйте ещё раз через 30 минут",
+        "ERROR_WRONG_CAPTCHA": "Неправильно введена капча.",
+        "ERROR_BAD_REGISTRATION_FORMAT": "Некорректно введено имя пользователя, email или пароля.",
+        "ERROR_REGISTRATION_DENIED": "Вы не можете создавать новые учётные записи.",
+        "ERROR_DUPLICATE_EMAIL_OR_USERNAME": "Введённое имя или email уже используется другим пользователем.",
+
+        "REGISTRATION_SUCCESS": "You have successfuly registered. An email with information how to confirm your " +
+        "account has been sent to address you entered.",
 
         "TWITTER_RETWEETED": "ретвит от",
         "MESSAGE_DONATED":

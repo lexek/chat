@@ -120,16 +120,14 @@ public class UserAuthDao {
     @Transactional
     public UserDto registerWithPassword(String name, String password, String email, String verificationCode) {
         UserDto user = createUser(name, email, GlobalRole.USER_UNCONFIRMED);
-        if (user != null) {
-            ctx
-                .insertInto(USERAUTH, USERAUTH.AUTH_NAME, USERAUTH.AUTH_ID, USERAUTH.AUTH_KEY, USERAUTH.SERVICE, USERAUTH.USER_ID)
-                .values(null, null, password, "password", user.getId())
-                .execute();
-            ctx
-                .insertInto(PENDING_CONFIRMATION, PENDING_CONFIRMATION.CODE, PENDING_CONFIRMATION.USER_ID)
-                .values(verificationCode, user.getId())
-                .execute();
-        }
+        ctx
+            .insertInto(USERAUTH, USERAUTH.AUTH_NAME, USERAUTH.AUTH_ID, USERAUTH.AUTH_KEY, USERAUTH.SERVICE, USERAUTH.USER_ID)
+            .values(null, null, password, "password", user.getId())
+            .execute();
+        ctx
+            .insertInto(PENDING_CONFIRMATION, PENDING_CONFIRMATION.CODE, PENDING_CONFIRMATION.USER_ID)
+            .values(verificationCode, user.getId())
+            .execute();
         return user;
     }
 

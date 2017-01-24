@@ -427,7 +427,7 @@
     <div class="modal-body">
         <div ng-if="action === 'sign_in'">
             <div ng-if="error" class="alert alert-danger" role="alert">{{error}}</div>
-            <div ng-if="info" class="alert alert-info" role="alert">{{info}}</div>
+            <div ng-if="info" class="alert alert-info" role="alert">{{info | translate}}</div>
 
             <form class="form" name="form" id="authForm" ng-submit="submitSignIn()">
                 <div class="form-group" ng-class="{'has-error': form.username.$invalid && form.username.$dirty, 'has-success': !form.username.$invalid}">
@@ -473,7 +473,7 @@
         </div>
 
         <div ng-if="action === 'registration'">
-            <div ng-if="error" class="alert alert-danger" role="alert">{{error}}</div>
+            <div ng-if="error" class="alert alert-danger" role="alert">{{("ERROR_" + error) | translate}}</div>
 
             <form name="form" class="form" id="regForm" ng-submit="submitRegistration()">
                 <div class="form-group" ng-class="{'has-error': form.username.$invalid && form.username.$dirty, 'has-success': !form.username.$invalid}">

@@ -16,6 +16,7 @@ import lexek.wschat.db.model.UserDto;
 import lexek.wschat.db.tx.Transactional;
 import lexek.wschat.security.social.SocialProfile;
 import lexek.wschat.services.JournalService;
+import org.jooq.exception.DataAccessException;
 import org.jvnet.hk2.annotations.Service;
 import org.mindrot.jbcrypt.BCrypt;
 import org.slf4j.Logger;
@@ -159,15 +160,16 @@ public class AuthenticationManager {
     }
 
     @Transactional
-    public synchronized boolean registerWithPassword(final String name, final String password, final String email) {
+    public synchronized void registerWithPassword(final String name, final String password, final String email) {
         String verificationCode = secureTokenGenerator.generateVerificationCode();
-        UserDto user = userAuthDao.registerWithPassword(name, password, email, verificationCode);
-        if (user != null) {
+        try {
+            UserDto user = userAuthDao.registerWithPassword(name, password, email, verificationCode);
             userEmailManager.sendVerificationEmail(email, verificationCode, user.getId());
             userEmailManager.userCreated(user);
             journalService.userCreated(user);
+        } catch (DataAccessException e) {
+            throw new BadRequestException("DUPLICATE_EMAIL_OR_USERNAME", e);
         }
-        return user != null;
     }
 
     @Transactional
