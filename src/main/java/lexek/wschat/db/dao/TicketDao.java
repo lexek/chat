@@ -4,7 +4,6 @@ import lexek.wschat.db.jooq.tables.pojos.Ticket;
 import lexek.wschat.db.model.DataPage;
 import lexek.wschat.db.model.UserDto;
 import lexek.wschat.db.model.rest.TicketRestModel;
-import lexek.wschat.db.tx.Transactional;
 import org.jooq.DSLContext;
 import org.jooq.impl.DSL;
 import org.jvnet.hk2.annotations.Service;
@@ -25,7 +24,6 @@ public class TicketDao {
         this.ctx = ctx;
     }
 
-    @Transactional
     public boolean add(final Ticket pojo) {
         int count = ctx.fetchCount(
             TICKET,
