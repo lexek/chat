@@ -13,7 +13,7 @@ public class TransactionalInterceptor implements MethodInterceptor {
 
     @Override
     public Object invoke(MethodInvocation invocation) throws Throwable {
-        return ctx.transactionResult(configuration -> {
+        return ctx.transactionResult(() -> {
             try {
                 return invocation.proceed();
             } catch (Exception e) {
