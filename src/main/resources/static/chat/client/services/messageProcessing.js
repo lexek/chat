@@ -245,9 +245,9 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
     var processDonationMessage = function(chat, ctx, msg) {
         chat.lastChatter(ctx.room, null);
         if (!msg.text) {
-            chat.addMessage(new Message("INFO", $translate.instant("MESSAGE_DONATED", msg)), ctx.room);
+            chat.addMessage(new Message("INFO", $translate.instant("MESSAGE_DONATED", htmlEscape(msg))), ctx.room);
         } else {
-            chat.addMessage(new Message("INFO", $translate.instant("MESSAGE_DONATED_MESSAGE", msg)), ctx.room);
+            chat.addMessage(new Message("INFO", $translate.instant("MESSAGE_DONATED_MESSAGE", htmlEscape(msg))), ctx.room);
         }
         if (!ctx.history) {
             chat.messagesUpdated();
@@ -461,7 +461,7 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
                 //show announcement-like message
                 chat.addMessage(new Message("INFO", $translate.instant("POLL_ANNOUNCEMENT",
                     {
-                        "question": message.pollData.poll.question
+                        "question": htmlEscape(message.pollData.poll.question)
                     }
                 )), ctx.room);
                 chat.messagesUpdated();
