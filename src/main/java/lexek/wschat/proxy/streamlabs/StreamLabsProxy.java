@@ -11,6 +11,7 @@ import lexek.wschat.proxy.*;
 import lexek.wschat.services.NotificationService;
 import lexek.wschat.util.JsonResponseHandler;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URIBuilder;
 
@@ -20,6 +21,11 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 public class StreamLabsProxy extends AbstractProxy {
+    private final RequestConfig requestConfig = RequestConfig
+        .custom()
+        .setConnectTimeout(10000)
+        .setSocketTimeout(10000)
+        .build();
     private final ScheduledExecutorService scheduler;
     private final Long proxyAuthId;
     private final ProxyAuthService proxyAuthService;
@@ -106,6 +112,7 @@ public class StreamLabsProxy extends AbstractProxy {
                     uriBuilder.addParameter("after", lastId.toString());
                 }
                 HttpGet httpGet = new HttpGet(uriBuilder.build());
+                httpGet.setConfig(requestConfig);
                 JsonNode rootNode = httpClient.execute(httpGet, JsonResponseHandler.INSTANCE);
                 for (JsonNode node : rootNode.get("data")) {
                     long id = Long.parseLong(node.get("donation_id").asText());

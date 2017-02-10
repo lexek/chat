@@ -15,6 +15,7 @@ import lexek.wschat.util.RestResponse;
 import lexek.wschat.util.RestResponseHandler;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -24,6 +25,11 @@ import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 public class StreamLabsProvider extends AbstractOauth2Provider {
+    private final RequestConfig requestConfig = RequestConfig
+        .custom()
+        .setConnectTimeout(10000)
+        .setSocketTimeout(10000)
+        .build();
     private final String name;
     private final String clientId;
     private final String secret;
@@ -69,6 +75,7 @@ public class StreamLabsProvider extends AbstractOauth2Provider {
         ), CharsetUtil.UTF_8);
         request.setEntity(entity);
         request.setHeader(HttpHeaders.ACCEPT, "application/json");
+        request.setConfig(requestConfig);
         RestResponse response = httpClient.execute(request, RestResponseHandler.INSTANCE);
         JsonNode rootNode = response.getRootNode();
         if (response.isSuccess()) {
@@ -94,6 +101,7 @@ public class StreamLabsProvider extends AbstractOauth2Provider {
             new BasicNameValuePair("grant_type", "refresh_token"),
             new BasicNameValuePair("redirect_uri", url)
         )));
+        request.setConfig(requestConfig);
         JsonNode response = httpClient.execute(request, JsonResponseHandler.INSTANCE);
         return new SocialToken(
             name,
@@ -127,6 +135,7 @@ public class StreamLabsProvider extends AbstractOauth2Provider {
     public SocialProfile getProfile(SocialToken token) throws IOException {
         HttpGet request = new HttpGet("https://streamlabs.com/api/v1.0/user?access_token=" + token.getToken());
         request.setHeader(HttpHeaders.ACCEPT, "application/json");
+        request.setConfig(requestConfig);
         JsonNode rootNode = httpClient.execute(request, JsonResponseHandler.INSTANCE);
         JsonNode twitchNode = rootNode.get("twitch");
         String externalName = twitchNode.get("name").asText().toLowerCase();
