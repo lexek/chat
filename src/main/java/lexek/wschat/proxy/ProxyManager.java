@@ -174,7 +174,11 @@ public class ProxyManager extends AbstractManagedService implements MessageConsu
                 chatProxy.getEnableOutbound()
             );
             proxies.put(room.getId(), proxy);
-            proxy.start();
+            try {
+                proxy.start();
+            } catch (Exception e) {
+                logger.error("unable to start proxy {}", chatProxy.getId(), e);
+            }
         }
     }
 
