@@ -28,7 +28,7 @@ class GoodGameApiClient {
 
     public Credentials getCredentials(long authId) throws IOException {
         String token = proxyAuthService.getToken(authId);
-        HttpGet request = new HttpGet("http://api2.goodgame.ru/chat/token");
+        HttpGet request = new HttpGet("https://api2.goodgame.ru/chat/token");
         request.setHeader(HttpHeaders.ACCEPT, "application/json");
         request.setHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
         JsonNode response = httpClient.execute(request, JsonResponseHandler.INSTANCE);
@@ -38,7 +38,7 @@ class GoodGameApiClient {
     }
 
     public Long getChannelId(String channelName) throws IOException {
-        HttpGet request = new HttpGet("http://api2.goodgame.ru/streams/" + channelName);
+        HttpGet request = new HttpGet("https://api2.goodgame.ru/streams/" + channelName);
         request.setHeader(HttpHeaders.ACCEPT, "application/json");
         JsonNode response = httpClient.execute(request, JsonResponseHandler.INSTANCE);
         return response.get("channel").get("id").asLong();
@@ -47,14 +47,14 @@ class GoodGameApiClient {
     public List<ProxyEmoticonDescriptor> getEmoticons() throws Exception {
         List<ProxyEmoticonDescriptor> results = new ArrayList<>();
 
-        HttpGet request = new HttpGet("http://goodgame.ru/api/getchatsmiles2");
+        HttpGet request = new HttpGet("https://goodgame.ru/api/getchatsmiles2");
         request.setHeader(HttpHeaders.ACCEPT, "application/json");
         JsonNode response = httpClient.execute(request, JsonResponseHandler.INSTANCE);
 
         for (JsonNode emoticonNode : response) {
             results.add(new ProxyEmoticonDescriptor(
                 ':' + emoticonNode.get("key").asText() + ':',
-                emoticonNode.get("images").get("big").asText().replace("https", "http"), //change to http bc cert issue
+                emoticonNode.get("images").get("big").asText(),
                 emoticonNode.get("key").asText() + ".png",
                 ImmutableMap.of(
                     "premium", emoticonNode.get("premium").asBoolean(),
