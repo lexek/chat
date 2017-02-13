@@ -42,8 +42,12 @@ public class TwitchMessageHandler extends SimpleChannelInboundHandler<TwitchEven
     protected void channelRead0(ChannelHandlerContext ctx, TwitchEventMessage msg) throws Exception {
         if (msg.getType() == TwitchEventMessage.Type.CLEAR) {
             eventListener.onClear(msg.getData());
-        } else if (msg.getType() == TwitchEventMessage.Type.MSG && msg instanceof TwitchUserMessage) {
-            eventListener.onMessage(((TwitchUserMessage) msg).getUserName(), ((TwitchUserMessage) msg).getMessage());
+        } else if (msg.getType() == TwitchEventMessage.Type.MSG) {
+            TwitchUserMessage message = (TwitchUserMessage) msg;
+            eventListener.onMessage(message.getUserName(), message.getUserColor(), message.getMessage());
+        } else if (msg.getType() == TwitchEventMessage.Type.SUB) {
+            TwitchSubMessage message = (TwitchSubMessage) msg;
+            eventListener.onSub(message.getUserName(), message.getUserColor(), message.getMessage(), message.getMonths());
         } else if (msg.getType() == TwitchEventMessage.Type.LOGIN_FAILED) {
             eventListener.loginFailed();
         } else if (msg.getType() == TwitchEventMessage.Type.JOIN) {

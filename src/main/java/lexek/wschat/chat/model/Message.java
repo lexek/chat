@@ -173,6 +173,34 @@ public class Message {
             .build());
     }
 
+    public static Message subMessage(
+        String room,
+        String name,
+        String color,
+        List<MessageNode> messageNodes,
+        String service,
+        String serviceResource,
+        String serviceResourceName,
+        int months
+    ) {
+        ImmutableMap.Builder<MessageProperty, Object> builder = ImmutableMap.<MessageProperty, Object>builder();
+        builder
+            .put(MessageProperty.TYPE, MessageType.SUB)
+            .put(MessageProperty.ROOM, room)
+            .put(MessageProperty.NAME, name)
+            .put(MessageProperty.COLOR, color)
+            .put(MessageProperty.SERVICE, service)
+            .put(MessageProperty.SERVICE_RESOURCE, serviceResource)
+            .put(MessageProperty.SERVICE_RESOURCE_NAME, serviceResourceName)
+            .put(MessageProperty.MONTHS, months);
+
+        if (messageNodes != null) {
+            builder.put(MessageProperty.MESSAGE_NODES, messageNodes);
+        }
+
+        return new Message(builder.build());
+    }
+
     public static Message meMessage(
         String room,
         Long userId,

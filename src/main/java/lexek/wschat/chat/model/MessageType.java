@@ -34,6 +34,7 @@ public enum MessageType {
     WEBRESTART,
     ANON,
     MSG_EXT,
+    SUB,
     BANIP,
     UNBANIP,
     PASSWORD,

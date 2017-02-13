@@ -81,6 +81,7 @@ langModule.config(['$translateProvider', function ($translateProvider) {
         "CHAT_BAN_USER": "{{user}} banned by {{mod}}",
         "CHAT_RECONNECT_CD": "reconnecting in",
         "CHAT_AUTHENTICATING": "waiting for authentication",
+        "SUBSCRIBED": "subscribed for {{months}} months in a row",
 
         "USERS_MODS": "mods",
         "USERS_USERS": "users",
@@ -263,6 +264,7 @@ langModule.config(['$translateProvider', function ($translateProvider) {
         "CHAT_BAN_USER": "{{mod}} забанил {{user}}",
         "CHAT_RECONNECT_CD": "переподключение через",
         "CHAT_AUTHENTICATING": "ожидание аутентификации",
+        "SUBSCRIBED": "подписан на {{months}} месяцев подряд",
 
         "PROFILE_EMAIL_SETTINGS": "Настройки email",
         "PROFILE_EMAIL_RESEND": "Выслать подтверждение",

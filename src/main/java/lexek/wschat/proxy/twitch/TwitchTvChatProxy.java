@@ -20,6 +20,7 @@ import lexek.wschat.db.model.ProxyAuth;
 import lexek.wschat.proxy.*;
 import lexek.wschat.services.NotificationService;
 import lexek.wschat.util.Colors;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.util.List;
@@ -148,14 +149,14 @@ public class TwitchTvChatProxy extends AbstractProxy {
         }
 
         @Override
-        public void onMessage(String userName, List<MessageNode> message) {
+        public void onMessage(String userName, String color, List<MessageNode> message) {
             if (!connections.containsKey(userName.toLowerCase())) {
                 Message msg = Message.extMessage(
                     room.getName(),
                     userName,
                     LocalRole.USER,
                     GlobalRole.USER,
-                    Colors.generateColor(userName),
+                    StringUtils.isEmpty(color) ? Colors.generateColor(userName) : color,
                     messageId.getAndIncrement(),
                     System.currentTimeMillis(),
                     message,
@@ -165,6 +166,21 @@ public class TwitchTvChatProxy extends AbstractProxy {
                 );
                 messageBroadcaster.submitMessage(msg, room.FILTER);
             }
+        }
+
+        @Override
+        public void onSub(String userName, String color, List<MessageNode> message, int months) {
+            Message msg = Message.subMessage(
+                room.getName(),
+                userName,
+                StringUtils.isEmpty(color) ? Colors.generateColor(userName) : color,
+                message,
+                "twitch",
+                remoteRoom(),
+                remoteRoom(),
+                months
+            );
+            messageBroadcaster.submitMessage(msg, room.FILTER);
         }
 
         @Override

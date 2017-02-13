@@ -7,7 +7,9 @@ import java.util.List;
 public interface JTVEventListener {
     void onDisconnected();
 
-    void onMessage(String userName, List<MessageNode> message);
+    void onMessage(String userName, String color, List<MessageNode> message);
+
+    void onSub(String userName, String color, List<MessageNode> message, int months);
 
     void onClear(String name);
 

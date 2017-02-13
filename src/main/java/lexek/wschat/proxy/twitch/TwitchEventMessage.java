@@ -30,6 +30,7 @@ public class TwitchEventMessage {
         CLEAR,
         JOIN,
         PING,
+        SUB,
         LOGIN_FAILED
     }
 }

@@ -1,5 +1,6 @@
 package lexek.wschat.proxy.twitch;
 
+import com.google.common.primitives.Ints;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageDecoder;
 import lexek.wschat.chat.msg.DefaultMessageProcessingService;
@@ -7,13 +8,17 @@ import lexek.wschat.chat.msg.MessageNode;
 import lexek.wschat.chat.msg.UrlMessageProcessor;
 import lexek.wschat.util.Colors;
 import org.jetbrains.annotations.NotNull;
+import org.jooq.tools.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class TwitchTvMessageDecoder extends MessageToMessageDecoder<String> {
     private final Logger logger = LoggerFactory.getLogger(TwitchTvMessageDecoder.class);
+    private final Pattern subscriptionPattern = Pattern.compile("(.*?) just subscribed( with Twitch Prime)?!\\s*");
     private final DefaultMessageProcessingService messageProcessingService;
 
     public TwitchTvMessageDecoder() {
@@ -71,6 +76,20 @@ public class TwitchTvMessageDecoder extends MessageToMessageDecoder<String> {
                 }
                 break;
             }
+            case "USERNOTICE": {
+                List<MessageNode> processedMessage = null;
+                if (arg.length == 3) {
+                    processedMessage = parseUserMessage(arg[2], tags);
+                }
+                String nick = tags.get("login");
+                out.add(new TwitchSubMessage(
+                    nick,
+                    StringUtils.defaultIfEmpty(tags.get("color"), Colors.generateColor(nick)),
+                    Ints.tryParse(tags.getOrDefault("msg-param-months", "0")),
+                    processedMessage
+                ));
+                break;
+            }
             case "PRIVMSG": {
                 String nick = prefix;
                 if (nick == null) {
@@ -80,11 +99,21 @@ public class TwitchTvMessageDecoder extends MessageToMessageDecoder<String> {
                 if (nick.contains("!")) {
                     nick = nick.substring(0, nick.indexOf('!'));
                 }
-                out.add(new TwitchUserMessage(
-                    nick,
-                    tags.getOrDefault("color", Colors.generateColor(nick)),
-                    parseUserMessage(arg[2], tags))
-                );
+                if (nick.equals("twitchnotify")) {
+                    //handle initial subscriptions
+                    Matcher matcher = subscriptionPattern.matcher(arg[2]);
+                    if (matcher.matches()) {
+                        out.add(new TwitchSubMessage(
+                            matcher.group(1), null, 1, null
+                        ));
+                    }
+                } else {
+                    out.add(new TwitchUserMessage(
+                        nick,
+                        StringUtils.defaultIfEmpty(tags.get("color"), Colors.generateColor(nick)),
+                        parseUserMessage(arg[2], tags))
+                    );
+                }
                 break;
             }
             case "JOIN": {

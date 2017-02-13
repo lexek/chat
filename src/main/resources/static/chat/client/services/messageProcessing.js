@@ -523,6 +523,12 @@ module.service("messageProcessingService", ["$q", "$sce", "$translate", "$modal"
                     "names": chat.ignoredNames.join(", ")
                 }), ctx.room));
                 break;
+            case "SUB":
+                ctx.msg.messageUpdatedCallbacks = [];
+                ctx.msg.addToInputCallback = angular.noop;
+                chat.addMessage(ctx.msg, ctx.room);
+                chat.messagesUpdated();
+                break;
             case "TWEET":
                 processTweet(chat, ctx.msg);
                 break;

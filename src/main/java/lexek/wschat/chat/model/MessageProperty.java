@@ -22,6 +22,7 @@ public class MessageProperty<T> {
     public static final MessageProperty<Long> TIME = valueOf("time");
     public static final MessageProperty<Long> VERSION = valueOf("version");
     public static final MessageProperty<Long> USER_ID = valueOf("userId");
+    public static final MessageProperty<Integer> MONTHS = valueOf("months");
     public static final MessageProperty<String> TEXT = valueOf("text");
     public static final MessageProperty<List<MessageNode>> MESSAGE_NODES = valueOf("messageNodes");
     public static final MessageProperty<UserDto> USER = valueOf("user");

@@ -38,6 +38,7 @@ document.chatApplication = angular.module('chatApplication', [
     'chat.ui.profile',
     'chat.ui.tickets',
     'chat.ui.emoticons',
+    'chat.sub',
     'chat.common.message',
     'templates'
 ]);

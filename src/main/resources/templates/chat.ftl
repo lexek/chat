@@ -694,6 +694,7 @@
                         <div class="alert-msg alert-msg-info" bo-if="message.type === 'INFO'">
                             <span ng-bind-html="message.body"></span>
                         </div>
+                        <sub-message bo-if="message.type === 'SUB'" message="::message"></sub-message>
                         <twitter-tweet
                             bo-if="(message.type == 'TWEET')"
                             class="message"
@@ -760,6 +761,7 @@
                         <div class="alert-msg alert-msg-info" bo-if="message.type == 'INFO'">
                             <span ng-bind-html="message.body"></span>
                         </div>
+                        <sub-message bo-if="message.type === 'SUB'" message="::message"></sub-message>
                         <twitter-tweet
                             bo-if="(message.type == 'TWEET')"
                             class="message"

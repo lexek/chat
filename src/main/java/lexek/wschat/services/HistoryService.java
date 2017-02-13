@@ -33,6 +33,7 @@ public class HistoryService implements MessageEventHandler {
         MessageType.MSG,
         MessageType.ME,
         MessageType.MSG_EXT,
+        MessageType.SUB,
         MessageType.BAN,
         MessageType.TIMEOUT,
         MessageType.CLEAR,

@@ -1,0 +1,8 @@
+<div class="alert-msg alert-msg-info">
+    <strong>{{::vm.message.service}}/{{::vm.message.serviceResourceName}}:</strong>
+    <span ng-style="::{color: vm.message.color}">{{::vm.message.name}}</span>
+    {{::("SUBSCRIBED" | translate:{months: vm.message.months})}}
+    <span ng-if="::vm.message.messageNodes">
+        : <message class="userMessageBody" style="display: inline;" nodes="::vm.message.messageNodes"></message>
+    </span>
+</div>
