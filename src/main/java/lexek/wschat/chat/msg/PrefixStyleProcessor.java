@@ -22,6 +22,10 @@ public class PrefixStyleProcessor implements MessageProcessor {
             for (PrefixStyleDescription style : styles) {
                 String prefix = style.getPrefix();
                 if (text.startsWith(prefix)) {
+                    //hack for quotes
+                    if (prefix.equals(">") && text.length() > 1 && text.charAt(1) == '(') {
+                        return;
+                    }
                     String prefixlessText = text.substring(prefix.length());
                     MessageNode newNode = MessageNode.styledNode(
                         text,
