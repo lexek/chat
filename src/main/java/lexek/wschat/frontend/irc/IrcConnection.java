@@ -11,11 +11,13 @@ import java.net.InetSocketAddress;
 
 public class IrcConnection extends Connection {
     private final Channel channel;
+    private final IrcCodec ircCodec;
     private String password;
 
-    public IrcConnection(IrcProtocol protocol, Channel channel) {
+    public IrcConnection(IrcProtocol protocol, Channel channel, IrcCodec ircCodec) {
         super(protocol, ConnectionState.CONNECTED);
         this.channel = channel;
+        this.ircCodec = ircCodec;
     }
 
     @Override
@@ -30,7 +32,7 @@ public class IrcConnection extends Connection {
 
     @Override
     public void send(Message message) {
-        send(getCodec().encode(message));
+        send(ircCodec.encode(message));
     }
 
     public void send(String message) {

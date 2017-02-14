@@ -3,7 +3,6 @@ package lexek.wschat.frontend.irc;
 import lexek.wschat.chat.Connection;
 import lexek.wschat.chat.ConnectionGroup;
 import lexek.wschat.chat.model.Message;
-import lexek.wschat.frontend.Codec;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
@@ -18,7 +17,7 @@ import java.util.function.Predicate;
 
 @Service
 public class IrcConnectionGroup implements ConnectionGroup<IrcConnection> {
-    private final Codec codec;
+    private final IrcCodec codec;
     private final Set<IrcConnection> connections = new LinkedHashSet<>();
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
     private final Lock readLock = lock.readLock();

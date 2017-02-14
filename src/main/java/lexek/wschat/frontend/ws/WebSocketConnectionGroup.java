@@ -1,11 +1,12 @@
 package lexek.wschat.frontend.ws;
 
 import com.google.common.collect.ImmutableSet;
+import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
+import io.netty.util.ReferenceCountUtil;
 import lexek.wschat.chat.Connection;
 import lexek.wschat.chat.ConnectionGroup;
 import lexek.wschat.chat.model.Message;
 import lexek.wschat.chat.model.MessageType;
-import lexek.wschat.frontend.Codec;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
@@ -21,15 +22,15 @@ import java.util.function.Predicate;
 @Service
 public class WebSocketConnectionGroup implements ConnectionGroup<WebSocketConnectionAdapter> {
     private static final ImmutableSet<MessageType> IGNORE_TYPES = ImmutableSet.of(MessageType.JOIN, MessageType.PART);
-    private final Codec codec;
+    private final JsonCodec codec;
     private final Set<WebSocketConnectionAdapter> connections = new HashSet<>();
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
     private final Lock readLock = lock.readLock();
     private final Lock writeLock = lock.writeLock();
 
     @Inject
-    public WebSocketConnectionGroup(WebSocketProtocol protocol) {
-        this.codec = protocol.getCodec();
+    public WebSocketConnectionGroup(JsonCodec codec) {
+        this.codec = codec;
     }
 
     @Override
@@ -109,11 +110,12 @@ public class WebSocketConnectionGroup implements ConnectionGroup<WebSocketConnec
     @Override
     public void send(Message message, Predicate<Connection> predicate) {
         if (!IGNORE_TYPES.contains(message.getType())) {
+            TextWebSocketFrame encodedMessage = codec.encode(message);
             readLock.lock();
             try {
-                String encodedMessage = codec.encode(message);
-                connections.stream().filter(predicate).forEach(c -> c.send(encodedMessage));
+                connections.stream().filter(predicate).forEach(c -> c.send(encodedMessage.retainedDuplicate()));
             } finally {
+                ReferenceCountUtil.release(encodedMessage);
                 readLock.unlock();
             }
         }

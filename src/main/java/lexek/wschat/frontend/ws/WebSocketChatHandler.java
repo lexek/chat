@@ -29,6 +29,7 @@ public class WebSocketChatHandler extends SimpleChannelInboundHandler<WebSocketF
     private final AuthenticationService authenticationService;
     private final MessageReactor messageReactor;
     private final WebSocketProtocol protocol;
+    private final JsonCodec codec;
     private final WebSocketConnectionGroup connectionGroup;
     private final RoomManager roomManager;
 
@@ -37,12 +38,13 @@ public class WebSocketChatHandler extends SimpleChannelInboundHandler<WebSocketF
         AuthenticationService authenticationService,
         MessageReactor messageReactor,
         WebSocketProtocol protocol,
-        WebSocketConnectionGroup connectionGroup,
+        JsonCodec codec, WebSocketConnectionGroup connectionGroup,
         RoomManager roomManager
     ) {
         this.authenticationService = authenticationService;
         this.messageReactor = messageReactor;
         this.protocol = protocol;
+        this.codec = codec;
         this.connectionGroup = connectionGroup;
         this.roomManager = roomManager;
     }
@@ -50,7 +52,7 @@ public class WebSocketChatHandler extends SimpleChannelInboundHandler<WebSocketF
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         Channel channel = ctx.channel();
-        WebSocketConnectionAdapter wrapper = new WebSocketConnectionAdapter(channel, protocol);
+        WebSocketConnectionAdapter wrapper = new WebSocketConnectionAdapter(channel, protocol, codec);
         channel.attr(WRAPPER_ATTR_KEY).set(wrapper);
     }
 
@@ -69,7 +71,7 @@ public class WebSocketChatHandler extends SimpleChannelInboundHandler<WebSocketF
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, WebSocketFrame frame) throws Exception {
         if (frame instanceof TextWebSocketFrame) {
-            handleTextMessage(ctx.channel(), ((TextWebSocketFrame) frame).text());
+            handleTextMessage(ctx.channel(), ((TextWebSocketFrame) frame));
         }
     }
 
@@ -91,9 +93,9 @@ public class WebSocketChatHandler extends SimpleChannelInboundHandler<WebSocketF
         }
     }
 
-    private void handleTextMessage(Channel channel, String text) {
+    private void handleTextMessage(Channel channel, TextWebSocketFrame text) {
         WebSocketConnectionAdapter wrapper = channel.attr(WRAPPER_ATTR_KEY).get();
-        Message decodedMessage = protocol.getCodec().decode(text);
+        Message decodedMessage = codec.decode(text);
         if (wrapper.getState() == ConnectionState.AUTHENTICATED) {
             if (decodedMessage.getType() == MessageType.PING) {
                 wrapper.send(Message.emptyMessage(MessageType.PONG));
@@ -114,11 +116,7 @@ public class WebSocketChatHandler extends SimpleChannelInboundHandler<WebSocketF
                 }
                 return;
             }
-            channel.writeAndFlush(
-                new TextWebSocketFrame(
-                    protocol.getCodec().encode(Message.errorMessage("Not authenticated, try refreshing page."))
-                )
-            );
+            channel.writeAndFlush(codec.encode(Message.errorMessage("Not authenticated, try refreshing page.")));
         }
     }
 

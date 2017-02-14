@@ -3,7 +3,6 @@ package lexek.wschat.chat;
 import lexek.wschat.chat.model.ConnectionState;
 import lexek.wschat.chat.model.Message;
 import lexek.wschat.chat.model.User;
-import lexek.wschat.frontend.Codec;
 import lexek.wschat.frontend.Protocol;
 
 import java.net.InetAddress;
@@ -49,10 +48,6 @@ public abstract class Connection {
 
     public Protocol getProtocol() {
         return protocol;
-    }
-
-    public Codec getCodec() {
-        return protocol.getCodec();
     }
 
     public boolean isNeedNames() {

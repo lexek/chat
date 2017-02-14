@@ -68,7 +68,7 @@ public class UserResource {
         try {
             return geoIpService.getLocation(connection.getAddress());
         } catch (Exception e) {
-            logger.warn("couldn't get location", e);
+            logger.debug("couldn't get location", e);
         }
         return "Unavailable";
     }

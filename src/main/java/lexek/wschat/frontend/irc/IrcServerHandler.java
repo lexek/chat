@@ -32,6 +32,7 @@ public class IrcServerHandler extends ChannelInboundHandlerAdapter implements Au
     private final IrcConnectionGroup connectionGroup;
     private final RoomManager roomManager;
     private final IrcProtocol protocol;
+    private final IrcCodec codec;
 
     @Inject
     public IrcServerHandler(
@@ -40,7 +41,8 @@ public class IrcServerHandler extends ChannelInboundHandlerAdapter implements Au
         AuthenticationService authenticationService,
         IrcConnectionGroup connectionGroup,
         RoomManager roomManager,
-        IrcProtocol protocol
+        IrcProtocol protocol,
+        IrcCodec codec
     ) {
         this.messageReactor = messageReactor;
         this.host = host;
@@ -48,11 +50,12 @@ public class IrcServerHandler extends ChannelInboundHandlerAdapter implements Au
         this.connectionGroup = connectionGroup;
         this.roomManager = roomManager;
         this.protocol = protocol;
+        this.codec = codec;
     }
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        IrcConnection connection = new IrcConnection(protocol, ctx.channel());
+        IrcConnection connection = new IrcConnection(protocol, ctx.channel(), codec);
         ctx.channel().attr(WRAPPER_ATTR_KEY).set(connection);
     }
 
@@ -74,14 +77,14 @@ public class IrcServerHandler extends ChannelInboundHandlerAdapter implements Au
 
     public void onMessage(final IrcConnection connection, String message) {
         if (connection.getState() == ConnectionState.AUTHENTICATED) {
-            Message msg = connection.getCodec().decode(message);
+            Message msg = codec.decode(message);
             if (msg.getType() == MessageType.PING) {
                 connection.send(Message.pongMessage(msg.getText()));
             } else {
                 messageReactor.processMessage(connection, msg);
             }
         } else if (connection.getState() == ConnectionState.CONNECTED) {
-            final Message msg = connection.getCodec().decode(message);
+            final Message msg = codec.decode(message);
             switch (msg.getType()) {
                 case PASS:
                     connection.setPassword(msg.getText());

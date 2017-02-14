@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableMap;
 import lexek.wschat.chat.model.*;
 import lexek.wschat.chat.msg.MessageNode;
 import lexek.wschat.db.model.UserDto;
-import lexek.wschat.frontend.Codec;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
@@ -14,7 +13,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-public class IrcCodec implements Codec {
+public class IrcCodec {
     private final String serverName;
 
     @Inject
@@ -49,7 +48,6 @@ public class IrcCodec implements Codec {
         return new ParsedMessage(prefix, arg);
     }
 
-    @Override
     public String encode(Message message) {
         switch (message.getType()) {
             case ME:
@@ -132,7 +130,6 @@ public class IrcCodec implements Codec {
         }
     }
 
-    @Override
     public Message decode(String message) {
         ParsedMessage parsedMessage = parseMessage(message.trim());
         String command = parsedMessage.getArg()[0];
