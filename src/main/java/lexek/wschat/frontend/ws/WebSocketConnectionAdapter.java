@@ -30,11 +30,11 @@ public class WebSocketConnectionAdapter extends Connection {
 
     @Override
     public void send(Message message) {
-        channel.writeAndFlush(new TextWebSocketFrame(getCodec().encode(message)));
+        channel.writeAndFlush(new TextWebSocketFrame(getCodec().encode(message)), channel.voidPromise());
     }
 
     public void send(String message) {
-        channel.writeAndFlush(new TextWebSocketFrame(message));
+        channel.writeAndFlush(new TextWebSocketFrame(message), channel.voidPromise());
     }
 
     @Override
