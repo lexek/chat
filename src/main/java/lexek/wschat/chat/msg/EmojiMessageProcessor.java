@@ -94,8 +94,10 @@ public class EmojiMessageProcessor implements MessageProcessor {
                 StringBuilder tempBuilder = new StringBuilder();
                 for (int codePoint : text.codePoints().toArray()) {
                     if (codePoints.contains(codePoint)) {
-                        iterator.add(MessageNode.textNode(tempBuilder.toString()));
-                        tempBuilder.setLength(0);
+                        if (tempBuilder.length() > 0) {
+                            iterator.add(MessageNode.textNode(tempBuilder.toString()));
+                            tempBuilder.setLength(0);
+                        }
                         String hex = Integer.toHexString(codePoint);
                         iterator.add(MessageNode.emojiNode(
                                 new StringBuilder().appendCodePoint(codePoint).toString(),
@@ -105,9 +107,9 @@ public class EmojiMessageProcessor implements MessageProcessor {
                         tempBuilder.appendCodePoint(codePoint);
                     }
                 }
-                String leftovers = tempBuilder.toString();
-                if (leftovers.length() > 0) {
-                    iterator.add(MessageNode.textNode(leftovers));
+
+                if (tempBuilder.length() > 0) {
+                    iterator.add(MessageNode.textNode(tempBuilder.toString()));
                 }
             }
         }
