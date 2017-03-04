@@ -10,6 +10,8 @@ import lexek.wschat.proxy.*;
 import lexek.wschat.security.social.SocialProfile;
 import lexek.wschat.services.NotificationService;
 import org.jvnet.hk2.annotations.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -19,6 +21,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 @Service
 public class GoodGameProxyProvider extends ProxyProvider {
+    private final Logger logger = LoggerFactory.getLogger(GoodGameProxyProvider.class);
     private final NotificationService notificationService;
     private final ProxyAuthService proxyAuthService;
     private final EventLoopGroup eventLoopGroup;
@@ -81,6 +84,7 @@ public class GoodGameProxyProvider extends ProxyProvider {
         try {
             return apiClient.getChannelId(remoteRoom) != null;
         } catch (Exception e) {
+            logger.warn("unable to get channel id", e);
             return false;
         }
     }

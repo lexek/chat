@@ -14,6 +14,8 @@ import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.websocketx.PingWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketClientProtocolHandler;
 import io.netty.handler.codec.http.websocketx.WebSocketVersion;
+import io.netty.handler.ssl.SslContext;
+import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.handler.timeout.IdleStateHandler;
@@ -32,6 +34,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
 import org.jsoup.nodes.TextNode;
 
+import javax.net.ssl.SSLException;
 import java.io.IOException;
 import java.net.URI;
 import java.util.LinkedList;
@@ -76,14 +79,18 @@ public class GoodGameChatProxy extends AbstractProxy {
         this.userId = userId;
         this.goodGameApiClient = goodGameApiClient;
         this.authId = authId;
-        this.bootstrap = createBootstrap(eventLoopGroup, new Handler());
+        try {
+            this.bootstrap = createBootstrap(eventLoopGroup, new Handler());
+        } catch (SSLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private static Bootstrap createBootstrap(
         EventLoopGroup eventLoopGroup,
         Handler handler
-    ) {
-        URI uri = URI.create("ws://chat.goodgame.ru:8081/chat/websocket");
+    ) throws SSLException {
+        URI uri = URI.create("wss://chat.goodgame.ru:8081/chat/websocket");
         Bootstrap bootstrap = new Bootstrap();
         bootstrap.group(eventLoopGroup);
         if (Epoll.isAvailable()) {
@@ -94,10 +101,12 @@ public class GoodGameChatProxy extends AbstractProxy {
         bootstrap.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
         JsonCodec jsonCodec = new JsonCodec();
         GoodGameCodec goodGameCodec = new GoodGameCodec();
+        SslContext sslContext = SslContextBuilder.forClient().build();
         bootstrap.handler(new ChannelInitializer<SocketChannel>() {
             @Override
             public void initChannel(final SocketChannel c) throws Exception {
                 ChannelPipeline pipeline = c.pipeline();
+                pipeline.addLast(sslContext.newHandler(c.alloc()));
                 pipeline.addLast("http-codec", new HttpClientCodec(4096, 8192, 8192));
                 pipeline.addLast("http-aggregator", new HttpObjectAggregator(65536));
                 pipeline.addLast(new IdleStateHandler(120, 0, 140, TimeUnit.SECONDS));
@@ -147,7 +156,7 @@ public class GoodGameChatProxy extends AbstractProxy {
                 fail("unable to get channel id");
             }
         }
-        ChannelFuture channelFuture = bootstrap.connect(HOST_NAME, 8081);
+        ChannelFuture channelFuture = bootstrap.connect(HOST_NAME, 443);
         channel = channelFuture.channel();
         channelFuture.addListener(future -> {
             if (!future.isSuccess()) {
