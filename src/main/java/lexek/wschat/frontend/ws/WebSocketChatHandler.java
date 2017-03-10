@@ -5,6 +5,7 @@ import io.netty.handler.codec.http.websocketx.*;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.util.AttributeKey;
+import lexek.wschat.chat.InboundMessageEvent;
 import lexek.wschat.chat.MessageReactor;
 import lexek.wschat.chat.RoomManager;
 import lexek.wschat.chat.model.*;
@@ -105,7 +106,7 @@ public class WebSocketChatHandler extends SimpleChannelInboundHandler<WebSocketF
                     authenticationService.invalidateSession(sid);
                 }
             } else {
-                messageReactor.processMessage(wrapper, decodedMessage);
+                messageReactor.processMessage(new InboundMessageEvent(wrapper, decodedMessage));
             }
         } else if (wrapper.getState() == ConnectionState.CONNECTED) {
             if (decodedMessage.getType() == MessageType.SESSION) {

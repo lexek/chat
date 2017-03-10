@@ -599,5 +599,10 @@
             <artifactId>batik-codec</artifactId>
             <version>1.8</version>
         </dependency>
+        <dependency>
+            <groupId>io.projectreactor</groupId>
+            <artifactId>reactor-core</artifactId>
+            <version>3.0.5.RELEASE</version>
+        </dependency>
     </dependencies>
 </project>

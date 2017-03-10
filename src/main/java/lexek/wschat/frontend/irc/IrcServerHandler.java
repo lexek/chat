@@ -8,6 +8,7 @@ import io.netty.handler.codec.http.websocketx.CloseWebSocketFrame;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.util.AttributeKey;
+import lexek.wschat.chat.InboundMessageEvent;
 import lexek.wschat.chat.MessageReactor;
 import lexek.wschat.chat.RoomManager;
 import lexek.wschat.chat.model.*;
@@ -81,7 +82,7 @@ public class IrcServerHandler extends ChannelInboundHandlerAdapter implements Au
             if (msg.getType() == MessageType.PING) {
                 connection.send(Message.pongMessage(msg.getText()));
             } else {
-                messageReactor.processMessage(connection, msg);
+                messageReactor.processMessage(new InboundMessageEvent(connection, msg));
             }
         } else if (connection.getState() == ConnectionState.CONNECTED) {
             final Message msg = codec.decode(message);
