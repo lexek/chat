@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multiset;
-import lexek.wschat.chat.MessageEvent;
 import lexek.wschat.chat.MessageEventHandler;
 import lexek.wschat.chat.Room;
 import lexek.wschat.chat.filters.BroadcastFilter;
@@ -69,10 +68,9 @@ public class HistoryService implements MessageEventHandler {
     }
 
     @Override
-    public void onEvent(MessageEvent event, long sequence, boolean endOfBatch) throws Exception {
-        final Message message = event.getMessage();
-        if (event.getBroadcastFilter().getType() == BroadcastFilter.Type.ROOM) {
-            final Room room = (Room) event.getBroadcastFilter().getData();
+    public void onEvent(Message message, BroadcastFilter filter) throws Exception {
+        if (filter.getType() == BroadcastFilter.Type.ROOM) {
+            final Room room = (Room) filter.getData();
             if (STORE_TYPES.contains(message.getType())) {
                 store(message, room);
             } else if (message.getType() == MessageType.CLEAR_ROOM) {

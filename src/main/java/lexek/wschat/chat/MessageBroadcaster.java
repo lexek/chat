@@ -4,44 +4,34 @@ import com.codahale.metrics.Gauge;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.health.HealthCheck;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.lmax.disruptor.BlockingWaitStrategy;
-import com.lmax.disruptor.EventFactory;
-import com.lmax.disruptor.EventHandler;
-import com.lmax.disruptor.RingBuffer;
-import com.lmax.disruptor.dsl.Disruptor;
-import com.lmax.disruptor.dsl.ProducerType;
 import lexek.wschat.chat.filters.BroadcastFilter;
 import lexek.wschat.chat.model.Message;
 import lexek.wschat.services.managed.AbstractManagedService;
 import lexek.wschat.services.managed.InitStage;
-import lexek.wschat.util.LoggingExceptionHandler;
 import org.jvnet.hk2.annotations.Service;
+import org.reactivestreams.Subscription;
+import reactor.core.publisher.BaseSubscriber;
+import reactor.core.publisher.TopicProcessor;
 
 import javax.inject.Inject;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 
 @Service
 public class MessageBroadcaster extends AbstractManagedService {
-    private final Disruptor<MessageEvent> disruptor;
-    private final RingBuffer<MessageEvent> ringBuffer;
+    private final TopicProcessor<MessageEvent> publisher;
 
     @Inject
     public MessageBroadcaster() {
         super("messageBroadcaster", InitStage.SERVICES);
-        EventFactory<MessageEvent> eventFactory = MessageEvent::new;
         ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("MESSAGE_BROADCASTER_%d").build();
-        this.disruptor = new Disruptor<>(
-            eventFactory,
+        publisher = TopicProcessor.share(
+            Executors.newCachedThreadPool(threadFactory),
             64,
-            threadFactory,
-            ProducerType.MULTI,
-            new BlockingWaitStrategy()
+            false
         );
-        this.ringBuffer = this.disruptor.getRingBuffer();
-        this.disruptor.setDefaultExceptionHandler(new LoggingExceptionHandler());
     }
 
-    @Inject
     public void init(Iterable<MessageEventHandler> handlers) {
         handlers.forEach(this::registerConsumer);
     }
@@ -59,11 +49,7 @@ public class MessageBroadcaster extends AbstractManagedService {
         if (message == null) {
             throw new NullPointerException("message");
         }
-        long sequence = ringBuffer.next();
-        MessageEvent event = ringBuffer.get(sequence);
-        event.setMessage(message);
-        event.setBroadcastFilter(filter);
-        ringBuffer.publish(sequence);
+        publisher.onNext(new MessageEvent(message, filter));
     }
 
     /**
@@ -76,17 +62,31 @@ public class MessageBroadcaster extends AbstractManagedService {
     }
 
     public void registerConsumer(MessageEventHandler consumer) {
-        this.disruptor.handleEventsWith((EventHandler) consumer);
+        publisher.subscribe(new BaseSubscriber<MessageEvent>() {
+            @Override
+            protected void hookOnSubscribe(Subscription subscription) {
+                request(1);
+            }
+
+            @Override
+            protected void hookOnNext(MessageEvent event) {
+                try {
+                    consumer.onEvent(event.getMessage(), event.getBroadcastFilter());
+                } catch (Exception e) {
+                    logger.error("uncaught exception", e);
+                }
+                request(1);
+            }
+        });
     }
 
     @Override
     public void start() {
-        disruptor.start();
     }
 
     @Override
     public void stop() {
-        disruptor.shutdown();
+        publisher.shutdown();
     }
 
     @Override
@@ -101,7 +101,7 @@ public class MessageBroadcaster extends AbstractManagedService {
 
     @Override
     public void registerMetrics(MetricRegistry metricRegistry) {
-        metricRegistry.register(this.getName() + ".queue.remainingCapacity", (Gauge<Long>) ringBuffer::remainingCapacity);
-        metricRegistry.register(this.getName() + ".queue.bufferSize", (Gauge<Integer>) ringBuffer::getBufferSize);
+        metricRegistry.register(this.getName() + ".queue.remainingCapacity", (Gauge<Long>) publisher::getCapacity);
+        metricRegistry.register(this.getName() + ".queue.bufferSize", (Gauge<Long>) publisher::getAvailableCapacity);
     }
 }

@@ -32,12 +32,13 @@ import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import jersey.repackaged.com.google.common.collect.Lists;
 import lexek.httpserver.*;
+import lexek.wschat.chat.MessageBroadcaster;
+import lexek.wschat.chat.MessageEventHandler;
 import lexek.wschat.chat.msg.*;
 import lexek.wschat.db.tx.TransactionalInterceptorService;
 import lexek.wschat.frontend.http.*;
 import lexek.wschat.frontend.http.admin.AdminPageHandler;
 import lexek.wschat.frontend.http.rest.RedirectToAppHandler;
-import lexek.wschat.proxy.ProxyManager;
 import lexek.wschat.proxy.twitch.TwitchCredentialsService;
 import lexek.wschat.proxy.twitter.TwitterCredentials;
 import lexek.wschat.security.AuthenticationManager;
@@ -48,7 +49,6 @@ import lexek.wschat.security.jersey.SecurityFeature;
 import lexek.wschat.security.jersey.UserParamValueFactoryProvider;
 import lexek.wschat.security.social.CredentialsHolder;
 import lexek.wschat.services.EmoticonService;
-import lexek.wschat.services.MessageConsumerServiceHandler;
 import lexek.wschat.services.managed.ServiceManager;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.CookieSpecs;
@@ -278,9 +278,9 @@ public class Main {
         //todo: figure out a way to inject it automatically without circular dependency
         authenticationManager.registerAuthEventListener(serviceLocator.getService(TwitchCredentialsService.class));
 
-        MessageConsumerServiceHandler messageConsumerServiceHandler = serviceLocator.getService(MessageConsumerServiceHandler.class);
-        ProxyManager proxyManager = serviceLocator.getService(ProxyManager.class);
-        messageConsumerServiceHandler.register(proxyManager);
+        //avoid circular dependencies
+        MessageBroadcaster messageBroadcaster = serviceLocator.getService(MessageBroadcaster.class);
+        messageBroadcaster.init(serviceLocator.getAllServices(MessageEventHandler.class));
 
         Version freemarkerVersion = new Version(2, 3, 23);
 

@@ -3,6 +3,7 @@ package lexek.wschat.proxy;
 import com.codahale.metrics.health.HealthCheck;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
+import lexek.wschat.chat.MessageEventHandler;
 import lexek.wschat.chat.Room;
 import lexek.wschat.chat.RoomManager;
 import lexek.wschat.chat.e.BadRequestException;
@@ -16,7 +17,6 @@ import lexek.wschat.db.model.ProxyAuth;
 import lexek.wschat.db.model.UserDto;
 import lexek.wschat.db.tx.Transactional;
 import lexek.wschat.services.JournalService;
-import lexek.wschat.services.MessageConsumerService;
 import lexek.wschat.services.managed.AbstractManagedService;
 import lexek.wschat.services.managed.InitStage;
 import org.jvnet.hk2.annotations.Service;
@@ -29,7 +29,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Service
-public class ProxyManager extends AbstractManagedService implements MessageConsumerService {
+public class ProxyManager extends AbstractManagedService implements MessageEventHandler {
     private final Logger logger = LoggerFactory.getLogger(ProxyManager.class);
     private final Map<String, ProxyProvider> providers = new HashMap<>();
     private final Multimap<Long, Proxy> proxies = HashMultimap.create();
@@ -133,7 +133,7 @@ public class ProxyManager extends AbstractManagedService implements MessageConsu
     }
 
     @Override
-    public void consume(Message message, BroadcastFilter filter) {
+    public void onEvent(Message message, BroadcastFilter filter) {
         if (filter.getType() == BroadcastFilter.Type.ROOM && message.getType() == MessageType.MSG) {
             Room room = (Room) filter.getData();
             proxies.get(room.getId())

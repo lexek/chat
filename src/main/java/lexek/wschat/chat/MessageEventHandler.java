@@ -1,8 +1,10 @@
 package lexek.wschat.chat;
 
-import com.lmax.disruptor.EventHandler;
+import lexek.wschat.chat.filters.BroadcastFilter;
+import lexek.wschat.chat.model.Message;
 import org.jvnet.hk2.annotations.Contract;
 
 @Contract
-public interface MessageEventHandler extends EventHandler<MessageEvent> {
+public interface MessageEventHandler {
+    void onEvent(Message message, BroadcastFilter filter) throws Exception;
 }

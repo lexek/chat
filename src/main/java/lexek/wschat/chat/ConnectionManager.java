@@ -33,9 +33,8 @@ public class ConnectionManager implements MessageEventHandler {
     }
 
     @Override
-    public void onEvent(MessageEvent event, long sequence, boolean endOfBatch) throws Exception {
-        BroadcastFilter<?> predicate = event.getBroadcastFilter();
-        sendAll(event.getMessage(), predicate);
+    public void onEvent(Message message, BroadcastFilter filter) throws Exception {
+        sendAll(message, filter);
     }
 
     public void registerGroup(ConnectionGroup connectionGroup) {
