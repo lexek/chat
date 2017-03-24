@@ -3,9 +3,9 @@ package lexek.wschat.proxy.beam;
 import com.google.common.collect.ImmutableSet;
 import io.netty.channel.EventLoopGroup;
 import lexek.wschat.chat.MessageBroadcaster;
-import lexek.wschat.chat.Room;
 import lexek.wschat.proxy.ModerationOperation;
 import lexek.wschat.proxy.Proxy;
+import lexek.wschat.proxy.ProxyDescriptor;
 import lexek.wschat.proxy.ProxyProvider;
 import lexek.wschat.services.NotificationService;
 import org.jvnet.hk2.annotations.Service;
@@ -40,10 +40,9 @@ public class BeamProxyProvider extends ProxyProvider {
     }
 
     @Override
-    public Proxy newProxy(long id, Room room, String remoteRoom, Long proxyAuthId, boolean outbound) {
+    public Proxy newProxy(ProxyDescriptor descriptor) {
         return new BeamChatProxy(
-            beamDataProvider, notificationService, messageBroadcaster, eventLoopGroup, eventLoopGroup, messageId,
-            this, room, remoteRoom, id
+            descriptor, beamDataProvider, notificationService, messageBroadcaster, eventLoopGroup, messageId
         );
     }
 

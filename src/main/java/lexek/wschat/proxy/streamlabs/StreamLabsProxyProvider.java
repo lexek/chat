@@ -2,12 +2,8 @@ package lexek.wschat.proxy.streamlabs;
 
 import com.google.common.collect.ImmutableSet;
 import lexek.wschat.chat.MessageBroadcaster;
-import lexek.wschat.chat.Room;
 import lexek.wschat.chat.model.MessageProperty;
-import lexek.wschat.proxy.ModerationOperation;
-import lexek.wschat.proxy.Proxy;
-import lexek.wschat.proxy.ProxyAuthService;
-import lexek.wschat.proxy.ProxyProvider;
+import lexek.wschat.proxy.*;
 import lexek.wschat.services.NotificationService;
 import org.apache.http.client.HttpClient;
 import org.jvnet.hk2.annotations.Service;
@@ -44,10 +40,9 @@ public class StreamLabsProxyProvider extends ProxyProvider {
     }
 
     @Override
-    public Proxy newProxy(long id, Room room, String remoteRoom, Long proxyAuthId, boolean outbound) {
+    public Proxy newProxy(ProxyDescriptor descriptor) {
         return new StreamLabsProxy(
-            scheduledExecutorService, notificationService, this, id, remoteRoom, proxyAuthId, proxyAuthService,
-            httpClient, messageBroadcaster, room
+            descriptor, scheduledExecutorService, notificationService, proxyAuthService, httpClient, messageBroadcaster
         );
     }
 

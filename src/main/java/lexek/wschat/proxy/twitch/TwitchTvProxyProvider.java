@@ -3,11 +3,7 @@ package lexek.wschat.proxy.twitch;
 import com.google.common.collect.ImmutableSet;
 import io.netty.channel.EventLoopGroup;
 import lexek.wschat.chat.MessageBroadcaster;
-import lexek.wschat.chat.Room;
-import lexek.wschat.proxy.ModerationOperation;
-import lexek.wschat.proxy.Proxy;
-import lexek.wschat.proxy.ProxyAuthService;
-import lexek.wschat.proxy.ProxyProvider;
+import lexek.wschat.proxy.*;
 import lexek.wschat.services.NotificationService;
 import org.jvnet.hk2.annotations.Service;
 
@@ -44,10 +40,9 @@ public class TwitchTvProxyProvider extends ProxyProvider {
     }
 
     @Override
-    public Proxy newProxy(long id, Room room, String remoteRoom, Long proxyAuthId, boolean outbound) {
+    public Proxy newProxy(ProxyDescriptor descriptor) {
         return new TwitchTvChatProxy(
-            notificationService, id, this, room, remoteRoom, proxyAuthId, outbound, messageId, messageBroadcaster,
-            credentialsService, eventLoopGroup, authService
+            descriptor, notificationService, messageId, messageBroadcaster, credentialsService, eventLoopGroup, authService
         );
     }
 

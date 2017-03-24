@@ -5,6 +5,7 @@ import org.jvnet.hk2.annotations.Contract;
 
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 @Contract
@@ -67,7 +68,25 @@ public abstract class ProxyProvider {
         return requiresAuth;
     }
 
-    public abstract Proxy newProxy(long id, Room room, String remoteRoom, Long proxyAuthId, boolean outbound);
+    final public Proxy newProxy(long id, Room room, String remoteRoom, Long proxyAuthId, boolean outbound) {
+        EnumSet<ProxyFeature> features = EnumSet.noneOf(ProxyFeature.class);
+        if (outbound) {
+            features.add(ProxyFeature.OUTBOUND);
+        }
+        if (!supportedOperations.isEmpty() && proxyAuthId != null) {
+            features.add(ProxyFeature.MODERATION);
+        }
+        return newProxy(new ProxyDescriptor(
+            id,
+            this,
+            room,
+            remoteRoom,
+            Optional.ofNullable(proxyAuthId),
+            features
+        ));
+    }
+
+    public abstract Proxy newProxy(ProxyDescriptor descriptor);
 
     public abstract boolean validateRemoteRoom(String remoteRoom);
 

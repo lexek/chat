@@ -5,13 +5,8 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableList;
-import io.netty.bootstrap.Bootstrap;
-import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.*;
-import io.netty.channel.epoll.Epoll;
-import io.netty.channel.epoll.EpollSocketChannel;
 import io.netty.channel.socket.SocketChannel;
-import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.http.HttpClientCodec;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.websocketx.PingWebSocketFrame;
@@ -28,109 +23,66 @@ import lexek.wschat.chat.model.GlobalRole;
 import lexek.wschat.chat.model.LocalRole;
 import lexek.wschat.chat.model.Message;
 import lexek.wschat.chat.msg.MessageNode;
-import lexek.wschat.proxy.AbstractProxy;
-import lexek.wschat.proxy.ModerationOperation;
-import lexek.wschat.proxy.ProxyProvider;
+import lexek.wschat.proxy.AbstractNettyProxy;
+import lexek.wschat.proxy.ProxyDescriptor;
 import lexek.wschat.proxy.ProxyState;
 import lexek.wschat.services.NotificationService;
 import lexek.wschat.util.Colors;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class BeamChatProxy extends AbstractProxy {
+public class BeamChatProxy extends AbstractNettyProxy {
     private final BeamDataProvider beamDataProvider;
     private final MessageBroadcaster messageBroadcaster;
-    private final EventLoopGroup eventLoopGroup;
     private final AtomicLong messageId;
-    private final Room room;
+    private volatile URI uri;
     private Long channelId;
-    private volatile Channel channel;
 
     public BeamChatProxy(
+        ProxyDescriptor descriptor,
         BeamDataProvider beamDataProvider, NotificationService notificationService,
-        MessageBroadcaster messageBroadcaster, ScheduledExecutorService scheduler, EventLoopGroup eventLoopGroup,
-        AtomicLong messageId, ProxyProvider provider, Room room, String remoteRoom, long id
+        MessageBroadcaster messageBroadcaster, EventLoopGroup eventLoopGroup, AtomicLong messageId
     ) {
-        super(scheduler, notificationService, provider, id, remoteRoom);
+        super(eventLoopGroup, notificationService, descriptor);
         this.messageBroadcaster = messageBroadcaster;
-        this.eventLoopGroup = eventLoopGroup;
         this.messageId = messageId;
-        this.room = room;
         this.beamDataProvider = beamDataProvider;
     }
 
     @Override
-    public void moderate(ModerationOperation type, String name) {
+    protected void init() throws Exception {
+        channelId = beamDataProvider.getId(remoteRoom());
 
-    }
-
-    @Override
-    public void onMessage(Message message) {
-
-    }
-
-    @Override
-    public boolean outboundEnabled() {
-        return false;
-    }
-
-    @Override
-    public boolean moderationEnabled() {
-        return false;
-    }
-
-    @Override
-    protected void connect() {
-        try {
-            if (channelId == null) {
-                channelId = beamDataProvider.getId(remoteRoom());
+        SslContext sslContext = SslContextBuilder.forClient().build();
+        bootstrap.handler(new ChannelInitializer<SocketChannel>() {
+            @Override
+            public void initChannel(final SocketChannel c) throws Exception {
+                ChannelPipeline pipeline = c.pipeline();
+                pipeline.addLast(sslContext.newHandler(c.alloc()));
+                pipeline.addLast("http-codec", new HttpClientCodec(4096, 8192, 8192));
+                pipeline.addLast("http-aggregator", new HttpObjectAggregator(65536));
+                pipeline.addLast(new IdleStateHandler(120, 0, 140, TimeUnit.SECONDS));
+                pipeline.addLast(new WebSocketClientProtocolHandler(uri, WebSocketVersion.V13, null, false, null, 4096));
+                pipeline.addLast(new BeamCodec());
+                pipeline.addLast(new BeamChannelHandler());
             }
-            String server = beamDataProvider.getChatServer(channelId);
-            URI uri = URI.create(server);
-            SslContext sslContext = SslContextBuilder.forClient().build();
-            Bootstrap bootstrap = new Bootstrap();
-            bootstrap.group(eventLoopGroup);
-            if (Epoll.isAvailable()) {
-                bootstrap.channel(EpollSocketChannel.class);
-            } else {
-                bootstrap.channel(NioSocketChannel.class);
-            }
-            bootstrap.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
-            bootstrap.handler(new ChannelInitializer<SocketChannel>() {
-                @Override
-                public void initChannel(final SocketChannel c) throws Exception {
-                    ChannelPipeline pipeline = c.pipeline();
-                    pipeline.addLast(sslContext.newHandler(c.alloc()));
-                    pipeline.addLast("http-codec", new HttpClientCodec(4096, 8192, 8192));
-                    pipeline.addLast("http-aggregator", new HttpObjectAggregator(65536));
-                    pipeline.addLast(new IdleStateHandler(120, 0, 140, TimeUnit.SECONDS));
-                    pipeline.addLast(new WebSocketClientProtocolHandler(uri, WebSocketVersion.V13, null, false, null, 4096));
-                    pipeline.addLast(new BeamCodec());
-                    pipeline.addLast(new BeamChannelHandler());
-                }
-            });
-            ChannelFuture channelFuture = bootstrap.connect(uri.getHost(), uri.getPort());
-            channel = channelFuture.channel();
-            channelFuture.addListener(future -> {
-                if (!future.isSuccess()) {
-                    fail("failed to connect");
-                }
-            });
-        } catch (Exception e) {
-            logger.error("unable to connect", e);
-            fail(e.getMessage());
-        }
+        });
     }
 
     @Override
-    protected void disconnect() {
-        if (this.channel != null && this.channel.isActive()) {
-            this.channel.close();
-        }
+    protected void connect() throws Exception {
+        String server = beamDataProvider.getChatServer(channelId);
+        this.uri = URI.create(server);
+        ChannelFuture channelFuture = bootstrap.connect(uri.getHost(), uri.getPort());
+        channel = channelFuture.channel();
+        channelFuture.addListener(future -> {
+            if (!future.isSuccess()) {
+                fail("failed to connect");
+            }
+        });
     }
 
     private class BeamChannelHandler extends SimpleChannelInboundHandler<JsonNode> {
@@ -174,6 +126,7 @@ public class BeamChatProxy extends AbstractProxy {
                         }
                     }
 
+                    Room room = descriptor.getRoom();
                     Message chatMessage = Message.extMessage(
                         room.getName(),
                         name,

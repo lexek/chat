@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.StreamSupport;
 
@@ -32,7 +33,7 @@ public class ServiceManager {
     public void init(Iterable<ManagedService> services) {
         StreamSupport
             .stream(services.spliterator(), false)
-            .sorted((o1, o2) -> o1.getStage().ordinal() - o2.getStage().ordinal())
+            .sorted(Comparator.comparingInt(o -> o.getStage().ordinal()))
             .forEach(this::registerService);
     }
 

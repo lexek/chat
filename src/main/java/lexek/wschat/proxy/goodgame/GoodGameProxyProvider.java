@@ -3,11 +3,9 @@ package lexek.wschat.proxy.goodgame;
 import com.google.common.collect.ImmutableSet;
 import io.netty.channel.EventLoopGroup;
 import lexek.wschat.chat.MessageBroadcaster;
-import lexek.wschat.chat.Room;
 import lexek.wschat.chat.msg.DefaultMessageProcessingService;
 import lexek.wschat.chat.msg.EmoticonMessageProcessor;
 import lexek.wschat.proxy.*;
-import lexek.wschat.security.social.SocialProfile;
 import lexek.wschat.services.NotificationService;
 import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
@@ -40,7 +38,7 @@ public class GoodGameProxyProvider extends ProxyProvider {
         GoodGameApiClient apiClient,
         ProxyEmoticonProviderFactory proxyEmoticonProviderFactory
     ) {
-        super("goodgame", true, false, false, true, ImmutableSet.of("goodgame"), EnumSet.noneOf(ModerationOperation.class));
+        super("goodgame", true, false, false, true, ImmutableSet.of("goodgame"), EnumSet.of(ModerationOperation.BAN));
         this.notificationService = notificationService;
         this.proxyAuthService = proxyAuthService;
         this.eventLoopGroup = eventLoopGroup;
@@ -55,27 +53,16 @@ public class GoodGameProxyProvider extends ProxyProvider {
     }
 
     @Override
-    public Proxy newProxy(long id, Room room, String remoteRoom, Long userAuthId, boolean outbound) {
-        String userId = null;
-        if (userAuthId != null) {
-            SocialProfile profile = proxyAuthService.getProfile(userAuthId);
-            if (profile != null) {
-                userId = profile.getId();
-            }
-        }
+    public Proxy newProxy(ProxyDescriptor descriptor) {
         return new GoodGameChatProxy(
+            descriptor,
             messageProcessingService,
             notificationService,
             messageBroadcaster,
             eventLoopGroup,
             messsageId,
-            this,
-            id,
-            room,
-            remoteRoom,
-            userId,
             apiClient,
-            userAuthId
+            proxyAuthService
         );
     }
 

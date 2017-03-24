@@ -2,12 +2,7 @@ package lexek.wschat.proxy.youtube;
 
 import com.google.common.collect.ImmutableSet;
 import lexek.wschat.chat.MessageBroadcaster;
-import lexek.wschat.chat.Room;
-import lexek.wschat.proxy.ModerationOperation;
-import lexek.wschat.proxy.Proxy;
-import lexek.wschat.proxy.ProxyAuthService;
-import lexek.wschat.proxy.ProxyProvider;
-import lexek.wschat.security.social.SocialProfile;
+import lexek.wschat.proxy.*;
 import lexek.wschat.services.NotificationService;
 import org.apache.http.client.HttpClient;
 import org.jvnet.hk2.annotations.Service;
@@ -36,7 +31,7 @@ public class YouTubeProxyProvider extends ProxyProvider {
         ProxyAuthService proxyAuthService,
         HttpClient httpClient
     ) {
-        super("youtube", true, false, true, false, ImmutableSet.of("google"), EnumSet.of(ModerationOperation.BAN));
+        super("youtube", true, false, true, false, ImmutableSet.of("google"), EnumSet.noneOf(ModerationOperation.class));
         this.messageId = messageId;
         this.messageBroadcaster = messageBroadcaster;
         this.notificationService = notificationService;
@@ -46,20 +41,15 @@ public class YouTubeProxyProvider extends ProxyProvider {
     }
 
     @Override
-    public Proxy newProxy(long id, Room room, String remoteRoom, Long proxyAuthId, boolean outbound) {
-        SocialProfile socialProfile = proxyAuthService.getProfile(proxyAuthId);
+    public Proxy newProxy(ProxyDescriptor descriptor) {
         return new YouTubeProxy(
+            descriptor,
             messageId,
             notificationService,
             executorService,
             httpClient,
             proxyAuthService,
-            this,
-            proxyAuthId,
-            id,
-            messageBroadcaster,
-            room,
-            socialProfile.getName()
+            messageBroadcaster
         );
     }
 

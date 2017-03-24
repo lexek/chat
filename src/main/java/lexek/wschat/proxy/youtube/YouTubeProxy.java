@@ -11,8 +11,8 @@ import lexek.wschat.chat.model.LocalRole;
 import lexek.wschat.chat.model.Message;
 import lexek.wschat.chat.msg.MessageNode;
 import lexek.wschat.proxy.AbstractProxy;
-import lexek.wschat.proxy.ModerationOperation;
 import lexek.wschat.proxy.ProxyAuthService;
+import lexek.wschat.proxy.ProxyDescriptor;
 import lexek.wschat.proxy.ProxyTokenException;
 import lexek.wschat.services.NotificationService;
 import lexek.wschat.util.Colors;
@@ -36,37 +36,33 @@ public class YouTubeProxy extends AbstractProxy {
     private final ScheduledExecutorService executorService;
     private final HttpClient httpClient;
     private final ProxyAuthService proxyAuthService;
-    private final Long authId;
-    private final Room room;
-    private final String ownerName;
     private long lastRead = System.currentTimeMillis();
     private int pollInterval = 5000;
     private String lastPageToken = null;
     private String liveChatId = null;
     private String channelId;
+    private String ownerName;
 
     //todo: custom response handler
     public YouTubeProxy(
+        ProxyDescriptor descriptor,
         AtomicLong messageId, NotificationService notificationService,
         ScheduledExecutorService executorService,
         HttpClient httpClient,
         ProxyAuthService proxyAuthService,
-        YouTubeProxyProvider provider,
-        Long authId,
-        long id,
-        MessageBroadcaster messageBroadcaster,
-        Room room,
-        String ownerName
+        MessageBroadcaster messageBroadcaster
     ) {
-        super(executorService, notificationService, provider, id, ownerName);
+        super(executorService, notificationService, descriptor);
         this.messageId = messageId;
         this.executorService = executorService;
         this.httpClient = httpClient;
         this.proxyAuthService = proxyAuthService;
-        this.authId = authId;
         this.messageBroadcaster = messageBroadcaster;
-        this.room = room;
-        this.ownerName = ownerName;
+    }
+
+    @Override
+    protected void init() {
+        ownerName = proxyAuthService.getProfile(descriptor.authId()).getName();
     }
 
     @Override
@@ -84,23 +80,8 @@ public class YouTubeProxy extends AbstractProxy {
     }
 
     @Override
-    public void moderate(ModerationOperation type, String name) {
-        //todo
-    }
-
-    @Override
-    public void onMessage(Message message) {
-
-    }
-
-    @Override
-    public boolean outboundEnabled() {
-        return false;
-    }
-
-    @Override
-    public boolean moderationEnabled() {
-        return true;
+    public String remoteRoom() {
+        return ownerName;
     }
 
     private void doWork() {
@@ -114,6 +95,7 @@ public class YouTubeProxy extends AbstractProxy {
                     List<YouTubeMessage> messages = getMessages();
                     logger.debug("received {} messages", messages.size());
                     logger.trace("received messages", messages);
+                    Room room = descriptor.getRoom();
                     messages
                         .stream()
                         .filter(e -> e.getPublishedAt() > lastRead)
@@ -152,7 +134,7 @@ public class YouTubeProxy extends AbstractProxy {
     }
 
     private void getLiveChatId() throws IOException {
-        String token = proxyAuthService.getToken(authId);
+        String token = proxyAuthService.getToken(descriptor.authId());
         HttpGet request = new HttpGet("https://www.googleapis.com/youtube/v3/liveBroadcasts" +
             "?part=snippet&broadcastStatus=active&broadcastType=all");
         request.setHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
@@ -168,7 +150,7 @@ public class YouTubeProxy extends AbstractProxy {
     }
 
     private List<YouTubeMessage> getMessages() throws IOException {
-        String token = proxyAuthService.getToken(authId);
+        String token = proxyAuthService.getToken(descriptor.authId());
         String url = "https://www.googleapis.com/youtube/v3/liveChat/messages" +
             "?liveChatId=" + UrlEscapers.urlPathSegmentEscaper().escape(liveChatId) +
             "&part=snippet,authorDetails";

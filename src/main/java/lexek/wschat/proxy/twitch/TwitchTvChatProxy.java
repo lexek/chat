@@ -1,17 +1,11 @@
 package lexek.wschat.proxy.twitch;
 
-import io.netty.bootstrap.Bootstrap;
-import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
-import io.netty.channel.epoll.Epoll;
-import io.netty.channel.epoll.EpollSocketChannel;
-import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.util.internal.chmv8.ConcurrentHashMapV8;
 import lexek.wschat.chat.MessageBroadcaster;
-import lexek.wschat.chat.Room;
 import lexek.wschat.chat.model.GlobalRole;
 import lexek.wschat.chat.model.LocalRole;
 import lexek.wschat.chat.model.Message;
@@ -27,59 +21,69 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class TwitchTvChatProxy extends AbstractProxy {
-    private final Long proxyAuthId;
+public class TwitchTvChatProxy extends AbstractNettyProxy {
     private final AtomicLong messageId;
     private final MessageBroadcaster messageBroadcaster;
-    private final Room room;
-    private final Bootstrap inboundBootstrap;
+    private final ProxyAuthService proxyAuthService;
     private final Map<String, Channel> connections = new ConcurrentHashMapV8<>();
     private final OutboundMessageHandler outboundHandler;
-    private volatile Channel channel;
 
     public TwitchTvChatProxy(
+        ProxyDescriptor descriptor,
         NotificationService notificationService,
-        long id,
-        ProxyProvider provider,
-        Room room,
-        String remoteRoom,
-        Long proxyAuthId,
-        boolean outbound,
         AtomicLong messageId,
         MessageBroadcaster messageBroadcaster,
         TwitchCredentialsService credentialsService,
         EventLoopGroup eventLoopGroup,
         ProxyAuthService proxyAuthService
     ) {
-        super(eventLoopGroup, notificationService, provider, id, remoteRoom);
-        this.proxyAuthId = proxyAuthId;
+        super(eventLoopGroup, notificationService, descriptor);
         this.messageId = messageId;
         this.messageBroadcaster = messageBroadcaster;
-        this.room = room;
-        if (outbound) {
-            this.outboundHandler =
-                new OutboundMessageHandler(credentialsService, eventLoopGroup, connections, remoteRoom, room);
+        this.proxyAuthService = proxyAuthService;
+        if (descriptor.hasFeature(ProxyFeature.OUTBOUND)) {
+            this.outboundHandler = new OutboundMessageHandler(credentialsService, eventLoopGroup, connections, descriptor);
         } else {
             this.outboundHandler = null;
         }
+    }
 
-        this.inboundBootstrap = new Bootstrap();
-        this.inboundBootstrap.group(eventLoopGroup);
-        if (Epoll.isAvailable()) {
-            this.inboundBootstrap.channel(EpollSocketChannel.class);
-        } else {
-            this.inboundBootstrap.channel(NioSocketChannel.class);
-        }
-        this.inboundBootstrap.option(ChannelOption.SO_KEEPALIVE, true);
-        this.inboundBootstrap.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
+    @Override
+    protected void init() throws Exception {
         String username = null;
         String token = null;
-        if (proxyAuthId != null) {
-            ProxyAuth auth = proxyAuthService.getAuth(proxyAuthId);
+        if (descriptor.getAuthId().isPresent()) {
+            ProxyAuth auth = proxyAuthService.getAuth(descriptor.getAuthId().get());
             username = auth.getExternalName();
             token = auth.getKey();
         }
-        this.inboundBootstrap.handler(new InboundChannelInitializer(new JtvEventListenerImpl(), remoteRoom, username, token));
+
+        bootstrap.option(ChannelOption.SO_KEEPALIVE, true);
+        bootstrap.handler(new InboundChannelInitializer(new JtvEventListenerImpl(), remoteRoom(), username, token));
+    }
+
+    @Override
+    protected void connect() {
+        ChannelFuture channelFuture = bootstrap.connect("irc.twitch.tv", 6667);
+        channel = channelFuture.channel();
+        channelFuture.addListener(future -> {
+            if (!future.isSuccess()) {
+                fail("failed to connect");
+            }
+        });
+        if (this.outboundHandler != null) {
+            this.outboundHandler.start();
+        }
+    }
+
+    @Override
+    protected void disconnect() {
+        if (this.channel != null && this.channel.isActive()) {
+            this.channel.close();
+        }
+        if (this.outboundHandler != null) {
+            this.outboundHandler.shutdown();
+        }
     }
 
     @Override
@@ -106,40 +110,6 @@ public class TwitchTvChatProxy extends AbstractProxy {
         }
     }
 
-    @Override
-    public boolean outboundEnabled() {
-        return this.outboundHandler != null;
-    }
-
-    @Override
-    public boolean moderationEnabled() {
-        return proxyAuthId != null;
-    }
-
-    @Override
-    protected void connect() {
-        ChannelFuture channelFuture = inboundBootstrap.connect("irc.twitch.tv", 6667);
-        channel = channelFuture.channel();
-        channelFuture.addListener(future -> {
-            if (!future.isSuccess()) {
-                fail("failed to connect");
-            }
-        });
-        if (this.outboundHandler != null) {
-            this.outboundHandler.start();
-        }
-    }
-
-    @Override
-    protected void disconnect() {
-        if (this.channel != null && this.channel.isActive()) {
-            this.channel.close();
-        }
-        if (this.outboundHandler != null) {
-            this.outboundHandler.shutdown();
-        }
-    }
-
     private class JtvEventListenerImpl implements JTVEventListener {
         @Override
         public void onDisconnected() {
@@ -152,7 +122,7 @@ public class TwitchTvChatProxy extends AbstractProxy {
         public void onMessage(String userName, String color, List<MessageNode> message) {
             if (!connections.containsKey(userName.toLowerCase())) {
                 Message msg = Message.extMessage(
-                    room.getName(),
+                    descriptor.getRoom().getName(),
                     userName,
                     LocalRole.USER,
                     GlobalRole.USER,
@@ -164,14 +134,14 @@ public class TwitchTvChatProxy extends AbstractProxy {
                     remoteRoom(),
                     remoteRoom()
                 );
-                messageBroadcaster.submitMessage(msg, room.FILTER);
+                messageBroadcaster.submitMessage(msg, descriptor.getRoom().FILTER);
             }
         }
 
         @Override
         public void onSub(String userName, String color, List<MessageNode> message, int months) {
             Message msg = Message.subMessage(
-                room.getName(),
+                descriptor.getRoom().getName(),
                 userName,
                 StringUtils.isEmpty(color) ? Colors.generateColor(userName) : color,
                 message,
@@ -180,18 +150,18 @@ public class TwitchTvChatProxy extends AbstractProxy {
                 remoteRoom(),
                 months
             );
-            messageBroadcaster.submitMessage(msg, room.FILTER);
+            messageBroadcaster.submitMessage(msg, descriptor.getRoom().FILTER);
         }
 
         @Override
         public void onClear(String name) {
             Message msg = Message.proxyClear(
-                room.getName(),
+                descriptor.getRoom().getName(),
                 "twitch",
                 remoteRoom(),
                 name
             );
-            messageBroadcaster.submitMessage(msg, room.FILTER);
+            messageBroadcaster.submitMessage(msg, descriptor.getRoom().FILTER);
         }
 
         @Override

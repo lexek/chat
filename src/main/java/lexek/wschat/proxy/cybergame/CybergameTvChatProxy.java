@@ -3,14 +3,9 @@ package lexek.wschat.proxy.cybergame;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.netty.bootstrap.Bootstrap;
-import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.*;
 import io.netty.channel.ChannelHandler.Sharable;
-import io.netty.channel.epoll.Epoll;
-import io.netty.channel.epoll.EpollSocketChannel;
 import io.netty.channel.socket.SocketChannel;
-import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.http.HttpClientCodec;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.websocketx.PingWebSocketFrame;
@@ -27,14 +22,12 @@ import lexek.wschat.chat.model.GlobalRole;
 import lexek.wschat.chat.model.LocalRole;
 import lexek.wschat.chat.model.Message;
 import lexek.wschat.chat.msg.MessageNode;
-import lexek.wschat.proxy.AbstractProxy;
-import lexek.wschat.proxy.ModerationOperation;
-import lexek.wschat.proxy.ProxyProvider;
+import lexek.wschat.proxy.AbstractNettyProxy;
+import lexek.wschat.proxy.ProxyDescriptor;
 import lexek.wschat.proxy.ProxyState;
 import lexek.wschat.services.NotificationService;
 import lexek.wschat.util.Colors;
 
-import javax.net.ssl.SSLException;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
@@ -42,46 +35,30 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class CybergameTvChatProxy extends AbstractProxy {
+public class CybergameTvChatProxy extends AbstractNettyProxy {
     private final CybergameTvApiClient apiClient;
     private final MessageBroadcaster messageBroadcaster;
     private final AtomicLong messageId;
-    private final Room room;
-    private final Bootstrap bootstrap;
-    private volatile Channel channel;
     private String channelId;
 
     public CybergameTvChatProxy(
+        ProxyDescriptor descriptor,
         CybergameTvApiClient apiClient, NotificationService notificationService, MessageBroadcaster messageBroadcaster,
-        EventLoopGroup eventLoopGroup, AtomicLong messageId, ProxyProvider provider, Room room, String remoteRoom,
-        long id
+        EventLoopGroup eventLoopGroup, AtomicLong messageId
     ) {
-        super(eventLoopGroup, notificationService, provider, id, remoteRoom);
+        super(eventLoopGroup, notificationService, descriptor);
         this.apiClient = apiClient;
         this.messageBroadcaster = messageBroadcaster;
         this.messageId = messageId;
-        this.room = room;
-        try {
-            this.bootstrap = createBootstrap(eventLoopGroup, new CybergameTvChannelHandler());
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
     }
 
-    private static Bootstrap createBootstrap(
-        EventLoopGroup eventLoopGroup,
-        ChannelHandler handler
-    ) throws SSLException {
+    @Override
+    protected void init() throws Exception {
+        channelId = apiClient.getChannelId(remoteRoom());
+
         URI uri = URI.create("wss://chat.cybergame.tv:9002/");
-        Bootstrap bootstrap = new Bootstrap();
-        bootstrap.group(eventLoopGroup);
-        if (Epoll.isAvailable()) {
-            bootstrap.channel(EpollSocketChannel.class);
-        } else {
-            bootstrap.channel(NioSocketChannel.class);
-        }
-        bootstrap.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
         SslContext sslContext = SslContextBuilder.forClient().build();
+        CybergameTvChannelHandler handler = new CybergameTvChannelHandler();
         bootstrap.handler(new ChannelInitializer<SocketChannel>() {
             @Override
             public void initChannel(final SocketChannel c) throws Exception {
@@ -95,40 +72,10 @@ public class CybergameTvChatProxy extends AbstractProxy {
                 pipeline.addLast(handler);
             }
         });
-        return bootstrap;
-    }
-
-    @Override
-    public void moderate(ModerationOperation type, String name) {
-        throw new UnsupportedOperationException(type.toString());
-    }
-
-    @Override
-    public void onMessage(Message message) {
-        //do nothing
-    }
-
-    @Override
-    public boolean outboundEnabled() {
-        return false;
-    }
-
-    @Override
-    public boolean moderationEnabled() {
-        return false;
     }
 
     @Override
     protected void connect() {
-        if (channelId == null) {
-            try {
-                channelId = apiClient.getChannelId(remoteRoom());
-            } catch (Exception e) {
-                logger.error("unable to fetch channel id", e);
-                fail("unable to fetch channel id");
-                return;
-            }
-        }
         ChannelFuture channelFuture = bootstrap.connect("chat.cybergame.tv", 9002);
         channel = channelFuture.channel();
         channelFuture.addListener(future -> {
@@ -136,13 +83,6 @@ public class CybergameTvChatProxy extends AbstractProxy {
                 fail("failed to connect");
             }
         });
-    }
-
-    @Override
-    protected void disconnect() {
-        if (this.channel != null && this.channel.isActive()) {
-            this.channel.close();
-        }
     }
 
     @Sharable
@@ -190,6 +130,8 @@ public class CybergameTvChatProxy extends AbstractProxy {
                         messageBody.add(MessageNode.textNode(text));
                     }
                 }
+
+                Room room = descriptor.getRoom();
                 Message chatMessage = Message.extMessage(
                     room.getName(),
                     name,

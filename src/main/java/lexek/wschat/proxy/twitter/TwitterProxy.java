@@ -60,7 +60,7 @@ public class TwitterProxy implements Proxy, TwitterMessageConsumer {
 
     @Override
     public void onMessage(Message message) {
-        //ignore
+        throw new UnsupportedOperationException();
     }
 
     @Override

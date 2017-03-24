@@ -1,5 +1,6 @@
 package lexek.wschat.proxy;
 
+import lexek.wschat.chat.model.Message;
 import lexek.wschat.services.NotificationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,30 +12,25 @@ import java.util.concurrent.TimeUnit;
 
 public abstract class AbstractProxy implements Proxy {
     protected final Logger logger = LoggerFactory.getLogger(this.getClass());
+    protected final ProxyDescriptor descriptor;
 
     private final NotificationService notificationService;
-    private final long id;
-    private final ProxyProvider provider;
     private final ScheduledExecutorService scheduler;
-    private final String remoteRoom;
     private int failsInRow = 0;
     private volatile ProxyState state = ProxyState.NEW;
     private volatile String lastError = null;
     private volatile ScheduledFuture checkFuture = null;
     private volatile ScheduledFuture reconnectFuture = null;
+    private volatile boolean initialized = false;
 
     protected AbstractProxy(
         ScheduledExecutorService scheduler,
         NotificationService notificationService,
-        ProxyProvider provider,
-        long id,
-        String remoteRoom
+        ProxyDescriptor descriptor
     ) {
         this.scheduler = scheduler;
         this.notificationService = notificationService;
-        this.id = id;
-        this.provider = provider;
-        this.remoteRoom = remoteRoom;
+        this.descriptor = descriptor;
     }
 
     @Override
@@ -42,27 +38,37 @@ public abstract class AbstractProxy implements Proxy {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         AbstractProxy that = (AbstractProxy) o;
-        return id == that.id;
+        return descriptor.getId() == that.descriptor.getId();
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id);
+        return Objects.hash(descriptor.getId());
     }
 
     @Override
     final public long id() {
-        return id;
+        return descriptor.getId();
     }
 
     @Override
     final public ProxyProvider provider() {
-        return provider;
+        return descriptor.getProvider();
     }
 
     @Override
-    final public String remoteRoom() {
-        return remoteRoom;
+    public String remoteRoom() {
+        return descriptor.getRemoteRoom();
+    }
+
+    @Override
+    final public boolean outboundEnabled() {
+        return descriptor.hasFeature(ProxyFeature.OUTBOUND);
+    }
+
+    @Override
+    final public boolean moderationEnabled() {
+        return descriptor.hasFeature(ProxyFeature.MODERATION);
     }
 
     @Override
@@ -76,20 +82,44 @@ public abstract class AbstractProxy implements Proxy {
     }
 
     @Override
+    public void moderate(ModerationOperation type, String name) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void onMessage(Message message) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     final public synchronized void start() {
-        logger.info("proxy {}/{} starting", provider.getName(), remoteRoom);
+        if (!initialized) {
+            try {
+                init();
+                initialized = true;
+            } catch (Exception e) {
+                logger.error("failed to initialize proxy {}/{}", provider().getName(), remoteRoom());
+                fail(e.getMessage(), true, true);
+            }
+        }
+        logger.info("proxy {}/{} starting", provider().getName(), remoteRoom());
         if (checkFuture != null) {
             checkFuture.cancel(false);
             checkFuture = null;
         }
         state = ProxyState.STARTING;
-        connect();
-        checkFuture = scheduler.schedule(this::checkIfRunning, 1, TimeUnit.MINUTES);
+        try {
+            connect();
+            checkFuture = scheduler.schedule(this::checkIfRunning, 1, TimeUnit.MINUTES);
+        } catch (Exception e) {
+            logger.error("failed to connect proxy {}/{}", provider().getName(), remoteRoom());
+            fail(e.getMessage());
+        }
     }
 
     @Override
     final public synchronized void stop() {
-        logger.info("proxy {}/{} stopped", provider.getName(), remoteRoom);
+        logger.info("proxy {}/{} stopped", provider().getName(), remoteRoom());
         if (checkFuture != null) {
             checkFuture.cancel(false);
             checkFuture = null;
@@ -103,7 +133,7 @@ public abstract class AbstractProxy implements Proxy {
     }
 
     protected void started() {
-        logger.info("proxy {}/{} started", provider.getName(), remoteRoom);
+        logger.info("proxy {}/{} started", provider().getName(), remoteRoom());
         if (checkFuture != null) {
             checkFuture.cancel(false);
             checkFuture = null;
@@ -126,14 +156,14 @@ public abstract class AbstractProxy implements Proxy {
     }
 
     private void fail(String message, boolean fatal, boolean notify) {
-        logger.warn("proxy {}/{} failed: {} (minor: {})", provider.getName(), remoteRoom, message, !notify);
+        logger.warn("proxy {}/{} failed: {} (minor: {})", provider().getName(), remoteRoom(), message, !notify);
         state = ProxyState.RECONNECTING;
         lastError = message;
         disconnect();
         if (notify) {
             notificationService.notifySuperAdmins(
-                "Proxy failed " + provider.getName(),
-                String.format("Proxy %s/%s(%d) failed: %s", provider.getName(), remoteRoom, id, message),
+                "Proxy failed " + provider().getName(),
+                String.format("Proxy %s/%s(%d) failed: %s", provider().getName(), remoteRoom(), id(), message),
                 true
             );
         }
@@ -158,7 +188,9 @@ public abstract class AbstractProxy implements Proxy {
         checkFuture = null;
     }
 
-    protected abstract void connect();
+    protected abstract void connect() throws Exception;
 
     protected abstract void disconnect();
+
+    protected abstract void init() throws Exception;
 }

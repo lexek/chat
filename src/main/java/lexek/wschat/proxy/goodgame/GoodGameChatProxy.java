@@ -2,13 +2,8 @@ package lexek.wschat.proxy.goodgame;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import io.netty.bootstrap.Bootstrap;
-import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.*;
-import io.netty.channel.epoll.Epoll;
-import io.netty.channel.epoll.EpollSocketChannel;
 import io.netty.channel.socket.SocketChannel;
-import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.http.HttpClientCodec;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.websocketx.PingWebSocketFrame;
@@ -27,6 +22,7 @@ import lexek.wschat.chat.model.Message;
 import lexek.wschat.chat.msg.DefaultMessageProcessingService;
 import lexek.wschat.chat.msg.MessageNode;
 import lexek.wschat.proxy.*;
+import lexek.wschat.security.social.SocialProfile;
 import lexek.wschat.services.NotificationService;
 import lexek.wschat.util.Colors;
 import org.jsoup.Jsoup;
@@ -34,89 +30,43 @@ import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
 import org.jsoup.nodes.TextNode;
 
-import javax.net.ssl.SSLException;
 import java.io.IOException;
 import java.net.URI;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class GoodGameChatProxy extends AbstractProxy {
+public class GoodGameChatProxy extends AbstractNettyProxy {
     private static final String HOST_NAME = "chat.goodgame.ru";
+    private static final int PORT = 443;
     private final Cache<String, String> idCache = CacheBuilder.newBuilder().maximumSize(100).build();
     private final DefaultMessageProcessingService messageProcessingService;
     private final MessageBroadcaster messageBroadcaster;
     private final AtomicLong messageId;
-    private final Room room;
-    private final Bootstrap bootstrap;
-    private final String userId;
     private final GoodGameApiClient goodGameApiClient;
-    private final Long authId;
-    private volatile Channel channel;
+    private final ProxyAuthService proxyAuthService;
     private Long channelId;
+    private String userId;
 
     public GoodGameChatProxy(
+        ProxyDescriptor descriptor,
         DefaultMessageProcessingService messageProcessingService,
         NotificationService notificationService,
         MessageBroadcaster messageBroadcaster,
         EventLoopGroup eventLoopGroup,
         AtomicLong messageId,
-        ProxyProvider provider,
-        long id,
-        Room room,
-        String remoteRoom,
-        String userId,
         GoodGameApiClient goodGameApiClient,
-        Long authId
+        ProxyAuthService proxyAuthService
     ) {
-        super(eventLoopGroup, notificationService, provider, id, remoteRoom);
+        super(eventLoopGroup, notificationService, descriptor);
         this.messageProcessingService = messageProcessingService;
 
         this.messageBroadcaster = messageBroadcaster;
         this.messageId = messageId;
-        this.room = room;
-        this.userId = userId;
         this.goodGameApiClient = goodGameApiClient;
-        this.authId = authId;
-        try {
-            this.bootstrap = createBootstrap(eventLoopGroup, new Handler());
-        } catch (SSLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private static Bootstrap createBootstrap(
-        EventLoopGroup eventLoopGroup,
-        Handler handler
-    ) throws SSLException {
-        URI uri = URI.create("wss://chat.goodgame.ru:8081/chat/websocket");
-        Bootstrap bootstrap = new Bootstrap();
-        bootstrap.group(eventLoopGroup);
-        if (Epoll.isAvailable()) {
-            bootstrap.channel(EpollSocketChannel.class);
-        } else {
-            bootstrap.channel(NioSocketChannel.class);
-        }
-        bootstrap.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
-        JsonCodec jsonCodec = new JsonCodec();
-        GoodGameCodec goodGameCodec = new GoodGameCodec();
-        SslContext sslContext = SslContextBuilder.forClient().build();
-        bootstrap.handler(new ChannelInitializer<SocketChannel>() {
-            @Override
-            public void initChannel(final SocketChannel c) throws Exception {
-                ChannelPipeline pipeline = c.pipeline();
-                pipeline.addLast(sslContext.newHandler(c.alloc()));
-                pipeline.addLast("http-codec", new HttpClientCodec(4096, 8192, 8192));
-                pipeline.addLast("http-aggregator", new HttpObjectAggregator(65536));
-                pipeline.addLast(new IdleStateHandler(120, 0, 140, TimeUnit.SECONDS));
-                pipeline.addLast(new WebSocketClientProtocolHandler(uri, WebSocketVersion.V13, null, false, null, 4096));
-                pipeline.addLast(jsonCodec);
-                pipeline.addLast(goodGameCodec);
-                pipeline.addLast(handler);
-            }
-        });
-        return bootstrap;
+        this.proxyAuthService = proxyAuthService;
     }
 
     @Override
@@ -132,30 +82,39 @@ public class GoodGameChatProxy extends AbstractProxy {
     }
 
     @Override
-    public void onMessage(Message message) {
+    protected void init() throws Exception {
+        Optional<Long> authId = descriptor.getAuthId();
+        if (authId.isPresent()) {
+            SocialProfile profile = proxyAuthService.getProfile(authId.get());
+            if (profile != null) {
+                userId = profile.getId();
+            }
+        }
+        channelId = goodGameApiClient.getChannelId(remoteRoom());
 
-    }
-
-    @Override
-    public boolean outboundEnabled() {
-        return false;
-    }
-
-    @Override
-    public boolean moderationEnabled() {
-        return userId != null;
+        URI uri = URI.create("wss://" + HOST_NAME + ":" + PORT + "/chat/websocket");
+        JsonCodec jsonCodec = new JsonCodec();
+        GoodGameCodec goodGameCodec = new GoodGameCodec();
+        SslContext sslContext = SslContextBuilder.forClient().build();
+        Handler handler = new Handler();
+        bootstrap.handler(new ChannelInitializer<SocketChannel>() {
+            @Override
+            public void initChannel(final SocketChannel c) throws Exception {
+                ChannelPipeline pipeline = c.pipeline();
+                pipeline.addLast(sslContext.newHandler(c.alloc()));
+                pipeline.addLast("http-codec", new HttpClientCodec(4096, 8192, 8192));
+                pipeline.addLast("http-aggregator", new HttpObjectAggregator(65536));
+                pipeline.addLast(new IdleStateHandler(120, 0, 140, TimeUnit.SECONDS));
+                pipeline.addLast(new WebSocketClientProtocolHandler(uri, WebSocketVersion.V13, null, false, null, 4096));
+                pipeline.addLast(jsonCodec);
+                pipeline.addLast(goodGameCodec);
+                pipeline.addLast(handler);
+            }
+        });
     }
 
     @Override
     protected void connect() {
-        if (channelId == null) {
-            try {
-                channelId = goodGameApiClient.getChannelId(remoteRoom());
-            } catch (Exception e) {
-                logger.error("unable to get channel id", e);
-                fail("unable to get channel id");
-            }
-        }
         ChannelFuture channelFuture = bootstrap.connect(HOST_NAME, 443);
         channel = channelFuture.channel();
         channelFuture.addListener(future -> {
@@ -163,13 +122,6 @@ public class GoodGameChatProxy extends AbstractProxy {
                 fail("failed to connect");
             }
         });
-    }
-
-    @Override
-    protected void disconnect() {
-        if (this.channel != null && this.channel.isActive()) {
-            channel.close();
-        }
     }
 
     @ChannelHandler.Sharable
@@ -215,8 +167,9 @@ public class GoodGameChatProxy extends AbstractProxy {
                     }
                     String password = null;
                     String name = null;
-                    if (authId != null) {
-                        Credentials credentials = goodGameApiClient.getCredentials(authId);
+                    Optional<Long> authId = descriptor.getAuthId();
+                    if (authId.isPresent()) {
+                        Credentials credentials = goodGameApiClient.getCredentials(authId.get());
                         name = credentials.getUserId();
                         password = credentials.getToken();
                     }
@@ -239,8 +192,9 @@ public class GoodGameChatProxy extends AbstractProxy {
                 case BAD_RIGHTS:
                     fail("bad rights");
                     break;
-                case MESSAGE:
+                case MESSAGE: {
                     idCache.put(msg.getUser(), msg.getId());
+                    Room room = descriptor.getRoom();
                     Message message = Message.extMessage(
                         room.getName(),
                         msg.getUser(),
@@ -256,7 +210,9 @@ public class GoodGameChatProxy extends AbstractProxy {
                     );
                     messageBroadcaster.submitMessage(message, room.FILTER);
                     break;
-                case USER_BAN:
+                }
+                case USER_BAN: {
+                    Room room = descriptor.getRoom();
                     messageBroadcaster.submitMessage(
                         Message.proxyClear(
                             room.getName(),
@@ -267,6 +223,7 @@ public class GoodGameChatProxy extends AbstractProxy {
                         room.FILTER
                     );
                     break;
+                }
                 case ERROR:
                     logger.debug("error {}", msg.getText());
                     break;

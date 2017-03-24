@@ -6,6 +6,7 @@ import lexek.wschat.chat.MessageBroadcaster;
 import lexek.wschat.chat.Room;
 import lexek.wschat.proxy.ModerationOperation;
 import lexek.wschat.proxy.Proxy;
+import lexek.wschat.proxy.ProxyDescriptor;
 import lexek.wschat.proxy.ProxyProvider;
 import lexek.wschat.services.NotificationService;
 import org.jvnet.hk2.annotations.Service;
@@ -37,7 +38,11 @@ public class TwitterProxyProvider extends ProxyProvider {
     }
 
     @Override
-    public Proxy newProxy(long id, Room room, String remoteRoom, Long authId, boolean outbound) {
+    public Proxy newProxy(ProxyDescriptor descriptor) {
+        String remoteRoom = descriptor.getRemoteRoom();
+        Room room = descriptor.getRoom();
+        long id = descriptor.getId();
+
         if (remoteRoom.startsWith("#")) {
             return new TwitterProxy(
                 messageBroadcaster,

@@ -14,11 +14,11 @@ import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
 import io.netty.util.AttributeKey;
 import io.netty.util.CharsetUtil;
-import lexek.wschat.chat.Room;
 import lexek.wschat.chat.model.Message;
 import lexek.wschat.chat.model.MessageProperty;
 import lexek.wschat.chat.model.MessageType;
 import lexek.wschat.chat.msg.MessageNode;
+import lexek.wschat.proxy.ProxyDescriptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,24 +35,21 @@ public class OutboundMessageHandler {
     private final Logger logger = LoggerFactory.getLogger(OutboundMessageHandler.class);
     private final Map<String, Channel> connections;
     private final Bootstrap outboundBootstrap;
-    private final String remoteRoom;
     private final TwitchCredentialsService credentialsService;
     private final ScheduledExecutorService eventLoopGroup;
-    private final Room room;
+    private final ProxyDescriptor descriptor;
     private ScheduledFuture scheduledFuture;
 
     public OutboundMessageHandler(
         TwitchCredentialsService credentialsService,
         EventLoopGroup eventLoopGroup,
         Map<String, Channel> connections,
-        String remoteRoom,
-        Room room
+        ProxyDescriptor descriptor
     ) {
         this.connections = connections;
-        this.remoteRoom = remoteRoom;
         this.credentialsService = credentialsService;
         this.eventLoopGroup = eventLoopGroup;
-        this.room = room;
+        this.descriptor = descriptor;
 
         this.outboundBootstrap = new Bootstrap();
         this.outboundBootstrap.group(eventLoopGroup);
@@ -84,7 +81,7 @@ public class OutboundMessageHandler {
     }
 
     public void onMessage(Message message) {
-        if (message.getType() == MessageType.MSG && message.get(MessageProperty.ROOM).equals(room.getName())) {
+        if (message.getType() == MessageType.MSG && message.get(MessageProperty.ROOM).equals(descriptor.getRoom().getName())) {
             long userId = message.get(MessageProperty.USER_ID);
             String name = message.get(MessageProperty.NAME);
             UserCredentials userCredentials = credentialsService.getCredentials(userId, name);
@@ -106,7 +103,7 @@ public class OutboundMessageHandler {
                         .stream()
                         .map(MessageNode::getText)
                         .collect(Collectors.joining());
-                    channel.writeAndFlush("PRIVMSG #" + this.remoteRoom + " :" + text + "\r\n");
+                    channel.writeAndFlush("PRIVMSG #" + descriptor.getRemoteRoom() + " :" + text + "\r\n");
                 }
             }
         }

@@ -3,11 +3,13 @@ package lexek.wschat.proxy.streamlabs;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import lexek.wschat.chat.MessageBroadcaster;
-import lexek.wschat.chat.Room;
 import lexek.wschat.chat.model.Message;
 import lexek.wschat.chat.model.MessageProperty;
 import lexek.wschat.chat.model.MessageType;
-import lexek.wschat.proxy.*;
+import lexek.wschat.proxy.AbstractProxy;
+import lexek.wschat.proxy.ProxyAuthService;
+import lexek.wschat.proxy.ProxyDescriptor;
+import lexek.wschat.proxy.ProxyTokenException;
 import lexek.wschat.services.NotificationService;
 import lexek.wschat.util.JsonResponseHandler;
 import org.apache.http.client.HttpClient;
@@ -27,54 +29,31 @@ public class StreamLabsProxy extends AbstractProxy {
         .setSocketTimeout(10000)
         .build();
     private final ScheduledExecutorService scheduler;
-    private final Long proxyAuthId;
     private final ProxyAuthService proxyAuthService;
     private final HttpClient httpClient;
     private final MessageBroadcaster messageBroadcaster;
-    private final Room room;
     private volatile ScheduledFuture scheduledFuture = null;
     private volatile Long lastId = null;
     private final long since = (System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(2)) / 1000;
 
     public StreamLabsProxy(
+        ProxyDescriptor descriptor,
         ScheduledExecutorService scheduler,
         NotificationService notificationService,
-        ProxyProvider provider,
-        long id,
-        String remoteRoom,
-        Long proxyAuthId,
         ProxyAuthService proxyAuthService,
         HttpClient httpClient,
-        MessageBroadcaster messageBroadcaster,
-        Room room
+        MessageBroadcaster messageBroadcaster
     ) {
-        super(scheduler, notificationService, provider, id, remoteRoom);
+        super(scheduler, notificationService, descriptor);
         this.scheduler = scheduler;
-        this.proxyAuthId = proxyAuthId;
         this.proxyAuthService = proxyAuthService;
         this.httpClient = httpClient;
         this.messageBroadcaster = messageBroadcaster;
-        this.room = room;
     }
 
     @Override
-    public void moderate(ModerationOperation type, String name) {
+    protected void init() throws Exception {
         //ignore
-    }
-
-    @Override
-    public void onMessage(Message message) {
-        //ignore
-    }
-
-    @Override
-    public boolean outboundEnabled() {
-        return false;
-    }
-
-    @Override
-    public boolean moderationEnabled() {
-        return false;
     }
 
     @Override
@@ -93,7 +72,7 @@ public class StreamLabsProxy extends AbstractProxy {
     private Message composeMessage(String name, String message, String amount, String currency) {
         return new Message(ImmutableMap.<MessageProperty, Object>builder()
             .put(MessageProperty.TYPE, MessageType.DONATION)
-            .put(MessageProperty.ROOM, room.getName())
+            .put(MessageProperty.ROOM, descriptor.getRoom().getName())
             .put(MessageProperty.NAME, name)
             .put(MessageProperty.TEXT, message)
             .put(StreamLabsProxyProvider.AMOUNT_PROPERTY, amount)
@@ -107,7 +86,7 @@ public class StreamLabsProxy extends AbstractProxy {
         public void run() {
             try {
                 URIBuilder uriBuilder = new URIBuilder("https://streamlabs.com/api/v1.0/donations");
-                uriBuilder.addParameter("access_token", proxyAuthService.getToken(proxyAuthId));
+                uriBuilder.addParameter("access_token", proxyAuthService.getToken(descriptor.getAuthId().get()));
                 if (lastId != null) {
                     uriBuilder.addParameter("after", lastId.toString());
                 }
@@ -131,7 +110,7 @@ public class StreamLabsProxy extends AbstractProxy {
                             node.get("message").asText(),
                             node.get("amount").asText(),
                             node.get("currency").asText()
-                        ), room.FILTER);
+                        ), descriptor.getRoom().FILTER);
                     }
                 }
             } catch (ProxyTokenException e) {

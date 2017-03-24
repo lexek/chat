@@ -3,7 +3,6 @@ package lexek.wschat.proxy.sc2tv;
 import com.google.common.collect.ImmutableSet;
 import io.netty.channel.EventLoopGroup;
 import lexek.wschat.chat.MessageBroadcaster;
-import lexek.wschat.chat.Room;
 import lexek.wschat.chat.msg.*;
 import lexek.wschat.proxy.*;
 import lexek.wschat.services.NotificationService;
@@ -55,16 +54,13 @@ public class Sc2tvProxyProvider extends ProxyProvider {
     }
 
     @Override
-    public Proxy newProxy(long id, Room room, String remoteRoom, Long proxyAuthId, boolean outbound) {
+    public Proxy newProxy(ProxyDescriptor descriptor) {
         return new Sc2tvChatProxy(
+            descriptor,
             notificationService,
-            remoteRoom,
             messageBroadcaster,
             eventLoopGroup,
             messageId,
-            room,
-            id,
-            this,
             apiClient,
             messageProcessingService
         );

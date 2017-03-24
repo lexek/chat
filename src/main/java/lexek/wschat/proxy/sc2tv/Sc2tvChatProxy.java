@@ -3,14 +3,9 @@ package lexek.wschat.proxy.sc2tv;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.netty.bootstrap.Bootstrap;
-import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.*;
 import io.netty.channel.ChannelHandler.Sharable;
-import io.netty.channel.epoll.Epoll;
-import io.netty.channel.epoll.EpollSocketChannel;
 import io.netty.channel.socket.SocketChannel;
-import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.http.HttpClientCodec;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.websocketx.WebSocketClientProtocolHandler;
@@ -27,9 +22,8 @@ import lexek.wschat.chat.model.GlobalRole;
 import lexek.wschat.chat.model.LocalRole;
 import lexek.wschat.chat.model.Message;
 import lexek.wschat.chat.msg.MessageProcessingService;
-import lexek.wschat.proxy.AbstractProxy;
-import lexek.wschat.proxy.ModerationOperation;
-import lexek.wschat.proxy.ProxyProvider;
+import lexek.wschat.proxy.AbstractNettyProxy;
+import lexek.wschat.proxy.ProxyDescriptor;
 import lexek.wschat.proxy.ProxyState;
 import lexek.wschat.services.NotificationService;
 import lexek.wschat.util.Colors;
@@ -40,39 +34,31 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class Sc2tvChatProxy extends AbstractProxy {
+public class Sc2tvChatProxy extends AbstractNettyProxy {
     private final Peka2TvApiClient apiClient;
     private final MessageBroadcaster messageBroadcaster;
     private final MessageProcessingService messageProcessingService;
     private final AtomicLong messageId;
-    private final Room room;
-    private final Bootstrap bootstrap;
-    private volatile Channel channel;
     private Long streamId;
 
     protected Sc2tvChatProxy(
-        NotificationService notificationService, String remoteRoom, MessageBroadcaster messageBroadcaster,
-        EventLoopGroup eventLoopGroup, AtomicLong messageId, Room room, long id, ProxyProvider provider,
-        Peka2TvApiClient apiClient, MessageProcessingService messageProcessingService) {
-        super(eventLoopGroup, notificationService, provider, id, remoteRoom);
+        ProxyDescriptor descriptor,
+        NotificationService notificationService, MessageBroadcaster messageBroadcaster,
+        EventLoopGroup eventLoopGroup, AtomicLong messageId,
+        Peka2TvApiClient apiClient, MessageProcessingService messageProcessingService
+    ) {
+        super(eventLoopGroup, notificationService, descriptor);
         this.messageBroadcaster = messageBroadcaster;
         this.messageId = messageId;
-        this.room = room;
-        this.bootstrap = createBootstrap(eventLoopGroup, new Sc2ChannelHandler());
         this.apiClient = apiClient;
         this.messageProcessingService = messageProcessingService;
     }
 
-    private static Bootstrap createBootstrap(EventLoopGroup eventLoopGroup, ChannelHandler handler) {
-        Bootstrap bootstrap = new Bootstrap();
-        bootstrap.group(eventLoopGroup);
-        if (Epoll.isAvailable()) {
-            bootstrap.channel(EpollSocketChannel.class);
-        } else {
-            bootstrap.channel(NioSocketChannel.class);
-        }
+    @Override
+    protected void init() throws Exception {
+        streamId = apiClient.getStreamId(remoteRoom());
+
         URI uri = URI.create("ws://funstream.tv/socket.io/?EIO=3&transport=websocket");
-        bootstrap.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
         bootstrap.handler(new ChannelInitializer<SocketChannel>() {
             @Override
             public void initChannel(final SocketChannel c) throws Exception {
@@ -86,43 +72,13 @@ public class Sc2tvChatProxy extends AbstractProxy {
                 pipeline.addLast(new SocketIoDecoder());
                 pipeline.addLast(new SocketIoEncoder());
                 pipeline.addLast(new Sc2tvCodec());
-                pipeline.addLast(handler);
+                pipeline.addLast(new Sc2ChannelHandler());
             }
         });
-        return bootstrap;
-    }
-
-    @Override
-    public void moderate(ModerationOperation type, String name) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void onMessage(Message message) {
-        //do nothing
-    }
-
-    @Override
-    public boolean outboundEnabled() {
-        return false;
-    }
-
-    @Override
-    public boolean moderationEnabled() {
-        return false;
     }
 
     @Override
     protected void connect() {
-        if (streamId == null) {
-            try {
-                streamId = apiClient.getStreamId(remoteRoom());
-            } catch (Exception e) {
-                logger.error("unable to get stream id");
-                this.fail(e.getMessage());
-                return;
-            }
-        }
         ChannelFuture channelFuture = bootstrap.connect("funstream.tv", 80);
         channel = channelFuture.channel();
         channelFuture.addListener(future -> {
@@ -130,13 +86,6 @@ public class Sc2tvChatProxy extends AbstractProxy {
                 fail("failed to connect");
             }
         });
-    }
-
-    @Override
-    protected void disconnect() {
-        if (this.channel != null && this.channel.isActive()) {
-            this.channel.close();
-        }
     }
 
     @Sharable
@@ -173,6 +122,7 @@ public class Sc2tvChatProxy extends AbstractProxy {
                         if (!to.isNull()) {
                             text = "@" + to.get("name").asText() + " " + text;
                         }
+                        Room room = descriptor.getRoom();
                         Message out = Message.extMessage(
                             room.getName(),
                             userName,

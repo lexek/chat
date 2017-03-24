@@ -3,15 +3,10 @@ package lexek.wschat.proxy.twitter;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
-import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
-import io.netty.channel.epoll.Epoll;
-import io.netty.channel.epoll.EpollSocketChannel;
 import io.netty.channel.socket.SocketChannel;
-import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.DelimiterBasedFrameDecoder;
 import io.netty.handler.codec.MessageToMessageDecoder;
 import io.netty.handler.codec.http.*;
@@ -21,15 +16,10 @@ import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.ReferenceCountUtil;
-import lexek.wschat.chat.model.Message;
-import lexek.wschat.proxy.AbstractProxy;
-import lexek.wschat.proxy.ModerationOperation;
-import lexek.wschat.proxy.ProxyProvider;
-import lexek.wschat.proxy.ProxyState;
+import lexek.wschat.proxy.*;
 import lexek.wschat.proxy.twitter.entity.*;
 import lexek.wschat.services.NotificationService;
 
-import javax.net.ssl.SSLException;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
@@ -39,15 +29,13 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-public class TwitterStreamingClient extends AbstractProxy {
+public class TwitterStreamingClient extends AbstractNettyProxy {
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("E MMM dd HH:mm:ss Z yyyy");
     private String lastTweetId = null;
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final TwitterApiClient profileSource;
-    private final Bootstrap bootstrap;
     private final TwitterCredentials credentials;
     private final Set<TwitterMessageConsumer> consumers = new CopyOnWriteArraySet<>();
-    private volatile Channel channel;
     private volatile boolean changed = false;
 
     protected TwitterStreamingClient(
@@ -57,14 +45,19 @@ public class TwitterStreamingClient extends AbstractProxy {
         TwitterApiClient profileSource,
         TwitterCredentials credentials
     ) {
-        super(eventLoopGroup, notificationService, provider, -1, "*internal*");
+        super(
+            eventLoopGroup,
+            notificationService,
+            new ProxyDescriptor(
+                -1,
+                provider,
+                null,
+                "*internal*",
+                Optional.empty(),
+                EnumSet.noneOf(ProxyFeature.class)
+            )
+        );
         this.profileSource = profileSource;
-        try {
-            this.bootstrap = createBootstrap(eventLoopGroup, new Handler());
-        } catch (SSLException e) {
-            //should not happen
-            throw new RuntimeException(e);
-        }
         this.credentials = credentials;
         eventLoopGroup.scheduleAtFixedRate(() -> {
             if (state() == ProxyState.RUNNING) {
@@ -78,16 +71,10 @@ public class TwitterStreamingClient extends AbstractProxy {
         }, 30, 30, TimeUnit.SECONDS);
     }
 
-    private static Bootstrap createBootstrap(EventLoopGroup eventLoopGroup, Handler handler) throws SSLException {
-        Bootstrap bootstrap = new Bootstrap();
-        bootstrap.group(eventLoopGroup);
-        if (Epoll.isAvailable()) {
-            bootstrap.channel(EpollSocketChannel.class);
-        } else {
-            bootstrap.channel(NioSocketChannel.class);
-        }
+    @Override
+    protected void init() throws Exception {
         SslContext sslContext = SslContextBuilder.forClient().build();
-        bootstrap.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
+        Handler handler = new Handler();
         bootstrap.handler(new ChannelInitializer<SocketChannel>() {
             @Override
             public void initChannel(final SocketChannel c) throws Exception {
@@ -105,7 +92,6 @@ public class TwitterStreamingClient extends AbstractProxy {
                 pipeline.addLast(handler);
             }
         });
-        return bootstrap;
     }
 
     @Override
@@ -122,33 +108,6 @@ public class TwitterStreamingClient extends AbstractProxy {
             channel = null;
             started();
         }
-    }
-
-    @Override
-    protected void disconnect() {
-        if (channel != null && channel.isActive()) {
-            channel.close();
-        }
-    }
-
-    @Override
-    public void moderate(ModerationOperation type, String name) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void onMessage(Message message) {
-        //do nothing
-    }
-
-    @Override
-    public boolean outboundEnabled() {
-        return false;
-    }
-
-    @Override
-    public boolean moderationEnabled() {
-        return false;
     }
 
     public synchronized void registerConsumer(TwitterMessageConsumer consumer) {
