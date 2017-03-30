@@ -17,7 +17,7 @@
         var vm = this;
 
         vm.model = {
-            'type': 'insecure',
+            'type': 'pending',
             'link': vm.text,
             'text': vm.text
         };

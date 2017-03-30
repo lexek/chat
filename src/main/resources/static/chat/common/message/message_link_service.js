@@ -66,6 +66,27 @@
             });
         }
 
+        function tryFetchOg(deferred, prefix, link, linkText) {
+            $http({
+                method: 'POST',
+                url: 'https://monitoring.atplay.ch/og/fetch',
+                data: {
+                    'uri': prefix + link
+                }
+            }).then(
+                function (response) {
+                    if (response.data && response.data.title) {
+                        deferred.resolve(genLink(prefix, link, response.data.title));
+                    } else {
+                        deferred.resolve(genLink(prefix, link, linkText));
+                    }
+                },
+                function () {
+                    deferred.resolve(genLink(prefix, link, linkText));
+                }
+            );
+        }
+
         function resolve(completeLink, prefix, link) {
             var deferred = $q.defer();
             var linkText = '';
@@ -125,7 +146,7 @@
                         deferred.resolve(genLink(prefix, link, linkText));
                     }
                 } else {
-                    deferred.resolve(genLink(prefix, link, linkText));
+                    tryFetchOg(deferred, prefix, link, linkText);
                 }
             } catch (URIError) {
                 deferred.resolve(genLink(prefix, link, linkText));
