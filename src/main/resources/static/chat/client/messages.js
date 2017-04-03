@@ -1,6 +1,5 @@
 var messagesModule = angular.module("chat.messages", ["chat.services.chat"]);
 
-//TODO: fix moderation (???)
 messagesModule.controller("MessageController", ["$scope", "chatService", "chatSettings", "$element", function($scope, chat, settings) {
     $scope.showTimestamps = function() {
         return $scope.message.showTS || settings.getS("showTS");

@@ -40,12 +40,7 @@ public class StyleMessageProcessorTest {
         );
         MessageNode childNode = MessageNode.emoticonNode("kek", "kek.png", 0L);
         //todo: create custom message processing services for tests
-        MessageProcessingService messageProcessingService = Mockito.spy(new MessageProcessingService() {
-            @Override
-            public List<MessageNode> processMessage(String message, boolean root) {
-                return ImmutableList.of(childNode);
-            }
-        });
+        MessageProcessingService messageProcessingService = Mockito.spy((message, root) -> ImmutableList.of(childNode));
         StyleMessageProcessor processor = new StyleMessageProcessor(styles, messageProcessingService);
 
         List<MessageNode> message = Lists.newArrayList(MessageNode.textNode("**kek**"));
