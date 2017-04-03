@@ -116,7 +116,7 @@
                     if (videoId) {
                         fetchYouTubeTitle(videoId, ytKey, prefix, link, linkText, second, deferred);
                     } else {
-                        deferred.resolve(genLink(prefix, link, linkText));
+                        tryFetchOg(deferred, prefix, link, linkText);
                     }
                 } else if (host === 'youtu.be') {
                     var videoId = parsedUrl.uriParts.path;
@@ -127,7 +127,7 @@
                     if (videoId) {
                         fetchYouTubeTitle(videoId, ytKey, prefix, link, linkText, second, deferred);
                     } else {
-                        deferred.resolve(genLink(prefix, link, linkText));
+                        tryFetchOg(deferred, prefix, link, linkText);
                     }
                 } else if (host === 'store.steampowered.com') {
                     var r = STEAM_APP_REGEXP.exec(parsedUrl.uriParts.path);
@@ -143,7 +143,7 @@
                             deferred.resolve(genLink(prefix, link, linkText));
                         });
                     } else {
-                        deferred.resolve(genLink(prefix, link, linkText));
+                        tryFetchOg(deferred, prefix, link, linkText);
                     }
                 } else {
                     tryFetchOg(deferred, prefix, link, linkText);
