@@ -75,8 +75,9 @@
                 }
             }).then(
                 function (response) {
-                    if (response.data && response.data.title) {
-                        deferred.resolve(genLink(prefix, link, response.data.title));
+                    var data = response.data;
+                    if (data && data.title) {
+                        deferred.resolve(genLink(prefix, link, data.hostname + ': ' + data.title));
                     } else {
                         deferred.resolve(genLink(prefix, link, linkText));
                     }
