@@ -55,7 +55,6 @@ public class BeamChatProxy extends AbstractNettyProxy {
     @Override
     protected void init() throws Exception {
         channelId = beamDataProvider.getId(remoteRoom());
-
         SslContext sslContext = SslContextBuilder.forClient().build();
         bootstrap.handler(new ChannelInitializer<SocketChannel>() {
             @Override
@@ -74,7 +73,14 @@ public class BeamChatProxy extends AbstractNettyProxy {
 
     @Override
     protected void connect() throws Exception {
-        String server = beamDataProvider.getChatServer(channelId);
+        String server;
+        try {
+            server = beamDataProvider.getChatServer(channelId);
+        } catch (Exception e) {
+            logger.warn("Unable to get server id", e);
+            fatalError(e.getMessage());
+            return;
+        }
         this.uri = URI.create(server);
         ChannelFuture channelFuture = bootstrap.connect(uri.getHost(), uri.getPort());
         channel = channelFuture.channel();
