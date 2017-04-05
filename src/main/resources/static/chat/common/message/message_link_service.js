@@ -71,16 +71,19 @@
                 method: 'POST',
                 url: 'https://monitoring.atplay.ch/og/fetch',
                 data: {
-                    'uri': prefix + link
+                    'url': prefix + link
                 }
             }).then(
                 function (response) {
                     var data = response.data;
-                    if (data && data.title) {
-                        deferred.resolve(genLink(prefix, link, data.hostname + ': ' + data.title));
-                    } else {
-                        deferred.resolve(genLink(prefix, link, linkText));
+                    if (data) {
+                        var title = data['og:title'] || data['title'];
+                        if (title) {
+                            deferred.resolve(genLink(prefix, link, data.hostname + ': ' + data.title));
+                            return;
+                        }
                     }
+                    deferred.resolve(genLink(prefix, link, linkText));
                 },
                 function () {
                     deferred.resolve(genLink(prefix, link, linkText));
