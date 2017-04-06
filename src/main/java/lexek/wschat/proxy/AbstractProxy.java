@@ -168,17 +168,17 @@ public abstract class AbstractProxy implements Proxy {
             );
         }
         //if the error is fatal we don't need to reconnect automatically
-        if (failsInRow == 0) {
-            //reconnect right away on first fail
-            start();
+        int fails = failsInRow++;
+        if (fails == 0) {
+            //reconnect asap on first fail
+            scheduler.execute(this::start);
         } else {
-            long reconnectIn = failsInRow <= 5 ? Math.round(Math.pow(2, failsInRow)) : 32;
+            long reconnectIn = fails <= 5 ? Math.round(Math.pow(2, fails)) : 32;
             if (fatal) {
                 reconnectIn = 30;
             }
             reconnectFuture = scheduler.schedule(this::start, reconnectIn, TimeUnit.MINUTES);
         }
-        failsInRow++;
     }
 
     private void checkIfRunning() {

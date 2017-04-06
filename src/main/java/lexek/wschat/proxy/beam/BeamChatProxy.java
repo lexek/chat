@@ -73,14 +73,7 @@ public class BeamChatProxy extends AbstractNettyProxy {
 
     @Override
     protected void connect() throws Exception {
-        String server;
-        try {
-            server = beamDataProvider.getChatServer(channelId);
-        } catch (Exception e) {
-            logger.warn("Unable to get server id", e);
-            fatalError(e.getMessage());
-            return;
-        }
+        String server = beamDataProvider.getChatServer(channelId);
         this.uri = URI.create(server);
         ChannelFuture channelFuture = bootstrap.connect(uri.getHost(), uri.getPort());
         channel = channelFuture.channel();
