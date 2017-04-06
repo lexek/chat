@@ -79,7 +79,7 @@
                     if (data) {
                         var title = data['og:title'] || data['title'];
                         if (title) {
-                            deferred.resolve(genLink(prefix, link, data.hostname + ': ' + data.title));
+                            deferred.resolve(genLink(prefix, link, data.hostname + ': ' + title));
                             return;
                         }
                     }
