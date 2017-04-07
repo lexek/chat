@@ -7,8 +7,12 @@
 ><!--
      --><span ng-switch="vm.model.type"><!--
         --><i ng-switch-when="pending" class="fa fa-hourglass-o link-icon fa-fw"></i><!--
-        --><i ng-switch-when="insecure" class="fa fa-external-link link-icon fa-fw"></i><!--
-        --><i ng-switch-when="secure" style="color: #0B8043" class="fa fa-lock link-icon fa-fw"></i><!--
+        --><i ng-switch-when="link" ng-style="vm.model.secure ? {color: '#0B8043'} : {color: 'grey'}"
+              class="fa fa-lock link-icon fa-fw"></i><!--
+        --><i ng-switch-when="video" ng-style="vm.model.secure ? {color: '#0B8043'} : {color: 'grey'}"
+              class="fa fa-video-camera link-icon fa-fw"></i><!--
+        --><i ng-switch-when="image" ng-style="vm.model.secure ? {color: '#0B8043'} : {color: 'grey'}"
+              class="fa fa-picture-o link-icon fa-fw"></i><!--
         --><i ng-switch-when="steam" class="fa fa-steam-square link-icon fa-fw"></i><!--
         --><i ng-switch-when="youtube" class="fa fa-youtube-play" style="color:#cd201f; margin-right: 3px;"></i><!--
     --></span>{{vm.model.text}}<strong ng-if="vm.model.youTubeTime">[<i class="fa fa-fw fa-clock-o"></i>{{::vm.model.youTubeTime}}]</strong>

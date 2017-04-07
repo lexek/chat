@@ -928,7 +928,8 @@ a:focus {
 
 .link-icon {
     font-size: small;
-    margin-right: 2px;
+    margin-right: 1px;
+    width: 1.28571429em;
 }
 
 .dark .link-icon {

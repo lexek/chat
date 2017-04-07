@@ -1,10 +1,13 @@
 (function() {
     'use strict';
 
+    var SUPPORTED_CATEGORIES = ['video', 'image'];
+
     angular.module('chat.common.message').service('messageLinkService', MessageLinkService);
 
-    function composeMessageModel(type, link, text, youTubeTime) {
+    function composeMessageModel(type, link, text, secure, youTubeTime) {
         return {
+            'secure': secure,
             'type': type,
             'link': link,
             'text': text,
@@ -20,11 +23,12 @@
             'resolve': resolve
         };
 
-        function genLink(prefix, link, text) {
-            if (prefix === 'https://') {
-                return composeMessageModel('secure', prefix + link, text);
+        function genLink(prefix, link, text, type) {
+            var secure = prefix === 'https://';
+            if (type) {
+                return composeMessageModel(type, prefix + link, text, secure);
             } else {
-                return composeMessageModel('insecure', prefix + link, text);
+                return composeMessageModel('link', prefix + link, text, secure);
             }
         }
 
@@ -57,12 +61,12 @@
                         }
                         time = durations.join(' ');
                     }
-                    deferred.resolve(composeMessageModel('youtube', link, text, time));
+                    deferred.resolve(composeMessageModel('youtube', link, text, true, time));
                 } else {
-                    deferred.resolve(composeMessageModel('insecure', link, linkText));
+                    deferred.resolve(genLink(prefix, link, linkText));
                 }
             }).error(function() {
-                deferred.resolve(composeMessageModel('insecure', link, linkText));
+                deferred.resolve(genLink(prefix, link, linkText));
             });
         }
 
@@ -81,6 +85,14 @@
                         if (title) {
                             deferred.resolve(genLink(prefix, link, data.hostname + ': ' + title));
                             return;
+                        }
+                        var mime = data.mime;
+                        if (mime && mime.indexOf('/') !== -1) {
+                            var category = mime.split('/')[0];
+                            if (SUPPORTED_CATEGORIES.indexOf(category) !== -1) {
+                                deferred.resolve(genLink(prefix, link, linkText, category));
+                                return;
+                            }
                         }
                     }
                     deferred.resolve(genLink(prefix, link, linkText));
