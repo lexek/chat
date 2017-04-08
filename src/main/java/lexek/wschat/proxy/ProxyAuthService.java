@@ -39,7 +39,6 @@ public class ProxyAuthService {
         credentialsHolder.get().forEach((name, credentials) ->
             registerProvider(socialAuthProviderFactory.newProvider(name, credentials, false))
         );
-        loadTokens();
     }
 
     public void registerProvider(SocialAuthProvider provider) {

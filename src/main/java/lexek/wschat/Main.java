@@ -84,10 +84,7 @@ import java.io.File;
 import java.lang.management.ManagementFactory;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Pattern;
 
@@ -270,7 +267,7 @@ public class Main {
 
         AtomicLong messageId = new AtomicLong(0);
         ServiceLocatorUtilities.addOneConstant(serviceLocator, messageId, "messageId", AtomicLong.class);
-        ServiceLocatorUtilities.addOneConstant(serviceLocator, scheduledExecutorService, "scheduler", ScheduledExecutorService.class);
+        ServiceLocatorUtilities.addOneConstant(serviceLocator, scheduledExecutorService, "scheduler", ScheduledExecutorService.class, ExecutorService.class);
 
         AuthenticationManager authenticationManager = serviceLocator.getService(AuthenticationManager.class);
         CaptchaService captchaService = serviceLocator.getService(CaptchaService.class);

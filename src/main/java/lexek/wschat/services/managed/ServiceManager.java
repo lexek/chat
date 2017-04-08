@@ -11,6 +11,7 @@ import javax.inject.Named;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
 import java.util.stream.StreamSupport;
 
 @Service
@@ -19,14 +20,16 @@ public class ServiceManager {
     private final HealthCheckRegistry healthCheckRegistry;
     private final MetricRegistry metricRegistry;
     private final List<ManagedService> services = new ArrayList<>();
+    private final ExecutorService executorService;
 
     @Inject
     public ServiceManager(
         HealthCheckRegistry healthCheckRegistry,
-        @Named("runtimeRegistry") MetricRegistry metricRegistry
-    ) {
+        @Named("runtimeRegistry") MetricRegistry metricRegistry,
+        ExecutorService executorService) {
         this.healthCheckRegistry = healthCheckRegistry;
         this.metricRegistry = metricRegistry;
+        this.executorService = executorService;
     }
 
     @Inject
@@ -50,15 +53,23 @@ public class ServiceManager {
 
     public void startAll() {
         for (ManagedService service : services) {
-            service.registerMetrics(metricRegistry);
-            logger.info("starting service {} {}", service.getName(), service.getClass().getCanonicalName());
-            healthCheckRegistry.register(service.getName(), service.getHealthCheck());
-            try {
-                service.start();
-                logger.info("Service {} started successfully", service.getName());
-            } catch (Exception e) {
-                logger.error("Error while starting service {}", service.getName(), e);
+            if (service.getStage() == InitStage.ASYNC_SERVICE) {
+                executorService.execute(() -> doStart(service));
+            } else {
+                doStart(service);
             }
+        }
+    }
+
+    public void doStart(ManagedService service) {
+        service.registerMetrics(metricRegistry);
+        logger.info("starting service {} {}", service.getName(), service.getClass().getCanonicalName());
+        healthCheckRegistry.register(service.getName(), service.getHealthCheck());
+        try {
+            service.start();
+            logger.info("Service {} started successfully", service.getName());
+        } catch (Exception e) {
+            logger.error("Error while starting service {}", service.getName(), e);
         }
     }
 

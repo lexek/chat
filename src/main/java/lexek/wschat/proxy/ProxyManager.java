@@ -36,13 +36,15 @@ public class ProxyManager extends AbstractManagedService implements MessageConsu
     private final ProxyDao proxyDao;
     private final RoomManager roomManager;
     private final JournalService journalService;
+    private final ProxyAuthService proxyAuthService;
 
     @Inject
-    public ProxyManager(ProxyDao proxyDao, RoomManager roomManager, JournalService journalService) {
-        super("proxyManager", InitStage.SERVICES);
+    public ProxyManager(ProxyDao proxyDao, RoomManager roomManager, JournalService journalService, ProxyAuthService proxyAuthService) {
+        super("proxyManager", InitStage.ASYNC_SERVICE);
         this.proxyDao = proxyDao;
         this.roomManager = roomManager;
         this.journalService = journalService;
+        this.proxyAuthService = proxyAuthService;
     }
 
     @Inject
@@ -155,6 +157,7 @@ public class ProxyManager extends AbstractManagedService implements MessageConsu
 
     @Override
     public void start() {
+        proxyAuthService.loadTokens();
         for (ChatProxy chatProxy : proxyDao.getAll()) {
             ProxyProvider provider = providers.get(chatProxy.getProviderName());
             Room room = roomManager.getRoomInstance(chatProxy.getRoomId());
