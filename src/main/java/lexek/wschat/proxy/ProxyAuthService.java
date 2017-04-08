@@ -139,7 +139,7 @@ public class ProxyAuthService {
             SocialAuthProvider service = getAuthService(serviceName);
             if (service == null) {
                 logger.error("no service with name {}", serviceName);
-                return;
+                continue;
             }
             Long id = proxyAuth.getId();
             if (service.needsRefreshing()) {
