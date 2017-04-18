@@ -6,10 +6,10 @@ import lexek.wschat.chat.ConnectionManager;
 import lexek.wschat.chat.e.EntityNotFoundException;
 import lexek.wschat.chat.e.InvalidInputException;
 import lexek.wschat.chat.model.GlobalRole;
+import lexek.wschat.chat.model.User;
 import lexek.wschat.db.model.DataPage;
 import lexek.wschat.db.model.OnlineUser;
 import lexek.wschat.db.model.UserData;
-import lexek.wschat.db.model.UserDto;
 import lexek.wschat.db.model.form.PasswordForm;
 import lexek.wschat.db.model.form.UserChangeSet;
 import lexek.wschat.db.model.rest.ErrorModel;
@@ -91,7 +91,7 @@ public class UserResource {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @JsonView(SimpleView.class)
-    public List<UserDto> searchUsers(
+    public List<User> searchUsers(
         @QueryParam("search") String search
     ) {
         return userService.searchSimple(PAGE_LENGTH, Pages.escapeSearch(search));
@@ -111,10 +111,10 @@ public class UserResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response updateUser(
         @PathParam("userId") @Min(0) long userId,
-        @Auth UserDto admin,
+        @Auth User admin,
         UserChangeSet changeSet
     ) {
-        UserDto user = userService.fetchById(userId);
+        User user = userService.fetchById(userId);
         boolean anyChanges = false;
         if (changeSet.getName() != null) {
             if (user.hasRole(GlobalRole.MOD) || !admin.hasRole(GlobalRole.SUPERADMIN)) {
@@ -152,14 +152,14 @@ public class UserResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response setPassword(
         @PathParam("userId") @Min(0) long userId,
-        @Auth UserDto admin,
+        @Auth User admin,
         @Valid @NotNull PasswordForm passwordForm
     ) {
         String password = passwordForm.getPassword();
         if (!Names.PASSWORD_PATTERN.matcher(password).matches()) {
             throw new InvalidInputException("password", "WRONG_PATTERN");
         }
-        UserDto user = userService.fetchById(userId);
+        User user = userService.fetchById(userId);
         if (user == null) {
             throw new EntityNotFoundException("user");
         }
@@ -174,9 +174,9 @@ public class UserResource {
     @RequiredRole(GlobalRole.SUPERADMIN)
     @DELETE
     @Produces(MediaType.APPLICATION_JSON)
-    public UserDto deleteUser(
+    public User deleteUser(
         @PathParam("userId") @Min(0) long userId,
-        @Auth UserDto admin
+        @Auth User admin
     ) {
         throw new UnsupportedOperationException("Method unavailable until user deactivation is implemented");
     }

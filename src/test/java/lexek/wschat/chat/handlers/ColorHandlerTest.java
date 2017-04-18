@@ -16,7 +16,7 @@ import static org.mockito.Mockito.*;
 
 public class ColorHandlerTest {
     private UserDto userDto = new UserDto(0L, "user", GlobalRole.USER, "#1337ff", false, false, null, true, false);
-    private User user = new User(userDto);
+    private User user = new CachedUser(userDto, cache);
     private Connection connection = spy(new TestConnection(user));
     private UserService userDao = mock(UserService.class);
     private final ColorHandler handler = new ColorHandler(userDao);

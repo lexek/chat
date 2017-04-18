@@ -6,7 +6,7 @@ import static lexek.wschat.db.jooq.tables.Chatter.CHATTER;
 
 public class Chatter {
     public static final Chatter GUEST_CHATTER =
-        new Chatter(null, LocalRole.GUEST, false, null, User.UNAUTHENTICATED_USER);
+        new Chatter(null, LocalRole.GUEST, false, null, CachedUser.UNAUTHENTICATED_USER);
 
     private Long id;
     private LocalRole role;

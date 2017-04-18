@@ -1,17 +1,18 @@
 package lexek.wschat.db.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import lexek.wschat.chat.model.User;
 
 public class ProxyAuth {
     private final Long id;
     private final String service;
     private final String externalId;
     private final String externalName;
-    private final UserDto owner;
+    private final User owner;
     @JsonIgnore
     private final String key;
 
-    public ProxyAuth(Long id, String service, String externalId, String externalName, UserDto owner, String key) {
+    public ProxyAuth(Long id, String service, String externalId, String externalName, User owner, String key) {
         this.id = id;
         this.service = service;
         this.externalId = externalId;
@@ -45,7 +46,7 @@ public class ProxyAuth {
         return externalName;
     }
 
-    public UserDto getOwner() {
+    public User getOwner() {
         return owner;
     }
 

@@ -2,7 +2,6 @@ package lexek.wschat.chat.model;
 
 import io.netty.util.internal.chmv8.ConcurrentHashMapV8;
 import lexek.wschat.chat.msg.MessageNode;
-import lexek.wschat.db.model.UserDto;
 import lexek.wschat.db.model.rest.ProxyRestModel;
 
 import java.util.List;
@@ -25,7 +24,7 @@ public class MessageProperty<T> {
     public static final MessageProperty<Integer> MONTHS = valueOf("months");
     public static final MessageProperty<String> TEXT = valueOf("text");
     public static final MessageProperty<List<MessageNode>> MESSAGE_NODES = valueOf("messageNodes");
-    public static final MessageProperty<UserDto> USER = valueOf("user");
+    public static final MessageProperty<User> USER = valueOf("user");
     public static final MessageProperty<Chatter> CHATTER = valueOf("chatter");
     public static final MessageProperty<List<String>> NAMES = valueOf("names");
     public static final MessageProperty<List<Message>> HISTORY_DATA = valueOf("history");

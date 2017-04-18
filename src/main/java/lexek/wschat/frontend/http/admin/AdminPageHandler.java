@@ -6,7 +6,7 @@ import lexek.httpserver.Request;
 import lexek.httpserver.Response;
 import lexek.httpserver.SimpleHttpHandler;
 import lexek.wschat.chat.model.GlobalRole;
-import lexek.wschat.db.model.UserDto;
+import lexek.wschat.chat.model.User;
 import lexek.wschat.security.AuthenticationManager;
 
 public class AdminPageHandler extends SimpleHttpHandler {
@@ -19,7 +19,7 @@ public class AdminPageHandler extends SimpleHttpHandler {
     @Override
     protected void handle(Request request, Response response) throws Exception {
         if (request.method() == HttpMethod.GET) {
-            UserDto user = authenticationManager.checkFullAuthentication(request);
+            User user = authenticationManager.checkFullAuthentication(request);
             if (user != null && user.hasRole(GlobalRole.ADMIN)) {
                 response.renderTemplate("admin", ImmutableMap.of("user", user));
             } else {

@@ -2,10 +2,10 @@ package lexek.wschat.services;
 
 import com.google.common.hash.Hashing;
 import lexek.wschat.chat.e.InvalidInputException;
+import lexek.wschat.chat.model.User;
 import lexek.wschat.chat.msg.EmoticonProvider;
 import lexek.wschat.db.dao.EmoticonDao;
 import lexek.wschat.db.model.Emoticon;
-import lexek.wschat.db.model.UserDto;
 import lexek.wschat.db.tx.Transactional;
 import org.jvnet.hk2.annotations.Service;
 
@@ -43,7 +43,7 @@ public class EmoticonService implements EmoticonProvider<Emoticon> {
     }
 
     @Transactional
-    public boolean add(String code, File sourceFile, String originalName, UserDto admin) throws IOException {
+    public boolean add(String code, File sourceFile, String originalName, User admin) throws IOException {
         Path emoticonFile = createEmoticonFile(originalName);
         Files.move(sourceFile.toPath(), emoticonFile);
         BufferedImage image = ImageIO.read(emoticonFile.toFile());
@@ -90,7 +90,7 @@ public class EmoticonService implements EmoticonProvider<Emoticon> {
     }
 
     @Transactional
-    public void delete(long emoticonId, UserDto admin) {
+    public void delete(long emoticonId, User admin) {
         Emoticon emoticon = emoticonDao.delete(emoticonId);
         journalService.deletedEmoticon(admin, emoticon);
         synchronized (this) {

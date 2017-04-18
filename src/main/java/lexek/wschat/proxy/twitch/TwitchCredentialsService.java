@@ -1,7 +1,7 @@
 package lexek.wschat.proxy.twitch;
 
+import lexek.wschat.chat.model.User;
 import lexek.wschat.db.model.UserAuthDto;
-import lexek.wschat.db.model.UserDto;
 import lexek.wschat.security.AuthenticationManager;
 import lexek.wschat.security.UserAuthEventListener;
 import lexek.wschat.security.UserAuthEventType;
@@ -25,7 +25,7 @@ public class TwitchCredentialsService implements UserAuthEventListener {
     }
 
     @Override
-    public void onEvent(UserAuthEventType type, UserDto user, String service) {
+    public void onEvent(UserAuthEventType type, User user, String service) {
         if (service.equals("twitch")) {
             if (type == UserAuthEventType.DELETED) {
                 checkedUsers.remove(user.getId());

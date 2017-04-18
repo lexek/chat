@@ -1,17 +1,18 @@
 package lexek.wschat.db.model;
 
 import com.fasterxml.jackson.annotation.JsonRawValue;
+import lexek.wschat.chat.model.User;
 
 public class JournalEntry {
-    private final UserDto user;
+    private final User user;
     private final long time;
     private final String action;
     @JsonRawValue
     private final String actionDescription;
-    private final UserDto admin;
+    private final User admin;
     private final Long roomId;
 
-    public JournalEntry(UserDto user, UserDto admin, String action, String actionDescription, long time, Long roomId) {
+    public JournalEntry(User user, User admin, String action, String actionDescription, long time, Long roomId) {
         this.user = user;
         this.time = time;
         this.action = action;
@@ -20,7 +21,7 @@ public class JournalEntry {
         this.roomId = roomId;
     }
 
-    public UserDto getUser() {
+    public User getUser() {
         return user;
     }
 
@@ -36,7 +37,7 @@ public class JournalEntry {
         return actionDescription;
     }
 
-    public UserDto getAdmin() {
+    public User getAdmin() {
         return admin;
     }
 

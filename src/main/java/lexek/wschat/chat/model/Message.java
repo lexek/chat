@@ -3,7 +3,6 @@ package lexek.wschat.chat.model;
 import com.google.common.collect.ImmutableMap;
 import lexek.wschat.chat.msg.MessageNode;
 import lexek.wschat.db.model.ProxyMessageModel;
-import lexek.wschat.db.model.UserDto;
 import lexek.wschat.services.poll.PollState;
 
 import java.util.List;
@@ -26,7 +25,7 @@ public class Message {
         return new Message(ImmutableMap.of(MessageProperty.TYPE, MessageType.ERROR, MessageProperty.TEXT, text));
     }
 
-    public static Message authCompleteMessage(UserDto user) {
+    public static Message authCompleteMessage(User user) {
         return new Message(ImmutableMap.of(MessageProperty.TYPE, MessageType.AUTH_COMPLETE, MessageProperty.USER, user));
     }
 
@@ -42,7 +41,7 @@ public class Message {
         return new Message(ImmutableMap.of(MessageProperty.TYPE, MessageType.INFO, MessageProperty.TEXT, text, MessageProperty.ROOM, room));
     }
 
-    public static Message joinMessage(String room, UserDto user, LocalRole localRole) {
+    public static Message joinMessage(String room, User user, LocalRole localRole) {
         return new Message(ImmutableMap.of(
             MessageProperty.TYPE, MessageType.JOIN,
             MessageProperty.ROOM, room,

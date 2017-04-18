@@ -1,5 +1,6 @@
 package lexek.wschat.security.jersey;
 
+import lexek.wschat.chat.model.User;
 import lexek.wschat.db.model.UserDto;
 import org.glassfish.hk2.api.Factory;
 import org.glassfish.hk2.api.ServiceLocator;
@@ -38,15 +39,15 @@ public class UserParamValueFactoryProvider extends AbstractValueFactoryProvider 
         }
     }
 
-    private static final class UserParamValueFactory extends AbstractContainerRequestValueFactory<UserDto> {
+    private static final class UserParamValueFactory extends AbstractContainerRequestValueFactory<User> {
         @Override
-        public UserDto provide() {
+        public User provide() {
             ContainerRequest request = getContainerRequest();
             SecurityContext securityContext = request.getSecurityContext();
             if (securityContext != null) {
                 Principal principal = securityContext.getUserPrincipal();
                 if (principal != null && principal instanceof UserDto) {
-                    return (UserDto) principal;
+                    return (User) principal;
                 }
             }
             return null;

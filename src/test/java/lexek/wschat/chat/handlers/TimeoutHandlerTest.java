@@ -16,7 +16,7 @@ import static org.mockito.Mockito.*;
 
 public class TimeoutHandlerTest {
     private UserDto userDto = new UserDto(0L, "user", GlobalRole.MOD, "#000000", false, false, null, false, false);
-    private User user = new User(userDto);
+    private User user = new CachedUser(userDto, cache);
     private Chatter chatter = new Chatter(0L, LocalRole.MOD, false, null, user);
     private Connection connection = spy(new TestConnection(user));
     private Room room = mock(Room.class);
@@ -59,7 +59,7 @@ public class TimeoutHandlerTest {
     @Test
     public void testExistingUserWithGoodRole() {
         UserDto otherUserDto = new UserDto(1L, "username", GlobalRole.USER, "#000000", false, false, null, false, false);
-        User otherUser = new User(otherUserDto);
+        User otherUser = new CachedUser(otherUserDto, cache);
         Chatter otherChatter = new Chatter(1L, LocalRole.USER, false, null, otherUser);
         when(room.inRoom(connection)).thenReturn(true);
         when(room.getOnlineChatter(userDto)).thenReturn(chatter);
@@ -77,11 +77,11 @@ public class TimeoutHandlerTest {
     @Test
     public void localOnlyAdminShouldBeAbleToTimeout() {
         UserDto userDto = new UserDto(0L, "user", GlobalRole.USER, "#000000", false, false, null, false, false);
-        User user = new User(userDto);
+        User user = new CachedUser(userDto, cache);
         Chatter chatter = new Chatter(0L, LocalRole.MOD, false, null, user);
         Connection connection = spy(new TestConnection(user));
         UserDto otherUserDto = new UserDto(1L, "username", GlobalRole.USER, "#000000", false, false, null, false, false);
-        User otherUser = new User(otherUserDto);
+        User otherUser = new CachedUser(otherUserDto, cache);
         Chatter otherChatter = new Chatter(1L, LocalRole.USER, false, null, otherUser);
         when(room.inRoom(connection)).thenReturn(true);
         when(room.getOnlineChatter(userDto)).thenReturn(chatter);
@@ -99,7 +99,7 @@ public class TimeoutHandlerTest {
     @Test
     public void testExistingUserWithGoodRoleButInternalError() {
         UserDto otherUserDto = new UserDto(1L, "username", GlobalRole.USER, "#000000", false, false, null, false, false);
-        User otherUser = new User(otherUserDto);
+        User otherUser = new CachedUser(otherUserDto, cache);
         Chatter otherChatter = new Chatter(1L, LocalRole.USER, false, null, otherUser);
         when(room.inRoom(connection)).thenReturn(true);
         when(room.getOnlineChatter(userDto)).thenReturn(chatter);
@@ -119,7 +119,7 @@ public class TimeoutHandlerTest {
     @Test
     public void testExistingUserWithBadLocalRole() {
         UserDto otherUserDto = new UserDto(1L, "username", GlobalRole.USER, "#000000", false, false, null, false, false);
-        User otherUser = new User(otherUserDto);
+        User otherUser = new CachedUser(otherUserDto, cache);
         Chatter otherChatter = new Chatter(1L, LocalRole.ADMIN, false, null, otherUser);
         when(room.inRoom(connection)).thenReturn(true);
         when(room.getOnlineChatter(userDto)).thenReturn(chatter);
@@ -137,7 +137,7 @@ public class TimeoutHandlerTest {
     @Test
     public void testExistingUserWithBadGlobalRole() {
         UserDto otherUserDto = new UserDto(1L, "username", GlobalRole.MOD, "#000000", false, false, null, false, false);
-        User otherUser = new User(otherUserDto);
+        User otherUser = new CachedUser(otherUserDto, cache);
         Chatter otherChatter = new Chatter(1L, LocalRole.USER, false, null, otherUser);
         when(room.inRoom(connection)).thenReturn(true);
         when(room.getOnlineChatter(userDto)).thenReturn(chatter);

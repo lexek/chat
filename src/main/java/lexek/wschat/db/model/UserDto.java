@@ -2,6 +2,7 @@ package lexek.wschat.db.model;
 
 import com.fasterxml.jackson.annotation.JsonView;
 import lexek.wschat.chat.model.GlobalRole;
+import lexek.wschat.chat.model.User;
 import lexek.wschat.frontend.http.rest.view.DetailView;
 import lexek.wschat.frontend.http.rest.view.MessageView;
 import lexek.wschat.frontend.http.rest.view.SimpleView;
@@ -12,7 +13,8 @@ import java.security.Principal;
 
 import static lexek.wschat.db.jooq.tables.User.USER;
 
-public class UserDto implements Serializable, Principal {
+public class UserDto implements Serializable, Principal, User {
+    //todo: migrate jsonviews
     @JsonView({DetailView.class, SimpleView.class})
     private Long id;
     @JsonView({MessageView.class, DetailView.class, SimpleView.class})

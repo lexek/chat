@@ -2,8 +2,8 @@ package lexek.wschat.frontend.http.rest.admin;
 
 import lexek.wschat.chat.Room;
 import lexek.wschat.chat.model.GlobalRole;
+import lexek.wschat.chat.model.User;
 import lexek.wschat.db.model.DataPage;
-import lexek.wschat.db.model.UserDto;
 import lexek.wschat.db.model.form.PollForm;
 import lexek.wschat.security.jersey.Auth;
 import lexek.wschat.security.jersey.RequiredRole;
@@ -54,7 +54,7 @@ public class PollResource {
     public PollState createPoll(
         @PathParam("roomId") @Min(0) long roomId,
         @Valid PollForm form,
-        @Auth UserDto admin
+        @Auth User admin
     ) {
         Room room = roomService.getRoomInstance(roomId);
         return pollService.createPoll(room, admin, form.getQuestion(), form.getOptions());
@@ -65,7 +65,7 @@ public class PollResource {
     @Produces(MediaType.APPLICATION_JSON)
     public PollState closeCurrentPoll(
         @PathParam("roomId") @Min(0) long roomId,
-        @Auth UserDto admin
+        @Auth User admin
     ) {
         Room room = roomService.getRoomInstance(roomId);
         PollState closedPoll = pollService.getActivePoll(room);

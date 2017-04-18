@@ -1,5 +1,6 @@
 package lexek.wschat.db.dao;
 
+import lexek.wschat.chat.model.User;
 import lexek.wschat.db.jooq.tables.pojos.Ticket;
 import lexek.wschat.db.model.DataPage;
 import lexek.wschat.db.model.UserDto;
@@ -77,7 +78,7 @@ public class TicketDao {
         return new DataPage<>(data, page, total / pageLength);
     }
 
-    public DataPage<Ticket> getAll(UserDto user, int page, int pageLength) {
+    public DataPage<Ticket> getAll(User user, int page, int pageLength) {
         List<Ticket> data = ctx
             .select(TICKET.IS_OPEN, TICKET.CATEGORY, TICKET.TEXT, TICKET.ADMIN_REPLY)
             .from(TICKET)

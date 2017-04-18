@@ -2,6 +2,7 @@ package lexek.wschat.db.dao;
 
 import lexek.wschat.chat.e.EntityNotFoundException;
 import lexek.wschat.chat.e.InvalidInputException;
+import lexek.wschat.chat.model.User;
 import lexek.wschat.db.model.DataPage;
 import lexek.wschat.db.model.UserData;
 import lexek.wschat.db.model.UserDto;
@@ -62,6 +63,15 @@ public class UserDao {
         return UserDto.fromRecord(record);
     }
 
+    public Long getIdByName(String name) {
+        return ctx
+            .select(USER.ID)
+            .from(USER)
+            .where(USER.NAME.equal(name))
+            .fetchOptional(USER.ID)
+            .orElse(null);
+    }
+
     public UserDto getByName(String name) {
         Record record = ctx
             .select()
@@ -80,7 +90,7 @@ public class UserDao {
         return UserDto.fromRecord(record);
     }
 
-    public UserDto update(long id, UserChangeSet changeSet) {
+    public User update(long id, UserChangeSet changeSet) {
         Map<org.jooq.Field<?>, Object> changeMap = new HashMap<>();
         if (changeSet.getBanned() != null) {
             changeMap.put(USER.BANNED, changeSet.getBanned());
@@ -94,7 +104,7 @@ public class UserDao {
         if (changeSet.getRole() != null) {
             changeMap.put(USER.ROLE, changeSet.getRole().toString());
         }
-        UserDto userDto = null;
+        User user = null;
         boolean success = ctx
             .update(USER)
             .set(changeMap)
@@ -105,9 +115,9 @@ public class UserDao {
                 .selectFrom(USER)
                 .where(USER.ID.equal(id))
                 .fetchOne();
-            userDto = UserDto.fromRecord(record);
+            user = UserDto.fromRecord(record);
         }
-        return userDto;
+        return user;
     }
 
     public void setColor(long id, String color) {
@@ -169,7 +179,7 @@ public class UserDao {
             Pages.pageCount(pageLength, ctx.fetchCount(USER, USER.NAME.like(nameParam, '!'))));
     }
 
-    public List<UserDto> searchSimple(int pageLength, String nameParam) {
+    public List<User> searchSimple(int pageLength, String nameParam) {
         return ctx
             .selectFrom(USER)
             .where(USER.NAME.like(nameParam, '!'))
@@ -182,7 +192,7 @@ public class UserDao {
             .collect(Collectors.toList());
     }
 
-    public boolean delete(UserDto user) {
+    public boolean delete(User user) {
         return ctx
             .delete(USER)
             .where(USER.ID.equal(user.getId()))
@@ -220,7 +230,7 @@ public class UserDao {
         return result;
     }
 
-    public List<UserDto> getAdmins() {
+    public List<User> getAdmins() {
         return ctx
             .select()
             .from(USER)
@@ -231,7 +241,7 @@ public class UserDao {
             .collect(Collectors.toList());
     }
 
-    public void setCheckIp(UserDto user, boolean value) {
+    public void setCheckIp(User user, boolean value) {
         int rows = ctx
             .update(USER)
             .set(USER.CHECK_IP, value)

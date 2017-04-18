@@ -1,20 +1,20 @@
 package lexek.wschat.db.model.rest;
 
+import lexek.wschat.chat.model.User;
 import lexek.wschat.db.jooq.tables.pojos.Ticket;
-import lexek.wschat.db.model.UserDto;
 
 public class TicketRestModel {
-    private final UserDto user;
+    private final User user;
     private final Ticket ticket;
     private final String closedBy;
 
-    public TicketRestModel(UserDto user, Ticket ticket, String closedBy) {
+    public TicketRestModel(User user, Ticket ticket, String closedBy) {
         this.user = user;
         this.ticket = ticket;
         this.closedBy = closedBy;
     }
 
-    public UserDto getUser() {
+    public User getUser() {
         return user;
     }
 

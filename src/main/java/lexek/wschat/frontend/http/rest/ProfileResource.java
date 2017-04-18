@@ -1,8 +1,8 @@
 package lexek.wschat.frontend.http.rest;
 
 import lexek.wschat.chat.model.GlobalRole;
+import lexek.wschat.chat.model.User;
 import lexek.wschat.db.model.UserData;
-import lexek.wschat.db.model.UserDto;
 import lexek.wschat.security.jersey.Auth;
 import lexek.wschat.security.jersey.RequiredRole;
 import lexek.wschat.services.UserService;
@@ -25,7 +25,7 @@ public class ProfileResource {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public UserData getProfile(@Auth UserDto user) {
+    public UserData getProfile(@Auth User user) {
         return userService.fetchData(user.getId());
     }
 }

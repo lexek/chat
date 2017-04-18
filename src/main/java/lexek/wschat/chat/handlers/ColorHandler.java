@@ -35,9 +35,8 @@ public class ColorHandler extends AbstractGlobalMessageHandler {
 
         if (colorCode != null) {
             if (user.hasRole(GlobalRole.USER)) {
-                userService.setColor(user.getWrappedObject(), colorCode);
+                userService.setColor(user, colorCode);
             }
-            user.setColor(colorCode);
             connection.send(Message.colorMessage(colorCode));
         } else {
             connection.send(Message.errorMessage("WRONG_COLOR"));

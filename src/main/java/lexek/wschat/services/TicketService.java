@@ -2,6 +2,7 @@ package lexek.wschat.services;
 
 import com.google.common.escape.Escaper;
 import com.google.common.html.HtmlEscapers;
+import lexek.wschat.chat.model.User;
 import lexek.wschat.db.dao.TicketDao;
 import lexek.wschat.db.jooq.tables.pojos.Ticket;
 import lexek.wschat.db.model.DataPage;
@@ -33,7 +34,7 @@ public class TicketService {
     }
 
     @Transactional
-    public boolean submit(String category, String text, UserDto user) {
+    public boolean submit(String category, String text, User user) {
         Ticket ticket = new Ticket(null, System.currentTimeMillis(), user.getId(), true, category, text, null, null, null);
         boolean result = dao.add(ticket);
         if (result) {
@@ -55,7 +56,7 @@ public class TicketService {
     }
 
     @Transactional
-    public void closeTicket(Ticket ticket, UserDto closedBy, String comment) {
+    public void closeTicket(Ticket ticket, User closedBy, String comment) {
         if (ticket.getIsOpen()) {
             ticket.setIsOpen(false);
             ticket.setClosedBy(closedBy.getId());
@@ -75,7 +76,7 @@ public class TicketService {
         return dao.getAll(open, page, PAGE_LENGTH);
     }
 
-    public DataPage<Ticket> getAllTicketsForUser(UserDto user, int page) {
+    public DataPage<Ticket> getAllTicketsForUser(User user, int page) {
         return dao.getAll(user, page, 10);
     }
 

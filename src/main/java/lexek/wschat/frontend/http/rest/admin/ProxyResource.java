@@ -2,9 +2,9 @@ package lexek.wschat.frontend.http.rest.admin;
 
 import lexek.wschat.chat.e.EntityNotFoundException;
 import lexek.wschat.chat.model.GlobalRole;
+import lexek.wschat.chat.model.User;
 import lexek.wschat.db.jooq.tables.pojos.ChatProxy;
 import lexek.wschat.db.model.ProxyAuth;
-import lexek.wschat.db.model.UserDto;
 import lexek.wschat.db.model.rest.ProxyProviderRestModel;
 import lexek.wschat.db.model.rest.ProxyRestModel;
 import lexek.wschat.proxy.Proxy;
@@ -57,7 +57,7 @@ public class ProxyResource {
     @Path("/providers")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public List<ProxyProviderRestModel> providers(@Auth UserDto currentUser) {
+    public List<ProxyProviderRestModel> providers(@Auth User currentUser) {
         return proxyManager
             .getProviders()
             .stream()
@@ -76,7 +76,7 @@ public class ProxyResource {
     @Consumes(MediaType.APPLICATION_JSON)
     public ProxyRestModel create(
         @PathParam("roomId") long roomId,
-        @Auth UserDto admin,
+        @Auth User admin,
         ChatProxy chatProxy
     ) {
         ProxyAuth proxyAuth = null;
@@ -110,7 +110,7 @@ public class ProxyResource {
         @PathParam("roomId") @Min(0) long roomId,
         @PathParam("providerName") @NotEmpty String providerName,
         @PathParam("remoteRoom") @NotEmpty String remoteRoom,
-        @Auth UserDto admin
+        @Auth User admin
     ) {
         proxyManager.remove(admin, roomService.getRoomInstance(roomId), providerName, remoteRoom);
     }

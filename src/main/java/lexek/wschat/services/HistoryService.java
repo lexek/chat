@@ -12,12 +12,12 @@ import lexek.wschat.chat.filters.BroadcastFilter;
 import lexek.wschat.chat.model.Message;
 import lexek.wschat.chat.model.MessageProperty;
 import lexek.wschat.chat.model.MessageType;
+import lexek.wschat.chat.model.User;
 import lexek.wschat.chat.msg.MessageNode;
 import lexek.wschat.db.dao.HistoryDao;
 import lexek.wschat.db.jooq.tables.pojos.History;
 import lexek.wschat.db.model.DataPage;
 import lexek.wschat.db.model.HistoryData;
-import lexek.wschat.db.model.UserDto;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
@@ -105,7 +105,7 @@ public class HistoryService implements MessageEventHandler {
 
         } else if (type == MessageType.CLEAR || type == MessageType.BAN || type == MessageType.TIMEOUT) {
             //todo: find better solution, but this works for now since it's not really frequent event type
-            UserDto mod = userService.fetchByName(message.get(MessageProperty.MOD));
+            User mod = userService.fetchByName(message.get(MessageProperty.MOD));
             long t = System.currentTimeMillis();
             String userName = message.get(MessageProperty.NAME);
             historyDao.hideUserMessages(

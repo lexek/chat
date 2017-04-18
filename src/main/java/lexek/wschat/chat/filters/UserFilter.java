@@ -2,15 +2,10 @@ package lexek.wschat.chat.filters;
 
 import lexek.wschat.chat.Connection;
 import lexek.wschat.chat.model.User;
-import lexek.wschat.db.model.UserDto;
 import org.jetbrains.annotations.NotNull;
 
 public class UserFilter implements BroadcastFilter<Long> {
     private final Long userId;
-
-    public UserFilter(UserDto user) {
-        this.userId = user.getId();
-    }
 
     public UserFilter(User user) {
         this.userId = user.getId();

@@ -2,9 +2,9 @@ package lexek.wschat.frontend.http.rest.admin;
 
 import com.google.common.collect.ImmutableMap;
 import lexek.wschat.chat.model.GlobalRole;
+import lexek.wschat.chat.model.User;
 import lexek.wschat.db.jooq.tables.pojos.Ticket;
 import lexek.wschat.db.model.DataPage;
-import lexek.wschat.db.model.UserDto;
 import lexek.wschat.db.model.form.CloseTicketForm;
 import lexek.wschat.db.model.rest.ErrorModel;
 import lexek.wschat.db.model.rest.TicketRestModel;
@@ -53,7 +53,7 @@ public class TicketResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Ticket closeTicket(
         @PathParam("ticketId") @NotNull long ticketId,
-        @Auth UserDto admin,
+        @Auth User admin,
         @Valid CloseTicketForm form
     ) {
         Ticket ticket = ticketService.getTicket(ticketId);

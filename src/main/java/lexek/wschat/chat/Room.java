@@ -6,11 +6,7 @@ import com.google.common.collect.Multiset;
 import io.netty.util.internal.chmv8.ConcurrentHashMapV8;
 import lexek.wschat.chat.filters.BroadcastFilter;
 import lexek.wschat.chat.filters.RoomFilter;
-import lexek.wschat.chat.model.Chatter;
-import lexek.wschat.chat.model.GlobalRole;
-import lexek.wschat.chat.model.Message;
-import lexek.wschat.chat.model.User;
-import lexek.wschat.db.model.UserDto;
+import lexek.wschat.chat.model.*;
 import lexek.wschat.services.ChatterService;
 import lexek.wschat.services.UserService;
 
@@ -46,10 +42,6 @@ public class Room {
     }
 
     public Chatter getOnlineChatter(User user) {
-        return getOnlineChatter(user.getWrappedObject());
-    }
-
-    public Chatter getOnlineChatter(UserDto user) {
         if (user.getId() == null) {
             return Chatter.GUEST_CHATTER;
         } else {
@@ -89,7 +81,7 @@ public class Room {
             connections.add(connection);
             onlineCounter.add(connection.getUser());
             User user = connection.getUser();
-            if (user == User.UNAUTHENTICATED_USER || user.getId() == null) {
+            if (user == CachedUser.UNAUTHENTICATED_USER || user.getId() == null) {
                 chatter = Chatter.GUEST_CHATTER;
             } else {
                 chatter = onlineChatters.get(user.getId());

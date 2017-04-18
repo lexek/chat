@@ -16,7 +16,7 @@ import static org.mockito.Mockito.*;
 
 public class ClearRoomHandlerTest {
     private UserDto userDto = new UserDto(0L, "user", GlobalRole.MOD, "#000000", false, false, null, false, false);
-    private User user = new User(userDto);
+    private User user = new CachedUser(userDto, cache);
     private Chatter chatter = new Chatter(0L, LocalRole.MOD, false, null, user);
     private Connection connection = spy(new TestConnection(user));
     private MessageBroadcaster messageBroadcaster = mock(MessageBroadcaster.class);

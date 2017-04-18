@@ -10,7 +10,6 @@ import lexek.wschat.chat.model.MessageType;
 import lexek.wschat.chat.model.User;
 import lexek.wschat.db.dao.PollDao;
 import lexek.wschat.db.model.DataPage;
-import lexek.wschat.db.model.UserDto;
 import lexek.wschat.db.tx.Transactional;
 import lexek.wschat.services.JournalService;
 import org.jvnet.hk2.annotations.Service;
@@ -42,7 +41,7 @@ public class PollService {
     }
 
     @Transactional
-    public PollState createPoll(Room room, UserDto admin, String question, List<String> options) {
+    public PollState createPoll(Room room, User admin, String question, List<String> options) {
         if (activePolls.containsKey(room)) {
             return null;
         }
@@ -80,7 +79,7 @@ public class PollService {
     }
 
     @Transactional
-    public void closePoll(Room room, UserDto admin) {
+    public void closePoll(Room room, User admin) {
         PollState pollState = activePolls.remove(room);
         if (pollState != null) {
             pollDao.closePoll(pollState.getPoll().getId());

@@ -67,7 +67,7 @@ public class MeHandlerTest {
         MeHandler handler = new MeHandler(new AtomicLong(), messageBroadcaster, messageProcessingService);
 
         UserDto userDto = new UserDto(0L, "user", GlobalRole.USER, "#ffffff", false, false, null, false, false);
-        User user = new User(userDto);
+        User user = new CachedUser(userDto, cache);
         Connection connection = spy(new TestConnection(user));
         Chatter chatter = new Chatter(0L, LocalRole.USER, false, null, user);
 
@@ -106,7 +106,7 @@ public class MeHandlerTest {
         MeHandler handler = new MeHandler(new AtomicLong(), messageBroadcaster, messageProcessingService);
 
         UserDto userDto = new UserDto(0L, "user", GlobalRole.USER, "#ffffff", false, false, null, false, false);
-        User user = new User(userDto);
+        User user = new CachedUser(userDto, cache);
         Connection connection = spy(new TestConnection(user));
         Chatter chatter = new Chatter(0L, LocalRole.USER, false, null, user);
 
@@ -139,7 +139,7 @@ public class MeHandlerTest {
         MeHandler handler = new MeHandler(new AtomicLong(), messageBroadcaster, messageProcessingService);
 
         UserDto userDto = new UserDto(0L, "user", GlobalRole.MOD, "#ffffff", false, false, null, false, false);
-        User user = new User(userDto);
+        User user = new CachedUser(userDto, cache);
         Connection connection = spy(new TestConnection(user));
         Chatter chatter = new Chatter(0L, LocalRole.USER, false, null, user);
 
@@ -181,7 +181,7 @@ public class MeHandlerTest {
         MeHandler handler = new MeHandler(new AtomicLong(), messageBroadcaster, messageProcessingService);
 
         UserDto userDto = new UserDto(0L, "user", GlobalRole.USER, "#ffffff", false, false, null, false, false);
-        User user = new User(userDto);
+        User user = new CachedUser(userDto, cache);
         Connection connection = spy(new TestConnection(user));
         Chatter chatter = new Chatter(0L, LocalRole.USER, false, null, user);
 
@@ -211,7 +211,7 @@ public class MeHandlerTest {
         MeHandler handler = new MeHandler(new AtomicLong(), messageBroadcaster, messageProcessingService);
 
         UserDto userDto = new UserDto(0L, "user", GlobalRole.USER, "#ffffff", false, false, null, false, false);
-        User user = new User(userDto);
+        User user = new CachedUser(userDto, cache);
         Connection connection = spy(new TestConnection(user));
         Chatter chatter = new Chatter(0L, LocalRole.USER, false, null, user);
 

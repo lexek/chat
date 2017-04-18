@@ -2,8 +2,8 @@ package lexek.wschat.frontend.http.rest;
 
 import com.google.common.collect.ImmutableMap;
 import lexek.wschat.chat.model.GlobalRole;
+import lexek.wschat.chat.model.User;
 import lexek.wschat.db.model.ProxyAuth;
-import lexek.wschat.db.model.UserDto;
 import lexek.wschat.proxy.ProxyAuthService;
 import lexek.wschat.security.jersey.Auth;
 import lexek.wschat.security.jersey.RequiredRole;
@@ -40,7 +40,7 @@ public class ProxyAuthResource {
         @QueryParam("state") String state,
         @CookieParam("social_state") String cookieState,
         @Context UriInfo uriInfo,
-        @Auth UserDto owner
+        @Auth User owner
     ) throws IOException {
         SocialAuthProvider socialAuthProvider = proxyAuthService.getAuthService(serviceName);
         if (socialAuthProvider == null) {
@@ -72,13 +72,13 @@ public class ProxyAuthResource {
     @Path("/all")
     @Produces(MediaType.APPLICATION_JSON)
     @GET
-    public List<ProxyAuth> getAvailableCredentials(@Auth UserDto currentUser) {
+    public List<ProxyAuth> getAvailableCredentials(@Auth User currentUser) {
         return proxyAuthService.getAllCredentials(currentUser);
     }
 
     @Path("/{authId}")
     @DELETE
-    public Response delete(@PathParam("authId") long authId, @Auth UserDto owner) {
+    public Response delete(@PathParam("authId") long authId, @Auth User owner) {
         proxyAuthService.deleteAuth(authId, owner);
         return Response.noContent().build();
     }

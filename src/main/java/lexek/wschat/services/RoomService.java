@@ -3,7 +3,7 @@ package lexek.wschat.services;
 import lexek.wschat.chat.Room;
 import lexek.wschat.chat.RoomManager;
 import lexek.wschat.chat.e.EntityNotFoundException;
-import lexek.wschat.db.model.UserDto;
+import lexek.wschat.chat.model.User;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
@@ -41,15 +41,15 @@ public class RoomService {
         return roomManager.getRooms();
     }
 
-    public void deleteRoom(Room room, UserDto admin) {
+    public void deleteRoom(Room room, User admin) {
         roomManager.deleteRoom(room, admin);
     }
 
-    public void createRoom(String name, String topic, UserDto admin) {
+    public void createRoom(String name, String topic, User admin) {
         roomManager.createRoom(name, topic, admin);
     }
 
-    public void updateTopic(UserDto admin, Room room, String topic) {
+    public void updateTopic(User admin, Room room, String topic) {
         roomManager.updateTopic(admin, room, topic);
     }
 }

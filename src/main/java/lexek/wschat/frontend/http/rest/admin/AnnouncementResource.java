@@ -3,8 +3,8 @@ package lexek.wschat.frontend.http.rest.admin;
 import com.google.common.collect.ImmutableMap;
 import lexek.wschat.chat.Room;
 import lexek.wschat.chat.model.GlobalRole;
+import lexek.wschat.chat.model.User;
 import lexek.wschat.db.jooq.tables.pojos.Announcement;
-import lexek.wschat.db.model.UserDto;
 import lexek.wschat.db.model.form.AnnouncementForm;
 import lexek.wschat.security.jersey.Auth;
 import lexek.wschat.security.jersey.RequiredRole;
@@ -47,7 +47,7 @@ public class AnnouncementResource {
     @Consumes(MediaType.APPLICATION_JSON)
     public Announcement add(
         @PathParam("roomId") @Min(0) long roomId,
-        @Auth UserDto user,
+        @Auth User user,
         @Valid AnnouncementForm formData
     ) {
         Room room = roomService.getRoomInstance(roomId);
@@ -66,7 +66,7 @@ public class AnnouncementResource {
     @Consumes(MediaType.APPLICATION_JSON)
     public Map remove(
         @PathParam("announcementId") long announcementId,
-        @Auth UserDto user
+        @Auth User user
     ) {
         announcementService.setInactive(announcementId, user);
         return ImmutableMap.of("success", true);

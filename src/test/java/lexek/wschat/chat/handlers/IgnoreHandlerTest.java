@@ -49,7 +49,7 @@ public class IgnoreHandlerTest {
     @Test
     public void shouldWork() {
         UserDto userDto = new UserDto(0L, "user", GlobalRole.USER, "#1337ff", false, false, null, true, false);
-        User user = new User(userDto);
+        User user = new CachedUser(userDto, cache);
         Connection connection = spy(new TestConnection(user));
         IgnoreService ignoreService = mock(IgnoreService.class);
         when(ignoreService.getIgnoredNames(user)).thenReturn(ImmutableList.of("kkk", "someuser"));
@@ -68,7 +68,7 @@ public class IgnoreHandlerTest {
     @Test
     public void shouldSendErrorOnValidationFailure() {
         UserDto userDto = new UserDto(0L, "user", GlobalRole.USER, "#1337ff", false, false, null, true, false);
-        User user = new User(userDto);
+        User user = new CachedUser(userDto, cache);
         Connection connection = spy(new TestConnection(user));
         IgnoreService ignoreService = mock(IgnoreService.class);
         doThrow(new InvalidInputException("name", "ERROR_NAME")).when(ignoreService).ignore(user, "someuser");
@@ -88,7 +88,7 @@ public class IgnoreHandlerTest {
     @Test
     public void shouldSendErrorOnUnknownUser() {
         UserDto userDto = new UserDto(0L, "user", GlobalRole.USER, "#1337ff", false, false, null, true, false);
-        User user = new User(userDto);
+        User user = new CachedUser(userDto, cache);
         Connection connection = spy(new TestConnection(user));
         IgnoreService ignoreService = mock(IgnoreService.class);
         doThrow(new EntityNotFoundException("user")).when(ignoreService).ignore(user, "someuser");
@@ -108,7 +108,7 @@ public class IgnoreHandlerTest {
     @Test
     public void shouldSendErrorOnLimit() {
         UserDto userDto = new UserDto(0L, "user", GlobalRole.USER, "#1337ff", false, false, null, true, false);
-        User user = new User(userDto);
+        User user = new CachedUser(userDto, cache);
         Connection connection = spy(new TestConnection(user));
         IgnoreService ignoreService = mock(IgnoreService.class);
         doThrow(new LimitExceededException("ignored")).when(ignoreService).ignore(user, "someuser");

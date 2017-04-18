@@ -2,6 +2,7 @@ package lexek.wschat.security;
 
 import lexek.wschat.chat.Connection;
 import lexek.wschat.chat.ConnectionManager;
+import lexek.wschat.chat.model.User;
 import lexek.wschat.db.dao.SessionDao;
 import lexek.wschat.db.model.SessionDto;
 import lexek.wschat.db.model.UserDto;
@@ -47,7 +48,7 @@ public class SessionService {
         }
     }
 
-    public void invalidateUserSessions(UserDto user) {
+    public void invalidateUserSessions(User user) {
         connectionManager.forEach(
             (c) -> user.getId().equals(c.getUser().getId()),
             Connection::close

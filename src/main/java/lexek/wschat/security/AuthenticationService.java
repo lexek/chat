@@ -12,9 +12,9 @@ import com.lmax.disruptor.dsl.Disruptor;
 import com.lmax.disruptor.dsl.ProducerType;
 import lexek.wschat.chat.Connection;
 import lexek.wschat.chat.evt.EventDispatcher;
+import lexek.wschat.chat.model.CachedUser;
 import lexek.wschat.chat.model.ConnectionState;
 import lexek.wschat.chat.model.Message;
-import lexek.wschat.chat.model.User;
 import lexek.wschat.db.model.UserDto;
 import lexek.wschat.services.UserService;
 import lexek.wschat.services.managed.AbstractManagedService;
@@ -215,7 +215,7 @@ public class AuthenticationService extends AbstractManagedService {
                 if (user != null) {
                     connection.setUser(userService.cache(user));
                 } else {
-                    connection.setUser(User.UNAUTHENTICATED_USER);
+                    connection.setUser(CachedUser.UNAUTHENTICATED_USER);
                 }
                 connection.send(Message.authCompleteMessage(connection.getUser().getWrappedObject()));
                 callback.authenticationComplete(connection);

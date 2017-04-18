@@ -2,6 +2,7 @@ package lexek.wschat.db.dao;
 
 import lexek.wschat.chat.e.BadRequestException;
 import lexek.wschat.chat.model.GlobalRole;
+import lexek.wschat.chat.model.User;
 import lexek.wschat.db.jooq.tables.pojos.PendingConfirmation;
 import lexek.wschat.db.model.UserAuthDto;
 import lexek.wschat.db.model.UserDto;
@@ -118,8 +119,8 @@ public class UserAuthDao {
     }
 
     @Transactional
-    public UserDto registerWithPassword(String name, String password, String email, String verificationCode) {
-        UserDto user = createUser(name, email, GlobalRole.USER_UNCONFIRMED);
+    public User registerWithPassword(String name, String password, String email, String verificationCode) {
+        User user = createUser(name, email, GlobalRole.USER_UNCONFIRMED);
         ctx
             .insertInto(USERAUTH, USERAUTH.AUTH_NAME, USERAUTH.AUTH_ID, USERAUTH.AUTH_KEY, USERAUTH.SERVICE, USERAUTH.USER_ID)
             .values(null, null, password, "password", user.getId())
@@ -207,7 +208,7 @@ public class UserAuthDao {
             .fetchOne();
         if (record != null) {
             PendingConfirmation pendingConfirmation = record.into(PENDING_CONFIRMATION).into(PendingConfirmation.class);
-            UserDto user = UserDto.fromRecord(record.into(USER));
+            User user = UserDto.fromRecord(record.into(USER));
             if (user.hasRole(GlobalRole.USER)) {
                 ctx
                     .update(USER)
@@ -251,7 +252,7 @@ public class UserAuthDao {
         return createAuthFromProfile(profile, createUser(name, profile.getEmail(), GlobalRole.USER));
     }
 
-    public void deleteAuth(UserDto user, String serviceName) {
+    public void deleteAuth(User user, String serviceName) {
         //excluding token because user can be easily locked out with only token auth
         if (!"token".equals(serviceName)) {
             int authCount = ctx

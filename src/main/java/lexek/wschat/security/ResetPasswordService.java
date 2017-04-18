@@ -3,6 +3,7 @@ package lexek.wschat.security;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import lexek.wschat.chat.e.BadRequestException;
+import lexek.wschat.chat.model.User;
 import lexek.wschat.db.model.Email;
 import lexek.wschat.db.model.UserDto;
 import lexek.wschat.db.tx.Transactional;
@@ -83,7 +84,7 @@ public class ResetPasswordService {
         if (!Names.PASSWORD_PATTERN.matcher(newPassword).matches()) {
             throw new BadRequestException("Bad password format.");
         }
-        UserDto user = userService.fetchById(userId);
+        User user = userService.fetchById(userId);
         authenticationManager.setPasswordNoCheck(user, newPassword);
         sessionService.invalidateUserSessions(user);
         logger.info("reset password for user {} ({})", user.getName(), user.getId());

@@ -118,7 +118,7 @@ public class HandlerInvoker {
                 return;
             }
 
-            Chatter chatter = room.getOnlineChatter(connection.getUser().getWrappedObject());
+            Chatter chatter = room.getOnlineChatter(connection.getUser());
 
             //check if user can invoke handler
             if (chatter == null || !chatter.hasRole(handler.getRole())) {

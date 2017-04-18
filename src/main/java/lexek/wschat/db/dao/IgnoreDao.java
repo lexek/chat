@@ -3,7 +3,7 @@ package lexek.wschat.db.dao;
 import com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException;
 import lexek.wschat.chat.e.EntityNotFoundException;
 import lexek.wschat.chat.e.InvalidInputException;
-import lexek.wschat.db.model.UserDto;
+import lexek.wschat.chat.model.User;
 import org.jooq.Allow;
 import org.jooq.DSLContext;
 import org.jooq.Record1;
@@ -27,7 +27,7 @@ public class IgnoreDao {
         this.ctx = ctx;
     }
 
-    public void addIgnore(UserDto user, String name) {
+    public void addIgnore(User user, String name) {
         try {
             int result = ctx
                 .insertInto(IGNORE_LIST, IGNORE_LIST.USER_ID, IGNORE_LIST.IGNORED_ID)
@@ -47,7 +47,7 @@ public class IgnoreDao {
     }
 
     @Allow.PlainSQL
-    public void deleteIgnore(UserDto user, String name) {
+    public void deleteIgnore(User user, String name) {
         //todo: change to jooq query when multi table delete will be implemented in jooq
         String query =
             "delete ignore_list " +
@@ -59,7 +59,7 @@ public class IgnoreDao {
         }
     }
 
-    public List<String> fetchIgnoreList(UserDto user) {
+    public List<String> fetchIgnoreList(User user) {
         return ctx
             .select(USER.NAME)
             .from(IGNORE_LIST.join(USER).on(IGNORE_LIST.IGNORED_ID.equal(USER.ID)))
@@ -70,7 +70,7 @@ public class IgnoreDao {
             .collect(Collectors.toList());
     }
 
-    public int fetchIgnoreCount(UserDto user) {
+    public int fetchIgnoreCount(User user) {
         return ctx.fetchCount(IGNORE_LIST, IGNORE_LIST.USER_ID.equal(user.getId()));
     }
 }

@@ -11,9 +11,9 @@ import lexek.wschat.chat.Room;
 import lexek.wschat.chat.RoomManager;
 import lexek.wschat.chat.e.EntityNotFoundException;
 import lexek.wschat.chat.model.Message;
+import lexek.wschat.chat.model.User;
 import lexek.wschat.db.dao.AnnouncementDao;
 import lexek.wschat.db.jooq.tables.pojos.Announcement;
-import lexek.wschat.db.model.UserDto;
 import lexek.wschat.db.tx.Transactional;
 import lexek.wschat.services.managed.AbstractManagedService;
 import lexek.wschat.services.managed.InitStage;
@@ -70,7 +70,7 @@ public class AnnouncementService extends AbstractManagedService {
     }
 
     @Transactional
-    public Announcement announce(String text, Room room, UserDto admin) {
+    public Announcement announce(String text, Room room, User admin) {
         Announcement announcement = new Announcement(null, room.getId(), true, text);
         announcementDao.add(announcement);
         if (announcement.getId() != null) {
@@ -93,7 +93,7 @@ public class AnnouncementService extends AbstractManagedService {
     }
 
     @Transactional
-    public void setInactive(long id, UserDto admin) {
+    public void setInactive(long id, User admin) {
         Map.Entry<Room, Announcement> deleteEntry = null;
         for (Map.Entry<Room, Announcement> entry : roomAnnouncements.entries()) {
             if (entry.getValue().getId().equals(id)) {

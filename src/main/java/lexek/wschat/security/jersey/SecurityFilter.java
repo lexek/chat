@@ -1,6 +1,7 @@
 package lexek.wschat.security.jersey;
 
 import lexek.wschat.chat.model.GlobalRole;
+import lexek.wschat.chat.model.User;
 import lexek.wschat.db.model.UserDto;
 import lexek.wschat.db.model.rest.ErrorModel;
 
@@ -23,7 +24,7 @@ public class SecurityFilter implements ContainerRequestFilter {
         SecurityContext securityContext = requestContext.getSecurityContext();
         Principal principal = securityContext.getUserPrincipal();
         if (principal != null && principal instanceof UserDto) {
-            if (((UserDto) principal).hasRole(role)) {
+            if (((User) principal).hasRole(role)) {
                 return;
             }
         }

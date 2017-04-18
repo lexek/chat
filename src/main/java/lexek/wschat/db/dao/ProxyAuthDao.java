@@ -1,6 +1,7 @@
 package lexek.wschat.db.dao;
 
 import lexek.wschat.chat.e.EntityNotFoundException;
+import lexek.wschat.chat.model.User;
 import lexek.wschat.db.model.ProxyAuth;
 import lexek.wschat.db.model.UserDto;
 import lexek.wschat.db.tx.Transactional;
@@ -29,7 +30,7 @@ public class ProxyAuthDao {
     public ProxyAuth createOrUpdate(ProxyAuth proxyAuth) {
         String service = proxyAuth.getService();
         String externalId = proxyAuth.getExternalId();
-        UserDto owner = proxyAuth.getOwner();
+        User owner = proxyAuth.getOwner();
 
         Long id;
 
@@ -137,7 +138,7 @@ public class ProxyAuthDao {
         );
     }
 
-    public List<ProxyAuth> getAll(UserDto owner) {
+    public List<ProxyAuth> getAll(User owner) {
         return ctx
             .select()
             .from(PROXY_AUTH)
@@ -159,7 +160,7 @@ public class ProxyAuthDao {
             .collect(Collectors.toList());
     }
 
-    public List<ProxyAuth> getAll(UserDto owner, Set<String> services) {
+    public List<ProxyAuth> getAll(User owner, Set<String> services) {
         return ctx
             .select()
             .from(PROXY_AUTH)

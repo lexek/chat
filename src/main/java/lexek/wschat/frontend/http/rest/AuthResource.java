@@ -5,6 +5,7 @@ import lexek.httpserver.Request;
 import lexek.wschat.chat.e.BadRequestException;
 import lexek.wschat.chat.e.EntityNotFoundException;
 import lexek.wschat.chat.model.GlobalRole;
+import lexek.wschat.chat.model.User;
 import lexek.wschat.db.model.SessionDto;
 import lexek.wschat.db.model.UserDto;
 import lexek.wschat.db.model.form.PasswordForm;
@@ -254,7 +255,7 @@ public class AuthResource {
     @RequiredRole(GlobalRole.USER_UNCONFIRMED)
     public Response deleteAuth(
         @PathParam("serviceName") @NotEmpty String serviceName,
-        @Auth UserDto user,
+        @Auth User user,
         PasswordModel passwordModel
     ) {
         String password = passwordModel != null ? passwordModel.getPassword() : null;
@@ -278,7 +279,7 @@ public class AuthResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response changePassword(
-        @Auth UserDto user,
+        @Auth User user,
         @NotNull @Valid PasswordForm passwordForm
     ) {
         String password = passwordForm.getPassword();
@@ -292,7 +293,7 @@ public class AuthResource {
     @Produces(MediaType.APPLICATION_JSON)
     @RequiredRole(GlobalRole.USER_UNCONFIRMED)
     public Response deleteAuth(
-        @Auth UserDto user,
+        @Auth User user,
         @NotNull BooleanValueContainer valueContainer
     ) {
         userService.setCheckIp(user, valueContainer.getValue());

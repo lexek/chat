@@ -2,6 +2,7 @@ package lexek.httpserver;
 
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.util.AsciiString;
+import lexek.wschat.chat.model.User;
 import lexek.wschat.db.model.UserDto;
 import lexek.wschat.security.AuthenticationManager;
 import lexek.wschat.util.BufferInputStream;
@@ -127,13 +128,13 @@ public class JerseyContainer extends SimpleHttpHandler implements Container {
     private class ResponseWriter implements ContainerResponseWriter {
         private final Request request;
         private final Response response;
-        private final UserDto userDto;
+        private final User user;
         private final long startTime = System.currentTimeMillis();
 
-        private ResponseWriter(Request request, Response response, UserDto userDto) {
+        private ResponseWriter(Request request, Response response, User user) {
             this.request = request;
             this.response = response;
-            this.userDto = userDto;
+            this.user = user;
         }
 
         @Override
@@ -165,7 +166,7 @@ public class JerseyContainer extends SimpleHttpHandler implements Container {
             accessLogger.info(
                 "{} {} - [{}] \"{} {} HTTP/1.1\" {} {} \"{}\" \"{}\" {}",
                 request.ip(),
-                userDto != null ? userDto.getName() : "-",
+                user != null ? user.getName() : "-",
                 ZonedDateTime.now().format(apacheDateFormatter),
                 request.method().name(),
                 request.uri(),

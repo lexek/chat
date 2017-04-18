@@ -3,6 +3,7 @@ package lexek.wschat.security;
 import io.netty.util.internal.chmv8.ConcurrentHashMapV8;
 import lexek.wschat.chat.ConnectionManager;
 import lexek.wschat.chat.e.InvalidInputException;
+import lexek.wschat.chat.model.User;
 import lexek.wschat.db.dao.UserAuthDao;
 import lexek.wschat.db.model.Email;
 import lexek.wschat.db.model.UserDto;
@@ -104,7 +105,7 @@ public class UserEmailManager {
         return success;
     }
 
-    public void userCreated(UserDto user) {
+    public void userCreated(User user) {
         latestEmailChanges.put(user.getId(), Instant.now());
     }
 }

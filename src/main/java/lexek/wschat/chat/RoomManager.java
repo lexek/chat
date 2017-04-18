@@ -3,8 +3,8 @@ package lexek.wschat.chat;
 import io.netty.util.internal.chmv8.ConcurrentHashMapV8;
 import lexek.wschat.chat.model.GlobalRole;
 import lexek.wschat.chat.model.Message;
+import lexek.wschat.chat.model.User;
 import lexek.wschat.db.dao.RoomDao;
-import lexek.wschat.db.model.UserDto;
 import lexek.wschat.db.tx.Transactional;
 import lexek.wschat.services.ChatterService;
 import lexek.wschat.services.JournalService;
@@ -62,7 +62,7 @@ public class RoomManager {
     }
 
     @Transactional
-    public void createRoom(String name, String topic, UserDto admin) {
+    public void createRoom(String name, String topic, User admin) {
         if (!rooms.containsKey(name)) {
             lexek.wschat.db.jooq.tables.pojos.Room pojo = new lexek.wschat.db.jooq.tables.pojos.Room(null, name, topic);
             roomDao.add(pojo);
@@ -74,14 +74,14 @@ public class RoomManager {
     }
 
     @Transactional
-    public void updateTopic(UserDto admin, Room room, String newTopic) {
+    public void updateTopic(User admin, Room room, String newTopic) {
         roomDao.updateTopic(room.getId(), newTopic);
         journalService.topicChanged(admin, room, newTopic);
         room.setTopic(newTopic);
     }
 
     @Transactional
-    public void deleteRoom(Room room, UserDto admin) {
+    public void deleteRoom(Room room, User admin) {
         if (!room.getName().equals("#main")) {
             roomDao.delete(room.getId());
             roomIds.remove(room.getId());

@@ -10,10 +10,10 @@ import lexek.wschat.chat.e.EntityNotFoundException;
 import lexek.wschat.chat.filters.BroadcastFilter;
 import lexek.wschat.chat.model.Message;
 import lexek.wschat.chat.model.MessageType;
+import lexek.wschat.chat.model.User;
 import lexek.wschat.db.dao.ProxyDao;
 import lexek.wschat.db.jooq.tables.pojos.ChatProxy;
 import lexek.wschat.db.model.ProxyAuth;
-import lexek.wschat.db.model.UserDto;
 import lexek.wschat.db.tx.Transactional;
 import lexek.wschat.services.JournalService;
 import lexek.wschat.services.MessageConsumerService;
@@ -58,7 +58,7 @@ public class ProxyManager extends AbstractManagedService implements MessageConsu
 
     @Transactional
     public Proxy newProxy(
-        UserDto admin,
+        User admin,
         Room room,
         String providerName,
         String remoteRoom,
@@ -96,7 +96,7 @@ public class ProxyManager extends AbstractManagedService implements MessageConsu
     }
 
     @Transactional
-    public void remove(UserDto admin, Room room, String provider, String remoteRoom) {
+    public void remove(User admin, Room room, String provider, String remoteRoom) {
         Proxy proxy = getProxy(room, provider, remoteRoom);
         if (proxy != null) {
             proxies.remove(room.getId(), proxy);

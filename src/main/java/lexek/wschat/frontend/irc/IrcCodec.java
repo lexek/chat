@@ -3,7 +3,6 @@ package lexek.wschat.frontend.irc;
 import com.google.common.collect.ImmutableMap;
 import lexek.wschat.chat.model.*;
 import lexek.wschat.chat.msg.MessageNode;
-import lexek.wschat.db.model.UserDto;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
@@ -91,7 +90,7 @@ public class IrcCodec {
                     ":" + name + " 366 " + name + " " + room + " :End of /NAMES list";
             }
             case JOIN: {
-                UserDto joinedUser = message.get(MessageProperty.USER);
+                User joinedUser = message.get(MessageProperty.USER);
                 LocalRole localRole = message.get(MessageProperty.LOCAL_ROLE);
                 String room = message.get(MessageProperty.ROOM);
                 String msg = ":" + joinedUser.getName() + "!" + joinedUser.getName() + "@" + serverName + " JOIN " + room;

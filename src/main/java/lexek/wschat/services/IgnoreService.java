@@ -23,7 +23,7 @@ public class IgnoreService {
         if (user == null) {
             throw new NullPointerException("user");
         }
-        return ignoreDao.fetchIgnoreList(user.getWrappedObject());
+        return ignoreDao.fetchIgnoreList(user);
     }
 
     public synchronized void ignore(User user, String name) {
@@ -37,10 +37,10 @@ public class IgnoreService {
         if (trimmedName.isEmpty()) {
             throw new InvalidInputException("name", "EMPTY_NAME");
         }
-        if (ignoreDao.fetchIgnoreCount(user.getWrappedObject()) >= MAX_IGNORED) {
+        if (ignoreDao.fetchIgnoreCount(user) >= MAX_IGNORED) {
             throw new LimitExceededException("ignored");
         }
-        ignoreDao.addIgnore(user.getWrappedObject(), trimmedName);
+        ignoreDao.addIgnore(user, trimmedName);
     }
 
     public synchronized void unignore(User user, String name) {
@@ -57,6 +57,6 @@ public class IgnoreService {
         if (trimmedName.length() > 16) {
             throw new InvalidInputException("name", "NAME_TOO_LONG");
         }
-        ignoreDao.deleteIgnore(user.getWrappedObject(), trimmedName);
+        ignoreDao.deleteIgnore(user, trimmedName);
     }
 }

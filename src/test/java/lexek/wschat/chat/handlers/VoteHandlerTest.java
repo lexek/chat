@@ -17,7 +17,7 @@ import static org.mockito.Mockito.*;
 
 public class VoteHandlerTest {
     private UserDto userDto = new UserDto(0L, "user", GlobalRole.MOD, "#000000", false, false, null, false, false);
-    private User user = new User(userDto);
+    private User user = new CachedUser(userDto, cache);
     private Chatter chatter = new Chatter(0L, LocalRole.USER, false, null, user);
     private Connection connection = spy(new TestConnection(user));
     private RoomManager roomManager = mock(RoomManager.class);

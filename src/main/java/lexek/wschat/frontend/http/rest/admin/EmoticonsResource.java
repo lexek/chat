@@ -2,8 +2,8 @@ package lexek.wschat.frontend.http.rest.admin;
 
 import lexek.wschat.chat.e.InvalidInputException;
 import lexek.wschat.chat.model.GlobalRole;
+import lexek.wschat.chat.model.User;
 import lexek.wschat.db.model.Emoticon;
-import lexek.wschat.db.model.UserDto;
 import lexek.wschat.security.jersey.Auth;
 import lexek.wschat.security.jersey.RequiredRole;
 import lexek.wschat.services.EmoticonService;
@@ -40,7 +40,7 @@ public class EmoticonsResource {
         @NotNull @Size(min = 1, max = 50) @FormDataParam("code") String code,
         @NotNull @FormDataParam("file") FormDataContentDisposition fileData,
         @NotNull @FormDataParam("file") File file,
-        @Auth UserDto admin
+        @Auth User admin
     ) throws URISyntaxException, IOException {
         if (fileData.getFileName().isEmpty()) {
             throw new InvalidInputException("file", "You should provide file");
@@ -56,7 +56,7 @@ public class EmoticonsResource {
     @DELETE
     @Produces(MediaType.TEXT_PLAIN)
     public String handleDelete(@PathParam("emoticonId") long emoticonId,
-                               @Auth UserDto admin) {
+                               @Auth User admin) {
         emoticonService.delete(emoticonId, admin);
         return "ok";
     }

@@ -32,7 +32,7 @@ public class NameHandler extends AbstractGlobalMessageHandler {
         String newName = message.get(MessageProperty.NAME).trim().toLowerCase();
         if (connection.getUser().isRenameAvailable()) {
             if (Names.USERNAME_PATTERN.matcher(newName).matches()) {
-                if (!userService.changeName(user.getWrappedObject(), newName)) {
+                if (!userService.changeName(user, newName)) {
                     connection.send(Message.errorMessage("NAME_TAKEN"));
                 }
             } else {
@@ -40,7 +40,7 @@ public class NameHandler extends AbstractGlobalMessageHandler {
             }
         } else if (user.getRole() == GlobalRole.SUPERADMIN) {
             if (!newName.isEmpty()) {
-                if (!userService.changeName(user.getWrappedObject(), newName)) {
+                if (!userService.changeName(user, newName)) {
                     connection.send(Message.errorMessage("NAME_TAKEN"));
                 }
             } else {

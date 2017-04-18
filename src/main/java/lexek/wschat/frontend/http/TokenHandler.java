@@ -5,7 +5,7 @@ import io.netty.handler.codec.http.HttpMethod;
 import lexek.httpserver.Request;
 import lexek.httpserver.Response;
 import lexek.httpserver.SimpleHttpHandler;
-import lexek.wschat.db.model.UserDto;
+import lexek.wschat.chat.model.User;
 import lexek.wschat.security.AuthenticationManager;
 
 public class TokenHandler extends SimpleHttpHandler {
@@ -17,7 +17,7 @@ public class TokenHandler extends SimpleHttpHandler {
 
     @Override
     protected void handle(Request request, Response response) throws Exception {
-        UserDto user = authenticationManager.checkFullAuthentication(request);
+        User user = authenticationManager.checkFullAuthentication(request);
         if (user != null) {
             if (request.method() == HttpMethod.POST) {
                 String token = authenticationManager.generateTokenForUser(user);

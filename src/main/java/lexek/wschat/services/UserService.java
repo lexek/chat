@@ -1,7 +1,7 @@
 package lexek.wschat.services;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
 import lexek.wschat.chat.Connection;
 import lexek.wschat.chat.ConnectionManager;
 import lexek.wschat.chat.model.GlobalRole;
@@ -17,10 +17,12 @@ import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class UserService {
-    private final Cache<String, User> userCache = CacheBuilder.newBuilder().weakValues().build();
+    private final LoadingCache<String, Long> userByNameCache;
+    private final LoadingCache<Long, User> userCache;
     private final ConnectionManager connectionManager;
     private final AuthenticationManager authenticationManager;
     private final UserDao userDao;
@@ -37,14 +39,26 @@ public class UserService {
         this.authenticationManager = authenticationManager;
         this.userDao = userDao;
         this.journalService = journalService;
+        this.userByNameCache = Caffeine
+            .<String, Long>newBuilder()
+            .expireAfterAccess(30, TimeUnit.MINUTES)
+            .build(userDao::getIdByName);
+        this.userCache = Caffeine
+            .<String, Long>newBuilder()
+            .expireAfterAccess(30, TimeUnit.MINUTES)
+            .build(userDao::getById);
     }
 
     public UserDto fetchById(long id) {
-        return userDao.getById(id);
+        return userCache.get(id)
     }
 
     public UserDto fetchByName(String name) {
-        return userDao.getByName(name);
+        Long id = userByNameCache.get(name);
+        if (id != null) {
+            return fetchById(id);
+        }
+        return null;
     }
 
     public UserDto findByNameOrEmail(String name) {
@@ -52,10 +66,10 @@ public class UserService {
     }
 
     @Transactional
-    public void update(UserDto user, UserDto admin, UserChangeSet changeSet) {
-        UserDto updatedUser = userDao.update(user.getId(), changeSet);
+    public void update(User user, User admin, UserChangeSet changeSet) {
+        User updatedUser = userDao.update(user.getId(), changeSet);
         if (updatedUser != null) {
-            invalidate(user.getName());
+            userCache.invalidate(user.getName());
             //close all connection authenticated with that user account
             connectionManager.forEach(connection -> user.getId().equals(connection.getUser().getId()), Connection::close);
             journalService.userUpdated(user, admin, changeSet);
@@ -63,10 +77,11 @@ public class UserService {
     }
 
     @Transactional
-    public boolean changeName(UserDto user, String newName) {
+    public boolean changeName(User user, String newName) {
         if (userDao.tryChangeName(user.getId(), newName, user.hasRole(GlobalRole.ADMIN))) {
             journalService.nameChanged(user, user.getName(), newName);
-            userCache.invalidate(user.getName());
+            userByNameCache.invalidate(user.getName());
+            userCache.invalidate(user.getId());
             //close all connection authenticated with that user account
             connectionManager.forEach(connection -> user.getId().equals(connection.getUser().getId()), Connection::close);
             return true;
@@ -75,44 +90,41 @@ public class UserService {
     }
 
     @Transactional
-    public void changePassword(UserDto admin, UserDto user, String password) {
+    public void changePassword(User admin, User user, String password) {
         authenticationManager.setPasswordNoCheck(user, password);
         journalService.userPasswordChanged(admin, user);
     }
 
-    @Transactional
-    public void delete(UserDto user, UserDto admin) {
+    public void delete(User user, User admin) {
         if (userDao.delete(user)) {
-            userCache.invalidate(user.getName());
+            userByNameCache.invalidate(user.getName());
+            userCache.invalidate(user.getId());
             //close all connection authenticated with that user account
             connectionManager.forEach(connection -> user.getId().equals(connection.getUser().getId()), Connection::close);
         }
     }
 
-    public void invalidate(String name) {
-        userCache.invalidate(name);
-    }
-
-    public User cache(UserDto user) {
-        User instance = userCache.getIfPresent(user.getName());
+    public User cache(UserDto user) { //todo ???
+        User instance = userByNameCache.getIfPresent(user.getName());
         if (instance != null) {
             instance.wrap(user);
         } else {
-            instance = new User(user);
-            userCache.put(user.getName(), instance);
+            instance = new lexek.wschat.chat.model.CachedUser(user, cache);
+            userByNameCache.put(user.getName(), instance);
         }
         return instance;
     }
 
+    @Deprecated
     public User getCached(String name) {
-        return userCache.getIfPresent(name);
+        return userByNameCache.getIfPresent(name);
     }
 
     public DataPage<UserData> searchPaged(int page, int pageLength, String search) {
         return userDao.searchPaged(page, pageLength, search);
     }
 
-    public List<UserDto> searchSimple(int pageLength, String search) {
+    public List<User> searchSimple(int pageLength, String search) {
         return userDao.searchSimple(pageLength, search);
     }
 
@@ -120,7 +132,7 @@ public class UserService {
         return userDao.getAllPaged(page, pageLength);
     }
 
-    public List<UserDto> getAdmins() {
+    public List<User> getAdmins() {
         return userDao.getAdmins();
     }
 
@@ -132,11 +144,12 @@ public class UserService {
         return userDao.fetchData(id);
     }
 
-    public void setCheckIp(UserDto user, boolean value) {
+    public void setCheckIp(User user, boolean value) {
         userDao.setCheckIp(user, value);
     }
 
-    public void setColor(UserDto user, String colorCode) {
+    public void setColor(User user, String colorCode) {
         userDao.setColor(user.getId(), colorCode);
+        userCache.invalidate(user.getId());
     }
 }

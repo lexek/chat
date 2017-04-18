@@ -6,12 +6,12 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import lexek.wschat.chat.Room;
 import lexek.wschat.chat.model.LocalRole;
+import lexek.wschat.chat.model.User;
 import lexek.wschat.db.dao.JournalDao;
 import lexek.wschat.db.jooq.tables.pojos.Announcement;
 import lexek.wschat.db.model.DataPage;
 import lexek.wschat.db.model.Emoticon;
 import lexek.wschat.db.model.JournalEntry;
-import lexek.wschat.db.model.UserDto;
 import lexek.wschat.db.model.form.UserChangeSet;
 import lexek.wschat.services.poll.Poll;
 import org.jvnet.hk2.annotations.Service;
@@ -50,7 +50,7 @@ public class JournalService {
         this.journalDao = journalDao;
     }
 
-    public void nameChanged(UserDto user, String oldName, String newName) {
+    public void nameChanged(User user, String oldName, String newName) {
         try {
             String description = objectMapper.writeValueAsString(ImmutableMap.of(
                 "oldName", oldName,
@@ -62,11 +62,11 @@ public class JournalService {
         }
     }
 
-    public void userCreated(UserDto user) {
+    public void userCreated(User user) {
         journalDao.add(new JournalEntry(user, null, "USER_CREATED", null, now(), null));
     }
 
-    public void userUpdated(UserDto user, UserDto admin, UserChangeSet changeSet) {
+    public void userUpdated(User user, User admin, UserChangeSet changeSet) {
         try {
             String description = objectMapper.writeValueAsString(ImmutableMap.of(
                 "oldState", user,
@@ -78,7 +78,7 @@ public class JournalService {
         }
     }
 
-    public void userPasswordChanged(UserDto admin, UserDto user) {
+    public void userPasswordChanged(User admin, User user) {
         journalDao.add(new JournalEntry(
             user,
             admin,
@@ -89,7 +89,7 @@ public class JournalService {
         ));
     }
 
-    public void userPasswordReset(UserDto user) {
+    public void userPasswordReset(User user) {
         journalDao.add(new JournalEntry(
             user,
             null,
@@ -100,7 +100,7 @@ public class JournalService {
         ));
     }
 
-    public void newEmoticon(UserDto admin, Emoticon emoticon) {
+    public void newEmoticon(User admin, Emoticon emoticon) {
         try {
             journalDao.add(new JournalEntry(null, admin, "NEW_EMOTICON", objectMapper.writeValueAsString(emoticon), now(), null));
         } catch (JsonProcessingException e) {
@@ -108,7 +108,7 @@ public class JournalService {
         }
     }
 
-    public void emoticonImageChanged(UserDto admin, String code, String oldFile, String newFile) {
+    public void emoticonImageChanged(User admin, String code, String oldFile, String newFile) {
         try {
             String data = objectMapper.writeValueAsString(ImmutableMap.of(
                 "code", code,
@@ -121,7 +121,7 @@ public class JournalService {
         }
     }
 
-    public void deletedEmoticon(UserDto admin, Emoticon emoticon) {
+    public void deletedEmoticon(User admin, Emoticon emoticon) {
         try {
             journalDao.add(new JournalEntry(null, admin, "DELETED_EMOTICON", objectMapper.writeValueAsString(emoticon), now(), null));
         } catch (JsonProcessingException e) {
@@ -129,7 +129,7 @@ public class JournalService {
         }
     }
 
-    public void newRoom(UserDto admin, Room room) {
+    public void newRoom(User admin, Room room) {
         try {
             String description = objectMapper.writeValueAsString(ImmutableMap.of("name", room.getName()));
             journalDao.add(new JournalEntry(null, admin, "NEW_ROOM", description, now(), null));
@@ -138,7 +138,7 @@ public class JournalService {
         }
     }
 
-    public void deletedRoom(UserDto admin, Room room) {
+    public void deletedRoom(User admin, Room room) {
         try {
             String description = objectMapper.writeValueAsString(ImmutableMap.of("name", room.getName()));
             journalDao.add(new JournalEntry(null, admin, "DELETED_ROOM", description, now(), null));
@@ -147,7 +147,7 @@ public class JournalService {
         }
     }
 
-    public void newPoll(UserDto admin, Room room, Poll poll) {
+    public void newPoll(User admin, Room room, Poll poll) {
         try {
             journalDao.add(new JournalEntry(null, admin, "NEW_POLL", objectMapper.writeValueAsString(poll.getQuestion()), now(), room.getId()));
         } catch (JsonProcessingException e) {
@@ -155,7 +155,7 @@ public class JournalService {
         }
     }
 
-    public void closedPoll(UserDto admin, Room room, Poll poll) {
+    public void closedPoll(User admin, Room room, Poll poll) {
         try {
             journalDao.add(new JournalEntry(null, admin, "CLOSE_POLL", objectMapper.writeValueAsString(poll.getQuestion()), now(), room.getId()));
         } catch (JsonProcessingException e) {
@@ -163,15 +163,15 @@ public class JournalService {
         }
     }
 
-    public void roomBan(UserDto user, UserDto admin, Room room) {
+    public void roomBan(User user, User admin, Room room) {
         journalDao.add(new JournalEntry(user, admin, "ROOM_BAN", null, now(), room.getId()));
     }
 
-    public void roomUnban(UserDto user, UserDto admin, Room room) {
+    public void roomUnban(User user, User admin, Room room) {
         journalDao.add(new JournalEntry(user, admin, "ROOM_UNBAN", null, now(), room.getId()));
     }
 
-    public void roomRole(UserDto user, UserDto admin, Room room, LocalRole role) {
+    public void roomRole(User user, User admin, Room room, LocalRole role) {
         try {
             journalDao.add(new JournalEntry(user, admin, "ROOM_ROLE", objectMapper.writeValueAsString(role.toString()), now(), room.getId()));
         } catch (JsonProcessingException e) {
@@ -179,7 +179,7 @@ public class JournalService {
         }
     }
 
-    public void newAnnouncement(UserDto admin, Room room, Announcement announcement) {
+    public void newAnnouncement(User admin, Room room, Announcement announcement) {
         try {
             journalDao.add(new JournalEntry(null, admin, "NEW_ANNOUNCEMENT", objectMapper.writeValueAsString(announcement.getText()), now(), room.getId()));
         } catch (JsonProcessingException e) {
@@ -187,7 +187,7 @@ public class JournalService {
         }
     }
 
-    public void inactiveAnnouncement(UserDto admin, Room room, Announcement announcement) {
+    public void inactiveAnnouncement(User admin, Room room, Announcement announcement) {
         try {
             journalDao.add(new JournalEntry(null, admin, "INACTIVE_ANNOUNCEMENT", objectMapper.writeValueAsString(announcement.getText()), now(), room.getId()));
         } catch (JsonProcessingException e) {
@@ -195,7 +195,7 @@ public class JournalService {
         }
     }
 
-    public void newProxy(UserDto admin, Room room, String providerName, String remoteRoom) {
+    public void newProxy(User admin, Room room, String providerName, String remoteRoom) {
         try {
             journalDao.add(new JournalEntry(
                 null,
@@ -212,7 +212,7 @@ public class JournalService {
         }
     }
 
-    public void deletedProxy(UserDto admin, Room room, String providerName, String remoteRoom) {
+    public void deletedProxy(User admin, Room room, String providerName, String remoteRoom) {
         try {
             journalDao.add(new JournalEntry(
                 null,
@@ -229,7 +229,7 @@ public class JournalService {
         }
     }
 
-    public void topicChanged(UserDto admin, Room room, String newTopic) {
+    public void topicChanged(User admin, Room room, String newTopic) {
         try {
             journalDao.add(new JournalEntry(
                 null,

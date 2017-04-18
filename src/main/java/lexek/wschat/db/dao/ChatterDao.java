@@ -1,9 +1,6 @@
 package lexek.wschat.db.dao;
 
-import lexek.wschat.chat.model.Chatter;
-import lexek.wschat.chat.model.GlobalRole;
-import lexek.wschat.chat.model.LocalRole;
-import lexek.wschat.chat.model.User;
+import lexek.wschat.chat.model.*;
 import lexek.wschat.db.model.ChatterData;
 import lexek.wschat.db.model.DataPage;
 import lexek.wschat.db.model.UserDto;
@@ -59,7 +56,7 @@ public class ChatterDao {
             .where(USER.NAME.equal(name).and(CHATTER.ROOM_ID.equal(roomId)))
             .fetchOne();
         if (record != null) {
-            chatter = Chatter.fromRecord(record, new User(UserDto.fromRecord(record)));
+            chatter = Chatter.fromRecord(record, new CachedUser(UserDto.fromRecord(record), cache));
         }
         return chatter;
     }

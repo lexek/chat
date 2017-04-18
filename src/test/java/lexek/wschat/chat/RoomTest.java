@@ -2,6 +2,7 @@ package lexek.wschat.chat;
 
 import lexek.wschat.chat.model.Chatter;
 import lexek.wschat.chat.model.GlobalRole;
+import lexek.wschat.chat.model.User;
 import lexek.wschat.db.model.UserDto;
 import lexek.wschat.services.ChatterService;
 import lexek.wschat.services.UserService;
@@ -16,8 +17,8 @@ public class RoomTest {
         UserService userService = mock(UserService.class);
         ChatterService chatterService = mock(ChatterService.class);
         Room room = new Room(userService, chatterService, 0L, "#main", "top kek");
-        UserDto userDto = new UserDto(null, "hellomate", GlobalRole.UNAUTHENTICATED, "#133711", false, false, null, false, false);
-        Chatter chatter = room.getOnlineChatter(userDto);
+        User user = new UserDto(null, "hellomate", GlobalRole.UNAUTHENTICATED, "#133711", false, false, null, false, false);
+        Chatter chatter = room.getOnlineChatter(user);
         assertEquals(chatter, Chatter.GUEST_CHATTER);
     }
 
@@ -26,8 +27,8 @@ public class RoomTest {
         UserService userService = mock(UserService.class);
         ChatterService chatterService = mock(ChatterService.class);
         Room room = new Room(userService, chatterService, 0L, "#main", "top kek");
-        UserDto userDto = new UserDto(null, "hellomate", GlobalRole.UNAUTHENTICATED, "#133711", false, false, null, false, false);
-        Chatter chatter = room.getOnlineChatter(userDto);
+        User user = new UserDto(null, "hellomate", GlobalRole.UNAUTHENTICATED, "#133711", false, false, null, false, false);
+        Chatter chatter = room.getOnlineChatter(user);
         assertEquals(chatter, Chatter.GUEST_CHATTER);
     }
 

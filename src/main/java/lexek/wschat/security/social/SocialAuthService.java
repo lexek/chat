@@ -6,6 +6,7 @@ import io.netty.util.internal.chmv8.ConcurrentHashMapV8;
 import lexek.wschat.chat.e.AccessDeniedException;
 import lexek.wschat.chat.e.EntityNotFoundException;
 import lexek.wschat.chat.e.InvalidInputException;
+import lexek.wschat.chat.model.User;
 import lexek.wschat.db.model.SessionDto;
 import lexek.wschat.db.model.UserAuthDto;
 import lexek.wschat.db.model.UserDto;
@@ -90,7 +91,7 @@ public class SocialAuthService {
         throw new AccessDeniedException("Temporary session is invalid or expired");
     }
 
-    public void deleteAuth(UserDto user, String serviceName) {
+    public void deleteAuth(User user, String serviceName) {
         SocialAuthProvider socialAuthProvider = getAuthService(serviceName);
         if (socialAuthProvider == null) {
             throw new EntityNotFoundException("service");

@@ -1,6 +1,7 @@
 package lexek.wschat.db.dao;
 
 import com.google.common.collect.ImmutableSet;
+import lexek.wschat.chat.model.User;
 import lexek.wschat.db.model.DataPage;
 import lexek.wschat.db.model.JournalEntry;
 import lexek.wschat.db.model.UserDto;
@@ -43,8 +44,8 @@ public class JournalDao {
     }
 
     public void add(JournalEntry journal) {
-        UserDto user = journal.getUser();
-        UserDto admin = journal.getAdmin();
+        User user = journal.getUser();
+        User admin = journal.getAdmin();
         ctx
             .insertInto(JOURNAL)
             .columns(JOURNAL.USER_ID, JOURNAL.ADMIN_ID, JOURNAL.ACTION, JOURNAL.ACTION_DESCRIPTION,

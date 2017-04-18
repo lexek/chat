@@ -9,6 +9,7 @@ import lexek.wschat.chat.e.BadRequestException;
 import lexek.wschat.chat.e.InvalidInputException;
 import lexek.wschat.chat.e.PasswordRequiredException;
 import lexek.wschat.chat.model.GlobalRole;
+import lexek.wschat.chat.model.User;
 import lexek.wschat.db.dao.UserAuthDao;
 import lexek.wschat.db.model.SessionDto;
 import lexek.wschat.db.model.UserAuthDto;
@@ -163,7 +164,7 @@ public class AuthenticationManager {
     public synchronized void registerWithPassword(final String name, final String password, final String email) {
         String verificationCode = secureTokenGenerator.generateVerificationCode();
         try {
-            UserDto user = userAuthDao.registerWithPassword(name, password, email, verificationCode);
+            User user = userAuthDao.registerWithPassword(name, password, email, verificationCode);
             userEmailManager.sendVerificationEmail(email, verificationCode, user.getId());
             userEmailManager.userCreated(user);
             journalService.userCreated(user);
@@ -173,7 +174,7 @@ public class AuthenticationManager {
     }
 
     @Transactional
-    public synchronized void setPassword(UserDto user, String password, String oldPassword) {
+    public synchronized void setPassword(User user, String password, String oldPassword) {
         UserAuthDto auth = getAuthDataForUser(user, "password");
         if (auth != null && !validatePassword(oldPassword, auth.getAuthenticationKey())) {
             throw new InvalidInputException("oldPassword", "invalid");
@@ -182,7 +183,7 @@ public class AuthenticationManager {
     }
 
     @Transactional
-    public synchronized void deletePassword(UserDto user, String oldPassword) {
+    public synchronized void deletePassword(User user, String oldPassword) {
         UserAuthDto authData = getAuthDataForUser(user, "password");
         if (authData != null) {
             if (oldPassword == null) {
@@ -195,11 +196,11 @@ public class AuthenticationManager {
         deleteAuth(user, "password");
     }
 
-    public synchronized void setPasswordNoCheck(UserDto user, String password) {
+    public synchronized void setPasswordNoCheck(User user, String password) {
         userAuthDao.setPassword(user.getId(), BCrypt.hashpw(password, BCrypt.gensalt()));
     }
 
-    public synchronized String generateTokenForUser(UserDto user) {
+    public synchronized String generateTokenForUser(User user) {
         byte[] bytes = new byte[128];
         secureTokenGenerator.nextBytes(bytes);
         String token = user.getId() + "_" + BaseEncoding.base64().encode(bytes);
@@ -223,7 +224,7 @@ public class AuthenticationManager {
         return userAuth;
     }
 
-    public synchronized UserAuthDto getAuthDataForUser(UserDto user, String service) {
+    public synchronized UserAuthDto getAuthDataForUser(User user, String service) {
         return userAuthDao.getAuthDataForUser(user.getId(), service);
     }
 
@@ -232,11 +233,11 @@ public class AuthenticationManager {
     }
 
     public boolean hasRole(Request request, GlobalRole role) {
-        UserDto user = checkFullAuthentication(request);
+        User user = checkFullAuthentication(request);
         return user != null && user.hasRole(role);
     }
 
-    public synchronized void deleteAuth(UserDto user, String serviceName) {
+    public synchronized void deleteAuth(User user, String serviceName) {
         userAuthDao.deleteAuth(user, serviceName);
         triggerAuthEvent(UserAuthEventType.DELETED, user, serviceName);
     }
@@ -253,7 +254,7 @@ public class AuthenticationManager {
         return BCrypt.checkpw(password, hash);
     }
 
-    private void triggerAuthEvent(UserAuthEventType type, UserDto user, String service) {
+    private void triggerAuthEvent(UserAuthEventType type, User user, String service) {
         userAuthEventListeners.forEach(listener -> listener.onEvent(type, user, service));
     }
 }

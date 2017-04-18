@@ -2,9 +2,9 @@ package lexek.wschat.proxy;
 
 import io.netty.util.internal.chmv8.ConcurrentHashMapV8;
 import lexek.wschat.chat.model.GlobalRole;
+import lexek.wschat.chat.model.User;
 import lexek.wschat.db.dao.ProxyAuthDao;
 import lexek.wschat.db.model.ProxyAuth;
-import lexek.wschat.db.model.UserDto;
 import lexek.wschat.security.social.CredentialsHolder;
 import lexek.wschat.security.social.SocialAuthProviderFactory;
 import lexek.wschat.security.social.SocialProfile;
@@ -92,7 +92,7 @@ public class ProxyAuthService {
         return proxyAuthDao.get(authId);
     }
 
-    public synchronized void registerToken(UserDto owner, SocialProfile socialProfile) {
+    public synchronized void registerToken(User owner, SocialProfile socialProfile) {
         String saveToken = socialProfile.getToken().getToken();
         if (socialProfile.getToken().getRefreshToken() != null) {
             saveToken = socialProfile.getToken().getRefreshToken();
@@ -108,7 +108,7 @@ public class ProxyAuthService {
         tokenCache.put(auth.getId(), socialProfile);
     }
 
-    public synchronized void deleteAuth(long authId, UserDto owner) {
+    public synchronized void deleteAuth(long authId, User owner) {
         if (owner.hasRole(GlobalRole.SUPERADMIN)) {
             proxyAuthDao.delete(authId);
         } else {
@@ -117,7 +117,7 @@ public class ProxyAuthService {
         tokenCache.remove(authId);
     }
 
-    public List<ProxyAuth> getAllCredentials(UserDto owner) {
+    public List<ProxyAuth> getAllCredentials(User owner) {
         if (owner.hasRole(GlobalRole.SUPERADMIN)) {
             return proxyAuthDao.getAll();
         } else {
@@ -125,7 +125,7 @@ public class ProxyAuthService {
         }
     }
 
-    public List<ProxyAuth> getAvailableCredentials(UserDto owner, Set<String> services) {
+    public List<ProxyAuth> getAvailableCredentials(User owner, Set<String> services) {
         if (owner.hasRole(GlobalRole.SUPERADMIN)) {
             return proxyAuthDao.getAll(services);
         } else {

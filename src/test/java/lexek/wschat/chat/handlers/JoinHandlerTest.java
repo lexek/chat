@@ -58,7 +58,7 @@ public class JoinHandlerTest {
         JoinHandler handler = new JoinHandler(eventDispatcher, messageBroadcaster);
 
         UserDto userDto = new UserDto(0L, "user", GlobalRole.USER, "#ffffff", false, false, null, false, false);
-        User user = new User(userDto);
+        User user = new CachedUser(userDto, cache);
         Connection connection = spy(new TestConnection(user));
         Chatter chatter = new Chatter(0L, LocalRole.USER, false, null, user);
 
@@ -91,7 +91,7 @@ public class JoinHandlerTest {
         JoinHandler handler = new JoinHandler(eventDispatcher, messageBroadcaster);
 
         UserDto userDto = new UserDto(0L, "user", GlobalRole.USER, "#ffffff", false, false, null, false, false);
-        User user = new User(userDto);
+        User user = new CachedUser(userDto, cache);
         Connection connection = spy(new TestConnection(user));
         Chatter chatter = new Chatter(0L, LocalRole.USER, false, null, user);
 
@@ -120,7 +120,7 @@ public class JoinHandlerTest {
         JoinHandler handler = new JoinHandler(eventDispatcher, messageBroadcaster);
 
         UserDto userDto = new UserDto(0L, "user", GlobalRole.UNAUTHENTICATED, "#ffffff", false, false, null, false, false);
-        User user = new User(userDto);
+        User user = new CachedUser(userDto, cache);
         Connection connection = spy(new TestConnection(user));
         Chatter chatter = new Chatter(0L, LocalRole.GUEST, false, null, user);
 
@@ -149,7 +149,7 @@ public class JoinHandlerTest {
         JoinHandler handler = new JoinHandler(eventDispatcher, messageBroadcaster);
 
         UserDto userDto = new UserDto(0L, "user", GlobalRole.USER, "#ffffff", false, false, null, false, false);
-        User user = new User(userDto);
+        User user = new CachedUser(userDto, cache);
         Connection connection = spy(new TestConnection(user));
         Chatter chatter = new Chatter(0L, LocalRole.USER, false, null, user);
 

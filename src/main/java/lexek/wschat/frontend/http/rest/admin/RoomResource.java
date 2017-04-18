@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import lexek.wschat.chat.Room;
 import lexek.wschat.chat.e.InvalidInputException;
 import lexek.wschat.chat.model.GlobalRole;
-import lexek.wschat.db.model.UserDto;
+import lexek.wschat.chat.model.User;
 import lexek.wschat.db.model.form.RoomForm;
 import lexek.wschat.db.model.rest.ErrorModel;
 import lexek.wschat.db.model.rest.RoomRestModel;
@@ -65,7 +65,7 @@ public class RoomResource {
     @Produces(MediaType.APPLICATION_JSON)
     public void createRoom(
         @Valid @NotNull RoomForm roomForm,
-        @Auth UserDto admin
+        @Auth User admin
     ) {
         roomService.createRoom(roomForm.getName(), roomForm.getTopic(), admin);
     }
@@ -77,7 +77,7 @@ public class RoomResource {
     @Produces(MediaType.APPLICATION_JSON)
     public void deleteRoom(
         @PathParam("roomId") @Min(0) long roomId,
-        @Auth UserDto admin
+        @Auth User admin
     ) {
         Room room = roomService.getRoomInstance(roomId);
         roomService.deleteRoom(room, admin);
@@ -89,7 +89,7 @@ public class RoomResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response updateTopic(
         @PathParam("roomId") @Min(0) long roomId,
-        @Auth UserDto admin,
+        @Auth User admin,
         JsonNode data
     ) {
         Room room = roomService.getRoomInstance(roomId);

@@ -1,8 +1,8 @@
 package lexek.wschat.frontend.http.rest;
 
 import com.google.common.collect.ImmutableSet;
+import lexek.wschat.chat.model.User;
 import lexek.wschat.db.jooq.tables.pojos.Ticket;
-import lexek.wschat.db.model.UserDto;
 import lexek.wschat.db.model.rest.BasicResponse;
 import lexek.wschat.security.jersey.Auth;
 import lexek.wschat.services.TicketService;
@@ -29,7 +29,7 @@ public class UserTicketResource {
     public BasicResponse handlePost(
         @NotEmpty @FormParam("category") String category,
         @NotEmpty @Size(min = 5, max = 1024) @FormParam("text") String text,
-        @Auth UserDto user
+        @Auth User user
     ) {
         if (categories.contains(category) && text.length() > 5 && text.length() < 1024) {
             if (ticketService.submit(category, text, user)) {
@@ -43,7 +43,7 @@ public class UserTicketResource {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public List<Ticket> getTickets(@Auth UserDto user) {
+    public List<Ticket> getTickets(@Auth User user) {
         return ticketService.getAllTicketsForUser(user, 0).getData();
     }
 

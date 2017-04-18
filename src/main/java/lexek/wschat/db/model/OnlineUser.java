@@ -1,11 +1,13 @@
 package lexek.wschat.db.model;
 
+import lexek.wschat.chat.model.User;
+
 public class OnlineUser {
     private final String ip;
     private final String geoIp;
-    private final UserDto user;
+    private final User user;
 
-    public OnlineUser(String ip, String geoIp, UserDto user) {
+    public OnlineUser(String ip, String geoIp, User user) {
         this.ip = ip;
         this.geoIp = geoIp;
         this.user = user;
@@ -19,7 +21,7 @@ public class OnlineUser {
         return geoIp;
     }
 
-    public UserDto getUser() {
+    public User getUser() {
         return user;
     }
 }
