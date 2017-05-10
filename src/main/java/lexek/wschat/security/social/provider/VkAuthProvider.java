@@ -15,7 +15,9 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 
 import java.io.IOException;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 public class VkAuthProvider extends AbstractOauth2Provider {
     private final String name;
@@ -24,12 +26,14 @@ public class VkAuthProvider extends AbstractOauth2Provider {
     private final String url;
     private final HttpClient httpClient;
     private final SecureTokenGenerator secureTokenGenerator;
+    private final String scopesString;
 
     public VkAuthProvider(
         String clientId,
         String clientSecret,
         String url,
         String name,
+        Set<String> scopes,
         HttpClient httpClient,
         SecureTokenGenerator secureTokenGenerator
     ) {
@@ -39,6 +43,7 @@ public class VkAuthProvider extends AbstractOauth2Provider {
         this.name = name;
         this.httpClient = httpClient;
         this.secureTokenGenerator = secureTokenGenerator;
+        this.scopesString = scopes.stream().collect(Collectors.joining(" "));
     }
 
     @Override
@@ -50,7 +55,8 @@ public class VkAuthProvider extends AbstractOauth2Provider {
             "&display=page" +
             "&state=" + UrlEscapers.urlPathSegmentEscaper().escape(state) +
             "&prompt=consent" +
-            "&access_type=offline";
+            "&access_type=offline"+
+            "&scope=" + scopesString;
         return new SocialRedirect(result, state);
     }
 

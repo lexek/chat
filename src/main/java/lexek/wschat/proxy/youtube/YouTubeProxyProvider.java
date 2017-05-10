@@ -54,7 +54,7 @@ public class YouTubeProxyProvider extends ProxyProvider {
     }
 
     @Override
-    public boolean validateRemoteRoom(String remoteRoom) {
+    public boolean validateRemoteRoom(String remoteRoom, Long authId) {
         return true;
     }
 }

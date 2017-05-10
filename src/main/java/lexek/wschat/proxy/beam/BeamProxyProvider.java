@@ -47,7 +47,7 @@ public class BeamProxyProvider extends ProxyProvider {
     }
 
     @Override
-    public boolean validateRemoteRoom(String remoteRoom) {
+    public boolean validateRemoteRoom(String remoteRoom, Long authId) {
         try {
             return beamDataProvider.getId(remoteRoom) >= 0;
         } catch (Exception e) {

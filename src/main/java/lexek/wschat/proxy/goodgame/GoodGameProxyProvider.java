@@ -67,7 +67,7 @@ public class GoodGameProxyProvider extends ProxyProvider {
     }
 
     @Override
-    public boolean validateRemoteRoom(String remoteRoom) {
+    public boolean validateRemoteRoom(String remoteRoom, Long authId) {
         try {
             return apiClient.getChannelId(remoteRoom) != null;
         } catch (Exception e) {

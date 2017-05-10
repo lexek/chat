@@ -73,15 +73,23 @@ public class SocialAuthProviderFactory {
                     secureTokenGenerator
                 );
             }
-            case "vk":
+            case "vk": {
+                Set<String> scopes;
+                if (signIn) {
+                    scopes = ImmutableSet.of();
+                } else {
+                    scopes = ImmutableSet.of("video");
+                }
                 return new VkAuthProvider(
                     credentials.getClientId(),
                     credentials.getClientSecret(),
                     getUrl(providerName, signIn),
                     providerName,
+                    scopes,
                     httpClient,
                     secureTokenGenerator
                 );
+            }
             case "goodgame":
                 return new GoodGameAuthProvider(
                     credentials.getClientId(),

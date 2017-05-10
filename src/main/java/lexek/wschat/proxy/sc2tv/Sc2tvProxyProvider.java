@@ -67,7 +67,7 @@ public class Sc2tvProxyProvider extends ProxyProvider {
     }
 
     @Override
-    public boolean validateRemoteRoom(String remoteRoom) {
+    public boolean validateRemoteRoom(String remoteRoom, Long authId) {
         try {
             return apiClient.getStreamId(remoteRoom) != null;
         } catch (IOException e) {

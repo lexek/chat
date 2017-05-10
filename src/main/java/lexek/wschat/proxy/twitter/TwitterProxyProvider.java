@@ -102,7 +102,7 @@ public class TwitterProxyProvider extends ProxyProvider {
     }
 
     @Override
-    public boolean validateRemoteRoom(String remoteRoom) {
+    public boolean validateRemoteRoom(String remoteRoom, Long authId) {
         if (remoteRoom.startsWith("@")) {
             ProfileSummary profileSummary = profileSource.getProfileSummary(remoteRoom.substring(1));
             return !profileSummary.isProtected();

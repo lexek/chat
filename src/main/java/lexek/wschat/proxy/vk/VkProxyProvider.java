@@ -1,8 +1,7 @@
-package lexek.wschat.proxy.streamlabs;
+package lexek.wschat.proxy.vk;
 
 import com.google.common.collect.ImmutableSet;
 import lexek.wschat.chat.MessageBroadcaster;
-import lexek.wschat.chat.model.MessageProperty;
 import lexek.wschat.proxy.*;
 import lexek.wschat.services.NotificationService;
 import org.apache.http.client.HttpClient;
@@ -11,39 +10,42 @@ import org.jvnet.hk2.annotations.Service;
 import javax.inject.Inject;
 import java.util.EnumSet;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.atomic.AtomicLong;
 
 @Service
-public class StreamLabsProxyProvider extends ProxyProvider {
-    public static final MessageProperty<String> CURRENCY_PROPERTY = MessageProperty.valueOf("currency");
-    public static final MessageProperty<String> AMOUNT_PROPERTY = MessageProperty.valueOf("amount");
+public class VkProxyProvider extends ProxyProvider {
+    public static final String API_VERSION = "5.63";
 
     private final ScheduledExecutorService scheduledExecutorService;
     private final NotificationService notificationService;
     private final ProxyAuthService proxyAuthService;
     private final HttpClient httpClient;
     private final MessageBroadcaster messageBroadcaster;
+    private final AtomicLong messageId;
+    private final VkApiClient vkApiClient;
 
     @Inject
-    public StreamLabsProxyProvider(
+    public VkProxyProvider(
         ScheduledExecutorService scheduledExecutorService,
         NotificationService notificationService,
         ProxyAuthService proxyAuthService,
         HttpClient httpClient,
-        MessageBroadcaster messageBroadcaster
-    ) {
-        super("streamlabs", true, false, true, false, ImmutableSet.of("streamlabs"), EnumSet.noneOf(ModerationOperation.class));
+        MessageBroadcaster messageBroadcaster,
+        AtomicLong messageId,
+        VkApiClient vkApiClient) {
+        super("vk", true, false, true, false, ImmutableSet.of("vk"), EnumSet.noneOf(ModerationOperation.class));
         this.scheduledExecutorService = scheduledExecutorService;
         this.notificationService = notificationService;
         this.proxyAuthService = proxyAuthService;
         this.httpClient = httpClient;
         this.messageBroadcaster = messageBroadcaster;
+        this.messageId = messageId;
+        this.vkApiClient = vkApiClient;
     }
 
     @Override
     public Proxy newProxy(ProxyDescriptor descriptor) {
-        return new StreamLabsProxy(
-            descriptor, scheduledExecutorService, notificationService, proxyAuthService, httpClient, messageBroadcaster
-        );
+        return new VkProxy(descriptor, scheduledExecutorService, notificationService, proxyAuthService, httpClient, messageBroadcaster, messageId, vkApiClient);
     }
 
     @Override

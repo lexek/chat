@@ -88,7 +88,7 @@ public abstract class ProxyProvider {
 
     public abstract Proxy newProxy(ProxyDescriptor descriptor);
 
-    public abstract boolean validateRemoteRoom(String remoteRoom);
+    public abstract boolean validateRemoteRoom(String remoteRoom, Long authId);
 
     public List<ProxyEmoticonDescriptor> fetchEmoticonDescriptors() throws Exception {
         throw new UnsupportedOperationException();

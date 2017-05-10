@@ -47,7 +47,7 @@ public class CybergameTvProxyProvider extends ProxyProvider {
     }
 
     @Override
-    public boolean validateRemoteRoom(String remoteRoom) {
+    public boolean validateRemoteRoom(String remoteRoom, Long authId) {
         try {
             return apiClient.getChannelId(remoteRoom) != null;
         } catch (IOException e) {

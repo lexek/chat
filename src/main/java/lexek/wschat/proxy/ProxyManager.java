@@ -72,13 +72,13 @@ public class ProxyManager extends AbstractManagedService implements MessageConsu
         if (proxyAuth != null && !provider.supportsAuthService(proxyAuth.getService())) {
             throw new BadRequestException("Invalid credentials");
         }
-        if (!provider.validateRemoteRoom(remoteRoom)) {
+        Long proxyAuthId = proxyAuth != null ? proxyAuth.getId() : null;
+        if (!provider.validateRemoteRoom(remoteRoom, proxyAuthId)) {
             throw new BadRequestException("Invalid remote room");
         }
         if (exists(room, providerName, remoteRoom)) {
             throw new BadRequestException("Proxy with same provider and remote room already exists");
         }
-        Long proxyAuthId = proxyAuth != null ? proxyAuth.getId() : null;
         ChatProxy chatProxy = new ChatProxy(null, room.getId(), providerName, remoteRoom, proxyAuthId, outbound);
         proxyDao.store(chatProxy);
         journalService.newProxy(admin, room, providerName, remoteRoom);
