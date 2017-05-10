@@ -1,6 +1,7 @@
 package lexek.wschat.frontend.http;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.html.HtmlEscapers;
 import lexek.httpserver.Request;
 import lexek.httpserver.Response;
 import lexek.httpserver.SimpleHttpHandler;
@@ -24,11 +25,11 @@ public class ChatHomeHandler extends SimpleHttpHandler {
         String room = request.queryParam("room");
         response.renderTemplate("chat", ImmutableMap.builder()
             .put("stream", stream)
-            .put("title", title)
+            .put("title", HtmlEscapers.htmlEscaper().escape(title))
             .put("like", allowLikes)
             .put("singleRoom", singleRoom)
             .put("debug", debug)
-            .put("room", room != null ? "#" + room : "#main")
+            .put("room", room != null ? "#" + HtmlEscapers.htmlEscaper().escape(room) : "#main")
             .put("protocolVersion", Constants.WEBSOCKET_PROTOCOL_VERSION)
             .build()
         );

@@ -34,9 +34,13 @@ public class VkApiClient {
             uriBuilder.addParameter("offset", String.valueOf(offset));
             uriBuilder.addParameter("v", API_VERSION);
             HttpGet httpGet = new HttpGet(uriBuilder.build());
-            JsonNode rootNode = httpClient.execute(httpGet, JsonResponseHandler.INSTANCE).get("response");
+            JsonNode rootNode = httpClient.execute(httpGet, JsonResponseHandler.INSTANCE);
 
-            JsonNode items = rootNode.get("items");
+            if (rootNode.has("error")) {
+                throw new RuntimeException("error occured: " + rootNode.get("error"));
+            }
+
+            JsonNode items = rootNode.get("response").get("items");
             if (items.size() == 0) {
                 done = true;
             }
@@ -61,6 +65,10 @@ public class VkApiClient {
         uriBuilder.addParameter("v", API_VERSION);
         HttpGet httpGet = new HttpGet(uriBuilder.build());
         JsonNode rootNode = httpClient.execute(httpGet, JsonResponseHandler.INSTANCE);
+
+        if (rootNode.has("error")) {
+            throw new RuntimeException("error occured: " + rootNode.get("error"));
+        }
 
         JsonNode items = rootNode.get("response").get("items");
         return items.size() > 0 ? items.get(0) : null;

@@ -69,10 +69,10 @@ public class VkProxy extends AbstractProxy {
     @Override
     protected void disconnect() {
         if (workFuture != null && !workFuture.isCancelled()) {
-            workFuture.cancel(false);
+            workFuture.cancel(true);
         }
         if (checkFuture != null && !checkFuture.isCancelled()) {
-            checkFuture.cancel(false);
+            checkFuture.cancel(true);
         }
     }
 
