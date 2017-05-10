@@ -17,6 +17,7 @@ var setSizes = function() {
 };
 
 document.IS_MOBILE = (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i).test(navigator.userAgent);
+document.reflow = angular.noop;
 
 document.chatApplication = angular.module('chatApplication', [
     'ngAnimate',
@@ -43,7 +44,7 @@ document.chatApplication = angular.module('chatApplication', [
     'templates'
 ]);
 
-document.chatApplication.config(['$compileProvider', function ($compileProvider) {
+document.chatApplication.config(['$compileProvider', function($compileProvider) {
     'use strict';
 
     console.log('debug: ' + DEBUG);
@@ -52,14 +53,27 @@ document.chatApplication.config(['$compileProvider', function ($compileProvider)
     }
 }]);
 
-document.chatApplication.run(['$rootScope', function ($root) {
+document.chatApplication.run(['$rootScope', 'windowState', function($root, windowState) {
     wide = false;
     setSizes();
     $('.tse-scrollable').TrackpadScrollEmulator({wrapContent: false, autoHide: false});
-    $(window).resize(function () {
-        $root.$apply(function () {
+
+    var update = function() {
+        $root.$apply(function() {
+            console.log("reflow");
             setSizes();
             $('.tse-scrollable').TrackpadScrollEmulator('recalculate');
         });
-    });
+    };
+
+    $(window).resize(update);
+    windowState.focus(update);
+    windowState.blur(update);
+
+    window.addEventListener('message', function(event) {
+        if (event.data === 'reflow') {
+            update();
+        }
+    }, false);
+
 }]);
