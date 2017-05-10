@@ -78,7 +78,7 @@ public class SocialAuthProviderFactory {
                 if (signIn) {
                     scopes = ImmutableSet.of();
                 } else {
-                    scopes = ImmutableSet.of("video");
+                    scopes = ImmutableSet.of("offline", "video");
                 }
                 return new VkAuthProvider(
                     credentials.getClientId(),
