@@ -27,6 +27,7 @@ public class TwitchTvChatProxy extends AbstractNettyProxy {
     private final ProxyAuthService proxyAuthService;
     private final Map<String, Channel> connections = new ConcurrentHashMapV8<>();
     private final OutboundMessageHandler outboundHandler;
+    private final CheermotesProvider cheermotesProvider;
 
     public TwitchTvChatProxy(
         ProxyDescriptor descriptor,
@@ -35,12 +36,15 @@ public class TwitchTvChatProxy extends AbstractNettyProxy {
         MessageBroadcaster messageBroadcaster,
         TwitchCredentialsService credentialsService,
         EventLoopGroup eventLoopGroup,
-        ProxyAuthService proxyAuthService
+        ProxyAuthService proxyAuthService,
+        CheermotesProvider cheermotesProvider
     ) {
         super(eventLoopGroup, notificationService, descriptor);
         this.messageId = messageId;
         this.messageBroadcaster = messageBroadcaster;
         this.proxyAuthService = proxyAuthService;
+        this.cheermotesProvider = cheermotesProvider;
+
         if (descriptor.hasFeature(ProxyFeature.OUTBOUND)) {
             this.outboundHandler = new OutboundMessageHandler(credentialsService, eventLoopGroup, connections, descriptor);
         } else {
@@ -59,11 +63,11 @@ public class TwitchTvChatProxy extends AbstractNettyProxy {
         }
 
         bootstrap.option(ChannelOption.SO_KEEPALIVE, true);
-        bootstrap.handler(new InboundChannelInitializer(new JtvEventListenerImpl(), remoteRoom(), username, token));
+        bootstrap.handler(new InboundChannelInitializer(cheermotesProvider, new JtvEventListenerImpl(), remoteRoom(), username, token));
     }
 
     @Override
-    protected void connect() {
+    protected void connect() throws Exception {
         ChannelFuture channelFuture = bootstrap.connect("irc.twitch.tv", 6667);
         channel = channelFuture.channel();
         channelFuture.addListener(future -> {

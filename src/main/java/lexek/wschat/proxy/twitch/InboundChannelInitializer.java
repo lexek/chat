@@ -16,17 +16,20 @@ import java.util.concurrent.TimeUnit;
 public class InboundChannelInitializer extends ChannelInitializer<SocketChannel> {
     private final ChannelHandler stringEncoder = new StringEncoder(CharsetUtil.UTF_8);
     private final ChannelHandler stringDecoder = new StringDecoder(CharsetUtil.UTF_8);
+    private final CheermotesProvider cheermotesProvider;
     private final JTVEventListener eventListener;
     private final String remoteRoom;
     private final String username;
     private final String token;
 
     public InboundChannelInitializer(
+        CheermotesProvider cheermotesProvider,
         JTVEventListener eventListener,
         String remoteRoom,
         String username,
         String token
     ) {
+        this.cheermotesProvider = cheermotesProvider;
         this.eventListener = eventListener;
         this.remoteRoom = remoteRoom;
         this.username = username;
@@ -40,7 +43,7 @@ public class InboundChannelInitializer extends ChannelInitializer<SocketChannel>
         pipeline.addLast(stringEncoder);
         pipeline.addLast(stringDecoder);
         pipeline.addLast(new IdleStateHandler(120, 0, 140, TimeUnit.SECONDS));
-        pipeline.addLast(new TwitchTvMessageDecoder());
+        pipeline.addLast(new TwitchTvMessageDecoder(cheermotesProvider));
         pipeline.addLast(new TwitchMessageHandler(eventListener, remoteRoom, username, token));
     }
 }

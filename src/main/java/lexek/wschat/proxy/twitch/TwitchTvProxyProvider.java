@@ -20,6 +20,7 @@ public class TwitchTvProxyProvider extends ProxyProvider {
     private final EventLoopGroup eventLoopGroup;
     private final ProxyAuthService authService;
     private final NotificationService notificationService;
+    private final CheermotesProvider cheermotesProvider;
 
     @Inject
     public TwitchTvProxyProvider(
@@ -28,7 +29,8 @@ public class TwitchTvProxyProvider extends ProxyProvider {
         TwitchCredentialsService credentialsService,
         @Named("proxyEventLoopGroup") EventLoopGroup eventLoopGroup,
         ProxyAuthService authService,
-        NotificationService notificationService
+        NotificationService notificationService,
+        CheermotesProvider cheermotesProvider
     ) {
         super("twitch", true, true, false, false, ImmutableSet.of("twitch"), EnumSet.allOf(ModerationOperation.class));
         this.messageId = messageId;
@@ -37,12 +39,13 @@ public class TwitchTvProxyProvider extends ProxyProvider {
         this.eventLoopGroup = eventLoopGroup;
         this.authService = authService;
         this.notificationService = notificationService;
+        this.cheermotesProvider = cheermotesProvider;
     }
 
     @Override
     public Proxy newProxy(ProxyDescriptor descriptor) {
         return new TwitchTvChatProxy(
-            descriptor, notificationService, messageId, messageBroadcaster, credentialsService, eventLoopGroup, authService
+            descriptor, notificationService, messageId, messageBroadcaster, credentialsService, eventLoopGroup, authService, cheermotesProvider
         );
     }
 

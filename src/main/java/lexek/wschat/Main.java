@@ -140,6 +140,10 @@ public class Main {
         File dataDir = new File(settings.getCore().getDataDir());
         EmailConfiguration emailSettings = settings.getEmail();
 
+        if (settings.getProxy().containsKey("twitch")) {
+            ServiceLocatorUtilities.addOneConstant(serviceLocator, settings.getProxy().get("twitch").getClientId(), "twitch.clientId", String.class);
+        }
+
         //todo: config rework https://github.com/lexek/chat/issues/233
         ServiceLocatorUtilities.addOneConstant(serviceLocator, hostName, "core.hostname", String.class);
         ServiceLocatorUtilities.addOneConstant(serviceLocator, dataDir, "core.dataDirectory", File.class);

@@ -1,6 +1,7 @@
 package lexek.wschat.proxy.twitch;
 
 import com.google.common.primitives.Ints;
+import com.google.common.primitives.Longs;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageDecoder;
 import lexek.wschat.chat.msg.DefaultMessageProcessingService;
@@ -21,8 +22,9 @@ public class TwitchTvMessageDecoder extends MessageToMessageDecoder<String> {
     private final Pattern subscriptionPattern = Pattern.compile("(.*?) just subscribed( with Twitch Prime)?!\\s*");
     private final DefaultMessageProcessingService messageProcessingService;
 
-    public TwitchTvMessageDecoder() {
+    public TwitchTvMessageDecoder(CheermotesProvider cheermotesProvider) {
         messageProcessingService = new DefaultMessageProcessingService();
+        messageProcessingService.addProcessor(new CheermotesMessageProcessor(cheermotesProvider));
         messageProcessingService.addProcessor(new UrlMessageProcessor());
     }
 
@@ -108,10 +110,11 @@ public class TwitchTvMessageDecoder extends MessageToMessageDecoder<String> {
                         ));
                     }
                 } else {
+                    Long bits = Longs.tryParse(tags.getOrDefault("bits", "0"));
                     out.add(new TwitchUserMessage(
                         nick,
                         StringUtils.defaultIfEmpty(tags.get("color"), Colors.generateColor(nick)),
-                        parseUserMessage(arg[2], tags))
+                        parseUserMessage(arg[2], tags), bits)
                     );
                 }
                 break;

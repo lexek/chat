@@ -8,12 +8,14 @@ public class TwitchUserMessage extends TwitchEventMessage {
     private final String userName;
     private final String userColor;
     private final List<MessageNode> message;
+    private final Long bits;
 
-    public TwitchUserMessage(String userName, String userColor, List<MessageNode> message) {
+    public TwitchUserMessage(String userName, String userColor, List<MessageNode> message, Long bits) {
         super(Type.MSG, null);
         this.userName = userName;
         this.userColor = userColor;
         this.message = message;
+        this.bits = bits;
     }
 
     public String getUserName() {
@@ -28,12 +30,17 @@ public class TwitchUserMessage extends TwitchEventMessage {
         return message;
     }
 
+    public Long getBits() {
+        return bits;
+    }
+
     @Override
     public String toString() {
         return "TwitchUserMessage{" +
             "userName='" + userName + '\'' +
             ", userColor='" + userColor + '\'' +
             ", message=" + message +
+            ", bits=" + bits +
             "} " + super.toString();
     }
 }
