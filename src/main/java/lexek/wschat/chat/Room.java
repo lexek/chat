@@ -92,11 +92,7 @@ public class Room {
             if (user == User.UNAUTHENTICATED_USER || user.getId() == null) {
                 chatter = Chatter.GUEST_CHATTER;
             } else {
-                chatter = onlineChatters.get(user.getId());
-                if (chatter == null) {
-                    chatter = chatterService.getChatter(this, user);
-                    onlineChatters.put(user.getId(), chatter);
-                }
+                chatter = onlineChatters.computeIfAbsent(user.getId(), k -> chatterService.getChatter(this, user));
             }
         } finally {
             writeLock.unlock();

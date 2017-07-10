@@ -183,7 +183,7 @@ public class Message {
         String serviceResourceName,
         int months
     ) {
-        ImmutableMap.Builder<MessageProperty, Object> builder = ImmutableMap.<MessageProperty, Object>builder();
+        ImmutableMap.Builder<MessageProperty, Object> builder = ImmutableMap.builder();
         builder
             .put(MessageProperty.TYPE, MessageType.SUB)
             .put(MessageProperty.ROOM, room)

@@ -23,6 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
+import java.util.Comparator;
 import java.util.concurrent.ThreadFactory;
 import java.util.stream.StreamSupport;
 
@@ -52,7 +53,7 @@ public class EventDispatcher extends AbstractManagedService {
     @Inject
     public void init(Iterable<EventListener> eventListeners) {
         StreamSupport.stream(eventListeners.spliterator(), false)
-            .sorted((o1, o2) -> o1.getOrder() - o2.getOrder())
+            .sorted(Comparator.comparingInt(EventListener::getOrder))
             .forEach(e -> registerListener(e.getEventType(), e));
     }
 

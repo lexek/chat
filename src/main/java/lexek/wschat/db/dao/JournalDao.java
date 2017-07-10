@@ -66,7 +66,7 @@ public class JournalDao {
         Optional<Long> adminId
     ) {
         List<Condition> conditions = new ArrayList<>();
-        conditions.add(JOURNAL.ACTION.in(types.isPresent() ? types.get() : GLOBAL_ACTIONS));
+        conditions.add(JOURNAL.ACTION.in(types.orElse(GLOBAL_ACTIONS)));
         userId.ifPresent(value -> conditions.add(JOURNAL.USER_ID.equal(value)));
         adminId.ifPresent(value -> conditions.add(JOURNAL.ADMIN_ID.equal(value)));
 

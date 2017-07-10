@@ -2,7 +2,6 @@ package lexek.httpserver;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import freemarker.template.TemplateException;
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpHeaderNames;
@@ -14,7 +13,6 @@ import io.netty.util.CharsetUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.io.StringWriter;
 
 public class Response {
@@ -31,7 +29,7 @@ public class Response {
         return wrappedResponse.content();
     }
 
-    public void renderTemplate(String template, Object data) throws IOException, TemplateException {
+    public void renderTemplate(String template, Object data) {
         try {
             StringWriter stringWriter = new StringWriter();
             viewResolvers.getTemplateEngine().getTemplate("/templates/" + template + ".ftl").process(data, stringWriter);
