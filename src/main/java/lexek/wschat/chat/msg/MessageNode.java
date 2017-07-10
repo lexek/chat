@@ -17,6 +17,8 @@ import java.util.List;
 public class MessageNode {
     private final Type type;
     private final String text;
+    private long bits;
+    private String color;
     private List<MessageNode> children;
     private Style style;
     private String src;
@@ -51,6 +53,17 @@ public class MessageNode {
             .build();
     }
 
+    public static MessageNode cheermoteNode(String text, String src, String color, long bits) {
+        return MessageNode
+            .builder()
+            .type(Type.CHEERMOTE)
+            .text(text)
+            .src(src)
+            .color(color)
+            .bits(bits)
+            .build();
+    }
+
     public static MessageNode emojiNode(String text, String src) {
         return MessageNode
             .builder()
@@ -73,6 +86,7 @@ public class MessageNode {
     public enum Type {
         URL,
         EMOTICON,
+        CHEERMOTE,
         EMOJI,
         MENTION,
         STYLED,

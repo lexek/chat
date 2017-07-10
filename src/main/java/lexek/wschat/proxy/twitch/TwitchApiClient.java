@@ -13,8 +13,9 @@ import javax.inject.Named;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 
 @Service
 public class TwitchApiClient {
@@ -30,7 +31,7 @@ public class TwitchApiClient {
         this.clientId = clientId;
     }
 
-    public Set<String> getCheermoteCodes() throws URISyntaxException, IOException {
+    public List<Cheermote> getCheermoteCodes() throws URISyntaxException, IOException {
         URI url = new URIBuilder("https://api.twitch.tv/kraken/bits/actions")
             .addParameter("client_id", clientId)
             .build();
@@ -41,9 +42,37 @@ public class TwitchApiClient {
 
         JsonNode rootNode = httpClient.execute(request, JsonResponseHandler.INSTANCE);
 
-        Set<String> result = new HashSet<>();
+        List<Cheermote> result = new ArrayList<>();
         for (JsonNode actionNode : rootNode.get("actions")) {
-            result.add(actionNode.get("prefix").asText());
+            String prefix = actionNode.get("prefix").asText();
+
+            String useBg = null;
+            for (JsonNode stateNode : actionNode.get("backgrounds")) {
+                useBg = stateNode.asText();
+                if (useBg.equals("light")) {
+                    break;
+                }
+            }
+
+            String useState = null;
+            for (JsonNode stateNode : actionNode.get("states")) {
+                useState = stateNode.asText();
+                if (useState.equals("animated")) {
+                    break;
+                }
+            }
+
+            List<CheermoteTier> tiers = new ArrayList<>();
+            for (JsonNode tierNode : actionNode.get("tiers")) {
+                tiers.add(new CheermoteTier(
+                    tierNode.get("color").asText(),
+                    tierNode.get("images").get(useBg).get(useState).get("1").asText(),
+                    tierNode.get("min_bits").asLong()
+                ));
+            }
+            tiers.sort(Comparator.comparingLong(CheermoteTier::getMinBits));
+
+            result.add(new Cheermote(prefix, tiers));
         }
         return result;
     }

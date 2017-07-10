@@ -4,14 +4,14 @@ import com.google.common.base.Suppliers;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
-import java.util.Set;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 @Service
 public class CheermotesProvider {
     private final TwitchApiClient twitchApiClient;
-    private final Supplier<Set<String>> cheermotesSupplier;
+    private final Supplier<List<Cheermote>> cheermotesSupplier;
 
     @Inject
     public CheermotesProvider(TwitchApiClient twitchApiClient) {
@@ -19,11 +19,11 @@ public class CheermotesProvider {
         this.cheermotesSupplier =  Suppliers.memoizeWithExpiration(this::fetchCheermotes, 1, TimeUnit.HOURS);
     }
 
-    public Set<String> getCheermotes() {
+    public List<Cheermote> getCheermotes() {
         return cheermotesSupplier.get();
     }
 
-    private Set<String> fetchCheermotes() {
+    private List<Cheermote> fetchCheermotes() {
         try {
             return twitchApiClient.getCheermoteCodes();
         } catch (Exception e) {

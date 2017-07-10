@@ -12,6 +12,20 @@
         alt="{{::node.text}}"
         tse-on-load
     />
+    <span
+        tooltip="{{::node.text}}"
+        tooltip-animation="false"
+        ng-switch-when="CHEERMOTE"
+
+    >
+        <img
+            class="emoticon"
+            ng-src="{{::node.src}}"
+            alt="{{::node.text}}"
+            tse-on-load
+        />
+        <strong ng-style="::{'color': node.color}" ng-bind="::node.bits"></strong>
+    </span>
     <img
         ng-switch-when="EMOJI"
         class="emoji emoticon"
